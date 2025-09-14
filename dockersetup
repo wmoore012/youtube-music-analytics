@@ -1,0 +1,90 @@
+import subprocess
+import time
+import os
+from pathlib import Path
+
+def run_docker_setup():
+    # Read .env to extract DB values
+    env_path = Path(".env")
+    if not env_path.exists():
+        return "ERROR: .env file not found"
+
+    env_vars = {}
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                env_vars[key] = value.strip('"\'')
+
+    db_user = env_vars.get('DB_USER', '')
+    db_pass = env_vars.get('DB_PASS', '')
+    db_name = env_vars.get('DB_NAME', '')
+    db_port = env_vars.get('DB_PORT', '3306')
+
+    print(f"Using DB_USER={db_user}, DB_NAME={db_name}, host_port={db_port} (password hidden)")
+
+    # Check Docker
+    try:
+        result = subprocess.run(['docker', '--version'], capture_output=True, text=True, timeout=10)
+        if result.returncode != 0:
+            return "ERROR: Docker not available"
+        print(f"Docker available: {result.stdout.strip()}")
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return "ERROR: Docker not installed or not responding"
+
+    # Check if port is in use
+    try:
+        result = subprocess.run(['lsof', '-i', f':{db_port}'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            print(f"PORT_IN_USE: port {db_port} seems in use")
+            print(result.stdout[:200])  # Show first few lines
+            return "ERROR: Port in use"
+    except subprocess.TimeoutExpired:
+        print("Port check timed out, proceeding...")
+
+    # Remove existing container
+    try:
+        subprocess.run(['docker', 'rm', '-f', 'yt_mysql_local'],
+                      capture_output=True, timeout=15)
+        print("Removed any existing yt_mysql_local container")
+    except subprocess.TimeoutExpired:
+        print("Container removal timed out")
+
+    # Run MySQL container
+    cmd = [
+        'docker', 'run', '-d', '--name', 'yt_mysql_local',
+        '-e', f'MYSQL_ROOT_PASSWORD={db_pass}',
+        '-e', f'MYSQL_DATABASE={db_name}',
+        '-e', f'MYSQL_USER={db_user}',
+        '-e', f'MYSQL_PASSWORD={db_pass}',
+        '-p', f'{db_port}:3306',
+        'mysql:8.0'
+    ]
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            return f"ERROR: Container start failed: {result.stderr}"
+        print("MySQL container started, waiting for readiness...")
+    except subprocess.TimeoutExpired:
+        return "ERROR: Container start timed out"
+
+    # Wait for MySQL to be ready
+    for attempt in range(15):  # 30 seconds max
+        try:
+            ping_cmd = ['docker', 'exec', 'yt_mysql_local',
+                       'mysqladmin', 'ping', '-h127.0.0.1', f'-p{db_pass}', '--silent']
+            result = subprocess.run(ping_cmd, capture_output=True, timeout=5)
+            if result.returncode == 0:
+                print("MYSQL_READY")
+                return "SUCCESS"
+        except subprocess.TimeoutExpired:
+            pass
+        time.sleep(2)
+
+    return "ERROR: MySQL not ready after 30 seconds"
+
+# Run the setup
+setup_result = run_docker_setup()
+print(f"Setup result: {setup_result}")
