@@ -13,7 +13,6 @@ except Exception:  # pragma: no cover - optional
 
 try:
     import altair as alt
-    from vega_datasets import data as vega_data  # type: ignore
 except Exception:  # pragma: no cover - optional
     alt = None
 

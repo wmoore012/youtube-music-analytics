@@ -18,16 +18,15 @@ Key Features:
 
 from __future__ import annotations
 
-import math
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import Iterable, Optional
+from datetime import timedelta
+from typing import Optional
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field, PositiveInt, ValidationError, field_validator
+from pydantic import BaseModel, Field, PositiveInt, field_validator
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import text
@@ -46,7 +45,24 @@ class BotDetectionConfig(BaseModel):
                 "great song",
                 "love u",
                 "🔥",
+                "🔥🔥",
+                "🔥🔥🔥",
+                "🔥🔥🔥🔥",
+                "🔥🔥🔥🔥🔥",
+                "🌊",
+                "🌊🌊",
+                "🌊🌊🌊",
+                "🌊🌊🌊🌊",
+                "🌊🌊🌊🌊🌊",
                 "fire",
+                "waves",
+                "wavy",
+                "this waves",
+                "crazy",
+                "this crazy",
+                "this is crazy",
+                "fye",
+                "this beat is fye",
                 "hard",
                 "so hard",
                 "too hard",
@@ -123,7 +139,9 @@ def _normalize_text(text: str) -> str:
 
 def _strip_emojis(text: str) -> str:
     """Remove emojis from text for content analysis."""
-    return _emoji_re.sub(" ", text).strip()
+    # Remove emojis but preserve surrounding spaces
+    result = _emoji_re.sub("", text)
+    return result.strip()
 
 
 def _count_emojis(text: str) -> int:
@@ -131,9 +149,12 @@ def _count_emojis(text: str) -> int:
     return len("".join(_emoji_re.findall(text)))
 
 
-def _clamp_01(value: float) -> float:
-    """Clamp value to [0, 1] range."""
-    return min(max(value, 0.0), 1.0)
+def _clamp_01(value):
+    """Clamp value(s) to [0, 1] range. Works with scalars and pandas Series."""
+    if hasattr(value, "clip"):  # pandas Series
+        return value.clip(0.0, 1.0)
+    else:  # scalar
+        return min(max(value, 0.0), 1.0)
 
 
 @dataclass(frozen=True)
@@ -191,11 +212,18 @@ class BotDetector:
 
         analysis_df["emoji_count"] = analysis_df["text_normalized"].apply(_count_emojis)
 
-        # Whitelist detection
+        # Whitelist detection - check if any whitelist phrase is contained in the text
         whitelist = self.config.whitelist_phrases
-        analysis_df["is_whitelisted"] = analysis_df["text_normalized"].isin(whitelist) | analysis_df[
+
+        def _contains_whitelist_phrase(text: str) -> bool:
+            """Check if text contains any whitelisted phrase."""
+            if not text:
+                return False
+            return any(phrase in text for phrase in whitelist)
+
+        analysis_df["is_whitelisted"] = analysis_df["text_normalized"].apply(_contains_whitelist_phrase) | analysis_df[
             "text_no_emoji"
-        ].isin(whitelist)
+        ].apply(_contains_whitelist_phrase)
 
         # Feature engineering
         analysis_df = self._add_similarity_features(analysis_df)
@@ -262,9 +290,15 @@ class BotDetector:
                 return pd.Series([1] * len(group), index=group.index)
 
         # Local similarity (within video)
-        df["duplicate_count_local"] = (
-            df.groupby("video_id", group_keys=False).apply(_count_similar_comments).reindex(df.index)
-        )
+        local_counts = []
+        for video_id, group in df.groupby("video_id"):
+            counts = _count_similar_comments(group)
+            local_counts.append(counts)
+
+        if local_counts:
+            df["duplicate_count_local"] = pd.concat(local_counts).reindex(df.index).fillna(1)
+        else:
+            df["duplicate_count_local"] = 1
 
         # Global similarity (across videos, bucketed for performance)
         df["_text_bucket"] = df["text_no_emoji"].apply(lambda x: (x[:1], len(x) // 5) if x else ("", 0))
@@ -276,14 +310,18 @@ class BotDetector:
                 )
             return _count_similar_comments(group)
 
-        df["duplicate_count_global"] = (
-            df.groupby("_text_bucket", group_keys=False).apply(_count_similar_global).reindex(df.index)
-        )
+        global_counts = []
+        for text_bucket, group in df.groupby("_text_bucket"):
+            counts = _count_similar_global(group)
+            global_counts.append(counts)
+        if global_counts:
+            df["duplicate_count_global"] = pd.concat(global_counts).reindex(df.index).fillna(1)
+        else:
+            df["duplicate_count_global"] = 1
 
-        # Filter out small clusters
-        min_cluster = self.config.min_dupe_cluster
-        df.loc[df["duplicate_count_local"] < min_cluster, "duplicate_count_local"] = 0
-        df.loc[df["duplicate_count_global"] < min_cluster, "duplicate_count_global"] = 0
+        # Filter out small clusters (but keep pairs as they're still suspicious)
+        df.loc[df["duplicate_count_local"] < 2, "duplicate_count_local"] = 0
+        df.loc[df["duplicate_count_global"] < 2, "duplicate_count_global"] = 0
 
         df.drop(columns=["_text_bucket"], inplace=True)
         return df
@@ -305,8 +343,16 @@ class BotDetector:
 
             for i, current_time in enumerate(timestamps):
                 # Count comments within time window
-                window_start = current_time - window
-                window_count = sum(1 for t in timestamps if window_start <= t <= current_time)
+                try:
+                    window_start = current_time - window
+                    window_count = sum(1 for t in timestamps if window_start <= t <= current_time)
+                except TypeError:
+                    # Handle timezone-naive timestamps
+                    current_ts = pd.Timestamp(current_time)
+                    window_start = current_ts - window
+                    window_count = sum(
+                        1 for t in timestamps if pd.Timestamp(t) >= window_start and pd.Timestamp(t) <= current_ts
+                    )
 
                 # Normalize to 0-1 scale (10+ comments in window = max burst)
                 burst_score = min((window_count - 1) / 9.0, 1.0)
@@ -314,12 +360,14 @@ class BotDetector:
 
             return pd.Series(burst_scores, index=sorted_group.index)
 
-        df["burst_score"] = (
-            df.groupby(["video_id", "text_no_emoji"], group_keys=False)
-            .apply(_calculate_burst_score)
-            .reindex(df.index)
-            .fillna(0.0)
-        )
+        burst_scores = []
+        for (video_id, text_content), group in df.groupby(["video_id", "text_no_emoji"]):
+            scores = _calculate_burst_score(group)
+            burst_scores.append(scores)
+        if burst_scores:
+            df["burst_score"] = pd.concat(burst_scores).reindex(df.index).fillna(0.0)
+        else:
+            df["burst_score"] = 0.0
 
         return df
 

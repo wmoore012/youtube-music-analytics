@@ -275,7 +275,6 @@ def load_comment_examples(
     )
 
     conds = ["c.sentiment_score IS NOT NULL"]
-    params: dict[str, object] = {}
     names: list[str] = []
     if artists:
         names = list(artists)
@@ -469,7 +468,6 @@ def load_sentiment_summary(
         has_songs_with_isrcs = False
 
     conds = []
-    params: dict[str, object] = {}
     names: list[str] = []
     if artists:
         names = list(artists)
