@@ -109,20 +109,50 @@ python create_tables.py
 
 ### 5. Run ETL Pipeline
 
-```python
-from web.etl_entrypoints import run_channel_etl
+```bash
+# Focused ETL (sentiment + quality + key notebooks)
+python tools/etl/run_focused_etl.py
 
-# Run ETL for a single channel
-summary = run_channel_etl("https://www.youtube.com/@yourchannel")
-print(f"Processed {summary.videos_seen} videos")
+# ETL & Notebooks (full pipeline + notebook execution)
+python tools/etl/run_etl_and_notebooks.py
+
+# Ingest channels from .env (YT_* URLs)
+python tools/etl/run_channels_from_env.py
 ```
 
 ## 📒 Analysis Notebooks
 
-- Three lean notebooks live under `notebooks/`:
-  - `01_descriptive_overview.ipynb` — KPI snapshot, trends, comparisons
-  - `02_artist_deepdives.ipynb` — one section per artist (parameterized list)
-  - `03_appendix_data_quality.ipynb` — QA checks (dupes, nulls, outliers)
+- Notebooks are organized for clarity:
+  - `notebooks/analysis/01_descriptive_overview.ipynb` — KPI snapshot, trends, comparisons
+  - `notebooks/analysis/02_artist_deepdives.ipynb` — one section per artist (parameterized list)
+  - `notebooks/quality/03_appendix_data_quality.ipynb` — QA checks (dupes, nulls, outliers)
+
+### Avoiding Artist Duplicates
+- Set `ARTIST_ALIASES_JSON` in `.env` to unify common variants, e.g.:
+  - `ARTIST_ALIASES_JSON={"LuvEnchantingINC":"Enchanting","enchanting":"Enchanting"}`
+- The data loader applies DB `artist_aliases` plus your env mapping to normalize names.
+
+## 👤 Artist Alias Manager (Important Step)
+
+We made alias management simple and explicit — run it manually after ingestion (not in cron):
+
+- Purpose: Merge duplicate names like `LuvEnchantingINC` → `Enchanting` in analytics.
+- What it does:
+  - Ensures a lowercase snake_case table `artist_aliases` exists
+    - Table DDL (MySQL):
+      - `artist_aliases(alias_id PK, artist_id FK, alias, is_preferred, created_at, updated_at)`
+  - Guides you to pick a canonical artist and add aliases interactively
+  - Verifies changes before applying
+  - Upserts to DB and writes `config/artist_aliases.json`
+- Run after ETL ingests videos/artists so you pick from real names:
+
+```bash
+python tools/alias_manager.py
+```
+
+Tips:
+- Channels from `.env` (keys starting with `YT_`) are highlighted during selection.
+- After finishing, copy `config/artist_aliases.json` into `.env` as `ARTIST_ALIASES_JSON` if you want env overrides.
 
 Install the helper package and enable clean commits:
 

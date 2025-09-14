@@ -22,7 +22,7 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
             res = fn(*args, **kw)
             elapsed = (perf_counter() - t0) * 1000
             if elapsed > ms:
-                logger.warning("Slow query: %.1f ms (>%d)", elapsed, ms)
+                logger.warning(f"🐢  Slow query: {elapsed:.1f} ms (>{ms})")
             return res
 
         return wrapper
@@ -32,24 +32,7 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
 
 # ── Engine factory with kill-switch & RO mode ──────────────────────────────
 def get_engine(schema: str, *, ro: bool = False, echo: bool = False) -> Engine:
-    """Get SQLAlchemy engine with optional read-only flavor and local fallback.
-
-    Behavior
-    - If schema == "icatalog_public": use DATABASE_URL as-is (required).
-    - Else build MySQL URL from DB_* env vars.
-    - If YT_SQLITE_URL is set (e.g., sqlite:///./.yt_local.db), prefer that for local runs.
-    - If ro=True, append read_timeout if missing.
-
-    Notes
-    - Keep pool_pre_ping to avoid stale connections.
-    - Apply a conservative MAX_EXECUTION_TIME where supported.
-    """
-    # Prefer explicit override for local dev
-    sqlite_url = os.getenv("YT_SQLITE_URL")
-    if sqlite_url:
-        eng = create_engine(sqlite_url, pool_pre_ping=True, echo=echo, future=True)
-        return eng
-
+    """Get database engine with kill-switch and optional read-only mode."""
     # Use existing environment variables
     if schema == "icatalog_public":
         url = os.getenv("DATABASE_URL")
@@ -73,12 +56,7 @@ def get_engine(schema: str, *, ro: bool = False, echo: bool = False) -> Engine:
         if "read_timeout" not in url:
             url += f"{separator}read_timeout=15"
 
-    eng = create_engine(url, pool_pre_ping=True, echo=echo, future=True)
-    # Try to set a max execution time where supported; ignore if not
-    try:
-        with eng.begin() as conn:
-            conn.execute(text("SET SESSION MAX_EXECUTION_TIME=5000"))
-    except Exception:
-        # Non-MySQL engines may not support this session variable
-        pass
+    eng = create_engine(url, pool_pre_ping=True, echo=echo)
+    with eng.begin() as conn:
+        conn.execute(text("SET SESSION MAX_EXECUTION_TIME=5000"))
     return eng

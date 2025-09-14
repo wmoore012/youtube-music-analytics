@@ -8,14 +8,9 @@ Public API:
 
 from .charts import (  # noqa: F401
     artist_compare_altair,
-    box_whisker_plotly,
     get_artist_color_map,
-    histogram_plotly,
     linked_scatter_detail_altair,
-    scatter_plotly,
-    sentiment_timeline_plotly,
     views_over_time_plotly,
-    yoy_bars_plotly,
 )
 from .data import (  # noqa: F401
     compute_coengagement_matrix,
@@ -39,11 +34,6 @@ __all__ = [
     "artist_compare_altair",
     "linked_scatter_detail_altair",
     "views_over_time_plotly",
-    "box_whisker_plotly",
-    "scatter_plotly",
-    "sentiment_timeline_plotly",
-    "yoy_bars_plotly",
-    "histogram_plotly",
     "get_artist_color_map",
     # data helpers
     "compute_kpis",

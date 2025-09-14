@@ -19,3 +19,4 @@ types-PyMySQL>=1.0.0
 tox>=4.0.0
 wheel>=0.40.0
 build>=1.0.0
+InquirerPy>=0.3.4

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-import time
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, cast
@@ -25,97 +25,78 @@ class ETLSummary:
 
 
 class YouTubeChannelETL:
-    """Minimal, MySQL-only YouTube ETL used by tests and notebooks.
+    """YouTube channel ETL with batch raw insert and daily-max metrics upsert.
 
-    - No local fallbacks; DB creds must come from environment and be valid.
-    - Uses PyMySQL DictCursor, explicit transactions.
-    - YouTube API calls are simple wrappers (tests monkeypatch them).
+    Minimal deps (requests + pymysql), no googleapiclient required.
     """
+
+    # Global logging noise toggle (set via env YT_ETL_LOG_LEVEL=DEBUG/INFO/WARN)
+    LOG_LEVEL = os.getenv("YT_ETL_LOG_LEVEL", "INFO").upper()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
+    if not logger.handlers:
+        _h = logging.StreamHandler()
+        _h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s"))
+        logger.addHandler(_h)
 
     def __init__(
         self,
+        *,
         api_key: str,
         db_host: str,
         db_port: int,
         db_user: str,
         db_pass: str,
         db_name: str,
-        logger: Optional[logging.Logger] = None,
+        session: Optional[requests.Session] = None,
     ) -> None:
+        if not api_key:
+            raise ValueError("YOUTUBE_API_KEY is required")
         self.api_key = api_key
-        self.db_args: Dict[str, Any] = {
-            "host": db_host,
-            "port": int(db_port),
-            "user": db_user,
-            "password": db_pass,
-            "db": db_name,
-        }
-        self.logger = logger or logging.getLogger(__name__)
+        self.s = session or requests.Session()
+        self.db_args = dict(
+            host=db_host or "127.0.0.1",
+            port=int(db_port or 3306),
+            user=db_user,
+            password=db_pass,
+            db=db_name,
+            charset="utf8mb4",
+            cursorclass=pymysql.cursors.DictCursor,
+        )
+        # Strict local DB only — no fallbacks
+        self.logger.info(f"DB target host={self.db_args['host']} port={self.db_args['port']} db={self.db_args['db']}")
 
-    # --------------------- YouTube API helpers ---------------------
-    def _api_get(self, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        base = "https://www.googleapis.com/youtube/v3/"
-        p = dict(params)
-        p.setdefault("key", self.api_key)
-        url = base + path
-        backoff = 0.8
-        for attempt in range(4):
-            resp = requests.get(url, params=p, timeout=20)
-            # Fail fast on daily quota exhaustion
-            if resp.status_code == 403 and "quotaExceeded" in resp.text:
-                raise RuntimeError("youtube_quota_exceeded")
-            if resp.status_code in (429, 500, 502, 503, 504):
-                if attempt == 3:
-                    resp.raise_for_status()
-                time.sleep(backoff)
-                backoff *= 2
-                continue
-            resp.raise_for_status()
-            return cast(Dict[str, Any], resp.json())
-        # Unreachable
-        raise RuntimeError("unreachable_api_path")
+    # --------------------- YouTube REST helpers ---------------------
+    def _api_get(self, path: str, params: Dict[str, str]) -> Dict[str, Any]:
+        url = f"https://www.googleapis.com/youtube/v3/{path}"
+        p = {"key": self.api_key, **params}
+        self.logger.debug(f"GET {path} params={p}")
+        r = self.s.get(url, params=p, timeout=30)
+        r.raise_for_status()
+        return r.json()
 
     @staticmethod
-    def _extract_channel_id_from_url(url: str) -> Optional[str]:
-        try:
-            p = urlparse(url)
-        except Exception:
-            return None
-        parts = [x for x in p.path.split("/") if x]
-        if not parts:
-            return None
-        if parts[0].lower() == "channel" and len(parts) >= 2:
-            return parts[1]
-        return None
+    def _last_path_component(url: str) -> str:
+        p = urlparse(url)
+        return p.path.rstrip("/").split("/")[-1]
 
     def resolve_channel_id(self, channel_url: str) -> Optional[str]:
-        # If URL already contains /channel/UCxxxx, use it; otherwise resolve handles via channels.list(forHandle)
-        cid = self._extract_channel_id_from_url(channel_url)
-        if cid:
-            return cid
-        # Try handle
-        try:
-            p = urlparse(channel_url)
-            parts = [x for x in p.path.split("/") if x]
-            handle: Optional[str] = None
-            if parts and parts[0].startswith("@"):
-                handle = parts[0]
-            elif "@" in channel_url:
-                handle = "@" + channel_url.split("@", 1)[1].split("/", 1)[0]
-            if not handle:
-                return None
-        except Exception:
-            return None
+        """Return UC... id for /channel/UC..., /@handle, or /user/ style URLs."""
+        path = urlparse(channel_url).path.rstrip("/")
+        m = re.match(r"^/channel/(UC[0-9A-Za-z_-]{20,})$", path)
+        if m:
+            return m.group(1)
 
-        try:
-            data = self._api_get("channels", {"forHandle": handle, "part": "id"})
-            items = data.get("items", [])
-            if items:
-                # API may return {"id": {"channelId": "UC..."}} or a flat id
-                return items[0].get("id", {}).get("channelId") or items[0].get("id")
-        except Exception:
+        # Search by handle or last path component
+        q = self._last_path_component(channel_url)
+        if not q:
             return None
-        return None
+        data = self._api_get(
+            "search",
+            {"q": q, "type": "channel", "part": "snippet", "maxResults": "5"},
+        )
+        items = data.get("items", [])
+        return items[0]["snippet"].get("channelId") if items else None
 
     def get_uploads_playlist(self, channel_id: str) -> Optional[str]:
         data = self._api_get("channels", {"id": channel_id, "part": "contentDetails"})
@@ -125,8 +106,12 @@ class YouTubeChannelETL:
         return items[0].get("contentDetails", {}).get("relatedPlaylists", {}).get("uploads")
 
     def iter_playlist_items(self, playlist_id: str) -> Iterator[Dict[str, Any]]:
-        params = {"playlistId": playlist_id, "part": "contentDetails,snippet", "maxResults": "50"}
-        next_token: Optional[str] = None
+        params = {
+            "playlistId": playlist_id,
+            "part": "contentDetails,snippet",
+            "maxResults": "50",
+        }
+        next_token = None
         while True:
             p = dict(params)
             if next_token:
@@ -134,7 +119,7 @@ class YouTubeChannelETL:
             data = self._api_get("playlistItems", p)
             for it in data.get("items", []):
                 yield it
-            next_token = cast(Optional[str], data.get("nextPageToken"))
+            next_token = data.get("nextPageToken")
             if not next_token:
                 break
 
@@ -143,50 +128,71 @@ class YouTubeChannelETL:
             return {"items": []}
         return self._api_get(
             "videos",
-            {"id": ",".join(video_ids), "part": "snippet,contentDetails,statistics"},
+            {
+                "id": ",".join(video_ids),
+                "part": "snippet,contentDetails,statistics",
+                "maxResults": "50",
+            },
         )
 
     def get_playlist_details(self, playlist_id: str) -> Dict[str, Any]:
-        return self._api_get("playlists", {"id": playlist_id, "part": "snippet,contentDetails", "maxResults": "1"})
+        return self._api_get(
+            "playlists",
+            {
+                "id": playlist_id,
+                "part": "snippet,contentDetails",
+                "maxResults": "1",
+            },
+        )
 
     def iter_video_comments(self, video_id: str, max_comments: int = 0) -> Iterator[Dict[str, Any]]:
+        """Yield top-level comments (commentThreads) for a video, newest first.
+
+        max_comments: 0 to skip, otherwise limit number of comments.
+        """
         if max_comments <= 0:
-            return iter(())
-
-        def _gen() -> Iterator[Dict[str, Any]]:
-            fetched = 0
-            params = {"videoId": video_id, "part": "snippet", "order": "time", "maxResults": "100"}
-            next_token: Optional[str] = None
-            while True:
-                p = dict(params)
-                if next_token:
-                    p["pageToken"] = next_token
-                try:
-                    data = self._api_get("commentThreads", p)
-                except Exception as e:  # noqa: BLE001
-                    self.logger.warning(f"comments_fetch_failed video={video_id}: {e}")
+            return
+        fetched = 0
+        params = {
+            "videoId": video_id,
+            "part": "snippet",
+            "order": "time",
+            "maxResults": "100",
+        }
+        next_token = None
+        while True:
+            p = dict(params)
+            if next_token:
+                p["pageToken"] = next_token
+            try:
+                data = self._api_get("commentThreads", p)
+            except Exception as e:  # noqa: BLE001
+                self.logger.warning(f"comments_fetch_failed video={video_id}: {e}")
+                return
+            items = data.get("items", [])
+            for it in items:
+                yield it
+                fetched += 1
+                if 0 < max_comments <= fetched:
                     return
-                for it in data.get("items", []):
-                    yield it
-                    fetched += 1
-                    if 0 < max_comments <= fetched:
-                        return
-                next_token_local = cast(Optional[str], data.get("nextPageToken"))
-                next_token = next_token_local
-                if not next_token:
-                    break
-
-        return _gen()
+            next_token = data.get("nextPageToken")
+            if not next_token:
+                break
 
     # --------------------- DB helpers ---------------------
     def _connect(self) -> Any:
-        self.logger.debug("mysql_connect start")
+        self.logger.debug("Connecting to MySQL ...")
+        host = cast(str, self.db_args["host"])
+        port = cast(int, self.db_args["port"])
+        user = cast(str, self.db_args["user"])
+        password = cast(Optional[str], self.db_args["password"]) or ""
+        dbname = cast(str, self.db_args["db"])
         return pymysql.connect(
-            host=cast(str, self.db_args["host"]),
-            port=cast(int, self.db_args["port"]),
-            user=cast(str, self.db_args["user"]),
-            password=cast(str, self.db_args["password"]),
-            db=cast(str, self.db_args["db"]),
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            db=dbname,
             charset="utf8mb4",
             cursorclass=pymysql.cursors.DictCursor,
             autocommit=False,
@@ -238,18 +244,24 @@ class YouTubeChannelETL:
         conn: Any,
         rows: List[
             Tuple[
-                str,
-                Optional[str],
-                Optional[str],
-                Optional[str],
-                Optional[str],
-                Optional[str],
-                Optional[int],
-                Optional[int],
-                Optional[int],
+                str,  # video_id
+                Optional[str],  # isrc
+                Optional[str],  # title
+                Optional[str],  # channel_title
+                Optional[str],  # published_at SQL str
+                Optional[str],  # duration ISO8601
+                Optional[int],  # view_count
+                Optional[int],  # like_count
+                Optional[int],  # comment_count
             ]
         ],
     ) -> int:
+        """Upsert into youtube_videos.
+
+        Each row: (video_id, isrc, title, channel_title, published_at_str, view_count, like_count, comment_count)
+        published_at_str should be '%Y-%m-%d %H:%M:%S' or None.
+        duration is stored from raw as provided (ISO8601); we use a separate parameter here for simplicity (computed inline below).
+        """
         if not rows:
             return 0
         sql = (
@@ -268,14 +280,15 @@ class YouTubeChannelETL:
         conn: Any,
         rows: List[Tuple[Optional[str], Optional[str], Optional[str], Optional[str], int, Optional[str]]],
     ) -> int:
+        """Insert comments; ignore duplicates via unique(comment_id).
+
+        Each row: (video_id, comment_id, comment_text, author_name, like_count, published_at_str)
+        """
         if not rows:
             return 0
         sql = (
-            "INSERT INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s) "
-            "ON DUPLICATE KEY UPDATE "
-            "comment_text=VALUES(comment_text), author_name=VALUES(author_name), "
-            "like_count=VALUES(like_count), published_at=VALUES(published_at)"
+            "INSERT IGNORE INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s)"
         )
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
@@ -297,43 +310,30 @@ class YouTubeChannelETL:
 
     # --------------------- Run lock helpers ---------------------
     def _acquire_daily_lock(self, conn: Any, channel_id: str) -> bool:
-        # Ensure run-tracking table exists
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS youtube_etl_runs (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    channel_id VARCHAR(100) NOT NULL,
-                    run_date DATE NOT NULL,
-                    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    finished_at DATETIME NULL,
-                    status VARCHAR(32) NOT NULL DEFAULT 'started',
-                    UNIQUE KEY uniq_channel_day (channel_id, run_date)
-                )
-                """
-            )
-        # In development mode, clear any existing lock for today to allow repeatable runs
-        if os.getenv("DEVELOPMENT_MODE", "").strip().lower() == "true":
-            with conn.cursor() as cur:
-                cur.execute(
-                    "DELETE FROM youtube_etl_runs WHERE channel_id=%s AND run_date=CURDATE()",
-                    (channel_id,),
-                )
+        """Try to acquire a per-channel per-day run lock.
+
+        Returns True if lock acquired, False if already exists for today.
+        """
         sql = (
             "INSERT IGNORE INTO youtube_etl_runs (channel_id, run_date, started_at, status) "
             "VALUES (%s, CURDATE(), NOW(), 'started')"
         )
         with conn.cursor() as cur:
             cur.execute(sql, (channel_id,))
+            # rowcount == 1 means inserted (lock acquired); 0 means existing row (lock held)
             return cur.rowcount == 1
 
     def _finalize_run(self, conn: Any, channel_id: str, status: str) -> None:
-        sql = "UPDATE youtube_etl_runs SET finished_at=NOW(), status=%s WHERE channel_id=%s AND run_date=CURDATE()"
+        sql = "UPDATE youtube_etl_runs SET finished_at=NOW(), status=%s " "WHERE channel_id=%s AND run_date=CURDATE()"
         with conn.cursor() as cur:
             cur.execute(sql, (status, channel_id))
 
     # --------------------- ETL phases ---------------------
     def extract(self, channel_url: str, limit: Optional[int] = None) -> Tuple[str, str, Iterable[List[Dict[str, Any]]]]:
+        """Extract: resolve channel + uploads and yield details in batches of <=50.
+
+        Returns (channel_id, uploads_playlist_id, batches_of_video_details_items)
+        """
         ch_id = self.resolve_channel_id(channel_url)
         if not ch_id:
             raise ValueError("channel_id_not_found")
@@ -362,25 +362,30 @@ class YouTubeChannelETL:
 
         return ch_id, uploads, _batches()
 
-    def transform(self, items: List[Dict[str, Any]]) -> List[Tuple[str, int, int, int, str, Optional[str]]]:
-        out: List[Tuple[str, int, int, int, str, Optional[str]]] = []
+    def transform(self, items: List[Dict[str, Any]]) -> List[Tuple[str, int, int, int, str]]:
+        """Transform: coerce stats and prepare rows for load.
+
+        Returns list of tuples (video_id, view, like, comment, raw_json_str)
+        """
+        out: List[Tuple[str, int, int, int, str]] = []
         for v in items:
             vid = v.get("id")
             if not isinstance(vid, str) or not vid:
                 continue
-            stats = cast(Optional[Dict[str, Any]], v.get("statistics"))
+            stats = v.get("statistics")
             vv, ll, cc = self._coerce_counts(stats)
-            duration = cast(Optional[str], v.get("contentDetails", {}).get("duration"))
-            out.append((vid, vv, ll, cc, json.dumps(v), duration))
+            out.append((vid, vv, ll, cc, json.dumps(v)))
         return out
 
-    def load(
-        self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str, Optional[str]]]
-    ) -> Tuple[int, int]:
-        raw_rows: List[Tuple[str, Optional[str], str]] = [(vid, uploads_pid, raw) for (vid, *_rest, raw, _dur) in rows]
+    def load(self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str]]) -> Tuple[int, int]:
+        """Load: batch upsert raw and daily metrics.
+
+        Returns (raw_upserts_count, metrics_upserts_count)
+        """
+        raw_rows: List[Tuple[str, Optional[str], str]] = [(vid, uploads_pid, raw) for (vid, _, _, _, raw) in rows]
         raw_count = self._batch_upsert_raw(conn, raw_rows)
         metrics_count = 0
-
+        # Prepare videos summary rows
         summary_rows: List[
             Tuple[
                 str,
@@ -398,19 +403,20 @@ class YouTubeChannelETL:
         comments_to_insert: List[
             Tuple[Optional[str], Optional[str], Optional[str], Optional[str], int, Optional[str]]
         ] = []
-
-        # Upsert daily metrics and prepare summary rows
-        for vid, vv, ll, cc, raw, duration in rows:
+        for vid, vv, ll, cc, _ in rows:
             self._upsert_daily_metrics(conn, vid, vv, ll, cc)
             metrics_count += 1
+        # Build summary rows by parsing raw JSON
+        for vid, vv, ll, cc, raw in rows:
             try:
                 obj: Dict[str, Any] = json.loads(raw)
             except Exception:
                 obj = {}
-            snippet = cast(Dict[str, Any], obj.get("snippet", {}))
+            snippet: Dict[str, Any] = cast(Dict[str, Any], obj.get("snippet", {}))
+            content: Dict[str, Any] = cast(Dict[str, Any], obj.get("contentDetails", {}))
             title = cast(Optional[str], snippet.get("title"))
             channel_title = cast(Optional[str], snippet.get("channelTitle"))
-            published_at = cast(Optional[str], snippet.get("publishedAt"))
+            published_at = cast(Optional[str], snippet.get("publishedAt"))  # e.g., 2020-01-01T12:34:56Z
             published_at_sql: Optional[str] = None
             if isinstance(published_at, str):
                 try:
@@ -418,8 +424,11 @@ class YouTubeChannelETL:
                     published_at_sql = dt.strftime("%Y-%m-%d %H:%M:%S")
                 except Exception:
                     published_at_sql = None
+            # Optionally use duration if needed later
+            _duration = cast(Optional[str], content.get("duration"))
             summary_rows.append((vid, None, title, channel_title, published_at_sql, vv, ll, cc))
 
+            # Optionally fetch comments for each video
             if fetch_comments and comments_limit > 0:
                 try:
                     for citem in self.iter_video_comments(vid, max_comments=comments_limit):
@@ -442,7 +451,9 @@ class YouTubeChannelETL:
                 except Exception as e:  # noqa: BLE001
                     self.logger.warning(f"comments_collect_failed video={vid}: {e}")
 
-        # Upsert videos summary using duration provided by transform
+        # Upsert videos summary (youtube_videos)
+        # We also need duration; compute from raw contentDetails above if present.
+        # Modify summary rows to include duration by re-parsing raw to keep code simple.
         videos_rows_with_duration: List[
             Tuple[
                 str,
@@ -456,16 +467,25 @@ class YouTubeChannelETL:
                 Optional[int],
             ]
         ] = []
-        # Map video_id -> duration from rows (last value wins; duplicates unlikely in one batch)
-        duration_map: Dict[str, Optional[str]] = {vid: duration for (vid, *_rest, _raw, duration) in rows}
-        for vid, isrc, title, channel_title, published_at_sql, view_count, like_count, comment_count in summary_rows:
-            duration_val = duration_map.get(vid)
+        for (vid, isrc, title, channel_title, published_at_sql, view_count, like_count, comment_count), (
+            _,
+            _,
+            _,
+            _,
+            raw,
+        ) in zip(summary_rows, rows):
+            try:
+                obj: Dict[str, Any] = json.loads(raw)
+                duration = cast(Optional[str], obj.get("contentDetails", {}).get("duration"))
+            except Exception:
+                duration = None
             videos_rows_with_duration.append(
-                (vid, isrc, title, channel_title, published_at_sql, duration_val, view_count, like_count, comment_count)
+                (vid, isrc, title, channel_title, published_at_sql, duration, view_count, like_count, comment_count)
             )
         if videos_rows_with_duration:
             self._upsert_videos_summary(conn, videos_rows_with_duration)
 
+        # Insert comments if any collected
         if comments_to_insert:
             self._insert_comments(conn, comments_to_insert)
         return raw_count, metrics_count
@@ -478,23 +498,24 @@ class YouTubeChannelETL:
         metrics_total = 0
         try:
             ch_id, uploads, batches = self.extract(channel_url, limit)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             return ETLSummary(channel_url, None, None, 0, 0, 0, [str(e)])
 
         conn = self._connect()
         try:
+            # Acquire daily run lock per channel
             got_lock = self._acquire_daily_lock(conn, ch_id)
             conn.commit()
             if not got_lock:
+                # Already ran today
                 return ETLSummary(channel_url, ch_id, uploads, 0, 0, 0, ["already_ran_today"])
-
+            # Upsert playlist raw details once at start
             try:
                 pl = self.get_playlist_details(uploads)
                 self._upsert_playlist_raw(conn, uploads, pl)
                 conn.commit()
             except Exception as e:  # noqa: BLE001
                 self.logger.warning(f"playlist_details_upsert_failed playlist={uploads}: {e}")
-
             for items in batches:
                 videos_seen += len(items)
                 rows = self.transform(items)
@@ -503,6 +524,7 @@ class YouTubeChannelETL:
                 raw_total += raw_n
                 metrics_total += metrics_n
 
+            # Finalize success
             self._finalize_run(conn, ch_id, "success")
             conn.commit()
         except Exception as e:  # noqa: BLE001

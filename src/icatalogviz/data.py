@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from typing import Iterable, Optional
 
 import pandas as pd
-from sqlalchemy import bindparam, inspect, text
+from sqlalchemy import bindparam, inspect, select, text
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,7 @@ def load_artist_daily_metrics(
     end: Optional[date] = None,
     engine=None,
     chunksize: Optional[int] = None,
+    normalize_aliases: bool = True,
 ) -> pd.DataFrame:
     """
     Load daily YouTube metrics joined to video metadata and song artist names.
@@ -111,7 +112,67 @@ def load_artist_daily_metrics(
         df["date"] = pd.to_datetime(df["date"])  # keep datetime64 for plotting/slicing
         if "published_at" in df.columns:
             df["published_at"] = pd.to_datetime(df["published_at"])
+    # Normalize aliases if requested to unify names (e.g., LuvEnchantingINC → Enchanting)
+    if normalize_aliases and not df.empty:
+        alias_map = _build_artist_alias_map(eng)
+        if alias_map:
+            df["artist_name"] = df["artist_name"].map(lambda n: alias_map.get(str(n), str(n)))
     return df
+
+
+def _build_artist_alias_map(eng) -> dict[str, str]:
+    """Combine alias mapping from DB (artist_aliases → artists) and ENV JSON.
+
+    Returns alias→canonical dict. ENV overrides DB.
+    ENV var: ARTIST_ALIASES_JSON (JSON object)
+    """
+    mapping: dict[str, str] = {}
+
+    # DB mapping if tables exist
+    inspector = inspect(eng)
+    if inspector.has_table("artist_aliases"):
+        # Determine schema shape
+        from sqlalchemy import MetaData, Table
+
+        meta = MetaData()
+        meta.reflect(bind=eng, only=["artist_aliases"])  # type: ignore[arg-type]
+        aliases_tbl: Table = meta.tables["artist_aliases"]  # type: ignore[index]
+        cols = set(aliases_tbl.c.keys())
+        with eng.connect() as conn:
+            if "canonical_name" in cols:
+                # Natural-key schema
+                res = conn.execute(text("SELECT alias, canonical_name FROM artist_aliases WHERE alias <> ''"))
+                for alias, canonical in res:
+                    if alias and canonical:
+                        mapping[str(alias)] = str(canonical)
+            elif inspector.has_table("artists") and "artist_id" in cols:
+                # Legacy schema join
+                from web.etl_helpers import get_table  # type: ignore
+
+                artists_tbl = get_table("artists")
+                stmt = select(aliases_tbl.c.alias, artists_tbl.c.artist_name).select_from(
+                    aliases_tbl.join(artists_tbl, aliases_tbl.c.artist_id == artists_tbl.c.artist_id)
+                )
+                rows = conn.execute(stmt).fetchall()
+                for alias, canonical in rows:
+                    if alias and canonical:
+                        mapping[str(alias)] = str(canonical)
+
+    # ENV overlay
+    try:
+        raw = os.getenv("ARTIST_ALIASES_JSON")
+        if raw:
+            obj = json.loads(raw)
+            for k, v in (obj or {}).items():
+                if k and v:
+                    mapping[str(k)] = str(v)
+    except Exception:
+        pass
+
+    # Case-insensitive keys: add lowercase variants for lookups
+    lower = {k.lower(): v for k, v in mapping.items()}
+    mapping.update(lower)
+    return mapping
 
 
 def compute_kpis(df: pd.DataFrame) -> pd.DataFrame:
@@ -602,3 +663,115 @@ def load_sentiment_daily(
     if not df.empty:
         df["date"] = pd.to_datetime(df["date"])
     return df
+
+
+def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
+    """
+    Quality assurance check for artist count consistency across all data functions.
+
+    This catches bugs where different functions return different artist counts
+    for the same underlying data (like the color mapping bug we found).
+
+    Args:
+        days: Number of days to look back for data
+        engine: Database engine
+
+    Returns:
+        Dictionary with artist counts from each function and consistency status
+    """
+    from datetime import date, timedelta
+
+    from .charts import get_artist_color_map
+
+    eng = _get_engine(engine)
+
+    try:
+        # Load base data
+        recent_data = load_recent_window_days(days=days, engine=eng)
+
+        if len(recent_data) == 0:
+            return {
+                "status": "no_data",
+                "message": f"No data found for last {days} days",
+                "data_artists": 0,
+                "kpi_artists": 0,
+                "sentiment_artists": 0,
+                "color_artists": 0,
+                "revenue_artists": 0,
+                "consistent": True,
+            }
+
+        # Count artists in base data
+        unique_artists = recent_data["artist_name"].dropna().unique()
+        data_count = len(unique_artists)
+
+        # Count artists in KPIs
+        kpis = compute_kpis(recent_data)
+        kpi_count = len(kpis)
+
+        # Count artists in sentiment data
+        end_date = date.today()
+        start_date = end_date - timedelta(days=days)
+        sentiment_data = load_sentiment_daily(start=start_date, end=end_date, engine=eng)
+        sentiment_count = sentiment_data["artist_name"].nunique() if len(sentiment_data) > 0 else 0
+
+        # Count artists in color mapping (test correct usage)
+        colors = get_artist_color_map(unique_artists)
+        color_count = len(colors)
+
+        # Count artists in revenue computation
+        revenue = compute_estimated_revenue(recent_data, rpm_usd=1.0)
+        revenue_count = len(revenue)
+
+        # Check consistency (sentiment can be 0 if no sentiment data exists for the time period)
+        core_counts = [data_count, kpi_count, color_count, revenue_count]
+        core_consistent = len(set(core_counts)) == 1
+
+        # Sentiment is consistent if:
+        # - It's 0 (no sentiment data for this time period) OR
+        # - It matches the core count (sentiment data exists for all artists)
+        sentiment_consistent = sentiment_count == 0 or sentiment_count == data_count
+
+        consistent = core_consistent and sentiment_consistent
+
+        # Generate user-friendly explanation
+        if consistent:
+            if sentiment_count == 0:
+                explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."
+            else:
+                explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
+        else:
+            explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {core_counts}. This indicates a bug in the analytics functions."
+
+        # Temporal consistency check - sentiment data should exist for same time period
+        temporal_issues = []
+        if data_count > 0 and sentiment_count == 0:
+            temporal_issues.append(f"No sentiment data found for {days}-day period despite having {data_count} artists")
+
+        # Check sentiment data recency
+        if len(sentiment_data) > 0:
+            latest_sentiment = sentiment_data["date"].max()
+            latest_main_data = recent_data["date"].max()
+            date_diff = (latest_main_data - latest_sentiment).days
+            if date_diff > 1:  # More than 1 day lag
+                temporal_issues.append(f"Sentiment data is {date_diff} days behind main data")
+
+        return {
+            "status": "success",
+            "data_artists": data_count,
+            "kpi_artists": kpi_count,
+            "sentiment_artists": sentiment_count,
+            "color_artists": color_count,
+            "revenue_artists": revenue_count,
+            "consistent": consistent,
+            "temporal_issues": temporal_issues,
+            "message": (
+                "All artist counts match"
+                if consistent
+                else f"Inconsistent counts - Core: {core_counts}, Sentiment: {sentiment_count}"
+            ),
+            "explanation": f"Core functions: {data_count} artists. Sentiment: {sentiment_count} artists ({'normal - no sentiment data for this period' if sentiment_count == 0 else 'matches core count'})",
+        }
+
+    except Exception as e:
+        return {"status": "error", "message": f"Consistency check failed: {str(e)}", "consistent": False}

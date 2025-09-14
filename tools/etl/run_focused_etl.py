@@ -177,7 +177,7 @@ def run_notebooks(notebook_list: list) -> dict:
             print(f"  Executing {notebook}...")
 
             result = subprocess.run(
-                [sys.executable, "tools/run_notebooks.py", notebook, "--allow-errors"],
+                [sys.executable, "tools/run_notebooks.py", notebook],
                 capture_output=True,
                 text=True,
                 cwd=".",
@@ -211,8 +211,11 @@ def main():
         # Step 2: Validate data quality
         quality_results = validate_data_quality(engine)
 
-        # Step 3: Run analysis notebooks
-        notebooks_to_run = ["notebooks/02_artist_comparison.ipynb", "notebooks/03_appendix_data_quality.ipynb"]
+        # Step 3: Run analysis notebooks (organized under notebooks/analysis and notebooks/quality)
+        notebooks_to_run = [
+            "notebooks/analysis/02_artist_comparison.ipynb",
+            "notebooks/quality/03_appendix_data_quality.ipynb",
+        ]
         notebook_results = run_notebooks(notebooks_to_run)
 
         # Summary report
