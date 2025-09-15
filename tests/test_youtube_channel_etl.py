@@ -122,6 +122,15 @@ def test_batch_upsert_raw_and_metrics_smoke(monkeypatch):
             ),
         )
 
+        # Clear any existing ETL run locks for test channel
+        conn = etl._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM youtube_etl_runs WHERE channel_id = %s", ("UC_TEST_CHANNEL",))
+            conn.commit()
+        finally:
+            conn.close()
+
     # Monkeypatch API methods to avoid network
     ch_id = "UC_TEST_CHANNEL"
     uploads = "UU_TEST_UPLOADS"
@@ -204,6 +213,18 @@ def test_daily_max_semantics(monkeypatch):
                 cursorclass=pymysql.cursors.DictCursor,
             ),
         )
+        
+        # Clear any existing ETL run locks for test channel
+        conn = etl._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM youtube_etl_runs WHERE channel_id = %s", ("UC_TEST2",))
+                # Also clean up any existing test data
+                cur.execute("DELETE FROM youtube_videos WHERE video_id = %s", ("vidX",))
+                cur.execute("DELETE FROM youtube_metrics WHERE video_id = %s", ("vidX",))
+            conn.commit()
+        finally:
+            conn.close()
     ch_id = "UC_TEST2"
     uploads = "UU_TEST2"
     v = "vidX"
@@ -254,6 +275,7 @@ def test_daily_max_semantics(monkeypatch):
                 (v,),
             )
             row = cur.fetchone()
+            assert row is not None, f"No metrics found for video {v} on current date"
             assert row["view_count"] >= 100
     finally:
         conn.close()

@@ -27,13 +27,13 @@ def create_youtube_tables() -> bool:
     """Create all required YouTube tables if they don't exist."""
     logger.info("Creating YouTube tables...")
 
-    # Ensure target database exists (private schema)
+    # Ensure target database exists
     try:
         host = os.getenv("DB_HOST", "127.0.0.1")
         port = int(os.getenv("DB_PORT", "3306"))
         user = os.getenv("DB_USER")
         password = os.getenv("DB_PASS") or ""
-        db_name = os.getenv("DB_NAME_PRIVATE", os.getenv("DB_NAME", "icatalog"))
+        db_name = os.getenv("DB_NAME", "yt_proj")
         conn = pymysql.connect(host=host, port=port, user=user, password=password)
         with conn.cursor() as cur:
             cur.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
@@ -45,7 +45,7 @@ def create_youtube_tables() -> bool:
 
     # Get database engine
     try:
-        engine = get_engine(schema="icatalog_private")
+        engine = get_engine()
         logger.info("Connected to database")
     except Exception as e:  # noqa: BLE001
         logger.error(f"Failed to connect to database: {e}")

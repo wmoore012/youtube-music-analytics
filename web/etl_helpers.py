@@ -77,33 +77,38 @@ def read_sql_safe(sql: str, engine: Engine, **kw):
 # 0.  ENV + ENGINE
 # ──────────────────────────────────────────────────────────────────
 # Always load the canonical .env from repo root without overwriting existing env
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[1]  # web/etl_helpers.py -> repo root
 load_dotenv(dotenv_path=_REPO_ROOT / ".env", override=False)
 
 
-def get_engine(*, echo: bool = False, schema: str = "PUBLIC") -> Engine:
+def get_engine(*, echo: bool = False) -> Engine:
     """
-    Build a SQLAlchemy engine using DB_* env-vars.
+    Build a SQLAlchemy engine using DB_* environment variables from .env file.
+
+    This function creates a database connection to your local YouTube analytics database
+    using the configuration specified in your .env file. It automatically handles
+    connection pooling, SSL settings, and other database parameters.
 
     Args:
-        echo: Whether to echo SQL statements
-        schema: Which schema to connect to - "PUBLIC" or "PRIVATE"
+        echo: Whether to echo SQL statements to console (useful for debugging)
+
+    Returns:
+        SQLAlchemy Engine configured for your local database
 
     Raises:
-        ValueError: If schema is not "PUBLIC" or "PRIVATE"
+        ValueError: If required environment variables are missing
 
-    Works locally, with Cloud-SQL proxy, or with a public-IP instance.
+    Environment Variables Required:
+        DB_HOST: Database host (usually localhost for local development)
+        DB_PORT: Database port (usually 3306 for MySQL)
+        DB_USER: Database username
+        DB_PASS: Database password
+        DB_NAME: Database name (your YouTube analytics database)
+
+    Works with local MySQL, Cloud SQL proxy, or remote MySQL instances.
     """
-    # Validate schema parameter
-    valid_schemas = {"PUBLIC", "PRIVATE"}
-    if schema.upper() not in valid_schemas:
-        raise ValueError(f"Invalid schema '{schema}'. Must be one of: {valid_schemas}")
-
-    # Determine which database to use
-    if schema.upper() == "PRIVATE":
-        db_name = os.getenv("DB_NAME_PRIVATE", os.getenv("DB_NAME", "icatalog"))
-    else:  # PUBLIC (default)
-        db_name = os.getenv("DB_NAME_PUBLIC", "icatalog_public")
+    # Use the unified database name from .env configuration
+    db_name = os.getenv("DB_NAME", "yt_proj")
 
     url = (
         f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
@@ -114,33 +119,30 @@ def get_engine(*, echo: bool = False, schema: str = "PUBLIC") -> Engine:
 
 
 @contextmanager
-def get_connection(which: str = "PUBLIC"):
+def get_connection():
     """
-    Context manager to get a database connection to either PUBLIC or PRIVATE schema.
+    Context manager to get a database connection to your local YouTube analytics database.
 
-    Args:
-        which: Either "PUBLIC" (icatalog_public) or "PRIVATE" (icatalog)
+    This provides a convenient way to get a database connection with automatic
+    cleanup and transaction management. Uses the same .env configuration as get_engine().
 
     Usage:
-        # Read from private database
-        with get_connection("PRIVATE") as conn:
+        # Read data from your YouTube analytics database
+        with get_connection() as conn:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM songs LIMIT 5")
+            cursor.execute("SELECT * FROM youtube_videos LIMIT 5")
             results = cursor.fetchall()
 
-        # Write to public database
-        with get_connection("PUBLIC") as conn:
+        # Write data to your YouTube analytics database
+        with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO songs (...) VALUES (...)")
+            cursor.execute("INSERT INTO youtube_videos (...) VALUES (...)")
             conn.commit()
     """
     import mysql.connector
 
-    # Determine which database to use
-    if which.upper() == "PRIVATE":
-        db_name = os.getenv("DB_NAME_PRIVATE", os.getenv("DB_NAME", "icatalog"))
-    else:  # PUBLIC (default)
-        db_name = os.getenv("DB_NAME_PUBLIC", "icatalog_public")
+    # Use the unified database name from .env configuration
+    db_name = os.getenv("DB_NAME", "yt_proj")
 
     conn = mysql.connector.connect(
         host=os.environ["DB_HOST"],
@@ -1063,10 +1065,10 @@ def get_spotify_track(conn: Connection, isrc: str) -> Optional[Dict[str, Any]]:
 
 def get_tidal_track(conn: Connection, isrc: str) -> Optional[Any]:
     """
-    Get Tidal track data for a given ISRC from the private schema.
+    Get Tidal track data for a given ISRC from your local YouTube analytics database.
 
     Args:
-        conn (Connection): Database connection (should be connected to private schema)
+        conn (Connection): Database connection to your local database
         isrc (str): ISRC code
 
     Returns:
@@ -1074,7 +1076,7 @@ def get_tidal_track(conn: Connection, isrc: str) -> Optional[Any]:
     """
     from sqlalchemy import text
 
-    # Query the private schema table directly with the actual snake_case column names
+    # Query the local database table directly with the actual snake_case column names
     query = text(
         """
         SELECT dsp_record_id, isrc, track_number, disc_number,
@@ -1347,7 +1349,9 @@ def upsert_songs(conn_or_records, records_or_conn=None, conn_or_none=None) -> No
         return
 
     songs_tbl = get_table("songs")
-    from sqlalchemy.dialects.mysql import insert as mysql_insert  # local import to avoid top‑level duplicate
+    from sqlalchemy.dialects.mysql import (
+        insert as mysql_insert,  # local import to avoid top‑level duplicate
+    )
 
     stmt = mysql_insert(songs_tbl).values(records)
 
@@ -1940,6 +1944,7 @@ if __name__ == "__main__":
 
 from datetime import datetime
 
+
 def detect_run_type() -> str:
     """
     Detect if this is a manual run or CRON job based on environment.
@@ -1948,26 +1953,26 @@ def detect_run_type() -> str:
         'cron' if running from cron, 'manual' otherwise
     """
     # Check explicit override from .env
-    explicit_type = os.getenv('ETL_RUN_TYPE')
-    if explicit_type in ['manual', 'cron']:
+    explicit_type = os.getenv("ETL_RUN_TYPE")
+    if explicit_type in ["manual", "cron"]:
         return explicit_type
 
     # Check common CRON environment indicators
-    if os.getenv('CRON_JOB') == '1':
-        return 'cron'
-    if os.getenv('AUTOMATED_RUN') == '1':
-        return 'cron'
-    if not os.getenv('TERM'):  # No terminal usually means automated
-        return 'cron'
-    if os.getenv('USER') == 'root':  # Root user often indicates cron
-        return 'cron'
+    if os.getenv("CRON_JOB") == "1":
+        return "cron"
+    if os.getenv("AUTOMATED_RUN") == "1":
+        return "cron"
+    if not os.getenv("TERM"):  # No terminal usually means automated
+        return "cron"
+    if os.getenv("USER") == "root":  # Root user often indicates cron
+        return "cron"
 
     # Check if running in CI/CD
-    ci_indicators = ['CI', 'CONTINUOUS_INTEGRATION', 'GITHUB_ACTIONS', 'JENKINS_URL']
+    ci_indicators = ["CI", "CONTINUOUS_INTEGRATION", "GITHUB_ACTIONS", "JENKINS_URL"]
     if any(os.getenv(indicator) for indicator in ci_indicators):
-        return 'cron'
+        return "cron"
 
-    return 'manual'
+    return "manual"
 
 
 def start_etl_run(channel_id: str, reason: str = None, engine: Engine = None) -> dict:
@@ -1986,17 +1991,19 @@ def start_etl_run(channel_id: str, reason: str = None, engine: Engine = None) ->
         engine = get_engine()
 
     run_info = {
-        'channel_id': channel_id,
-        'run_date': datetime.now().date(),
-        'started_at': datetime.now(),
-        'run_type': detect_run_type(),
-        'reason': reason or f"ETL run for {channel_id}",
-        'status': 'running'
+        "channel_id": channel_id,
+        "run_date": datetime.now().date(),
+        "started_at": datetime.now(),
+        "run_type": detect_run_type(),
+        "reason": reason or f"ETL run for {channel_id}",
+        "status": "running",
     }
 
     with engine.connect() as conn:
         # Insert or update the run record
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             INSERT INTO youtube_etl_runs
             (channel_id, run_date, started_at, run_type, reason, status)
             VALUES (:channel_id, :run_date, :started_at, :run_type, :reason, :status)
@@ -2007,14 +2014,23 @@ def start_etl_run(channel_id: str, reason: str = None, engine: Engine = None) ->
             status = VALUES(status),
             finished_at = NULL,
             error_message = NULL
-        """), run_info)
+        """
+            ),
+            run_info,
+        )
         conn.commit()
 
     return run_info
 
 
-def finish_etl_run(run_info: dict, status: str = 'success', error_message: str = None,
-                   videos_processed: int = 0, metrics_collected: int = 0, engine: Engine = None):
+def finish_etl_run(
+    run_info: dict,
+    status: str = "success",
+    error_message: str = None,
+    videos_processed: int = 0,
+    metrics_collected: int = 0,
+    engine: Engine = None,
+):
     """
     Log the completion of an ETL run.
 
@@ -2030,7 +2046,9 @@ def finish_etl_run(run_info: dict, status: str = 'success', error_message: str =
         engine = get_engine()
 
     with engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text(
+                """
             UPDATE youtube_etl_runs
             SET finished_at = :finished_at,
                 status = :status,
@@ -2038,15 +2056,18 @@ def finish_etl_run(run_info: dict, status: str = 'success', error_message: str =
                 videos_processed = :videos_processed,
                 metrics_collected = :metrics_collected
             WHERE channel_id = :channel_id AND run_date = :run_date
-        """), {
-            'channel_id': run_info['channel_id'],
-            'run_date': run_info['run_date'],
-            'finished_at': datetime.now(),
-            'status': status,
-            'error_message': error_message,
-            'videos_processed': videos_processed,
-            'metrics_collected': metrics_collected
-        })
+        """
+            ),
+            {
+                "channel_id": run_info["channel_id"],
+                "run_date": run_info["run_date"],
+                "finished_at": datetime.now(),
+                "status": status,
+                "error_message": error_message,
+                "videos_processed": videos_processed,
+                "metrics_collected": metrics_collected,
+            },
+        )
         conn.commit()
 
 
@@ -2065,7 +2086,9 @@ def get_etl_run_summary(days: int = 7, engine: Engine = None) -> pd.DataFrame:
         engine = get_engine()
 
     with engine.connect() as conn:
-        result = conn.execute(text("""
+        result = conn.execute(
+            text(
+                """
             SELECT
                 channel_id,
                 run_date,
@@ -2081,14 +2104,23 @@ def get_etl_run_summary(days: int = 7, engine: Engine = None) -> pd.DataFrame:
             FROM youtube_etl_runs
             WHERE run_date >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
             ORDER BY run_date DESC, started_at DESC
-        """), {'days': days})
+        """
+            ),
+            {"days": days},
+        )
 
         return pd.DataFrame(result.fetchall(), columns=result.keys())
 
 
-def log_etl_attempt(channel_id: str, success: bool, reason: str = None,
-                   error_message: str = None, videos_processed: int = 0,
-                   metrics_collected: int = 0, engine: Engine = None):
+def log_etl_attempt(
+    channel_id: str,
+    success: bool,
+    reason: str = None,
+    error_message: str = None,
+    videos_processed: int = 0,
+    metrics_collected: int = 0,
+    engine: Engine = None,
+):
     """
     Convenience function to log a complete ETL attempt in one call.
 
@@ -2102,5 +2134,5 @@ def log_etl_attempt(channel_id: str, success: bool, reason: str = None,
         engine: Database engine (will create if None)
     """
     run_info = start_etl_run(channel_id, reason, engine)
-    status = 'success' if success else 'failed'
+    status = "success" if success else "failed"
     finish_etl_run(run_info, status, error_message, videos_processed, metrics_collected, engine)

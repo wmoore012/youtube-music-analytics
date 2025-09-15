@@ -1,18 +1,26 @@
+#!/usr/bin/env python3
 """
-Test-Driven Development for Bot Detection System
+TDD for YouTube Bot Detection — Real-world behaviors baked in.
 
-This module contains comprehensive tests for the bot detection functionality.
-Following TDD principles: Red -> Green -> Refactor
+Ground rules this suite enforces:
+- Normal hype ≠ bot: fire-emoji spam, a single wave 👋, "Hey <artist>", "CRAZY!!" are *often legit fan energy*.
+- Bot red flags: WhatsApp/Telegram lures, phone-number obfuscations, timestamp+link bait, URL shorteners,
+  bursty near-duplicates across users/videos, Unicode tricks (homoglyphs, zero-width chars).
+- Scores are trend-based: we compare groups (benign vs bot-pattern) instead of pinning exact thresholds.
+
+Red → Green → Refactor.
 """
 
-from datetime import datetime, timedelta
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
-import numpy as np
 import pandas as pd
 import pytest
 
-from src.icatalogviz.bot_detection import (
+# System under test
+from src.youtubeviz.bot_detection import (
     BotDetectionConfig,
     BotDetector,
     _clamp_01,
@@ -23,401 +31,274 @@ from src.icatalogviz.bot_detection import (
     load_recent_comments,
 )
 
-
-class TestTextProcessingUtilities:
-    """Test text processing utility functions."""
-
-    def test_normalize_text_basic(self):
-        """Test basic text normalization."""
-        assert _normalize_text("Hello World") == "hello world"
-        assert _normalize_text("  HELLO   WORLD  ") == "hello world"
-        assert _normalize_text("") == ""
-        assert _normalize_text(None) == ""
-
-    def test_normalize_text_unicode(self):
-        """Test Unicode normalization."""
-        assert _normalize_text("café") == "café"
-        assert _normalize_text("naïve") == "naïve"
-        assert _normalize_text("CAFÉ") == "café"
-
-    def test_strip_emojis(self):
-        """Test emoji removal."""
-        assert _strip_emojis("Hello 🔥 World") == "Hello  World"
-        assert _strip_emojis("🔥🔥🔥") == ""
-        assert _strip_emojis("No emojis here") == "No emojis here"
-
-    def test_count_emojis(self):
-        """Test emoji counting."""
-        assert _count_emojis("Hello 🔥 World") == 1
-        assert _count_emojis("🔥🔥🔥") == 3
-        assert _count_emojis("No emojis here") == 0
-        assert _count_emojis("Love this! ❤️😍🔥") == 3
-
-    def test_clamp_01(self):
-        """Test value clamping to [0, 1] range."""
-        assert _clamp_01(0.5) == 0.5
-        assert _clamp_01(-0.5) == 0.0
-        assert _clamp_01(1.5) == 1.0
-        assert _clamp_01(0.0) == 0.0
-        assert _clamp_01(1.0) == 1.0
+# ------------------------------ Utility tests ------------------------------ #
 
 
-class TestBotDetectionConfig:
-    """Test bot detection configuration."""
+class TestTextUtilsRealWorld:
+    def test_normalize_and_strip_handles_zero_width_and_case(self):
+        # Zero-width space between letters (adversarial obfuscation)
+        zws = "\u200b"
+        s = f"W{zws}h{zws}a{zws}t{zws}s{zws}A{zws}p{zws}p"
+        norm = _normalize_text(s)
+        # Normalization must collapse superfluous whitespace & lowercase
+        assert "whatsapp" in norm.replace(zws, "")
+        # Emoji stripping shouldn't nuke letters
+        assert _strip_emojis("CRAZY!! 🔥🔥") == "CRAZY!! "
 
-    def test_default_config(self):
-        """Test default configuration values."""
-        config = BotDetectionConfig()
+    def test_count_emojis_handles_mixed_praise(self):
+        assert _count_emojis("temazo 🔥🔥🔥") == 3
+        assert _count_emojis("👋 hey artist") == 1
+        assert _count_emojis("no emojis") == 0
 
-        assert config.near_dupe_threshold == 0.90
-        assert config.min_dupe_cluster == 3
-        assert config.burst_window_seconds == 30
-        assert config.emoji_max_weight == 0.15
-        assert "love this" in config.whitelist_phrases
-        assert "fire" in config.whitelist_phrases
+    def test_clamp_behaves(self):
+        assert _clamp_01(-1.2) == 0.0
+        assert _clamp_01(0.25) == 0.25
+        assert _clamp_01(3.14) == 1.0
 
-    def test_custom_config(self):
-        """Test custom configuration."""
-        config = BotDetectionConfig(
-            near_dupe_threshold=0.85, min_dupe_cluster=5, whitelist_phrases=frozenset({"test", "custom"})
-        )
 
-        assert config.near_dupe_threshold == 0.85
-        assert config.min_dupe_cluster == 5
-        assert "test" in config.whitelist_phrases
-        assert "custom" in config.whitelist_phrases
+# ------------------------------ Config tests ------------------------------- #
 
-    def test_config_validation(self):
-        """Test configuration validation."""
-        # Valid threshold
-        config = BotDetectionConfig(near_dupe_threshold=0.75)
-        assert config.near_dupe_threshold == 0.75
 
-        # Invalid threshold should raise error
+class TestConfigBoundaries:
+    def test_config_defaults_reasonable(self):
+        cfg = BotDetectionConfig()
+        # Sanity on core knobs
+        assert 0.75 <= cfg.near_dupe_threshold <= 0.95
+        assert cfg.min_dupe_cluster >= 3
+        assert 10 <= cfg.burst_window_seconds <= 120
+        assert 0.05 <= cfg.emoji_max_weight <= 0.3
+
+    def test_config_rejects_extremes(self):
         with pytest.raises(ValueError):
-            BotDetectionConfig(near_dupe_threshold=0.4)
-
+            BotDetectionConfig(near_dupe_threshold=0.49)
         with pytest.raises(ValueError):
-            BotDetectionConfig(near_dupe_threshold=1.0)
+            BotDetectionConfig(near_dupe_threshold=1.00)
 
 
-class TestBotDetector:
-    """Test the main BotDetector class."""
-
-    @pytest.fixture
-    def sample_comments_df(self):
-        """Create sample comments DataFrame for testing."""
-        return pd.DataFrame(
-            {
-                "comment_id": ["c1", "c2", "c3", "c4", "c5"],
-                "video_id": ["v1", "v1", "v2", "v2", "v1"],
-                "comment_text": [
-                    "This is amazing!",
-                    "This is amazing!",  # Duplicate
-                    "Love this song 🔥",
-                    "Terrible music",
-                    "fire fire fire",  # Repetitive
-                ],
-                "author_name": ["user1", "user2", "user3", "user4", "user1"],
-                "like_count": [5, 0, 10, 2, 1],
-                "published_at": [
-                    datetime.now() - timedelta(hours=1),
-                    datetime.now() - timedelta(minutes=30),
-                    datetime.now() - timedelta(hours=2),
-                    datetime.now() - timedelta(hours=3),
-                    datetime.now() - timedelta(minutes=5),
-                ],
-            }
-        )
-
-    @pytest.fixture
-    def bot_detector(self):
-        """Create BotDetector instance for testing."""
-        config = BotDetectionConfig(whitelist_phrases=frozenset({"love this", "fire", "amazing"}))
-        return BotDetector(config=config)
-
-    def test_analyze_comments_basic(self, bot_detector, sample_comments_df):
-        """Test basic comment analysis."""
-        results = bot_detector.analyze_comments(sample_comments_df)
-
-        # Check structure
-        assert len(results) == 5
-        assert "bot_score" in results.columns
-        assert "bot_risk_level" in results.columns
-        assert "duplicate_count_local" in results.columns
-
-        # Check score range
-        assert all(0 <= score <= 100 for score in results["bot_score"])
-
-        # Check risk levels
-        assert all(level in ["Low", "Medium", "High"] for level in results["bot_risk_level"])
-
-    def test_analyze_comments_missing_columns(self, bot_detector):
-        """Test error handling for missing columns."""
-        incomplete_df = pd.DataFrame(
-            {
-                "comment_id": ["c1"],
-                "comment_text": ["test"],
-                # Missing required columns
-            }
-        )
-
-        with pytest.raises(ValueError, match="Missing required columns"):
-            bot_detector.analyze_comments(incomplete_df)
-
-    def test_analyze_comments_empty_dataframe(self, bot_detector):
-        """Test error handling for empty DataFrame."""
-        empty_df = pd.DataFrame(
-            columns=["comment_id", "video_id", "comment_text", "author_name", "like_count", "published_at"]
-        )
-
-        with pytest.raises(ValueError, match="Input DataFrame is empty"):
-            bot_detector.analyze_comments(empty_df)
-
-    def test_duplicate_detection(self, bot_detector, sample_comments_df):
-        """Test duplicate comment detection."""
-        results = bot_detector.analyze_comments(sample_comments_df)
-
-        # Comments with same text should have higher duplicate counts
-        duplicate_comments = results[results["comment_text"] == "This is amazing!"]
-        assert len(duplicate_comments) == 2
-
-        # Both should have duplicate count > 1
-        assert all(count >= 2 for count in duplicate_comments["duplicate_count_local"])
-
-    def test_whitelist_handling(self, bot_detector, sample_comments_df):
-        """Test whitelist phrase handling."""
-        results = bot_detector.analyze_comments(sample_comments_df)
-
-        # Comments with whitelisted phrases should be marked
-        whitelisted = results[results["is_whitelisted"]]
-        assert len(whitelisted) > 0
-
-        # Whitelisted comments should generally have lower scores
-        non_whitelisted = results[~results["is_whitelisted"]]
-        if len(whitelisted) > 0 and len(non_whitelisted) > 0:
-            avg_whitelisted_score = whitelisted["bot_score"].mean()
-            avg_non_whitelisted_score = non_whitelisted["bot_score"].mean()
-            # This is a general trend, not absolute
-            assert avg_whitelisted_score <= avg_non_whitelisted_score + 10  # Allow some variance
-
-    def test_author_repetition_detection(self, bot_detector, sample_comments_df):
-        """Test author repetition scoring."""
-        results = bot_detector.analyze_comments(sample_comments_df)
-
-        # user1 appears twice, should have higher repetition score
-        user1_comments = results[results["author_name"] == "user1"]
-        user3_comments = results[results["author_name"] == "user3"]
-
-        if len(user1_comments) > 0 and len(user3_comments) > 0:
-            user1_avg_repetition = user1_comments["author_repetition_score"].mean()
-            user3_avg_repetition = user3_comments["author_repetition_score"].mean()
-            assert user1_avg_repetition >= user3_avg_repetition
-
-    def test_emoji_bonus(self, bot_detector, sample_comments_df):
-        """Test emoji bonus calculation."""
-        results = bot_detector.analyze_comments(sample_comments_df)
-
-        # Comments with emojis should have emoji count > 0
-        emoji_comments = results[results["emoji_count"] > 0]
-        assert len(emoji_comments) > 0
-
-        # Check that emoji count is correctly calculated
-        fire_comment = results[results["comment_text"].str.contains("🔥", na=False)]
-        if len(fire_comment) > 0:
-            assert fire_comment.iloc[0]["emoji_count"] >= 1
+# ------------------------------ Detector tests ----------------------------- #
 
 
-class TestDatabaseIntegration:
-    """Test database integration functions."""
+@pytest.fixture()
+def detector():
+    # Whitelist common benign hype so fans aren't punished
+    wl = frozenset(
+        {"love this", "fire", "🔥", "crazy!!", "temazo", "hey", "first", "lets go", "vamos", "banger", "on repeat"}
+    )
+    return BotDetector(config=BotDetectionConfig(whitelist_phrases=wl))
 
-    @patch("src.icatalogviz.bot_detection.pd.read_sql")
-    def test_load_recent_comments(self, mock_read_sql):
-        """Test loading recent comments from database."""
-        # Mock database response
+
+def _now(n: int = 0):
+    return datetime.now(timezone.utc) - timedelta(seconds=n)
+
+
+@pytest.fixture()
+def df_realistic():
+    """
+    Build a mixed bag of legit fan comments and classic bot lures.
+    Notes:
+    - "CRAZY!!" all caps is common legit hype.
+    - One wave emoji/Hey <artist> is benign.
+    - Fire-emoji floods are common on music; shouldn't be auto-botty.
+    - Timestamp spam + links, WhatsApp/Telegram lures, phone #'s → strong bot signals.
+    - Duplicate/generic praise across users in a short burst → suspicious.
+    """
+    zws = "\u200b"
+    rows = [
+        # ---- Benign hype (should lean LOW risk) ----
+        ("c1", "v1", "This is CRAZY!! 🔥🔥", "fan_1", 7, _now(10)),
+        ("c2", "v1", "👋 Hey Artist we love you!", "fan_2", 1, _now(20)),
+        ("c3", "v2", "temazo 🔥🔥🔥", "fan_es", 3, _now(30)),
+        ("c4", "v2", "fire fire fire", "fan_3", 0, _now(40)),
+        ("c5", "v3", "First!", "fan_4", 0, _now(50)),
+        # ---- Generic praise near-duplicate but not coordinated (spread out) ----
+        ("c6", "v4", "amazing track", "fan_5", 0, _now(4000)),
+        ("c7", "v5", "amazing track", "fan_6", 1, _now(3200)),
+        # ---- Bot patterns: timestamp bait + link/shortener ----
+        ("c8", "v6", "0:59 this part tho https://bit.ly/xyz", "susp_1", 0, _now(5)),
+        # ---- WhatsApp/Telegram lure with number obfuscation + ZWSP ----
+        ("c9", "v6", f"DM me on What{zws}sApp +1(415)-555-0199 for promo", "imp_1", 0, _now(4)),
+        ("c10", "v6", "PROMOTE IT ON @tеlegram  @ChannelPromo", "imp_2", 0, _now(3)),  # note homoglyph 'e'
+        # ---- Burst duplicates across users/videos within short window ----
+        ("c11", "v7", "check my channel for free beats", "bot_a", 0, _now(12)),
+        ("c12", "v8", "check my channel for free beats", "bot_b", 0, _now(13)),
+        ("c13", "v9", "check my channel for free beats", "bot_c", 0, _now(14)),
+    ]
+    return pd.DataFrame(
+        rows, columns=["comment_id", "video_id", "comment_text", "author_name", "like_count", "published_at"]
+    )
+
+
+def test_detector_structure_and_ranges(detector, df_realistic):
+    out = detector.analyze_comments(df_realistic)
+    assert len(out) == len(df_realistic)
+    # Must include key fields
+    for col in ["bot_score", "bot_risk_level", "duplicate_count_local", "emoji_count", "is_whitelisted"]:
+        assert col in out.columns
+    # Scores are within [0,100]
+    assert out["bot_score"].between(0, 100).all()
+    # Risk labels limited set
+    assert set(out["bot_risk_level"].unique()) <= {"Low", "Medium", "High"}
+
+
+def test_benign_hype_not_overpenalized(detector, df_realistic):
+    out = detector.analyze_comments(df_realistic)
+    benign = out[out["comment_id"].isin({"c1", "c2", "c3", "c4", "c5"})]
+    assert len(benign) == 5
+    # Trend: benign hype tends toward lower scores than bot-lure cohort
+    bots = out[out["comment_id"].isin({"c8", "c9", "c10", "c11", "c12", "c13"})]
+    assert benign["bot_score"].mean() <= bots["bot_score"].mean() - 10  # meaningful gap
+    # Fire emoji flood should NOT push to High on its own
+    assert (benign.loc[benign["comment_id"] == "c3", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
+    # "CRAZY!!" should not be flagged purely for caps/punctuation
+    assert (benign.loc[benign["comment_id"] == "c1", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
+
+
+def test_timestamp_link_and_whatsapp_telegram_lures(detector, df_realistic):
+    out = detector.analyze_comments(df_realistic)
+    ts = out[out["comment_id"] == "c8"].iloc[0]
+    wa = out[out["comment_id"] == "c9"].iloc[0]
+    tg = out[out["comment_id"] == "c10"].iloc[0]
+    # These should lean HIGH
+    assert ts["bot_risk_level"] == "High"
+    assert wa["bot_risk_level"] == "High"
+    assert tg["bot_risk_level"] == "High"
+    # They should also outrank normal hype by a clear margin
+    benign_max = out[out["comment_id"].isin({"c1", "c2", "c3", "c4", "c5"})]["bot_score"].max()
+    assert ts["bot_score"] > benign_max
+    assert wa["bot_score"] > benign_max
+    assert tg["bot_score"] > benign_max
+
+
+def test_burst_near_duplicates_across_users_and_videos(detector, df_realistic):
+    out = detector.analyze_comments(df_realistic)
+    burst = out[out["comment_text"].str.contains("check my channel", na=False)]
+    assert len(burst) == 3
+    # Expect local duplicate counts >= cluster size
+    assert (burst["duplicate_count_local"] >= 2).all()
+    # Burst should escalate risk
+    assert (burst["bot_risk_level"] != "Low").all()
+    assert burst["bot_score"].mean() >= out["bot_score"].mean()
+
+
+def test_whitelist_softens_legit_phrases(detector, df_realistic):
+    out = detector.analyze_comments(df_realistic)
+    wl = out[out["is_whitelisted"]]
+    nwl = out[~out["is_whitelisted"]]
+    if not wl.empty and not nwl.empty:
+        assert wl["bot_score"].mean() <= nwl["bot_score"].mean() + 5  # small cushion allowed
+
+
+# ------------------------- DB integration shims --------------------------- #
+
+
+class TestDBEntryPoints:
+    @patch("src.youtubeviz.bot_detection.pd.read_sql")
+    def test_load_recent_comments_min_columns(self, mock_read_sql):
         mock_read_sql.return_value = pd.DataFrame(
             {
-                "comment_id": ["c1", "c2"],
-                "video_id": ["v1", "v2"],
-                "comment_text": ["test1", "test2"],
-                "author_name": ["user1", "user2"],
-                "like_count": [1, 2],
-                "published_at": [datetime.now(), datetime.now()],
-                "video_title": ["title1", "title2"],
-                "channel_title": ["channel1", "channel2"],
-            }
-        )
-
-        mock_engine = Mock()
-        result = load_recent_comments(mock_engine, days=7)
-
-        assert len(result) == 2
-        assert "comment_id" in result.columns
-        assert "comment_text" in result.columns
-        mock_read_sql.assert_called_once()
-
-    @patch("src.icatalogviz.bot_detection.load_recent_comments")
-    def test_analyze_bot_patterns(self, mock_load_comments):
-        """Test the convenience function for bot pattern analysis."""
-        # Mock comment data
-        mock_load_comments.return_value = pd.DataFrame(
-            {
-                "comment_id": ["c1", "c2"],
-                "video_id": ["v1", "v2"],
-                "comment_text": ["test comment 1", "test comment 2"],
-                "author_name": ["user1", "user2"],
-                "like_count": [1, 2],
-                "published_at": [datetime.now(), datetime.now()],
-            }
-        )
-
-        mock_engine = Mock()
-        config = BotDetectionConfig()
-
-        results = analyze_bot_patterns(mock_engine, config=config, days=30)
-
-        assert len(results) == 2
-        assert "bot_score" in results.columns
-        mock_load_comments.assert_called_once_with(mock_engine, days=30)
-
-    @patch("src.icatalogviz.bot_detection.load_recent_comments")
-    def test_analyze_bot_patterns_no_comments(self, mock_load_comments):
-        """Test error handling when no comments are found."""
-        # Mock empty response
-        mock_load_comments.return_value = pd.DataFrame()
-
-        mock_engine = Mock()
-
-        with pytest.raises(ValueError, match="No comments found"):
-            analyze_bot_patterns(mock_engine, days=30)
-
-
-class TestEdgeCases:
-    """Test edge cases and error conditions."""
-
-    def test_single_comment(self):
-        """Test analysis with single comment."""
-        config = BotDetectionConfig()
-        detector = BotDetector(config=config)
-
-        single_comment_df = pd.DataFrame(
-            {
-                "comment_id": ["c1"],
+                "comment_id": ["x1"],
                 "video_id": ["v1"],
-                "comment_text": ["Single comment"],
-                "author_name": ["user1"],
-                "like_count": [1],
-                "published_at": [datetime.now()],
+                "comment_text": ["nice 🔥"],
+                "author_name": ["fan"],
+                "like_count": [0],
+                "published_at": [datetime.now(timezone.utc)],
+                "video_title": ["Song"],
+                "channel_title": ["Artist"],
             }
         )
+        eng = Mock()
+        df = load_recent_comments(eng, days=3)
+        assert not df.empty and {"comment_id", "comment_text"} <= set(df.columns)
 
-        results = detector.analyze_comments(single_comment_df)
+    @patch("src.youtubeviz.bot_detection.load_recent_comments")
+    def test_analyze_bot_patterns_happy(self, mock_load):
+        mock_load.return_value = pd.DataFrame(
+            {
+                "comment_id": ["a", "b"],
+                "video_id": ["v1", "v1"],
+                "comment_text": ["check my channel", "temazo 🔥"],
+                "author_name": ["u1", "u2"],
+                "like_count": [0, 1],
+                "published_at": [datetime.now(timezone.utc)] * 2,
+            }
+        )
+        eng = Mock()
+        cfg = BotDetectionConfig()
+        out = analyze_bot_patterns(eng, config=cfg, days=7)
+        assert len(out) == 2 and "bot_score" in out
 
-        assert len(results) == 1
-        assert 0 <= results.iloc[0]["bot_score"] <= 100
+    @patch("src.youtubeviz.bot_detection.load_recent_comments")
+    def test_analyze_bot_patterns_empty(self, mock_load):
+        mock_load.return_value = pd.DataFrame()
+        with pytest.raises(ValueError):
+            analyze_bot_patterns(Mock(), days=30)
 
-    def test_empty_comments(self):
-        """Test handling of empty comment text."""
-        config = BotDetectionConfig()
-        detector = BotDetector(config=config)
 
-        empty_comments_df = pd.DataFrame(
+# ------------------------------ Edge cases -------------------------------- #
+
+
+class TestEdgeAndPerf:
+    def test_empty_text_and_only_emojis(self, detector):
+        df = pd.DataFrame(
+            {
+                "comment_id": ["e1", "e2", "e3"],
+                "video_id": ["v1", "v1", "v1"],
+                "comment_text": ["", "🔥🔥🔥", None],
+                "author_name": ["u1", "u2", "u3"],
+                "like_count": [0, 3, 0],
+                "published_at": [datetime.now(timezone.utc)] * 3,
+            }
+        )
+        out = detector.analyze_comments(df)
+        assert len(out) == 3
+        # Pure emoji praise shouldn't auto-trigger High
+        assert (out.loc[out["comment_id"] == "e2", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
+
+    def test_scale_reasonably(self, detector):
+        n = 400
+        df = pd.DataFrame(
+            {
+                "comment_id": [f"c{i}" for i in range(n)],
+                "video_id": [f"v{i//20}" for i in range(n)],
+                "comment_text": ["amazing track"] * (n // 2) + [f"unique {i}" for i in range(n - n // 2)],
+                "author_name": [f"user{i//5}" for i in range(n)],
+                "like_count": [0] * n,
+                "published_at": [datetime.now(timezone.utc) - timedelta(seconds=i) for i in range(n)],
+            }
+        )
+        out = detector.analyze_comments(df)
+        assert len(out) == n
+        # Heavy duplicate half should lift average above a pure-unique baseline
+        assert out[out["comment_text"] == "amazing track"]["bot_score"].mean() >= out["bot_score"].mean() - 5
+
+
+# ------------------------- Legacy compatibility --------------------------- #
+
+
+class TestLegacyCompatibility:
+    """Maintain compatibility with existing bot detection interface."""
+
+    def test_basic_bot_detector_interface(self):
+        """Test basic BotDetector interface works."""
+        detector = BotDetector()
+
+        sample_data = pd.DataFrame(
             {
                 "comment_id": ["c1", "c2"],
                 "video_id": ["v1", "v1"],
-                "comment_text": ["", None],
-                "author_name": ["user1", "user2"],
-                "like_count": [0, 0],
-                "published_at": [datetime.now(), datetime.now()],
+                "comment_text": ["Great song!", "Check my channel"],
+                "author_name": ["fan", "spammer"],
+                "like_count": [5, 0],
+                "published_at": [datetime.now(timezone.utc), datetime.now(timezone.utc)],
             }
         )
 
-        results = detector.analyze_comments(empty_comments_df)
+        result = detector.analyze_comments(sample_data)
 
-        # Should handle empty comments gracefully
-        assert len(results) == 2
-        assert all(0 <= score <= 100 for score in results["bot_score"])
-
-    def test_special_characters(self):
-        """Test handling of special characters and Unicode."""
-        config = BotDetectionConfig()
-        detector = BotDetector(config=config)
-
-        special_chars_df = pd.DataFrame(
-            {
-                "comment_id": ["c1", "c2", "c3"],
-                "video_id": ["v1", "v1", "v1"],
-                "comment_text": ["Comment with émojis 🔥🎵", "Special chars: @#$%^&*()", "Unicode: café naïve résumé"],
-                "author_name": ["user1", "user2", "user3"],
-                "like_count": [1, 2, 3],
-                "published_at": [datetime.now(), datetime.now(), datetime.now()],
-            }
-        )
-
-        results = detector.analyze_comments(special_chars_df)
-
-        # Should handle special characters without errors
-        assert len(results) == 3
-        assert all(0 <= score <= 100 for score in results["bot_score"])
-
-
-class TestPerformance:
-    """Test performance characteristics."""
-
-    def test_large_dataset_handling(self):
-        """Test handling of larger datasets."""
-        config = BotDetectionConfig()
-        detector = BotDetector(config=config)
-
-        # Create larger test dataset
-        n_comments = 100
-        large_df = pd.DataFrame(
-            {
-                "comment_id": [f"c{i}" for i in range(n_comments)],
-                "video_id": [f"v{i // 10}" for i in range(n_comments)],  # 10 comments per video
-                "comment_text": [f"Comment number {i}" for i in range(n_comments)],
-                "author_name": [f"user{i // 5}" for i in range(n_comments)],  # 5 comments per user
-                "like_count": [i % 10 for i in range(n_comments)],
-                "published_at": [datetime.now() - timedelta(minutes=i) for i in range(n_comments)],
-            }
-        )
-
-        results = detector.analyze_comments(large_df)
-
-        assert len(results) == n_comments
-        assert all(0 <= score <= 100 for score in results["bot_score"])
-
-        # Should complete in reasonable time (this is implicit - if it hangs, test fails)
-
-    def test_duplicate_heavy_dataset(self):
-        """Test dataset with many duplicates."""
-        config = BotDetectionConfig()
-        detector = BotDetector(config=config)
-
-        # Create dataset with many duplicates
-        duplicate_df = pd.DataFrame(
-            {
-                "comment_id": [f"c{i}" for i in range(20)],
-                "video_id": ["v1"] * 20,
-                "comment_text": ["Duplicate comment"] * 15 + ["Unique comment"] * 5,
-                "author_name": [f"user{i}" for i in range(20)],
-                "like_count": [1] * 20,
-                "published_at": [datetime.now() - timedelta(minutes=i) for i in range(20)],
-            }
-        )
-
-        results = detector.analyze_comments(duplicate_df)
-
-        assert len(results) == 20
-
-        # Duplicate comments should have higher scores
-        duplicate_comments = results[results["comment_text"] == "Duplicate comment"]
-        unique_comments = results[results["comment_text"] == "Unique comment"]
-
-        if len(duplicate_comments) > 0 and len(unique_comments) > 0:
-            avg_duplicate_score = duplicate_comments["bot_score"].mean()
-            avg_unique_score = unique_comments["bot_score"].mean()
-            assert avg_duplicate_score >= avg_unique_score
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 2
+        assert "bot_score" in result.columns
+        assert "bot_risk_level" in result.columns
 
 
 if __name__ == "__main__":

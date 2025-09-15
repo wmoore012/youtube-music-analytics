@@ -5,7 +5,7 @@ import os
 
 
 def test_get_artist_color_map_stable_and_env_override(monkeypatch):
-    from icatalogviz.charts import get_artist_color_map
+    from youtubeviz.charts import get_artist_color_map
 
     artists = ["B", "A", "C"]
     # No env → palette assigned deterministically by sorted order
@@ -22,7 +22,7 @@ def test_get_artist_color_map_stable_and_env_override(monkeypatch):
 def test_read_rpm_from_env_and_compute(monkeypatch):
     import pandas as pd
 
-    from icatalogviz.data import compute_estimated_revenue, read_rpm_from_env
+    from youtubeviz.data import compute_estimated_revenue, read_rpm_from_env
 
     # Default RPM via env
     monkeypatch.setenv("REVENUE_RPM_DEFAULT", "4.0")

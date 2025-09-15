@@ -34,6 +34,8 @@
 ### Environment Variables (.env)
 - **Global control**: Any variable users might want to change goes in .env
 - **Clear naming**: Use descriptive, consistent variable names
+- **Channel URLs**: Store as `YT_ARTISTNAME_YT` for automatic parsing by cleanup tools
+- **Analysis type**: Use `CHANNEL_ANALYSIS_TYPE` to configure cleanup behavior
 - **Documentation**: Comment all environment variables with examples
 - **No hardcoded values**: Extract magic numbers and strings to configuration
 
@@ -112,6 +114,21 @@ def fetch_video_data(video_id: str) -> dict:
     """
 ```
 
+## Database Cleanup & Maintenance Standards
+
+### Channel Configuration Management
+- **Automatic parsing**: Channel URLs in .env are automatically parsed by cleanup tools
+- **Configuration validation**: Always validate .env channels against database before cleanup
+- **Backup warnings**: Show serious warnings about irreversible data deletion operations
+- **Step-by-step confirmation**: Get explicit user confirmation with reasoning for each deletion
+- **Human-readable SQL**: Format all SQL queries with proper spacing and newlines
+
+### Data Quality Integration
+- **Cleanup in ETL**: Run cleanup scripts as part of standard ETL pipeline
+- **Test integration**: Database cleanup runs in tests to ensure clean data before notebooks
+- **Quality-first notebooks**: Run quality notebook before analysis notebooks
+- **Unexpected data detection**: Alert users when unknown channels appear in database
+
 ## Anti-Patterns to Avoid
 
 ### Code Smells
@@ -120,12 +137,14 @@ def fetch_video_data(video_id: str) -> dict:
 - **Magic numbers**: Hardcoded values without explanation
 - **Boolean parameters**: Use enums or descriptive strings instead
 - **Fallback code**: If something is required, make it explicit
+- **Vague comments**: Replace "Delete from table" with specific reasoning and impact
 
 ### Bad Practices
 - **Complex menu language**: Use simple, clear terms in interfaces
 - **Assumption-driven design**: Ask questions when requirements are unclear
 - **Copy-paste programming**: Extract common patterns into helpers
 - **Inconsistent naming**: Stick to established conventions throughout
+- **Hardcoded channel lists**: Always use .env configuration for channel management
 
 ## Music Industry Considerations
 

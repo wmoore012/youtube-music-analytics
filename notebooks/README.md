@@ -63,9 +63,9 @@ Transform YouTube data into actionable insights with interactive visualizations,
 ### Code Organization
 ```python
 # Standard imports and configuration
-from icatalogviz.utils import safe_head, filter_artists
-from icatalogviz.charts import views_over_time_plotly, artist_compare_altair
-from icatalogviz.data import load_recent_window_days, compute_kpis
+from youtubeviz.utils import safe_head, filter_artists
+from youtubeviz.charts import views_over_time_plotly, artist_compare_altair
+from youtubeviz.data import load_recent_window_days, compute_kpis
 
 # Artist selection (customize for your analysis)
 ARTISTS = [
@@ -119,7 +119,7 @@ GROWTH_RATE_MINIMUM=0.05
 
 ### Quality Standards
 - **Pre-commit hooks**: Automatically strip outputs with `pre-commit install`
-- **Modular design**: Reusable code goes in `icatalogviz` package
+- **Modular design**: Reusable code goes in `youtubeviz` package
 - **Error handling**: Graceful failures with clear user messages
 - **Documentation**: Every complex analysis includes explanatory text
 
@@ -140,3 +140,45 @@ GROWTH_RATE_MINIMUM=0.05
 ---
 
 **Ready to dive in?** Start with `analysis/01_descriptive_overview.ipynb` for a comprehensive portfolio view, then explore individual artists with the deep dive notebooks.
+## 🧭 Editable vs Executed
+
+- `editable/`: Authoring notebooks you open and run in Jupyter. Keep these short, story-first, and output-light.
+- `executed/`: Auto-generated results (executed `.ipynb` and `.md` summaries) produced by `execute_*.py` and CI.
+
+This separation keeps authoring clean while preserving auditable outputs. If CI runs your notebooks, it writes the
+human-friendly markdown summaries here (e.g., `02_artist_comparison_results.md`).
+
+## 🎭 Story Blocks (Charts + Human Narrative, Side-by-Side)
+
+Use the storytelling helper to place interactive charts next to executive-friendly bullets in the same notebook cell:
+
+```python
+from youtubeviz.storytelling import story_block, quick_takeaways
+from youtubeviz.charts import views_over_time_advanced
+from youtubeviz.data import load_recent_window_days
+
+ARTISTS = ["Flyana Boss", "COBRAH", "Raiche"]
+df = load_recent_window_days(artists=ARTISTS, days=90)
+
+fig = views_over_time_advanced(
+    df,
+    date_col="date",
+    value_col="views",
+    group_col="artist_name",
+    rolling_window=7,
+    highlight_artists=["Flyana Boss"],
+)
+
+bullets = quick_takeaways(
+    artist="Flyana Boss", last_7d_change_pct=32.4, engagement_rate=5.8, standout_video="You Wish"
+)
+story_block(
+    fig,
+    title="🚀 Flyana Boss is accelerating — 7‑day momentum up",
+    bullets=bullets,
+    caption="Recommendation: accelerate collab outreach + Shorts budget this week",
+)
+```
+
+Tip: Repeat `story_block` across descriptive (what happened), prescriptive (what to do), and predictive (what’s next)
+sections to keep analysis fun, human, and visually grounded.

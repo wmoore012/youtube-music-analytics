@@ -27,7 +27,7 @@ def run_channel_etl(channel_url: str, limit: Optional[int] = None) -> ETLSummary
         db_port=int(os.getenv("DB_PORT", "3306")),
         db_user=os.getenv("DB_USER") or "",
         db_pass=os.getenv("DB_PASS") or "",
-        db_name=os.getenv("DB_NAME_PRIVATE") or os.getenv("DB_NAME") or "",
+        db_name=os.getenv("DB_NAME") or "",
     )
     return etl.run_for_channel(channel_url, limit=limit)
 

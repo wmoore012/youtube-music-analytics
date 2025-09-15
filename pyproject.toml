@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "icatalogviz"
+name = "youtubeviz"
 version = "0.1.0"
-description = "Helper lib for iCatalog notebooks (viz + utils)"
+description = "Helper library for YouTube analytics notebooks (visualizations + utilities)"
 requires-python = ">=3.10"
 dependencies = [
     "pandas>=2.2",
@@ -27,5 +27,5 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["icatalogviz*"]
+include = ["youtubeviz*"]
 namespaces = false

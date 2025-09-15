@@ -22,7 +22,10 @@ import pytest
 # Import the modules we're testing
 from src.icatalog_public.oss.extract import ExtractConfig, ExtractOrchestrator
 from src.icatalog_public.oss.load import LoadConfig, LoadOrchestrator
-from src.icatalog_public.oss.transform_complete import CompleteTransformer, TransformConfig
+from src.icatalog_public.oss.transform_complete import (
+    CompleteTransformer,
+    TransformConfig,
+)
 
 
 class TestExtractPhase:

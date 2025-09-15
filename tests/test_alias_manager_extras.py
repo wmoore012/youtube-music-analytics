@@ -22,36 +22,45 @@ def sqlite_engine(tmp_path: Path):
     db_path = tmp_path / "test_aliases.db"
     eng = create_engine(f"sqlite:///{db_path}")
     with eng.begin() as conn:
-        conn.execute(text(
-            """
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS artists (
                 artist_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 artist_name TEXT NOT NULL
             );
             """
-        ))
-        conn.execute(text(
-            """
+            )
+        )
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS youtube_videos (
                 video_id TEXT PRIMARY KEY,
                 channel_title TEXT
             );
             """
-        ))
-        conn.execute(text(
-            """
+            )
+        )
+        conn.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS artist_aliases (
                 alias_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 canonical_name TEXT NOT NULL,
                 alias TEXT NOT NULL DEFAULT ''
             );
             """
-        ))
+            )
+        )
         # seed some rows
-        conn.execute(text("INSERT INTO artists(artist_name) VALUES (:n1), (:n2)"), {"n1": "Enchanting", "n2": "@hicorook"})
-        conn.execute(text(
-            "INSERT INTO youtube_videos(video_id, channel_title) VALUES (:id1, :c1), (:id2, :c2), (:id3, :c3)"
-        ), {"id1": "v1", "c1": "LuvEnchantingINC", "id2": "v2", "c2": "Enchanting", "id3": "v3", "c3": "@hicorook"})
+        conn.execute(
+            text("INSERT INTO artists(artist_name) VALUES (:n1), (:n2)"), {"n1": "Enchanting", "n2": "@hicorook"}
+        )
+        conn.execute(
+            text("INSERT INTO youtube_videos(video_id, channel_title) VALUES (:id1, :c1), (:id2, :c2), (:id3, :c3)"),
+            {"id1": "v1", "c1": "LuvEnchantingINC", "id2": "v2", "c2": "Enchanting", "id3": "v3", "c3": "@hicorook"},
+        )
     return eng
 
 
@@ -64,18 +73,15 @@ def test_fetch_artists_and_channels_dedup_and_limit(sqlite_engine):
     """
     with sqlite_engine.begin() as conn:
         conn.execute(
-            text(
-                "INSERT INTO youtube_videos(video_id, channel_title) "
-                "VALUES (:id4, :c), (:id5, :c), (:id6, :c)"
-            ),
+            text("INSERT INTO youtube_videos(video_id, channel_title) " "VALUES (:id4, :c), (:id5, :c), (:id6, :c)"),
             {"id4": "v4", "id5": "v5", "id6": "v6", "c": "LuvEnchantingINC"},
         )
 
     items = fetch_artists_and_channels(sqlite_engine)
     names = [n for n, _ in items]
 
-    assert "Enchanting" in names          # from artists table
-    assert "LuvEnchantingINC" in names    # from youtube_videos (now with count>1)
+    assert "Enchanting" in names  # from artists table
+    assert "LuvEnchantingINC" in names  # from youtube_videos (now with count>1)
     assert "@hicorook" in names
 
     luv_count = dict(items).get("LuvEnchantingINC")

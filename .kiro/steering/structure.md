@@ -15,7 +15,7 @@ web/                           # Main ETL engine and business logic
 
 ### Analytics Package
 ```
-src/icatalogviz/              # Installable helper package for notebooks
+src/youtubeviz/              # Installable helper package for notebooks
 ├── __init__.py               # Public API exports
 ├── utils.py                  # Data filtering and utilities
 ├── charts.py                 # Plotly/Altair visualization functions
@@ -85,7 +85,8 @@ tests/                        # Test suite
 
 ### Configuration Files
 - **Lowercase with underscores** for JSON configs
-- **Environment files** use `.env` pattern
+- **Environment files** use `.env` pattern with automatic parsing
+- **Channel URLs** stored as `YT_ARTISTNAME_YT` variables for automatic extraction
 - **Documentation** uses `UPPERCASE.md` for important files
 
 ## Import Patterns
@@ -97,8 +98,8 @@ from web.youtube_channel_etl import YouTubeChannelETL
 from web.etl_helpers import get_engine, read_sql_safe
 
 # Analytics package
-from icatalogviz.utils import filter_artists, safe_head
-from icatalogviz.charts import views_over_time_plotly
+from youtubeviz.utils import filter_artists, safe_head
+from youtubeviz.charts import views_over_time_plotly
 ```
 
 ### External Dependencies
@@ -120,7 +121,7 @@ from sqlalchemy import create_engine
 1. **Raw Extraction** → `youtube_videos_raw` table
 2. **Processing** → `youtube_videos`, `youtube_metrics` tables  
 3. **Sentiment Analysis** → `youtube_comments`, `youtube_sentiment_summary`
-4. **Analytics** → Notebooks consume processed data via `icatalogviz`
+4. **Analytics** → Notebooks consume processed data via `youtubeviz`
 
 ### Database Schema Patterns
 - **Raw tables** suffixed with `_raw` (JSON storage)
@@ -139,7 +140,7 @@ from sqlalchemy import create_engine
 ### Notebook Organization
 - **Editable versions** for development work
 - **Executed versions** for sharing results  
-- **Modular design** using `icatalogviz` package for reusable functions
+- **Modular design** using `youtubeviz` package for reusable functions
 - **Clear categorization** by analysis type (analysis, quality, operations)
 - **Storytelling approach**: Notebooks should be FUN and tell a compelling story
 - **Interactive charts**: All visualizations should be interactive (Plotly/Altair)

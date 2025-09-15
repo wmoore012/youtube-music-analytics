@@ -1,0 +1,258 @@
+name: 📓 Notebook Quality Check
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'notebooks/**'
+      - 'src/**'
+      - 'execute_*.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'notebooks/**'
+      - 'src/**'
+      - 'execute_*.py'
+
+jobs:
+  notebook-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+        pip install nbformat nbconvert jupyter
+
+    - name: 🔍 Check for duplicate notebooks
+      run: |
+        echo "🔍 Checking for duplicate notebooks..."
+
+        # Check for notebooks in wrong locations
+        if [ -f "notebooks/quality/03_appendix_data_quality.ipynb" ]; then
+          echo "❌ FAIL: Duplicate data quality notebook found in notebooks/quality/"
+          echo "   Remove: notebooks/quality/03_appendix_data_quality.ipynb"
+          echo "   Keep only: notebooks/editable/03_appendix_data_quality_clean.ipynb"
+          exit 1
+        fi
+
+        # Check for empty executed notebooks
+        for file in notebooks/executed/*.ipynb; do
+          if [ -f "$file" ] && [ ! -s "$file" ]; then
+            echo "❌ FAIL: Empty executed notebook found: $file"
+            exit 1
+          fi
+        done
+
+        echo "✅ No duplicate or empty notebooks found"
+
+    - name: 🧪 Validate notebook syntax
+      run: |
+        echo "🧪 Validating notebook syntax..."
+
+        for notebook in notebooks/editable/*.ipynb; do
+          if [ -f "$notebook" ]; then
+            echo "Checking: $notebook"
+            python -c "
+import json
+import sys
+try:
+    with open('$notebook', 'r') as f:
+        json.load(f)
+    print('✅ Valid JSON: $notebook')
+except json.JSONDecodeError as e:
+    print('❌ Invalid JSON in $notebook: {e}')
+    sys.exit(1)
+"
+          fi
+        done
+
+    - name: 🔧 Test notebook execution (dry run)
+      run: |
+        echo "🔧 Testing notebook execution..."
+
+        # Create minimal test environment
+        export DB_HOST=localhost
+        export DB_USER=test_user
+        export DB_PASS=test_pass
+        export DB_NAME=test_db
+        export YOUTUBE_API_KEY=test_key
+
+        # Test import statements in notebooks
+        python -c "
+import sys
+import os
+sys.path.append('.')
+sys.path.append('src')
+
+# Test critical imports
+try:
+    from src.youtubeviz.data import load_youtube_data
+    print('✅ youtubeviz.data imports work')
+except ImportError as e:
+    print(f'❌ Import error in youtubeviz.data: {e}')
+    sys.exit(1)
+
+try:
+    from src.youtubeviz.utils import safe_head
+    print('✅ youtubeviz.utils imports work')
+except ImportError as e:
+    print(f'❌ Import error in youtubeviz.utils: {e}')
+    sys.exit(1)
+"
+
+    - name: 📊 Validate execute scripts
+      run: |
+        echo "📊 Validating execute scripts..."
+
+        # Check that execute scripts exist and are valid Python
+        for script in execute_music_analytics.py execute_data_quality.py execute_artist_comparison.py; do
+          if [ ! -f "$script" ]; then
+            echo "❌ FAIL: Missing execute script: $script"
+            exit 1
+          fi
+
+          python -m py_compile "$script"
+          if [ $? -eq 0 ]; then
+            echo "✅ Valid Python syntax: $script"
+          else
+            echo "❌ FAIL: Syntax error in $script"
+            exit 1
+          fi
+        done
+
+    - name: 🎯 Check for required functions
+      run: |
+        echo "🎯 Checking for required functions..."
+
+        # Check that compute_kpis function exists
+        python -c "
+import ast
+import sys
+
+def check_function_exists(file_path, function_name):
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+
+        # Parse the AST to find function definitions
+        tree = ast.parse(content)
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == function_name:
+                return True
+        return False
+    except:
+        return False
+
+# Check if compute_kpis exists in data quality notebook
+notebook_path = 'notebooks/editable/03_appendix_data_quality_clean.ipynb'
+if not check_function_exists('execute_data_quality.py', 'compute_kpis'):
+    print('⚠️  compute_kpis function should be defined in execute_data_quality.py or imported')
+
+print('✅ Function checks complete')
+"
+
+    - name: 🎤 Validate artist configuration
+      run: |
+        echo "🎤 Validating artist configuration..."
+
+        # Check that expected artists config exists
+        if [ ! -f "config/expected_artists.json" ]; then
+          echo "❌ FAIL: config/expected_artists.json not found"
+          echo "   This file is required for CI/CD validation"
+          exit 1
+        fi
+
+        # Validate the config file format
+        python -c "
+import json
+try:
+    with open('config/expected_artists.json', 'r') as f:
+        config = json.load(f)
+
+    required_keys = ['expected_artists', 'minimum_artists']
+    for key in required_keys:
+        if key not in config:
+            print(f'❌ Missing required key: {key}')
+            exit(1)
+
+    if not isinstance(config['expected_artists'], list):
+        print('❌ expected_artists must be a list')
+        exit(1)
+
+    if len(config['expected_artists']) < config['minimum_artists']:
+        print('❌ Not enough artists in expected_artists list')
+        exit(1)
+
+    print(f'✅ Valid artist config with {len(config[\"expected_artists\"])} artists')
+    for artist in config['expected_artists']:
+        print(f'   - {artist}')
+
+except Exception as e:
+    print(f'❌ Invalid config file: {e}')
+    exit(1)
+"
+
+    - name: 📋 Generate quality report
+      run: |
+        echo "📋 NOTEBOOK QUALITY REPORT"
+        echo "=========================="
+        echo ""
+        echo "📊 Notebook Statistics:"
+        echo "   - Editable notebooks: $(find notebooks/editable -name '*.ipynb' | wc -l)"
+        echo "   - Executed notebooks: $(find notebooks/executed -name '*.ipynb' | wc -l)"
+        echo "   - Analysis notebooks: $(find notebooks/analysis -name '*.ipynb' | wc -l)"
+        echo ""
+        echo "🔍 Quality Checks:"
+        echo "   ✅ No duplicate notebooks"
+        echo "   ✅ No empty executed notebooks"
+        echo "   ✅ Valid JSON syntax"
+        echo "   ✅ Import statements work"
+        echo "   ✅ Execute scripts are valid"
+        echo "   ✅ Artist configuration is valid"
+        echo ""
+        echo "🎉 All notebook quality checks passed!"
+
+  prevent-notebook-conflicts:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: 🚫 Prevent notebook conflicts
+      run: |
+        echo "🚫 Checking for notebook conflicts..."
+
+        # Get list of changed files
+        changed_files=$(git diff --name-only origin/main...HEAD)
+
+        # Check for problematic changes
+        echo "$changed_files" | while read file; do
+          case "$file" in
+            notebooks/quality/*)
+              echo "❌ FAIL: Changes to notebooks/quality/ are not allowed"
+              echo "   Use notebooks/editable/ instead"
+              exit 1
+              ;;
+            notebooks/executed/*.ipynb)
+              echo "⚠️  WARNING: Direct changes to executed notebooks detected"
+              echo "   File: $file"
+              echo "   Executed notebooks should be generated, not edited manually"
+              ;;
+          esac
+        done
+
+        echo "✅ No notebook conflicts detected"

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import pytest
-from src.icatalog_public.oss.etl_helpers_oss import extract_isrc_from_text, run_with_timeout
+from src.icatalog_public.oss.etl_helpers_oss import (
+    extract_isrc_from_text,
+    run_with_timeout,
+)
 
 
 def test_extract_isrc_hyphenated():

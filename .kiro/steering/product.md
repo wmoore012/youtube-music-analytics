@@ -16,7 +16,7 @@ A professional-grade YouTube data pipeline with advanced sentiment analysis capa
 
 - **ETL Engine**: Bulletproof execution with daily rate limiting (`web/youtube_channel_etl.py`)
 - **Sentiment Pipeline**: Automated comment sentiment analysis (`web/sentiment_job.py`)
-- **Analytics Package**: Helper library for notebooks and visualizations (`src/icatalogviz/`)
+- **Analytics Package**: Helper library for notebooks and visualizations (`src/youtubeviz/`)
 - **Monitoring Tools**: Data quality and pipeline health monitoring (`tools/monitor.py`)
 
 ### Target Users

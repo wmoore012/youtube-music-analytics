@@ -197,6 +197,65 @@ def run_notebooks(notebook_list: list) -> dict:
     return results
 
 
+def run_bot_detection(engine) -> dict:
+    """Run bot detection on recent comments."""
+    print("🤖 Running bot detection analysis...")
+
+    try:
+        import os
+
+        from src.youtubeviz.bot_detection import (
+            BotDetectionConfig,
+            analyze_bot_patterns,
+        )
+
+        # Check if bot detection is enabled
+        bot_detection_enabled = os.getenv("BOT_DETECTION_ENABLED", "true").lower() == "true"
+
+        if not bot_detection_enabled:
+            print("⚠️ Bot detection is disabled in .env configuration")
+            return {"processed": 0, "status": "disabled"}
+
+        # Configure bot detection
+        config = BotDetectionConfig()
+
+        # Run bot detection on recent comments
+        lookback_days = int(os.getenv("BOT_DETECTION_DAYS_LOOKBACK", "30"))
+        bot_results = analyze_bot_patterns(engine, config=config, days=lookback_days)
+
+        if len(bot_results) > 0:
+            high_risk_count = len(bot_results[bot_results["bot_risk_level"] == "High"])
+            medium_risk_count = len(bot_results[bot_results["bot_risk_level"] == "Medium"])
+
+            print(f"📊 Bot Detection Results:")
+            print(f"   Total comments analyzed: {len(bot_results):,}")
+            print(f"   High risk bots detected: {high_risk_count:,}")
+            print(f"   Medium risk bots detected: {medium_risk_count:,}")
+
+            # Store bot detection results (would save to database in real implementation)
+            bot_percentage = (high_risk_count / len(bot_results) * 100) if len(bot_results) > 0 else 0
+            print(f"   Bot percentage: {bot_percentage:.1f}%")
+
+            return {
+                "processed": len(bot_results),
+                "high_risk_bots": high_risk_count,
+                "medium_risk_bots": medium_risk_count,
+                "bot_percentage": bot_percentage,
+                "status": "success",
+            }
+        else:
+            print("✅ No comments found for bot detection")
+            return {"processed": 0, "status": "no_data"}
+
+    except ImportError as e:
+        print(f"⚠️ Bot detection module not available: {str(e)}")
+        print("   Bot detection will be skipped - install youtubeviz package to enable")
+        return {"processed": 0, "status": "module_unavailable"}
+    except Exception as e:
+        print(f"❌ Bot detection failed: {str(e)}")
+        return {"processed": 0, "status": "failed", "error": str(e)}
+
+
 def main():
     """Run the focused ETL pipeline."""
     print("🚀 Starting Focused ETL Pipeline")
@@ -205,10 +264,13 @@ def main():
     try:
         engine = get_engine()
 
-        # Step 1: Run sentiment analysis
+        # Step 1: Run bot detection (before sentiment analysis)
+        bot_results = run_bot_detection(engine)
+
+        # Step 2: Run sentiment analysis (after bot detection)
         sentiment_results = run_sentiment_analysis(engine)
 
-        # Step 2: Validate data quality
+        # Step 3: Validate data quality
         quality_results = validate_data_quality(engine)
 
         # Step 3: Run analysis notebooks (organized under notebooks/analysis and notebooks/quality)
@@ -223,6 +285,11 @@ def main():
         print("🎉 FOCUSED ETL PIPELINE COMPLETE")
         print("=" * 50)
 
+        print(f"🤖 Bot Detection:")
+        print(f"   Comments analyzed: {bot_results.get('processed', 0):,}")
+        print(f"   High risk bots: {bot_results.get('high_risk_bots', 0):,}")
+        print(f"   Bot percentage: {bot_results.get('bot_percentage', 0):.1f}%")
+
         print(f"📊 Sentiment Analysis:")
         print(f"   Processed: {sentiment_results.get('processed', 0):,} comments")
 
@@ -236,6 +303,7 @@ def main():
 
         # Determine overall status
         critical_failures = [
+            bot_results.get("status") == "failed",
             sentiment_results.get("status") == "failed",
             quality_results["quality_score"] < 80,
             len(notebook_results["failed"]) > 0,

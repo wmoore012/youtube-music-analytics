@@ -19,7 +19,7 @@ class SentimentStats:
 class YouTubeCommentSentimentJob:
     """Scores youtube_comments.sentiment_score using VADER and maintains summaries.
 
-    - Uses env: DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME/DB_NAME_PRIVATE
+    - Uses env: DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
     - Stores VADER compound in youtube_comments.sentiment_score (decimal(3,2))
     - Optionally refreshes youtube_sentiment_summary with per-video averages
     - Optionally snapshots per-video sentiment into youtube_sentiment (when ISRC is available)
@@ -31,7 +31,7 @@ class YouTubeCommentSentimentJob:
             port=int(os.getenv("DB_PORT", "3306")),
             user=os.getenv("DB_USER") or "",
             password=os.getenv("DB_PASS") or "",
-            db=os.getenv("DB_NAME_PRIVATE") or os.getenv("DB_NAME") or "",
+            db=os.getenv("DB_NAME") or "",
             charset="utf8mb4",
             cursorclass=pymysql.cursors.DictCursor,
             autocommit=False,
@@ -205,7 +205,7 @@ def seed_version_types(values: Optional[List[str]] = None) -> int:
         port=int(os.getenv("DB_PORT", "3306")),
         user=os.getenv("DB_USER") or "",
         password=os.getenv("DB_PASS") or "",
-        db=os.getenv("DB_NAME_PRIVATE") or os.getenv("DB_NAME") or "",
+        db=os.getenv("DB_NAME") or "",
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=False,

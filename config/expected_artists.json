@@ -1,0 +1,13 @@
+{
+  "expected_artists": [
+    "BiC Fizzle",
+    "COBRAH",
+    "Corook",
+    "Flyana Boss",
+    "Raiche",
+    "re6ce"
+  ],
+  "minimum_artists": 6,
+  "last_updated": "2025-09-15",
+  "description": "Expected artists configuration for CI/CD validation. Update this when adding/removing artists from .env"
+}

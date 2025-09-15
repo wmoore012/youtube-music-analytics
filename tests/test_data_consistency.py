@@ -7,7 +7,7 @@ artist counts for the same underlying data.
 
 import pytest
 
-from src.icatalogviz.data import qa_artist_consistency_check
+from src.youtubeviz.data import qa_artist_consistency_check
 from web.etl_helpers import get_engine
 
 
@@ -103,8 +103,8 @@ class TestConsistencyIntegration:
         """Test that the full analytics pipeline maintains consistency."""
         from datetime import date, timedelta
 
-        from src.icatalogviz.charts import get_artist_color_map
-        from src.icatalogviz.data import (
+        from src.youtubeviz.charts import get_artist_color_map
+        from src.youtubeviz.data import (
             compute_estimated_revenue,
             compute_kpis,
             load_recent_window_days,
@@ -140,8 +140,8 @@ class TestConsistencyIntegration:
 
     def test_consistency_check_catches_bugs(self, engine):
         """Test that the consistency check would catch the color mapping bug we found."""
-        from src.icatalogviz.charts import get_artist_color_map
-        from src.icatalogviz.data import load_recent_window_days
+        from src.youtubeviz.charts import get_artist_color_map
+        from src.youtubeviz.data import load_recent_window_days
 
         recent_data = load_recent_window_days(days=30, engine=engine)
 

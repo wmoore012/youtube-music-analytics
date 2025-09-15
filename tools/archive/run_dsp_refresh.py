@@ -23,8 +23,8 @@ def _tidal_playlist_id(val: str) -> str:
 
 def main() -> None:
     processed = 0
-    # PRIVATE engine used for upserts
-    engine = get_sa_engine(schema="PRIVATE")
+    # Engine used for upserts
+    engine = get_sa_engine()
 
     # Spotify
     sp_pl = os.getenv("SPOTIFY_PLAYLIST_ID")

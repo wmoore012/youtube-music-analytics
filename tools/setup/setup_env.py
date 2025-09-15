@@ -62,7 +62,7 @@ DB_HOST={db_host}
 DB_PORT={db_port}
 DB_USER={db_user}
 DB_PASS={db_pass}
-DB_NAME_PRIVATE={db_name}
+DB_NAME={db_name}
 DB_NAME_PUBLIC={db_name}_public
 
 # Artist YouTube Channels

@@ -20,8 +20,9 @@ from typing import Dict, List, Optional
 
 import typer
 from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, text
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table
 from sqlalchemy import inspect as sa_inspect
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 # Optional niceties (only used when --interactive)
@@ -51,7 +52,7 @@ def get_engine_from_env(schema: Optional[str]) -> Engine:
     _load_env()
     schema_env = (schema or os.getenv("ALIAS_MANAGER_SCHEMA") or os.getenv("DB_SCHEMA") or "PUBLIC").upper()
     # get_engine() requires keyword-only args; pass schema explicitly
-    return _get_engine(schema=schema_env)
+    return _get_engine()
 
 
 # --- DB ops (reuse existing semantics) -----------------------------------
@@ -157,9 +158,7 @@ def upsert_aliases(engine: Engine, canonical: str, aliases: List[str]) -> int:
                 for a in aliases:
                     # Count only if actually new
                     exists = conn.execute(
-                        text(
-                            "SELECT 1 FROM artist_aliases WHERE canonical_name=:c AND lower(alias)=lower(:a) LIMIT 1"
-                        ),
+                        text("SELECT 1 FROM artist_aliases WHERE canonical_name=:c AND lower(alias)=lower(:a) LIMIT 1"),
                         {"c": canonical, "a": a},
                     ).first()
                     if exists:
@@ -188,9 +187,7 @@ def upsert_aliases(engine: Engine, canonical: str, aliases: List[str]) -> int:
                 )
                 for a in aliases:
                     exists = conn.execute(
-                        text(
-                            "SELECT 1 FROM artist_aliases WHERE canonical_name=:c AND lower(alias)=lower(:a) LIMIT 1"
-                        ),
+                        text("SELECT 1 FROM artist_aliases WHERE canonical_name=:c AND lower(alias)=lower(:a) LIMIT 1"),
                         {"c": canonical, "a": a},
                     ).first()
                     if exists:
@@ -208,7 +205,9 @@ def upsert_aliases(engine: Engine, canonical: str, aliases: List[str]) -> int:
                     n += 1
         else:  # legacy schema fallback (artist_id)
             # Ensure artists row exists
-            r = conn.execute(text("SELECT artist_id FROM artists WHERE artist_name = :n LIMIT 1"), {"n": canonical}).first()
+            r = conn.execute(
+                text("SELECT artist_id FROM artists WHERE artist_name = :n LIMIT 1"), {"n": canonical}
+            ).first()
             if r:
                 artist_id = int(r[0])
             else:
@@ -261,7 +260,9 @@ def export_mapping(engine: Engine, out_path: Path) -> int:
         insp = sa_inspect(engine)
         cols = {c["name"] for c in insp.get_columns("artist_aliases")}
         if "canonical_name" in cols:
-            res = conn.execute(text("SELECT alias, canonical_name FROM artist_aliases WHERE alias <> '' ORDER BY alias"))
+            res = conn.execute(
+                text("SELECT alias, canonical_name FROM artist_aliases WHERE alias <> '' ORDER BY alias")
+            )
             mapping = {row.alias: row.canonical_name for row in res}
         else:
             res = conn.execute(
@@ -317,8 +318,7 @@ def cmd_list(
     if only_new:
         with eng.connect() as conn:
             canon = {
-                r[0]
-                for r in conn.execute(text("SELECT DISTINCT canonical_name FROM artist_aliases WHERE alias=''"))
+                r[0] for r in conn.execute(text("SELECT DISTINCT canonical_name FROM artist_aliases WHERE alias=''"))
             }
         items = [n for n in items if n not in canon]
     for i, name in enumerate(items, 1):

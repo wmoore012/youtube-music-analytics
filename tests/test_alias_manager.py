@@ -7,6 +7,8 @@ from pathlib import Path
 import pytest
 from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, text
 
+from src.youtubeviz.data import _build_artist_alias_map
+
 # Import functions under test
 from tools.alias_manager import (
     ensure_alias_table,
@@ -14,7 +16,6 @@ from tools.alias_manager import (
     upsert_aliases,
     write_aliases_json,
 )
-from src.icatalogviz.data import _build_artist_alias_map
 
 
 @pytest.fixture()
@@ -41,9 +42,7 @@ def sqlite_engine(tmp_path: Path):
     with eng.begin() as conn:
         conn.execute(text("INSERT INTO artists(artist_name) VALUES (:n)"), {"n": "Enchanting"})
         conn.execute(
-            text(
-                "INSERT INTO youtube_videos(video_id, channel_title) VALUES (:id, :c1), (:id2, :c2), (:id3, :c3)"
-            ),
+            text("INSERT INTO youtube_videos(video_id, channel_title) VALUES (:id, :c1), (:id2, :c2), (:id3, :c3)"),
             {"id": "v1", "c1": "LuvEnchantingINC", "id2": "v2", "c2": "@hicorook", "id3": "v3", "c3": None},
         )
     return eng

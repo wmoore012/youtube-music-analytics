@@ -26,9 +26,13 @@ from datetime import datetime, timedelta
 import pandas as pd
 from sqlalchemy import text
 
-from icatalogviz.bot_detection import BotDetectionConfig, analyze_bot_patterns, store_bot_analysis
 from tools.etl.sentiment_analysis import process_sentiment_analysis
 from web.etl_helpers import finish_etl_run, get_engine, start_etl_run
+from youtubeviz.bot_detection import (
+    BotDetectionConfig,
+    analyze_bot_patterns,
+    store_bot_analysis,
+)
 
 
 def validate_database_schema(engine) -> bool:

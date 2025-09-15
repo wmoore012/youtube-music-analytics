@@ -61,7 +61,7 @@ def patch_explore_notebook(path: Path) -> bool:
             "import matplotlib.pyplot as plt\n"
             "plt.style.use('seaborn-v0_8-whitegrid')\n"
             "from web.db_guard import get_engine\n\n"
-            "eng = get_engine('private', ro=True)\n\n"
+            "eng = get_engine()\n\n"
             "sql = '''\n"
             "SELECT v.video_id, v.title, v.channel_title, v.isrc,\n"
             "       s.avg_sentiment, m.max_views\n"

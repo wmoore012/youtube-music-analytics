@@ -39,7 +39,7 @@ def get_engine(schema: str, *, ro: bool = False, echo: bool = False) -> Engine:
         if not url:
             raise ValueError("DATABASE_URL environment variable not set")
     else:
-        # Construct URL from components for private schema
+        # Construct URL from components
         host = os.getenv("DB_HOST", "127.0.0.1")
         # Respect .env; default to standard local MySQL port and root user
         port = os.getenv("DB_PORT", "3306")
@@ -47,7 +47,7 @@ def get_engine(schema: str, *, ro: bool = False, echo: bool = False) -> Engine:
         password = os.getenv("DB_PASS")
         if not password:
             raise ValueError("DB_PASS environment variable not set")
-        db_name = os.getenv("DB_NAME_PRIVATE", "icatalog")
+        db_name = os.getenv("DB_NAME", "yt_proj")
         url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
     if ro:

@@ -72,17 +72,17 @@ def test_get_connection_public_schema():
         assert str(mock_conn.execute.call_args[0][0]) == str(text("SELECT 1"))
 
 
-def test_get_connection_private_schema():
+def test_get_connection_default_schema():
     mock_engine = MagicMock(spec=Engine)
     mock_conn = MagicMock(spec=Connection)
     mock_engine.connect.return_value = mock_conn
 
     with patch("src.icatalog_public.oss.sql_helpers_v2.get_engine", return_value=mock_engine) as mock_get_engine:
-        with get_connection("PRIVATE") as conn:
+        with get_connection() as conn:
             assert conn is mock_conn
             conn.execute(text("INSERT INTO test VALUES (1)"))
 
-        mock_get_engine.assert_called_once_with(schema="PRIVATE")
+        mock_get_engine.assert_called_once_with()
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
         # Corrected assertion for text() object
