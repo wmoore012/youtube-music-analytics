@@ -196,6 +196,21 @@ db-cleanup: ## Run database cleanup
 	@echo "✅ Database cleanup complete"
 
 # CI/CD integration
+ci: ## Run enhanced CI/CD pipeline (senior-level standards)
+	@echo "🚀 Running enhanced CI/CD pipeline..."
+	python scripts/enhanced_ci.py
+	@echo "✅ Enhanced CI/CD complete"
+
+ci-fix: ## Run enhanced CI with auto-fix
+	@echo "🔧 Running enhanced CI with auto-fix..."
+	python scripts/enhanced_ci.py --fix-issues
+	@echo "✅ Enhanced CI with fixes complete"
+
+ci-report: ## Generate AI agent reports only
+	@echo "📊 Generating AI agent reports..."
+	python scripts/enhanced_ci.py --report-only
+	@echo "✅ AI agent reports generated"
+
 ci-local: ## Run local CI/CD pipeline (quick validation)
 	@echo "🚀 Running local CI/CD pipeline..."
 	python scripts/run_local_ci.py
