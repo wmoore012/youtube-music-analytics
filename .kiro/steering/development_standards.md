@@ -46,7 +46,7 @@ ARTIST_COLOR_SCHEME=vibrant  # Options: vibrant, pastel, monochrome
 DEFAULT_CHART_HEIGHT=600
 MAX_ARTISTS_PER_CHART=10
 
-# Analysis parameters  
+# Analysis parameters
 MOMENTUM_THRESHOLD_DAYS=30
 GROWTH_RATE_MINIMUM=0.05
 SENTIMENT_CONFIDENCE_THRESHOLD=0.7
@@ -101,13 +101,13 @@ SENTIMENT_CONFIDENCE_THRESHOLD=0.7
 def fetch_video_data(video_id: str) -> dict:
     """
     Fetch video metadata from YouTube API with bulletproof error handling.
-    
+
     Args:
         video_id: YouTube video ID (11 characters, alphanumeric)
-        
+
     Returns:
         Video metadata dict with standardized keys
-        
+
     Raises:
         YouTubeAPIError: When API returns error or quota exceeded
         ValidationError: When video_id format is invalid

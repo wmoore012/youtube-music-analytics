@@ -45,7 +45,7 @@ with engine.connect() as conn:
     result = conn.execute(
         text(
             """
-        SELECT 
+        SELECT
             COUNT(DISTINCT v.channel_title) as artists,
             COUNT(DISTINCT v.video_id) as videos,
             COUNT(c.comment_id) as total_comments

@@ -31,14 +31,14 @@ def load_comments_for_training():
     engine = get_engine()
 
     query = """
-    SELECT 
+    SELECT
         yc.comment_id,
         yc.comment_text,
         yc.video_id,
         yv.channel_title as artist_name
     FROM youtube_comments yc
     JOIN youtube_videos yv ON yc.video_id = yv.video_id
-    WHERE yc.comment_text IS NOT NULL 
+    WHERE yc.comment_text IS NOT NULL
     AND LENGTH(yc.comment_text) > 0
     ORDER BY yc.comment_id
     """
@@ -156,7 +156,7 @@ def validate_deployment():
         result = conn.execute(
             text(
                 """
-            SELECT 
+            SELECT
                 COUNT(DISTINCT yc.comment_id) as total_comments,
                 COUNT(DISTINCT cs.comment_id) as analyzed_comments,
                 AVG(cs.sentiment_score) as avg_sentiment,

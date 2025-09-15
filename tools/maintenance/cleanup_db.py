@@ -212,9 +212,9 @@ def validate_database_channels(engine, keep_channels: Set[str]) -> Tuple[Set[str
     # Query all unique channel names currently in the database
     query = text(
         """
-        SELECT DISTINCT channel_title 
-        FROM youtube_videos 
-        WHERE channel_title IS NOT NULL 
+        SELECT DISTINCT channel_title
+        FROM youtube_videos
+        WHERE channel_title IS NOT NULL
           AND channel_title != ''
         ORDER BY channel_title
     """
@@ -299,8 +299,8 @@ def get_channel_video_ids(engine, channel_title: str) -> List[str]:
     """
     query = text(
         """
-        SELECT video_id 
-        FROM youtube_videos 
+        SELECT video_id
+        FROM youtube_videos
         WHERE channel_title = :channel_title
         ORDER BY published_at DESC
     """
@@ -351,7 +351,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
         comment_count_query = text(
             """
             SELECT COUNT(*) as comment_count
-            FROM youtube_comments 
+            FROM youtube_comments
             WHERE video_id = ANY(:video_ids)
         """
         )
@@ -364,7 +364,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
             if not dry_run:
                 delete_comments_query = text(
                     """
-                    DELETE FROM youtube_comments 
+                    DELETE FROM youtube_comments
                     WHERE video_id = ANY(:video_ids)
                 """
                 )
@@ -375,7 +375,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
         metrics_count_query = text(
             """
             SELECT COUNT(*) as metrics_count
-            FROM youtube_metrics 
+            FROM youtube_metrics
             WHERE video_id = ANY(:video_ids)
         """
         )
@@ -388,7 +388,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
             if not dry_run:
                 delete_metrics_query = text(
                     """
-                    DELETE FROM youtube_metrics 
+                    DELETE FROM youtube_metrics
                     WHERE video_id = ANY(:video_ids)
                 """
                 )
@@ -403,7 +403,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
                 sentiment_count_query = text(
                     f"""
                     SELECT COUNT(*) as sentiment_count
-                    FROM {table_name} 
+                    FROM {table_name}
                     WHERE video_id = ANY(:video_ids)
                 """
                 )
@@ -415,7 +415,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
                 if table_count > 0 and not dry_run:
                     delete_sentiment_query = text(
                         f"""
-                        DELETE FROM {table_name} 
+                        DELETE FROM {table_name}
                         WHERE video_id = ANY(:video_ids)
                     """
                     )
@@ -432,7 +432,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
         video_count_query = text(
             """
             SELECT COUNT(*) as video_count
-            FROM youtube_videos 
+            FROM youtube_videos
             WHERE channel_title = :channel_title
         """
         )
@@ -445,7 +445,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
             if not dry_run:
                 delete_videos_query = text(
                     """
-                    DELETE FROM youtube_videos 
+                    DELETE FROM youtube_videos
                     WHERE channel_title = :channel_title
                 """
                 )

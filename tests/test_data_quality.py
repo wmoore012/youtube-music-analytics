@@ -149,7 +149,7 @@ class TestDataQuality:
             # Based on schema: author_name (not author_display_name), comment_text (not text_display)
             query = """
             SELECT comment_id, video_id, author_name, comment_text, published_at, COUNT(*) as count
-            FROM youtube_comments 
+            FROM youtube_comments
             GROUP BY comment_id, video_id, author_name, comment_text, published_at
             HAVING COUNT(*) > 1
             LIMIT 10

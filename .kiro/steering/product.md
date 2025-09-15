@@ -7,7 +7,7 @@ A professional-grade YouTube data pipeline with advanced sentiment analysis capa
 ### Core Capabilities
 
 - **YouTube Data ETL**: Complete pipeline for videos, metrics, and comments extraction
-- **Sentiment Analysis**: VADER-based sentiment scoring with artist/channel grouping  
+- **Sentiment Analysis**: VADER-based sentiment scoring with artist/channel grouping
 - **Interactive Visualizations**: Professional Plotly charts and dashboards
 - **Data Quality Monitoring**: Comprehensive diagnostics and health checks
 - **YouTube API Compliance**: Built-in data retention policies and ToS compliance

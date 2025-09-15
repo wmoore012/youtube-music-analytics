@@ -87,7 +87,7 @@ def check_compliance_status(engine) -> Dict[str, any]:
             SELECT COUNT(*) as old_comment_count,
                    MIN(created_at) as oldest_comment,
                    MAX(created_at) as newest_comment
-            FROM youtube_comments 
+            FROM youtube_comments
             WHERE created_at < :cutoff_date
         """
         )
@@ -101,7 +101,7 @@ def check_compliance_status(engine) -> Dict[str, any]:
             SELECT COUNT(*) as old_metrics_count,
                    MIN(fetched_at) as oldest_metric,
                    MAX(fetched_at) as newest_metric
-            FROM youtube_metrics 
+            FROM youtube_metrics
             WHERE fetched_at < :cutoff_date
         """
         )
@@ -157,7 +157,7 @@ def delete_old_comments(engine, dry_run: bool = True) -> Dict[str, int]:
         count_query = text(
             """
             SELECT COUNT(*) as comment_count
-            FROM youtube_comments 
+            FROM youtube_comments
             WHERE created_at < :cutoff_date
         """
         )
@@ -177,7 +177,7 @@ def delete_old_comments(engine, dry_run: bool = True) -> Dict[str, int]:
             # Perform actual deletion
             delete_query = text(
                 """
-                DELETE FROM youtube_comments 
+                DELETE FROM youtube_comments
                 WHERE created_at < :cutoff_date
             """
             )
@@ -211,7 +211,7 @@ def delete_old_metrics(engine, dry_run: bool = True) -> Dict[str, int]:
         count_query = text(
             """
             SELECT COUNT(*) as metrics_count
-            FROM youtube_metrics 
+            FROM youtube_metrics
             WHERE fetched_at < :cutoff_date
         """
         )
@@ -231,7 +231,7 @@ def delete_old_metrics(engine, dry_run: bool = True) -> Dict[str, int]:
             # Perform actual deletion
             delete_query = text(
                 """
-                DELETE FROM youtube_metrics 
+                DELETE FROM youtube_metrics
                 WHERE fetched_at < :cutoff_date
             """
             )

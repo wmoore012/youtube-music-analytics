@@ -23,7 +23,7 @@ def get_configured_artists() -> Set[str]:
     # Mapping from .env names to expected database channel titles
     artist_mapping = {
         "BICFIZZLE": "BiC Fizzle",
-        "COBRAH": "COBRAH", 
+        "COBRAH": "COBRAH",
         "COROOK": "Corook",
         "RAICHE": "Raiche",
         "RE6CE": "re6ce",
@@ -35,11 +35,11 @@ def get_configured_artists() -> Set[str]:
         if key.startswith("YT_") and key.endswith("_YT"):
             # Handle both main channels and topic channels
             artist_name = key[3:-3]  # Remove YT_ prefix and _YT suffix
-            
+
             # Remove _TOPIC suffix if present
             if artist_name.endswith("_TOPIC"):
                 artist_name = artist_name[:-6]
-            
+
             if artist_name in artist_mapping:
                 configured.add(artist_mapping[artist_name])
             else:
@@ -57,7 +57,7 @@ def get_database_artists(engine) -> List[Tuple[str, int]]:
             text(
                 """
             SELECT DISTINCT channel_title, COUNT(*) as video_count
-            FROM youtube_videos 
+            FROM youtube_videos
             WHERE channel_title IS NOT NULL
             GROUP BY channel_title
             ORDER BY video_count DESC
@@ -107,7 +107,7 @@ def remove_unauthorized_artist(engine, artist_name: str) -> dict:
             deleted_raw = conn.execute(
                 text(
                     """
-                DELETE FROM youtube_videos_raw 
+                DELETE FROM youtube_videos_raw
                 WHERE JSON_UNQUOTE(JSON_EXTRACT(raw_data, '$.snippet.channelTitle')) = :artist_name
             """
                 ),

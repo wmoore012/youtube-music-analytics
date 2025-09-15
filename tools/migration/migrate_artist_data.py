@@ -82,8 +82,8 @@ class ArtistDataMigrator:
                 # Check for artist data in various tables
                 queries = {
                     "videos": f"""
-                        SELECT channel_title as artist, COUNT(*) as count 
-                        FROM youtube_videos 
+                        SELECT channel_title as artist, COUNT(*) as count
+                        FROM youtube_videos
                         WHERE channel_title IN ({artist_placeholders})
                         GROUP BY channel_title
                     """,
@@ -150,8 +150,8 @@ class ArtistDataMigrator:
                 # Check for artist data in various tables
                 queries = {
                     "videos": f"""
-                        SELECT channel_title as artist, COUNT(*) as count 
-                        FROM youtube_videos 
+                        SELECT channel_title as artist, COUNT(*) as count
+                        FROM youtube_videos
                         WHERE channel_title IN ({artist_placeholders})
                         GROUP BY channel_title
                     """,

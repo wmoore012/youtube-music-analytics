@@ -142,7 +142,7 @@ class EnterpriseMonitoringSystem:
                 result = conn.execute(
                     text(
                         """
-                    SELECT 
+                    SELECT
                         MAX(metrics_date) as latest_data_date,
                         COUNT(*) as total_records
                     FROM youtube_metrics
@@ -420,7 +420,7 @@ class EnterpriseMonitoringSystem:
                 result = conn.execute(
                     text(
                         """
-                    SELECT 
+                    SELECT
                         COUNT(DISTINCT video_id) as total_videos,
                         COUNT(DISTINCT channel_title) as total_artists,
                         MAX(metrics_date) as latest_data_date,

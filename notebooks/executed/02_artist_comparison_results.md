@@ -2,15 +2,15 @@
 
 ## 🎤 Artist Performance Dashboard
 
-**Execution Date:** 2025-09-15  
-**Dataset:** 1,243 records across 6 artists and 801 videos  
+**Execution Date:** 2025-09-15
+**Dataset:** 1,243 records across 6 artists and 801 videos
 **Analysis Period:** 90 days (2025-09-12 to 2025-09-14)
 
 ## 🏆 Artist Rankings & Performance
 
 ### Overall Performance Rankings
 1. **Flyana Boss** - 322,536,092 total views (67.6% market share)
-2. **BiC Fizzle** - 100,143,209 total views (21.0% market share)  
+2. **BiC Fizzle** - 100,143,209 total views (21.0% market share)
 3. **COBRAH** - 46,958,052 total views (9.9% market share)
 4. **re6ce** - 3,526,446 total views (1.5% market share)
 5. **Raiche** - 138,718 total views (0.1% market share)
@@ -32,7 +32,7 @@
 - **"Turnt Sh*t [Official Music Video]"** - 4,577,876 views
 - **"Dope Fein [Official Video]"** - 4,334,623 views
 
-### COBRAH Top Videos  
+### COBRAH Top Videos
 - **"SUCK (Official Music Video)"** - 10,563,064 views
 - **"GOOD PUSS (Official Music Video)"** - 4,144,125 views
 - **"BRAND NEW BITCH (Official Rebirth Video)"** - 1,350,935 views
@@ -58,7 +58,7 @@
 
 ### Daily Growth Rates
 - **COBRAH:** 0.47% daily growth (Medium momentum)
-- **BiC Fizzle:** 0.21% daily growth (Medium momentum)  
+- **BiC Fizzle:** 0.21% daily growth (Medium momentum)
 - **Flyana Boss:** 0.01% daily growth (Medium momentum)
 
 ## 💡 Key Strategic Insights
@@ -67,7 +67,7 @@
 - **Flyana Boss** dominates with 67.6% market share and highest average performance
 - **BiC Fizzle** maintains strong second position with consistent high-quality content
 
-### 🚀 Growth Opportunities  
+### 🚀 Growth Opportunities
 - **re6ce** shows highest engagement rate despite lower view counts - high growth potential
 - **COBRAH** demonstrates strong momentum with 0.47% daily growth rate
 

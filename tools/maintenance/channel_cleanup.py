@@ -79,8 +79,8 @@ def get_channel_titles_from_urls(configured_channels: Dict[str, str], engine) ->
                 result = conn.execute(
                     text(
                         """
-                    SELECT DISTINCT channel_title 
-                    FROM youtube_videos 
+                    SELECT DISTINCT channel_title
+                    FROM youtube_videos
                     WHERE channel_title LIKE :pattern
                 """
                     ),
@@ -94,8 +94,8 @@ def get_channel_titles_from_urls(configured_channels: Dict[str, str], engine) ->
             result = conn.execute(
                 text(
                     """
-                SELECT DISTINCT channel_title 
-                FROM youtube_videos 
+                SELECT DISTINCT channel_title
+                FROM youtube_videos
                 WHERE channel_title LIKE :pattern
             """
                 ),
@@ -120,7 +120,7 @@ def analyze_channel_data(engine) -> Dict[str, any]:
         channel_analysis = pd.read_sql(
             text(
                 """
-            SELECT 
+            SELECT
                 v.channel_title,
                 COUNT(DISTINCT v.video_id) as video_count,
                 COUNT(DISTINCT m.video_id) as metrics_count,
@@ -240,7 +240,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
                 video_ids = pd.read_sql(
                     text(
                         """
-                    SELECT video_id FROM youtube_videos 
+                    SELECT video_id FROM youtube_videos
                     WHERE channel_title = :channel_title
                 """
                     ),
@@ -256,7 +256,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
                     conn.execute(
                         text(
                             """
-                        DELETE FROM comment_sentiment 
+                        DELETE FROM comment_sentiment
                         WHERE video_id IN :video_ids
                     """
                         ),
@@ -267,7 +267,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
                     conn.execute(
                         text(
                             """
-                        DELETE FROM youtube_comments 
+                        DELETE FROM youtube_comments
                         WHERE video_id IN :video_ids
                     """
                         ),
@@ -278,7 +278,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
                     conn.execute(
                         text(
                             """
-                        DELETE FROM youtube_metrics 
+                        DELETE FROM youtube_metrics
                         WHERE video_id IN :video_ids
                     """
                         ),
@@ -289,7 +289,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
                     conn.execute(
                         text(
                             """
-                        DELETE FROM youtube_videos 
+                        DELETE FROM youtube_videos
                         WHERE channel_title = :channel_title
                     """
                         ),

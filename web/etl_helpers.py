@@ -1349,9 +1349,7 @@ def upsert_songs(conn_or_records, records_or_conn=None, conn_or_none=None) -> No
         return
 
     songs_tbl = get_table("songs")
-    from sqlalchemy.dialects.mysql import (
-        insert as mysql_insert,  # local import to avoid top‑level duplicate
-    )
+    from sqlalchemy.dialects.mysql import insert as mysql_insert  # local import to avoid top‑level duplicate
 
     stmt = mysql_insert(songs_tbl).values(records)
 

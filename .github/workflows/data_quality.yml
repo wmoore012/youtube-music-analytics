@@ -23,7 +23,7 @@ on:
 jobs:
   production-pipeline:
     runs-on: ubuntu-latest
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -38,12 +38,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
+
     - name: Cache pip dependencies
       uses: actions/cache@v3
       with:
@@ -51,19 +51,19 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
-    
+
     - name: Wait for MySQL
       run: |
         while ! mysqladmin ping -h"127.0.0.1" -P3306 -uroot -proot_password --silent; do
           sleep 1
         done
-    
+
     - name: Set up test database
       env:
         DB_HOST: 127.0.0.1
@@ -74,28 +74,28 @@ jobs:
       run: |
         # Create test tables and sample data
         python tools/setup/create_tables.py
-        
+
         # Insert minimal test data for quality checks
         python -c "
         from web.etl_helpers import get_engine
         import pandas as pd
         from datetime import datetime, timedelta
-        
+
         engine = get_engine()
-        
+
         # Create sample video data
         sample_videos = pd.DataFrame({
             'video_id': ['test_vid_1', 'test_vid_2', 'test_vid_3'],
             'title': [
                 'Test Artist - Test Song [Official Music Video]',
-                'Test Artist - Another Song [Official Audio]', 
+                'Test Artist - Another Song [Official Audio]',
                 'Test Artist - Social Post'
             ],
             'channel_title': ['Test Artist', 'Test Artist', 'Test Artist'],
             'published_at': [datetime.now() - timedelta(days=1)] * 3,
             'isrc': [None, None, None]
         })
-        
+
         sample_metrics = pd.DataFrame({
             'video_id': ['test_vid_1', 'test_vid_2', 'test_vid_3'],
             'metrics_date': [datetime.now().date()] * 3,
@@ -103,12 +103,12 @@ jobs:
             'like_count': [100, 50, 20],
             'comment_count': [10, 5, 2]
         })
-        
+
         sample_videos.to_sql('youtube_videos', engine, if_exists='append', index=False)
         sample_metrics.to_sql('youtube_metrics', engine, if_exists='append', index=False)
         print('Test data inserted successfully')
         "
-    
+
     - name: Run Production Pipeline
       env:
         DB_HOST: 127.0.0.1
@@ -120,10 +120,10 @@ jobs:
       run: |
         # Run the complete production pipeline
         python tools/etl/run_production_pipeline.py
-        
+
         # Also run standalone quality check for comparison
         python scripts/run_data_quality_checks.py --output-format json > standalone_quality_results.json
-    
+
     - name: Upload Pipeline Reports
       uses: actions/upload-artifact@v3
       if: always()
@@ -133,7 +133,7 @@ jobs:
           production_pipeline_results.json
           standalone_quality_results.json
           production_pipeline.log
-    
+
     - name: Run Notebook Tests
       env:
         DB_HOST: 127.0.0.1
@@ -146,15 +146,15 @@ jobs:
         python -c "
         import sys
         sys.path.insert(0, '.')
-        
+
         from web.etl_helpers import get_engine
         from src.youtubeviz.data import load_recent_window_days
-        
+
         # Test data loading
         engine = get_engine()
         data = load_recent_window_days(days=30, engine=engine)
         print(f'✅ Data loading test passed: {len(data)} records')
-        
+
         # Test song identification (from notebook)
         import re
         song_patterns = [
@@ -165,25 +165,25 @@ jobs:
         data['is_song'] = data['video_title'].str.contains(combined_pattern, case=False, na=False)
         songs = data[data['is_song'] == True]
         print(f'✅ Song identification test passed: {len(songs)} songs found')
-        
+
         # Test deduplication (natural keys)
         deduplicated = data.drop_duplicates(['video_id'], keep='first')
         duplicates_removed = len(data) - len(deduplicated)
         print(f'✅ Deduplication test passed: {duplicates_removed} duplicates removed')
-        
+
         print('🎉 All notebook functionality tests passed!')
         "
-    
+
     - name: Check for Critical Issues
       run: |
         # Parse results and fail if critical issues found
         python -c "
         import json
         import sys
-        
+
         with open('data_quality_results.json', 'r') as f:
             results = json.load(f)
-        
+
         if results['status'] == 'FAILED':
             print('💥 Critical data quality issues detected!')
             for error in results['errors']:
@@ -202,7 +202,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: data-quality
     if: failure()
-    
+
     steps:
     - name: Notify on Failure
       run: |

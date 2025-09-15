@@ -54,9 +54,9 @@ def get_database_artists():
         # Connect to local database
         engine = get_engine()
         query = """
-        SELECT DISTINCT channel_title, COUNT(*) as video_count 
-        FROM youtube_videos 
-        GROUP BY channel_title 
+        SELECT DISTINCT channel_title, COUNT(*) as video_count
+        FROM youtube_videos
+        GROUP BY channel_title
         ORDER BY video_count DESC
         """
         df = pd.read_sql(query, engine)
@@ -92,23 +92,23 @@ def cleanup_artist_data(artist_name, engine, dry_run=True):
         if table == "youtube_metrics":
             # For metrics, need to join with videos to find artist
             query = f"""
-            DELETE m FROM {table} m 
-            JOIN youtube_videos v ON m.video_id = v.video_id 
+            DELETE m FROM {table} m
+            JOIN youtube_videos v ON m.video_id = v.video_id
             WHERE v.channel_title = '{artist_name}'
             """
         elif table == "youtube_comments":
             # For comments, need to join with videos
             query = f"""
-            DELETE c FROM {table} c 
-            JOIN youtube_videos v ON c.video_id = v.video_id 
+            DELETE c FROM {table} c
+            JOIN youtube_videos v ON c.video_id = v.video_id
             WHERE v.channel_title = '{artist_name}'
             """
         elif table == "comment_sentiment":
             # For sentiment, need to join through comments and videos
             query = f"""
-            DELETE cs FROM {table} cs 
+            DELETE cs FROM {table} cs
             JOIN youtube_comments c ON cs.comment_id = c.comment_id
-            JOIN youtube_videos v ON c.video_id = v.video_id 
+            JOIN youtube_videos v ON c.video_id = v.video_id
             WHERE v.channel_title = '{artist_name}'
             """
         else:

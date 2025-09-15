@@ -4,7 +4,7 @@
 - [x] Test current VADER model performance on music slang (20.4% accuracy!)
 - [x] Create comprehensive positive sentiment patterns including:
   - "this is sick" (positive in music context)
-  - "fucking queen!" / "go off king" 
+  - "fucking queen!" / "go off king"
   - "oh my!" / "oh my yes!"
   - "fuck it up" (positive encouragement)
   - "I need the lyrics" (engagement indicator)

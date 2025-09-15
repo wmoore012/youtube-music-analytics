@@ -30,9 +30,9 @@ def check_database_schema(engine):
         result = conn.execute(
             text(
                 """
-            SELECT COUNT(*) 
-            FROM information_schema.columns 
-            WHERE table_name = 'youtube_comments' 
+            SELECT COUNT(*)
+            FROM information_schema.columns
+            WHERE table_name = 'youtube_comments'
             AND column_name = 'beat_appreciation'
         """
             )
@@ -43,7 +43,7 @@ def check_database_schema(engine):
             conn.execute(
                 text(
                     """
-                ALTER TABLE youtube_comments 
+                ALTER TABLE youtube_comments
                 ADD COLUMN beat_appreciation BOOLEAN DEFAULT FALSE
             """
                 )
@@ -53,9 +53,9 @@ def check_database_schema(engine):
         result = conn.execute(
             text(
                 """
-            SELECT COUNT(*) 
-            FROM information_schema.columns 
-            WHERE table_name = 'youtube_comments' 
+            SELECT COUNT(*)
+            FROM information_schema.columns
+            WHERE table_name = 'youtube_comments'
             AND column_name = 'is_bot_suspected'
         """
             )
@@ -66,7 +66,7 @@ def check_database_schema(engine):
             conn.execute(
                 text(
                     """
-                ALTER TABLE youtube_comments 
+                ALTER TABLE youtube_comments
                 ADD COLUMN is_bot_suspected BOOLEAN DEFAULT FALSE
             """
                 )
@@ -76,9 +76,9 @@ def check_database_schema(engine):
         result = conn.execute(
             text(
                 """
-            SELECT COUNT(*) 
-            FROM information_schema.columns 
-            WHERE table_name = 'youtube_videos' 
+            SELECT COUNT(*)
+            FROM information_schema.columns
+            WHERE table_name = 'youtube_videos'
             AND column_name = 'channel_title'
         """
             )
@@ -89,7 +89,7 @@ def check_database_schema(engine):
             conn.execute(
                 text(
                     """
-                ALTER TABLE youtube_videos 
+                ALTER TABLE youtube_videos
                 ADD COLUMN channel_title VARCHAR(255)
             """
                 )
@@ -102,9 +102,9 @@ def check_database_schema(engine):
                     """
                 UPDATE youtube_videos v
                 SET channel_title = (
-                    SELECT channel_title 
-                    FROM youtube_videos_raw r 
-                    WHERE r.video_id = v.video_id 
+                    SELECT channel_title
+                    FROM youtube_videos_raw r
+                    WHERE r.video_id = v.video_id
                     AND JSON_EXTRACT(r.raw_data, '$.snippet.channelTitle') IS NOT NULL
                     LIMIT 1
                 )
@@ -202,7 +202,7 @@ def update_sentiment_analysis(engine, batch_size: int = 1000) -> Dict:
         conn.execute(
             text(
                 """
-            CREATE TABLE IF NOT EXISTS comment_sentiment_backup AS 
+            CREATE TABLE IF NOT EXISTS comment_sentiment_backup AS
             SELECT * FROM comment_sentiment
         """
             )
@@ -276,7 +276,7 @@ def update_sentiment_analysis(engine, batch_size: int = 1000) -> Dict:
                 conn.execute(
                     text(
                         """
-                    UPDATE youtube_comments 
+                    UPDATE youtube_comments
                     SET beat_appreciation = :beat_appreciation
                     WHERE comment_id = :comment_id
                 """
@@ -347,7 +347,7 @@ def verify_sentiment_update(engine) -> bool:
         result = conn.execute(
             text(
                 """
-            SELECT 
+            SELECT
                 COUNT(*) as total,
                 SUM(CASE WHEN sentiment_score > 0.1 THEN 1 ELSE 0 END) as positive,
                 SUM(CASE WHEN sentiment_score < -0.1 THEN 1 ELSE 0 END) as negative,

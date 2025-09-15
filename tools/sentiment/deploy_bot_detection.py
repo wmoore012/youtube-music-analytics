@@ -222,7 +222,7 @@ def load_comments_for_analysis():
     engine = get_engine()
 
     query = """
-    SELECT 
+    SELECT
         yc.comment_id,
         yc.comment_text,
         yc.video_id,
@@ -231,7 +231,7 @@ def load_comments_for_analysis():
         yv.channel_title as artist_name
     FROM youtube_comments yc
     JOIN youtube_videos yv ON yc.video_id = yv.video_id
-    WHERE yc.comment_text IS NOT NULL 
+    WHERE yc.comment_text IS NOT NULL
     AND LENGTH(yc.comment_text) > 0
     ORDER BY yc.created_at DESC
     """
@@ -334,8 +334,8 @@ def deploy_bot_detection():
                     conn.execute(
                         text(
                             """
-                        UPDATE youtube_comments 
-                        SET is_bot_suspected = :is_bot_suspected 
+                        UPDATE youtube_comments
+                        SET is_bot_suspected = :is_bot_suspected
                         WHERE comment_id = :comment_id
                     """
                         ),
@@ -366,7 +366,7 @@ def validate_bot_detection():
         result = conn.execute(
             text(
                 """
-            SELECT 
+            SELECT
                 COUNT(*) as total_comments,
                 SUM(CASE WHEN is_bot_suspected THEN 1 ELSE 0 END) as bot_suspected,
                 AVG(CASE WHEN is_bot_suspected THEN 1.0 ELSE 0.0 END) as bot_rate
@@ -389,9 +389,9 @@ def validate_bot_detection():
         sample_bots = conn.execute(
             text(
                 """
-            SELECT comment_text 
-            FROM youtube_comments 
-            WHERE is_bot_suspected = TRUE 
+            SELECT comment_text
+            FROM youtube_comments
+            WHERE is_bot_suspected = TRUE
             LIMIT 5
         """
             )

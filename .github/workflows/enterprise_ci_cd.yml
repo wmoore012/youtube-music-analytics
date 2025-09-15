@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -46,7 +46,7 @@ jobs:
         scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
-        
+
     - name: Upload security scan results
       uses: github/codeql-action/upload-sarif@v2
       if: always()
@@ -58,37 +58,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-        
+
     - name: Install quality tools
       run: |
         python -m pip install --upgrade pip
         pip install black isort flake8 mypy bandit safety
         pip install -r requirements.txt
         pip install -e .
-        
+
     - name: Code formatting validation (Black)
       run: black --check --line-length=120 .
-      
+
     - name: Import organization validation (isort)
       run: isort --check-only --profile black .
-      
+
     - name: Code linting (flake8)
       run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
-      
+
     - name: Static type checking (mypy)
       run: mypy --ignore-missing-imports --exclude tools/archive .
-      
+
     - name: Security vulnerability scanning (bandit)
       run: bandit -r . -x tests/,tools/archive/
-      
+
     - name: Dependency security audit
       run: safety check --json > security_audit.json
-      
+
     - name: Upload code quality results
       uses: actions/upload-artifact@v3
       if: always()
@@ -99,7 +99,7 @@ jobs:
   enterprise-data-quality:
     name: Enterprise Data Quality Validation
     runs-on: ubuntu-latest
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -118,12 +118,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python Enterprise Environment
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-        
+
     - name: Cache dependencies for performance
       uses: actions/cache@v3
       with:
@@ -131,14 +131,14 @@ jobs:
         key: ${{ runner.os }}-enterprise-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-enterprise-pip-
-        
+
     - name: Install enterprise dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
         pip install pytest-xdist pytest-cov pytest-benchmark
-        
+
     - name: Validate MySQL enterprise readiness
       run: |
         timeout=120
@@ -152,7 +152,7 @@ jobs:
           fi
         done
         echo "✅ MySQL enterprise instance ready"
-        
+
     - name: Configure enterprise test environment
       run: |
         cp .env.example .env.enterprise.test
@@ -173,14 +173,14 @@ jobs:
         COMPLIANCE_MODE=strict
         AUDIT_TRAIL_ENABLED=true
         EOF
-        
+
     - name: Initialize enterprise database schema
       env:
         ENV_FILE: .env.enterprise.test
       run: |
         python tools/setup/create_tables.py
         echo "✅ Enterprise database schema initialized"
-        
+
     - name: Create enterprise test data fixtures
       env:
         ENV_FILE: .env.enterprise.test
@@ -192,29 +192,29 @@ jobs:
         import pandas as pd
         from datetime import datetime, timedelta
         import random
-        
+
         print('🏗️  Creating enterprise test data fixtures...')
         engine = get_engine()
-        
+
         # Create comprehensive test dataset
         artists = ['BiC Fizzle', 'COBRAH', 'Flyana Boss', 'Test Artist Alpha', 'Test Artist Beta']
         video_types = [
             '[Official Music Video]',
-            '[Official Audio]', 
+            '[Official Audio]',
             '(Official Music Video)',
             '(Official Audio)',
             '- Official Music Video',
             '- Official Audio'
         ]
-        
+
         videos_data = []
         metrics_data = []
-        
+
         for i in range(50):  # Create 50 test videos
             artist = random.choice(artists)
             video_type = random.choice(video_types)
             video_id = f'test_video_{i:03d}'
-            
+
             videos_data.append({
                 'video_id': video_id,
                 'title': f'{artist} - Test Song {i} {video_type}',
@@ -222,7 +222,7 @@ jobs:
                 'published_at': datetime.now() - timedelta(days=random.randint(1, 365)),
                 'isrc': f'TEST{i:06d}' if random.random() > 0.3 else None
             })
-            
+
             # Create metrics for multiple dates (simulating time series)
             for days_ago in [0, 1, 7, 30]:
                 metrics_data.append({
@@ -232,14 +232,14 @@ jobs:
                     'like_count': random.randint(10, 10000),
                     'comment_count': random.randint(5, 1000)
                 })
-        
+
         # Insert test data
         pd.DataFrame(videos_data).to_sql('youtube_videos', engine, if_exists='append', index=False)
         pd.DataFrame(metrics_data).to_sql('youtube_metrics', engine, if_exists='append', index=False)
-        
+
         print(f'✅ Created {len(videos_data)} test videos with {len(metrics_data)} metrics records')
         "
-        
+
     - name: Execute comprehensive data quality test suite
       env:
         ENV_FILE: .env.enterprise.test
@@ -247,21 +247,21 @@ jobs:
         python -m pytest tests/test_data_quality.py tests/test_system_integration.py \
           -v --tb=short --junitxml=enterprise-quality-results.xml \
           --cov=src --cov=web --cov-report=xml
-        
+
     - name: Execute data consistency validation
       env:
         ENV_FILE: .env.enterprise.test
       run: |
         python -m pytest tests/test_data_consistency.py \
           -v --tb=short --junitxml=enterprise-consistency-results.xml
-        
+
     - name: Execute bot detection validation
       env:
         ENV_FILE: .env.enterprise.test
       run: |
         python -m pytest tests/test_bot_detection.py \
           -v --tb=short --junitxml=enterprise-bot-detection-results.xml
-        
+
     - name: Performance benchmark testing
       env:
         ENV_FILE: .env.enterprise.test
@@ -269,7 +269,7 @@ jobs:
         python -m pytest tests/ -k "benchmark" \
           --benchmark-json=performance_benchmarks.json \
           --benchmark-min-rounds=3
-        
+
     - name: Execute enterprise ETL pipeline validation
       env:
         ENV_FILE: .env.enterprise.test
@@ -280,7 +280,7 @@ jobs:
           exit 1
         }
         echo "✅ Enterprise ETL pipeline validation completed"
-        
+
     - name: Validate sentiment analysis accuracy
       env:
         ENV_FILE: .env.enterprise.test
@@ -289,36 +289,36 @@ jobs:
         python -c "
         from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
         analyzer = WeakSupervisionSentimentAnalyzer()
-        
+
         # Test accuracy on known cases
         test_cases = [
             ('this is fire 🔥', 1),
-            ('my nigga snapped', 1), 
+            ('my nigga snapped', 1),
             ('who produced this?', 0),
             ('this is trash', -1)
         ]
-        
+
         # Apply labeling functions (doesn't require training)
         texts = [case[0] for case, _ in test_cases]
         weak_labels = analyzer.apply_labeling_functions(texts)
-        
+
         correct = 0
         for i, (text, expected) in enumerate(test_cases):
             if i < len(weak_labels) and weak_labels[i].final_label:
                 predicted = 1 if weak_labels[i].final_label.value > 0 else (-1 if weak_labels[i].final_label.value < 0 else 0)
                 if predicted == expected:
                     correct += 1
-                    
+
         accuracy = correct / len(test_cases) * 100
         print(f'Sentiment analysis accuracy: {accuracy:.1f}%')
-        
+
         if accuracy < 75:
             print('❌ Sentiment analysis accuracy below threshold')
             exit(1)
         else:
             print('✅ Sentiment analysis accuracy validated')
         "
-        
+
     - name: Validate bot detection performance
       env:
         ENV_FILE: .env.enterprise.test
@@ -327,33 +327,33 @@ jobs:
         python -c "
         from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
         detector = EnhancedBotDetector()
-        
+
         # Test bot detection
         test_cases = [
             ('❤', True),  # Should be flagged as bot
             ('this is an amazing song with great lyrics', False),  # Should not be flagged
             ('fire', False),  # Should be whitelisted
         ]
-        
+
         correct = 0
         for text, should_be_bot in test_cases:
             comment_data = {'comment_text': text, 'created_at': None, 'author_name': 'test'}
             bot_score = detector.calculate_bot_score(comment_data)
             is_bot = bot_score > 0.7
-            
+
             if is_bot == should_be_bot:
                 correct += 1
-                
+
         accuracy = correct / len(test_cases) * 100
         print(f'Bot detection accuracy: {accuracy:.1f}%')
-        
+
         if accuracy < 66:  # At least 2/3 correct
             print('❌ Bot detection accuracy below threshold')
             exit(1)
         else:
             print('✅ Bot detection performance validated')
         "
-        
+
     - name: Generate comprehensive enterprise quality report
       env:
         ENV_FILE: .env.enterprise.test
@@ -363,26 +363,26 @@ jobs:
           --include-metrics \
           --compliance-check \
           --enterprise-mode > enterprise_comprehensive_quality_report.json
-        
+
     - name: Validate SLA compliance
       run: |
         python -c "
         import json
         import time
         from datetime import datetime
-        
+
         # Performance SLA validation
         start_time = time.time()
-        
+
         # Simulate ETL performance test
         import subprocess
         result = subprocess.run([
             'python', 'tools/etl/run_focused_etl.py'
         ], capture_output=True, text=True, timeout=300)
-        
+
         end_time = time.time()
         execution_time = end_time - start_time
-        
+
         sla_metrics = {
             'execution_time_seconds': execution_time,
             'sla_target_seconds': 300,  # 5 minute SLA
@@ -391,17 +391,17 @@ jobs:
             'environment': 'enterprise_test',
             'pipeline_success': result.returncode == 0
         }
-        
+
         with open('enterprise_sla_metrics.json', 'w') as f:
             json.dump(sla_metrics, f, indent=2)
-            
+
         if not sla_metrics['sla_met']:
             print(f'❌ SLA VIOLATION: Pipeline took {execution_time:.1f}s (target: 300s)')
             exit(1)
         else:
             print(f'✅ SLA COMPLIANCE: Pipeline completed in {execution_time:.1f}s')
         "
-        
+
     - name: Upload comprehensive test artifacts
       uses: actions/upload-artifact@v3
       if: always()
@@ -413,7 +413,7 @@ jobs:
           enterprise_sla_metrics.json
           performance_benchmarks.json
           coverage.xml
-          
+
     - name: Publish enterprise test results
       uses: dorny/test-reporter@v1
       if: always()
@@ -426,40 +426,40 @@ jobs:
     name: Regulatory & Compliance Audit
     needs: [enterprise-data-quality]
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: YouTube ToS compliance validation
       run: |
         echo "🔍 Validating YouTube Terms of Service compliance..."
-        
+
         # Check data retention policies
         grep -q "YOUTUBE_DATA_RETENTION_DAYS" .env.example || {
           echo "❌ Missing YouTube data retention configuration"
           exit 1
         }
-        
+
         # Check compliance tools exist
         test -f tools/maintenance/youtube_tos_compliance.py || {
           echo "❌ Missing YouTube ToS compliance tool"
           exit 1
         }
-        
+
         echo "✅ YouTube ToS compliance validation passed"
-        
+
     - name: Data privacy audit
       run: |
         echo "🔒 Conducting data privacy audit..."
-        
+
         # Check for hardcoded sensitive data
         if grep -r "password\|secret\|key" --include="*.py" --exclude-dir=".git" . | grep -v "example\|test\|placeholder"; then
           echo "❌ Potential hardcoded secrets detected"
           exit 1
         fi
-        
+
         echo "✅ Data privacy audit passed"
-        
+
     - name: Generate compliance report
       run: |
         cat > compliance_audit_report.json << EOF
@@ -477,7 +477,7 @@ jobs:
           ]
         }
         EOF
-        
+
     - name: Upload compliance artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -489,32 +489,32 @@ jobs:
     needs: [security-scan, code-quality, enterprise-data-quality, compliance-audit]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Validate deployment prerequisites
       run: |
         echo "🔍 Validating deployment prerequisites..."
-        
+
         # Check critical files
         required_files=(
           ".env.example"
-          "requirements.txt" 
+          "requirements.txt"
           "scripts/setup_cron.sh"
           "tools/etl/run_production_pipeline.py"
           "tools/setup/create_tables.py"
         )
-        
+
         for file in "${required_files[@]}"; do
           if [[ ! -f "$file" ]]; then
             echo "❌ Missing required file: $file"
             exit 1
           fi
         done
-        
+
         echo "✅ All deployment prerequisites validated"
-        
+
     - name: Generate deployment readiness manifest
       run: |
         cat > deployment_readiness_manifest.json << EOF
@@ -539,7 +539,7 @@ jobs:
           "monitoring_configured": true
         }
         EOF
-        
+
     - name: Upload deployment artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -551,7 +551,7 @@ jobs:
     needs: [deployment-readiness]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
     - name: Success notification
       if: needs.deployment-readiness.result == 'success'
@@ -559,7 +559,7 @@ jobs:
         echo "🎉 ENTERPRISE PIPELINE VALIDATION SUCCESSFUL"
         echo "================================================"
         echo "✅ Security scan: PASSED"
-        echo "✅ Code quality: PASSED" 
+        echo "✅ Code quality: PASSED"
         echo "✅ Data quality: PASSED"
         echo "✅ Performance: PASSED"
         echo "✅ Compliance: PASSED"
@@ -567,7 +567,7 @@ jobs:
         echo ""
         echo "🚀 System is ready for production deployment"
         echo "📊 Enterprise-grade YouTube Analytics Platform v${{ env.ENTERPRISE_VERSION }}"
-        
+
     - name: Failure notification
       if: needs.deployment-readiness.result != 'success'
       run: |

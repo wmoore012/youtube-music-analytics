@@ -18,7 +18,7 @@ All these comments are now correctly identified as **POSITIVE** with high confid
 
 ### Original Problem Cases (Now Fixed ✅)
 - "Hottie, Baddie, Maddie" → +0.80
-- "Part two pleaseee wtfff" → +0.62  
+- "Part two pleaseee wtfff" → +0.62
 - "Cuz I willie 😖😚💕" → +0.65
 - "sheeeeesh my nigga snapped 🔥🔥🔥🔥" → +0.62
 - "my legs are spread!!" → +0.70

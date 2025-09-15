@@ -213,7 +213,7 @@ def test_daily_max_semantics(monkeypatch):
                 cursorclass=pymysql.cursors.DictCursor,
             ),
         )
-        
+
         # Clear any existing ETL run locks for test channel
         conn = etl._connect()
         try:

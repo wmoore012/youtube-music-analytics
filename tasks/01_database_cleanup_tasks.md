@@ -10,7 +10,7 @@
 - [x] **TESTED**: Removed 847+ unauthorized raw records and database entries
 - [x] **VALIDATED**: No unauthorized channels remain in system
 
-## 🎤 Task 1.2: Artist Coverage Verification  
+## 🎤 Task 1.2: Artist Coverage Verification
 - [x] Verify all configured artists have comments in `youtube_comments` table
 - [x] Run ETL until all artists have comment data
 - [x] Add test to ensure minimum comment threshold per artist
@@ -20,7 +20,7 @@
 
 ## 📊 Task 1.3: Missing Column Population (TDD Approach)
 - [x] Write tests for `youtube_comments.beat_appreciation` column
-- [x] Write tests for `youtube_comments.is_bot_suspected` column  
+- [x] Write tests for `youtube_comments.is_bot_suspected` column
 - [x] Implement logic to populate `beat_appreciation` based on music-specific keywords
 - [x] Implement logic to populate `is_bot_suspected` using enhanced bot detection
 - [x] Ensure all existing comments get these fields populated

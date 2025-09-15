@@ -10,23 +10,24 @@ This script fixes all notebook issues:
 4. Ensures all notebooks run successfully
 """
 
+import json
 import os
-import sys
 import shutil
 import subprocess
-import json
+import sys
 from pathlib import Path
+
 
 def cleanup_duplicate_notebooks():
     """Remove duplicate and conflicting notebooks."""
     print("🧹 Cleaning up duplicate notebooks...")
-    
+
     # Remove the problematic quality notebook in wrong location
     quality_notebook = "notebooks/quality/03_appendix_data_quality.ipynb"
     if os.path.exists(quality_notebook):
         print(f"   Removing duplicate: {quality_notebook}")
         os.remove(quality_notebook)
-    
+
     # Remove empty executed notebooks
     executed_dir = "notebooks/executed"
     for file in os.listdir(executed_dir):
@@ -35,13 +36,14 @@ def cleanup_duplicate_notebooks():
             if os.path.getsize(filepath) == 0:
                 print(f"   Removing empty: {filepath}")
                 os.remove(filepath)
-    
+
     print("✅ Notebook cleanup complete")
+
 
 def fix_data_quality_notebook():
     """Fix the data quality notebook with proper imports and functions."""
     print("🔧 Fixing data quality notebook...")
-    
+
     notebook_content = {
         "cells": [
             {
@@ -52,8 +54,8 @@ def fix_data_quality_notebook():
                     "\\n",
                     "## Comprehensive Data Quality Analysis\\n",
                     "\\n",
-                    "This notebook provides a complete data quality assessment for our YouTube analytics platform."
-                ]
+                    "This notebook provides a complete data quality assessment for our YouTube analytics platform.",
+                ],
             },
             {
                 "cell_type": "code",
@@ -77,8 +79,8 @@ def fix_data_quality_notebook():
                     "from src.youtubeviz.data import load_youtube_data\\n",
                     "from src.youtubeviz.utils import safe_head\\n",
                     "\\n",
-                    "print('✅ All imports successful!')"
-                ]
+                    "print('✅ All imports successful!')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -95,8 +97,8 @@ def fix_data_quality_notebook():
                     "\\n",
                     "# Show data overview\\n",
                     "print('\\n📋 Data Overview:')\\n",
-                    "safe_head(df, 3)"
-                ]
+                    "safe_head(df, 3)",
+                ],
             },
             {
                 "cell_type": "code",
@@ -106,7 +108,7 @@ def fix_data_quality_notebook():
                 "source": [
                     "# 🎯 Compute KPIs function\\n",
                     "def compute_kpis(df):\\n",
-                    "    \\\"\\\"\\\"Compute key performance indicators for data quality.\\\"\\\"\\\"\\n",
+                    '    \\"\\"\\"Compute key performance indicators for data quality.\\"\\"\\"\\n',
                     "    \\n",
                     "    kpis = {}\\n",
                     "    \\n",
@@ -135,8 +137,8 @@ def fix_data_quality_notebook():
                     "# Compute KPIs\\n",
                     "kpis = compute_kpis(df)\\n",
                     "print('✅ KPIs computed successfully')\\n",
-                    "kpis"
-                ]
+                    "kpis",
+                ],
             },
             {
                 "cell_type": "code",
@@ -146,7 +148,7 @@ def fix_data_quality_notebook():
                 "source": [
                     "# 🏆 Overall Data Quality Score\\n",
                     "def calculate_overall_quality_score(kpis):\\n",
-                    "    \\\"\\\"\\\"Calculate overall data quality score.\\\"\\\"\\\"\\n",
+                    '    \\"\\"\\"Calculate overall data quality score.\\"\\"\\"\\n',
                     "    \\n",
                     "    # Completeness (40% weight)\\n",
                     "    completeness_score = kpis.get('completeness_score', 0) * 0.4\\n",
@@ -178,8 +180,8 @@ def fix_data_quality_notebook():
                     "elif quality_score >= 70:\\n",
                     "    print('🟠 FAIR - Data quality needs improvement')\\n",
                     "else:\\n",
-                    "    print('🔴 POOR - Data quality requires immediate attention')"
-                ]
+                    "    print('🔴 POOR - Data quality requires immediate attention')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -199,16 +201,12 @@ def fix_data_quality_notebook():
                     "print(f'🎵 Unique Videos: {kpis[\"unique_videos\"]:,}')\\n",
                     "print(f'🎤 Unique Artists: {kpis[\"unique_artists\"]}')\\n",
                     "print(f'📈 Completeness: {kpis[\"completeness_score\"]:.1f}%')\\n",
-                    "print(f'🔄 Duplicate Rate: {kpis[\"duplicate_rate\"]:.1f}%')"
-                ]
-            }
+                    "print(f'🔄 Duplicate Rate: {kpis[\"duplicate_rate\"]:.1f}%')",
+                ],
+            },
         ],
         "metadata": {
-            "kernelspec": {
-                "display_name": "Python 3",
-                "language": "python",
-                "name": "python3"
-            },
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
             "language_info": {
                 "codemirror_mode": {"name": "ipython", "version": 3},
                 "file_extension": ".py",
@@ -216,43 +214,40 @@ def fix_data_quality_notebook():
                 "name": "python",
                 "nbconvert_exporter": "python",
                 "pygments_lexer": "ipython3",
-                "version": "3.8.0"
-            }
+                "version": "3.8.0",
+            },
         },
         "nbformat": 4,
-        "nbformat_minor": 4
+        "nbformat_minor": 4,
     }
-    
+
     # Write the fixed notebook
     notebook_path = "notebooks/editable/03_appendix_data_quality_clean.ipynb"
-    with open(notebook_path, 'w') as f:
+    with open(notebook_path, "w") as f:
         json.dump(notebook_content, f, indent=2)
-    
+
     print(f"✅ Fixed data quality notebook: {notebook_path}")
+
 
 def regenerate_executed_notebooks():
     """Regenerate all executed notebooks."""
     print("🔄 Regenerating executed notebooks...")
-    
+
     # Run the main analytics
     try:
-        result = subprocess.run([
-            "python", "execute_music_analytics.py"
-        ], capture_output=True, text=True, timeout=300)
-        
+        result = subprocess.run(["python", "execute_music_analytics.py"], capture_output=True, text=True, timeout=300)
+
         if result.returncode == 0:
             print("✅ Music analytics executed successfully")
         else:
             print(f"❌ Music analytics failed: {result.stderr}")
     except subprocess.TimeoutExpired:
         print("⏰ Music analytics timed out")
-    
+
     # Run data quality
     try:
-        result = subprocess.run([
-            "python", "execute_data_quality.py"
-        ], capture_output=True, text=True, timeout=300)
-        
+        result = subprocess.run(["python", "execute_data_quality.py"], capture_output=True, text=True, timeout=300)
+
         if result.returncode == 0:
             print("✅ Data quality executed successfully")
         else:
@@ -260,26 +255,28 @@ def regenerate_executed_notebooks():
     except subprocess.TimeoutExpired:
         print("⏰ Data quality timed out")
 
+
 def main():
     """Main function to fix all notebook issues."""
     print("🔧 COMPREHENSIVE NOTEBOOK REPAIR")
     print("=" * 40)
-    
+
     # Step 1: Cleanup duplicates
     cleanup_duplicate_notebooks()
-    
+
     # Step 2: Fix data quality notebook
     fix_data_quality_notebook()
-    
+
     # Step 3: Regenerate executed notebooks
     regenerate_executed_notebooks()
-    
+
     print("\n🎉 NOTEBOOK REPAIR COMPLETE!")
     print("=" * 40)
     print("✅ All notebooks should now work correctly")
     print("✅ Duplicates removed")
     print("✅ Import errors fixed")
     print("✅ Executed notebooks regenerated")
+
 
 if __name__ == "__main__":
     main()

@@ -60,8 +60,8 @@ def get_database_channels(engine) -> Set[str]:
         result = conn.execute(
             text(
                 """
-            SELECT DISTINCT channel_title 
-            FROM youtube_videos 
+            SELECT DISTINCT channel_title
+            FROM youtube_videos
             WHERE channel_title IS NOT NULL
             ORDER BY channel_title
         """
@@ -126,7 +126,7 @@ def get_removal_impact(engine, channels_to_remove: Set[str]) -> dict:
         result = conn.execute(
             text(
                 f"""
-            SELECT COUNT(*) FROM youtube_videos 
+            SELECT COUNT(*) FROM youtube_videos
             WHERE channel_title IN ({channel_filter})
         """
             )
@@ -294,7 +294,7 @@ def perform_cleanup(engine, channels_to_remove: Set[str]) -> dict:
         result = conn.execute(
             text(
                 f"""
-            DELETE FROM youtube_videos 
+            DELETE FROM youtube_videos
             WHERE channel_title IN ({channel_filter})
         """
             )

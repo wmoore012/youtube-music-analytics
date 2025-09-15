@@ -31,7 +31,7 @@ def main():
         epilog="""
 Examples:
   python tools/etl.py                     # Full pipeline
-  python tools/etl.py --focused           # Quick core data only  
+  python tools/etl.py --focused           # Quick core data only
   python tools/etl.py --sentiment         # Include sentiment analysis
   python tools/etl.py --channels "A,B"    # Specific channels only
   python tools/etl.py --dry-run           # Test without changes

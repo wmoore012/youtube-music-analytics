@@ -6,7 +6,7 @@
 ```
 web/                           # Main ETL engine and business logic
 ├── youtube_channel_etl.py     # Primary ETL pipeline
-├── sentiment_job.py           # Sentiment analysis pipeline  
+├── sentiment_job.py           # Sentiment analysis pipeline
 ├── bulletproof_runner.py      # Fault-tolerant execution framework
 ├── etl_helpers.py            # Database utilities and helpers
 ├── youtube_integration.py     # YouTube API integration
@@ -119,7 +119,7 @@ from sqlalchemy import create_engine
 
 ### ETL Pipeline Flow
 1. **Raw Extraction** → `youtube_videos_raw` table
-2. **Processing** → `youtube_videos`, `youtube_metrics` tables  
+2. **Processing** → `youtube_videos`, `youtube_metrics` tables
 3. **Sentiment Analysis** → `youtube_comments`, `youtube_sentiment_summary`
 4. **Analytics** → Notebooks consume processed data via `youtubeviz`
 
@@ -139,7 +139,7 @@ from sqlalchemy import create_engine
 
 ### Notebook Organization
 - **Editable versions** for development work
-- **Executed versions** for sharing results  
+- **Executed versions** for sharing results
 - **Modular design** using `youtubeviz` package for reusable functions
 - **Clear categorization** by analysis type (analysis, quality, operations)
 - **Storytelling approach**: Notebooks should be FUN and tell a compelling story
