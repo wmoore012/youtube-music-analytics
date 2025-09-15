@@ -12,6 +12,7 @@ google-api-python-client>=2.141.0
 vaderSentiment>=3.3.2
 textblob>=0.17.1
 nltk>=3.8.1
+pydantic>=2.4.0
 
 # Bot Detection & Text Processing
 scikit-learn>=1.4.0

@@ -203,6 +203,15 @@ except Exception as e:
     exit(1)
 "
 
+    - name: 🧪 Test notebook execution framework
+      run: |
+        echo "🧪 Testing notebook execution framework..."
+        
+        # Test that notebook execution test files exist and are valid
+        python -m pytest tests/test_notebook_execution.py::TestNotebookFiles -v --tb=short
+        
+        echo "✅ Notebook execution framework tests passed"
+
     - name: 📋 Generate quality report
       run: |
         echo "📋 NOTEBOOK QUALITY REPORT"
@@ -220,6 +229,7 @@ except Exception as e:
         echo "   ✅ Import statements work"
         echo "   ✅ Execute scripts are valid"
         echo "   ✅ Artist configuration is valid"
+        echo "   ✅ Notebook execution framework tested"
         echo ""
         echo "🎉 All notebook quality checks passed!"
 

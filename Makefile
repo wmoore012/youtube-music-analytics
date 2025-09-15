@@ -19,6 +19,8 @@ help: ## Show available commands
 	@echo "🧪 Testing & Quality:"
 	@echo "  test              Run comprehensive test suite"
 	@echo "  test-enterprise   Run enterprise-grade test suite with benchmarks"
+	@echo "  test-notebooks    Run notebook validation tests"
+	@echo "  test-notebook-execution  🧪 Run comprehensive notebook execution tests"
 	@echo "  lint              Run code linting (flake8)"
 	@echo "  format            Format code (black + isort)"
 	@echo "  typecheck         Run static type checking (mypy)"
@@ -90,8 +92,13 @@ test: ## Run comprehensive test suite
 
 test-notebooks: ## Run notebook validation tests
 	@echo "📓 Running notebook validation tests..."
-	python -m pytest tests/test_notebook_validation.py -v
+	python -m pytest tests/test_notebook_validation.py tests/test_notebook_execution.py -v
 	@echo "✅ Notebook tests complete"
+
+test-notebook-execution: ## Run comprehensive notebook execution tests
+	@echo "🧪 Running comprehensive notebook execution tests..."
+	python -m pytest tests/test_notebook_execution.py -v
+	@echo "✅ Notebook execution tests complete"
 
 test-enterprise: ## Run enterprise test suite with coverage and benchmarks
 	@echo "🏢 Running enterprise test suite..."

@@ -248,12 +248,13 @@ except Exception as e:
                     "pytest",
                     "tests/test_system_integration.py",
                     "tests/test_data_quality.py",
+                    "tests/test_notebook_execution.py",
                     "-v",
                     "--tb=short",
                 ],
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=180,
             )
 
             if result.returncode == 0:
