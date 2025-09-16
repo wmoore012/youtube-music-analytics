@@ -211,6 +211,16 @@ ci-report: ## Generate AI agent reports only
 	python scripts/enhanced_ci.py --report-only
 	@echo "✅ AI agent reports generated"
 
+benchmark: ## Run project benchmark and track progress
+	@echo "📊 Running project benchmark..."
+	python scripts/benchmark_progress.py
+	@echo "✅ Benchmark complete"
+
+setup-sentiment: ## Set up basic sentiment analysis for benchmarking
+	@echo "🎵 Setting up sentiment analysis..."
+	python scripts/setup_sentiment.py
+	@echo "✅ Sentiment analysis setup complete"
+
 ci-local: ## Run local CI/CD pipeline (quick validation)
 	@echo "🚀 Running local CI/CD pipeline..."
 	python scripts/run_local_ci.py
