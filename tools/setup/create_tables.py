@@ -126,6 +126,61 @@ def create_youtube_tables() -> bool:
           KEY `idx_yvraw_processed` (`processed`)
         )
         """,
+        """
+        CREATE TABLE IF NOT EXISTS `project_benchmarks` (
+          `benchmark_id` varchar(50) NOT NULL,
+          `benchmark_date` datetime NOT NULL,
+          `total_records` int DEFAULT NULL,
+          `unique_videos` int DEFAULT NULL,
+          `unique_artists` int DEFAULT NULL,
+          `unique_channels` int DEFAULT NULL,
+          `date_range_days` int DEFAULT NULL,
+          `date_range_years` decimal(4,2) DEFAULT NULL,
+          `load_time_seconds` decimal(8,4) DEFAULT NULL,
+          `throughput_rows_per_sec` decimal(10,2) DEFAULT NULL,
+          `null_percentage` decimal(5,2) DEFAULT NULL,
+          `comment_count` bigint DEFAULT NULL,
+          `test_coverage` decimal(5,2) DEFAULT NULL,
+          `duplicate_functions` int DEFAULT NULL,
+          `lines_of_code` int DEFAULT NULL,
+          `sentiment_available` enum('available','not_available') NOT NULL DEFAULT 'not_available',
+          `sentiment_avg_time` decimal(8,6) DEFAULT NULL,
+          `sentiment_p95_time` decimal(8,6) DEFAULT NULL,
+          `sentiment_throughput` decimal(10,2) DEFAULT NULL,
+          `sentiment_comments_tested` int DEFAULT NULL,
+          `bot_detection_available` enum('available','not_available') NOT NULL DEFAULT 'not_available',
+          `bot_detection_avg_time` decimal(8,6) DEFAULT NULL,
+          `bot_detection_throughput` decimal(10,2) DEFAULT NULL,
+          `bot_detection_precision` decimal(5,4) DEFAULT NULL,
+          `existing_model_benchmarks` json DEFAULT NULL,
+          `notes` text DEFAULT NULL,
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`benchmark_id`),
+          KEY `idx_benchmark_date` (`benchmark_date`),
+          KEY `idx_created_desc` (`created_at` DESC, `benchmark_date` DESC),
+          KEY `idx_sentiment_available` (`sentiment_available`),
+          KEY `idx_bot_detection_available` (`bot_detection_available`),
+          CONSTRAINT `chk_pct_coverage` CHECK (`test_coverage` BETWEEN 0 AND 100),
+          CONSTRAINT `chk_pct_nulls` CHECK (`null_percentage` BETWEEN 0 AND 100),
+          CONSTRAINT `chk_bot_precision` CHECK (`bot_detection_precision` BETWEEN 0 AND 1),
+          CONSTRAINT `chk_throughput_nonneg` CHECK (`throughput_rows_per_sec` >= 0),
+          CONSTRAINT `chk_sent_throughput` CHECK (`sentiment_throughput` >= 0),
+          CONSTRAINT `chk_bot_throughput` CHECK (`bot_detection_throughput` >= 0),
+          CONSTRAINT `chk_years_nonneg` CHECK (`date_range_years` >= 0),
+          CONSTRAINT `chk_load_time_nonneg` CHECK (`load_time_seconds` >= 0)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `project_benchmark_models` (
+          `benchmark_id` varchar(50) NOT NULL,
+          `model_name` varchar(100) NOT NULL,
+          `accuracy_pct` decimal(5,2) NOT NULL,
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`benchmark_id`, `model_name`),
+          KEY `idx_model_accuracy` (`model_name`, `accuracy_pct` DESC),
+          CONSTRAINT `chk_model_accuracy` CHECK (`accuracy_pct` BETWEEN 0 AND 100)
+        )
+        """,
     ]
 
     try:

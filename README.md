@@ -717,3 +717,16 @@ This pipeline powers analytics for music industry professionals tracking:
 **Built with ❤️ for the music industry and data science community**
 
 Ready to turn your YouTube data into actionable music industry insights? Let's go! 🚀
+
+## Personal/Local Maintenance Utility (Developers)
+
+This project provides a small personal convenience tool to clean known dummy YouTube video IDs from your local database. It is meant for developers who may have inserted test rows during manual experiments. Do not run this in shared or production environments.
+
+- Make target (recommended):
+   - make personal-cleanup-dummy-videos
+- Equivalent script usage (customize IDs / dry-run):
+   - python scripts/cleanup_dummy_videos.py --ids vid1 vid2 vid3 vidX --include-metrics
+   - Add --dry-run to preview counts without deleting
+   - Reads credentials from .env or DATABASE_URL
+
+Label: PERSONAL problem for individuals using Git locally; not part of CI and produces no tracked artifacts.

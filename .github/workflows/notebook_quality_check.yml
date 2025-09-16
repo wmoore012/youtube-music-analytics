@@ -68,9 +68,13 @@ import sys
 try:
     with open('$notebook', 'r') as f:
         json.load(f)
-    print('✅ Valid JSON: $notebook')
-except json.JSONDecodeError as e:
-    print('❌ Invalid JSON in $notebook: {e}')
+    print('✅ Valid JSON syntax')
+except Exception as e:
+    print(f'❌ Invalid JSON: {e}')
+    sys.exit(1)
+"
+          fi
+        done
     sys.exit(1)
 "
           fi
@@ -206,10 +210,10 @@ except Exception as e:
     - name: 🧪 Test notebook execution framework
       run: |
         echo "🧪 Testing notebook execution framework..."
-        
+
         # Test that notebook execution test files exist and are valid
         python -m pytest tests/test_notebook_execution.py::TestNotebookFiles -v --tb=short
-        
+
         echo "✅ Notebook execution framework tests passed"
 
     - name: 📋 Generate quality report

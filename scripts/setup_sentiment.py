@@ -11,16 +11,16 @@ from pathlib import Path
 
 def create_basic_sentiment_analyzer():
     """Create a basic sentiment analyzer if none exists."""
-    
+
     sentiment_file = Path("src/youtubeviz/music_sentiment.py")
-    
+
     if sentiment_file.exists():
         print(f"✅ Sentiment analyzer already exists at {sentiment_file}")
         return True
-    
+
     # Create the directory if it doesn't exist
     sentiment_file.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Basic sentiment analyzer using VADER
     sentiment_code = '''"""
 Basic music-aware sentiment analysis using VADER.
@@ -42,7 +42,7 @@ MUSIC_POSITIVE = {
     'no skip': 1.8, 'on repeat': 1.5, 'obsessed': 1.8
 }
 
-# Music-specific negative terms  
+# Music-specific negative terms
 MUSIC_NEGATIVE = {
     'mid': -1.5, 'trash': -2.0, 'skip': -1.8, 'boring': -1.5,
     'overrated': -1.2, 'generic': -1.0
@@ -52,28 +52,28 @@ MUSIC_NEGATIVE = {
 def analyze_comment(comment_text):
     """
     Analyze sentiment of a music comment.
-    
+
     Args:
         comment_text (str): The comment to analyze
-        
+
     Returns:
         dict: Sentiment analysis results
     """
     if not VADER_AVAILABLE:
         # Fallback to basic keyword matching
         return _basic_sentiment_fallback(comment_text)
-    
+
     analyzer = SentimentIntensityAnalyzer()
-    
+
     # Add music-specific terms to lexicon
     for term, score in MUSIC_POSITIVE.items():
         analyzer.lexicon[term] = score
     for term, score in MUSIC_NEGATIVE.items():
         analyzer.lexicon[term] = score
-    
+
     # Get VADER scores
     scores = analyzer.polarity_scores(comment_text)
-    
+
     # Determine overall sentiment
     compound = scores['compound']
     if compound >= 0.05:
@@ -82,7 +82,7 @@ def analyze_comment(comment_text):
         sentiment = 'negative'
     else:
         sentiment = 'neutral'
-    
+
     return {
         'sentiment': sentiment,
         'compound': compound,
@@ -96,17 +96,17 @@ def analyze_comment(comment_text):
 def _basic_sentiment_fallback(comment_text):
     """Basic sentiment analysis without VADER."""
     text_lower = comment_text.lower()
-    
+
     positive_score = sum(1 for term in MUSIC_POSITIVE if term in text_lower)
     negative_score = sum(1 for term in MUSIC_NEGATIVE if term in text_lower)
-    
+
     # Simple positive/negative words
     basic_positive = ['good', 'great', 'love', 'amazing', 'awesome', 'best']
     basic_negative = ['bad', 'hate', 'terrible', 'worst', 'awful', 'sucks']
-    
+
     positive_score += sum(1 for term in basic_positive if term in text_lower)
     negative_score += sum(1 for term in basic_negative if term in text_lower)
-    
+
     if positive_score > negative_score:
         sentiment = 'positive'
         compound = 0.5
@@ -116,7 +116,7 @@ def _basic_sentiment_fallback(comment_text):
     else:
         sentiment = 'neutral'
         compound = 0.0
-    
+
     return {
         'sentiment': sentiment,
         'compound': compound,
@@ -135,23 +135,24 @@ if __name__ == "__main__":
         "Pretty good track, decent vibes",
         "This slaps so hard, no skip album"
     ]
-    
+
     print("Testing sentiment analyzer:")
     for comment in test_comments:
         result = analyze_comment(comment)
         print(f"'{comment}' -> {result['sentiment']} ({result['compound']:.2f})")
 '''
-    
+
     # Write the sentiment analyzer
-    with open(sentiment_file, 'w') as f:
+    with open(sentiment_file, "w") as f:
         f.write(sentiment_code)
-    
+
     print(f"✅ Created basic sentiment analyzer at {sentiment_file}")
-    
+
     # Test it
     try:
-        sys.path.insert(0, '.')
+        sys.path.insert(0, ".")
         from src.youtubeviz.music_sentiment import analyze_comment
+
         result = analyze_comment("This song is fire!")
         print(f"✅ Test successful: {result}")
         return True
@@ -163,7 +164,7 @@ if __name__ == "__main__":
 def main():
     """Set up sentiment analysis for benchmarking."""
     print("🎵 Setting up sentiment analysis for benchmarking...")
-    
+
     if create_basic_sentiment_analyzer():
         print("\n✅ Sentiment analysis is ready!")
         print("You can now run: make benchmark")

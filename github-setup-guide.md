@@ -9,7 +9,7 @@ Based on your Grammy nomination + M.S. Data Science background:
 - **Audience**: Music industry professionals, data scientists, potential employers
 - **Branding**: Shows expertise in both music and analytics
 
-### Option 2: `music-data-platform`  
+### Option 2: `music-data-platform`
 - **Pros**: Broader scope, shows platform thinking
 - **Audience**: Technical leaders, architects, enterprise users
 - **Branding**: Demonstrates senior-level system design

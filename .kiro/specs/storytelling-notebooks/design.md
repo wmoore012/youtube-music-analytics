@@ -66,7 +66,7 @@ class StorytellingNotebook:
     sections: List[NotebookSection]
     artist_list: List[str]
     color_scheme: Dict[str, str]
-    
+
     def generate_intro() -> MarkdownCell
     def generate_conclusion() -> MarkdownCell
     def add_educational_context(section: str, concept: str) -> MarkdownCell

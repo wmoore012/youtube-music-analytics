@@ -1,7 +1,7 @@
 # Portfolio Benchmark - Grammy-Nominated Producer + M.S. Data Science
 
-**Current Status**: September 15, 2025  
-**Repository**: https://github.com/wmoore012/youtube-music-analytics  
+**Current Status**: September 15, 2025
+**Repository**: https://github.com/wmoore012/youtube-music-analytics
 **Unique Positioning**: Grammy-nominated producer with advanced data science training
 
 ## 🎯 Resume Impact Assessment
@@ -155,7 +155,7 @@
 ## 🎵 Next Steps Recommendation
 
 **Priority 1**: Fix the 27 duplicate functions and create professional README (2-3 days)
-**Priority 2**: Build basic test suite to 25% coverage (1 week)  
+**Priority 2**: Build basic test suite to 25% coverage (1 week)
 **Priority 3**: Create impressive portfolio presentation (1 week)
 
 This will move you from "interesting candidate" to "must interview" for most positions, especially given your unique Grammy + M.S. Data Science background.

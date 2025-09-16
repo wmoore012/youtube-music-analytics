@@ -98,28 +98,52 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
 
 def _get_scheme_colors(scheme_name: str) -> list[str]:
     """Get color palette for a specific scheme.
-    
+
     Args:
         scheme_name: Color scheme name (vibrant, pastel, monochrome)
-        
+
     Returns:
         List of hex color codes
     """
     schemes = {
         "vibrant": [
-            "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
-            "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9"
+            "#FF6B6B",
+            "#4ECDC4",
+            "#45B7D1",
+            "#96CEB4",
+            "#FFEAA7",
+            "#DDA0DD",
+            "#98D8C8",
+            "#F7DC6F",
+            "#BB8FCE",
+            "#85C1E9",
         ],
         "pastel": [
-            "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
-            "#E1BAFF", "#FFBAE1", "#C9FFBA", "#BAFFE1", "#E1FFBA"
+            "#FFB3BA",
+            "#FFDFBA",
+            "#FFFFBA",
+            "#BAFFC9",
+            "#BAE1FF",
+            "#E1BAFF",
+            "#FFBAE1",
+            "#C9FFBA",
+            "#BAFFE1",
+            "#E1FFBA",
         ],
         "monochrome": [
-            "#2C3E50", "#34495E", "#7F8C8D", "#95A5A6", "#BDC3C7",
-            "#ECF0F1", "#3498DB", "#5DADE2", "#85C1E9", "#AED6F1"
-        ]
+            "#2C3E50",
+            "#34495E",
+            "#7F8C8D",
+            "#95A5A6",
+            "#BDC3C7",
+            "#ECF0F1",
+            "#3498DB",
+            "#5DADE2",
+            "#85C1E9",
+            "#AED6F1",
+        ],
     }
-    
+
     return schemes.get(scheme_name, schemes["vibrant"])
 
 
@@ -131,129 +155,115 @@ def enhance_chart_beauty(
     annotations: Optional[list] = None,
 ):
     """Enhance chart visual appeal with emotional theming.
-    
+
     Args:
         chart: Plotly or Altair chart object
         title: Optional title to set
         emotional_theme: Theme (professional, energetic, warm, dramatic)
         config: Optional configuration dict with styling parameters
         annotations: Optional list of annotations to add
-        
+
     Returns:
         Enhanced chart object
     """
     if chart is None:
         return chart
-    
+
     # Default config
     default_config = {
         "height": 600,
         "width": None,
         "title_size": 24,
         "axis_title_size": 14,
-        "font_family": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        "font_family": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
     }
-    
+
     if config:
         default_config.update(config)
-    
+
     # Theme configurations
     themes = {
         "professional": {
             "bg_color": "#FFFFFF",
             "grid_color": "#E5E5E5",
             "text_color": "#2C3E50",
-            "title_color": "#1A252F"
+            "title_color": "#1A252F",
         },
         "energetic": {
-            "bg_color": "#FAFAFA", 
+            "bg_color": "#FAFAFA",
             "grid_color": "#E8E8E8",
             "text_color": "#E74C3C",
-            "title_color": "#C0392B"
+            "title_color": "#C0392B",
         },
-        "warm": {
-            "bg_color": "#FFF8F0",
-            "grid_color": "#F0E6D2",
-            "text_color": "#8B4513",
-            "title_color": "#A0522D"
-        },
-        "dramatic": {
-            "bg_color": "#1A1A1A",
-            "grid_color": "#404040",
-            "text_color": "#FFFFFF",
-            "title_color": "#F39C12"
-        }
+        "warm": {"bg_color": "#FFF8F0", "grid_color": "#F0E6D2", "text_color": "#8B4513", "title_color": "#A0522D"},
+        "dramatic": {"bg_color": "#1A1A1A", "grid_color": "#404040", "text_color": "#FFFFFF", "title_color": "#F39C12"},
     }
-    
+
     theme_config = themes.get(emotional_theme, themes["professional"])
-    
+
     # Try to enhance Plotly chart
-    if hasattr(chart, 'update_layout'):
+    if hasattr(chart, "update_layout"):
         layout_updates = {
             "plot_bgcolor": theme_config["bg_color"],
             "paper_bgcolor": theme_config["bg_color"],
-            "font": {
-                "family": default_config["font_family"],
-                "size": 12,
-                "color": theme_config["text_color"]
-            },
+            "font": {"family": default_config["font_family"], "size": 12, "color": theme_config["text_color"]},
             "title": {
                 "font": {
                     "size": default_config["title_size"],
                     "color": theme_config["title_color"],
-                    "family": default_config["font_family"]
+                    "family": default_config["font_family"],
                 },
                 "x": 0.5,
-                "xanchor": "center"
+                "xanchor": "center",
             },
             "xaxis": {
                 "gridcolor": theme_config["grid_color"],
-                "title": {"font": {"size": default_config["axis_title_size"]}}
+                "title": {"font": {"size": default_config["axis_title_size"]}},
             },
             "yaxis": {
                 "gridcolor": theme_config["grid_color"],
-                "title": {"font": {"size": default_config["axis_title_size"]}}
-            }
+                "title": {"font": {"size": default_config["axis_title_size"]}},
+            },
         }
-        
+
         if title:
             layout_updates["title"]["text"] = title
-        
+
         if default_config["height"]:
             layout_updates["height"] = default_config["height"]
-        
+
         if default_config["width"]:
             layout_updates["width"] = default_config["width"]
-        
+
         if annotations:
             layout_updates["annotations"] = annotations
-        
+
         chart.update_layout(**layout_updates)
         return chart
-    
+
     # Try to enhance Altair chart
-    elif hasattr(chart, 'resolve_scale') and hasattr(chart, 'properties'):
+    elif hasattr(chart, "resolve_scale") and hasattr(chart, "properties"):
         properties = {
             "background": theme_config["bg_color"],
             "title": {
                 "fontSize": default_config["title_size"],
                 "color": theme_config["title_color"],
-                "anchor": "middle"
-            }
+                "anchor": "middle",
+            },
         }
-        
+
         if title:
             properties["title"]["text"] = title
-        
+
         if default_config["height"]:
             properties["height"] = default_config["height"]
-        
+
         if default_config["width"]:
             properties["width"] = default_config["width"]
-        
-        enhanced = chart.resolve_scale(color='independent').properties(**properties)
+
+        enhanced = chart.resolve_scale(color="independent").properties(**properties)
         return enhanced
-    
+
     # Return unchanged if we can't enhance it
     return chart
 
@@ -265,23 +275,23 @@ def apply_color_scheme(
     artists: Optional[list] = None,
 ):
     """Apply color scheme to chart.
-    
+
     Args:
         chart: Chart object to modify
         scheme_name: Color scheme name or None to use env default
         custom_colors: Custom color mapping dict
         artists: List of artist names for color assignment
-        
+
     Returns:
         Chart with applied colors
     """
     if chart is None:
         return chart
-    
+
     # Determine color scheme
     if not scheme_name:
         scheme_name = os.getenv("ARTIST_COLOR_SCHEME", "vibrant")
-    
+
     # Get colors
     if custom_colors:
         color_map = custom_colors
@@ -292,31 +302,28 @@ def apply_color_scheme(
         # Use scheme colors directly
         colors = _get_scheme_colors(scheme_name)
         color_map = {f"Item {i}": color for i, color in enumerate(colors)}
-    
+
     # Apply to Plotly chart
-    if hasattr(chart, 'update_traces'):
-        if hasattr(chart, 'data') and chart.data:
+    if hasattr(chart, "update_traces"):
+        if hasattr(chart, "data") and chart.data:
             # Try to update existing traces
             for i, trace in enumerate(chart.data):
-                if hasattr(trace, 'name') and trace.name in color_map:
+                if hasattr(trace, "name") and trace.name in color_map:
                     trace.marker = dict(color=color_map[trace.name])
         return chart
-    
+
     # Apply to Altair chart
-    elif hasattr(chart, 'encoding') and hasattr(chart, 'encode'):
-        if hasattr(chart.encoding, 'color') and hasattr(chart.encoding.color, 'field'):
+    elif hasattr(chart, "encoding") and hasattr(chart, "encode"):
+        if hasattr(chart.encoding, "color") and hasattr(chart.encoding.color, "field"):
             # Create color scale for Altair
             domain = list(color_map.keys())
             range_colors = [color_map[key] for key in domain]
-            
+
             enhanced = chart.encode(
-                color=alt.Color(
-                    chart.encoding.color.field,
-                    scale=alt.Scale(domain=domain, range=range_colors)
-                )
+                color=alt.Color(chart.encoding.color.field, scale=alt.Scale(domain=domain, range=range_colors))
             )
             return enhanced
-    
+
     return chart
 
 
@@ -326,26 +333,26 @@ def create_chart_annotations(
     highlight_points: Optional[list] = None,
 ) -> list[dict]:
     """Create annotations for chart insights and highlights.
-    
+
     Args:
         insights: List of insight text to annotate
         chart_type: Type of chart (affects positioning)
         highlight_points: Optional list of points to highlight with arrows
-        
+
     Returns:
         List of annotation dictionaries for Plotly
     """
     annotations = []
-    
+
     # Position settings by chart type
     positions = {
         "line": {"y_base": 0.95, "y_step": -0.08},
         "bar": {"y_base": 1.02, "y_step": -0.06},
         "scatter": {"y_base": 0.98, "y_step": -0.07},
     }
-    
+
     pos_config = positions.get(chart_type, positions["line"])
-    
+
     # Add insight annotations (limit to 5)
     for i, insight in enumerate(insights[:5]):
         annotation = {
@@ -362,7 +369,7 @@ def create_chart_annotations(
             "borderpad": 4,
         }
         annotations.append(annotation)
-    
+
     # Add highlight point annotations
     if highlight_points:
         for point in highlight_points:
@@ -382,7 +389,7 @@ def create_chart_annotations(
                     "borderwidth": 1,
                 }
                 annotations.append(highlight_annotation)
-    
+
     return annotations
 
 
@@ -572,140 +579,6 @@ def linked_scatter_detail_altair(
         return base
 
 
-def enhance_chart_beauty(
-    fig,
-    title: Optional[str] = None,
-    emotional_theme: str = "professional",
-    annotations: Optional[list] = None,
-    config: Optional[dict] = None,
-):
-    """Enhance chart visual appeal with emotional theming and annotations.
-    
-    Applies consistent styling, emotional color themes, and helpful annotations
-    to make charts more engaging and easier to understand.
-    
-    Args:
-        fig: Plotly or Altair figure to enhance
-        title: Optional title to set (with emoji if emotional_theme allows)
-        emotional_theme: Theme style (professional, energetic, warm, dramatic)
-        annotations: List of annotation dicts to add to chart
-        config: Optional configuration dict with chart settings
-        
-    Returns:
-        Enhanced figure with improved styling
-    """
-    config = config or {}
-    
-    # Handle Plotly figures
-    if hasattr(fig, 'update_layout'):
-        return _enhance_plotly_beauty(fig, title, emotional_theme, annotations, config)
-    
-    # Handle Altair charts
-    elif hasattr(fig, 'mark_bar') or hasattr(fig, 'mark_line'):
-        return _enhance_altair_beauty(fig, title, emotional_theme, config)
-    
-    # Return unchanged if not a recognized chart type
-    return fig
-
-
-def _enhance_plotly_beauty(fig, title, emotional_theme, annotations, config):
-    """Enhance Plotly figure beauty."""
-    if go is None:
-        return fig
-    
-    # Emotional theme settings
-    theme_settings = {
-        "professional": {
-            "template": "plotly_white",
-            "font_family": "Arial, sans-serif",
-            "title_color": "#2E3440",
-            "grid_color": "#E5E7EB",
-        },
-        "energetic": {
-            "template": "plotly_dark",
-            "font_family": "Helvetica, sans-serif", 
-            "title_color": "#FF6B6B",
-            "grid_color": "#4ECDC4",
-        },
-        "warm": {
-            "template": "plotly_white",
-            "font_family": "Georgia, serif",
-            "title_color": "#8B4513",
-            "grid_color": "#F5DEB3",
-        },
-        "dramatic": {
-            "template": "plotly_dark",
-            "font_family": "Impact, sans-serif",
-            "title_color": "#FFD700",
-            "grid_color": "#2F2F2F",
-        }
-    }
-    
-    settings = theme_settings.get(emotional_theme, theme_settings["professional"])
-    
-    # Apply theme
-    fig.update_layout(
-        template=settings["template"],
-        font_family=settings["font_family"],
-        title={
-            "text": title,
-            "font": {"size": config.get("title_size", 24), "color": settings["title_color"]},
-            "x": 0.5,  # Center title
-            "xanchor": "center"
-        } if title else {},
-        xaxis=dict(
-            gridcolor=settings["grid_color"],
-            title_font_size=config.get("axis_title_size", 14),
-        ),
-        yaxis=dict(
-            gridcolor=settings["grid_color"],
-            title_font_size=config.get("axis_title_size", 14),
-        ),
-        legend=dict(
-            font_size=config.get("legend_size", 12),
-            bgcolor="rgba(255,255,255,0.8)" if "dark" not in settings["template"] else "rgba(0,0,0,0.8)",
-        ),
-        height=config.get("height", 600),
-        width=config.get("width"),
-        margin=dict(t=80, b=60, l=60, r=60),
-    )
-    
-    # Add annotations if provided
-    if annotations:
-        fig.update_layout(annotations=annotations)
-    
-    return fig
-
-
-def _enhance_altair_beauty(fig, title, emotional_theme, config):
-    """Enhance Altair chart beauty."""
-    # Check if this looks like an Altair chart by checking for methods
-    if not (hasattr(fig, 'resolve_scale') and hasattr(fig, 'properties')):
-        return fig
-    
-    # Emotional theme color schemes
-    theme_colors = {
-        "professional": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"],
-        "energetic": ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"],
-        "warm": ["#D63031", "#E17055", "#FDCB6E", "#6C5CE7", "#A29BFE"],
-        "dramatic": ["#2D3436", "#636E72", "#B2BEC3", "#DDD", "#FFD700"]
-    }
-    
-    colors = theme_colors.get(emotional_theme, theme_colors["professional"])
-    
-    # Apply title and styling
-    title_value = title if title else (alt.Undefined if alt else None)
-    enhanced_fig = fig.resolve_scale(
-        color='independent'
-    ).properties(
-        title=title_value,
-        width=config.get("width", 400),
-        height=config.get("height", 300)
-    )
-    
-    return enhanced_fig
-
-
 def apply_color_scheme(
     fig,
     scheme_name: Optional[str] = None,
@@ -713,47 +586,47 @@ def apply_color_scheme(
     artists: Optional[list] = None,
 ):
     """Apply consistent color schemes from .env config and color files.
-    
+
     Reads color configuration from environment variables and config files
     to ensure consistent artist colors across all visualizations.
-    
+
     Args:
         fig: Chart figure to apply colors to
         scheme_name: Name of color scheme (vibrant, pastel, monochrome)
         custom_colors: Optional dict of custom color mappings
         artists: List of artists to generate colors for
-        
+
     Returns:
         Figure with applied color scheme
     """
     # Get scheme from env if not provided
     if not scheme_name:
         scheme_name = os.getenv("ARTIST_COLOR_SCHEME", "vibrant")
-    
+
     # Load custom colors from config files
     color_map = {}
     if artists:
         color_map = get_artist_color_map(artists)
-    
+
     # Override with custom colors if provided
     if custom_colors:
         color_map.update(custom_colors)
-    
+
     # Apply scheme-based colors for any missing artists
     if artists and scheme_name:
         scheme_colors = _get_scheme_colors(scheme_name)
         for i, artist in enumerate(artists):
             if artist not in color_map:
                 color_map[artist] = scheme_colors[i % len(scheme_colors)]
-    
+
     # Apply colors to figure
-    if hasattr(fig, 'update_traces') and color_map:
+    if hasattr(fig, "update_traces") and color_map:
         # Plotly figure
         return _apply_plotly_colors(fig, color_map)
-    elif hasattr(fig, 'mark_bar') and color_map:
+    elif hasattr(fig, "mark_bar") and color_map:
         # Altair chart
         return _apply_altair_colors(fig, color_map)
-    
+
     return fig
 
 
@@ -761,19 +634,43 @@ def _get_scheme_colors(scheme_name: str) -> list:
     """Get color palette for a named scheme."""
     schemes = {
         "vibrant": [
-            "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
-            "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9"
+            "#FF6B6B",
+            "#4ECDC4",
+            "#45B7D1",
+            "#96CEB4",
+            "#FFEAA7",
+            "#DDA0DD",
+            "#98D8C8",
+            "#F7DC6F",
+            "#BB8FCE",
+            "#85C1E9",
         ],
         "pastel": [
-            "#FFB3BA", "#BAFFC9", "#BAE1FF", "#FFFFBA", "#FFD1FF",
-            "#E0BBE4", "#957DAD", "#D291BC", "#FEC8D8", "#FFDFD3"
+            "#FFB3BA",
+            "#BAFFC9",
+            "#BAE1FF",
+            "#FFFFBA",
+            "#FFD1FF",
+            "#E0BBE4",
+            "#957DAD",
+            "#D291BC",
+            "#FEC8D8",
+            "#FFDFD3",
         ],
         "monochrome": [
-            "#2C3E50", "#34495E", "#7F8C8D", "#95A5A6", "#BDC3C7",
-            "#ECF0F1", "#3498DB", "#5DADE2", "#85C1E9", "#AED6F1"
-        ]
+            "#2C3E50",
+            "#34495E",
+            "#7F8C8D",
+            "#95A5A6",
+            "#BDC3C7",
+            "#ECF0F1",
+            "#3498DB",
+            "#5DADE2",
+            "#85C1E9",
+            "#AED6F1",
+        ],
     }
-    
+
     return schemes.get(scheme_name, schemes["vibrant"])
 
 
@@ -781,38 +678,35 @@ def _apply_plotly_colors(fig, color_map: dict):
     """Apply color mapping to Plotly figure."""
     if go is None:
         return fig
-    
+
     # Update traces with mapped colors
     for trace in fig.data:
-        if hasattr(trace, 'name') and trace.name:
+        if hasattr(trace, "name") and trace.name:
             # Extract artist name from trace name (handle "Artist (daily)" format)
-            artist_name = trace.name.split(' (')[0]
+            artist_name = trace.name.split(" (")[0]
             if artist_name in color_map:
                 trace.line.color = color_map[artist_name]
                 trace.marker.color = color_map[artist_name]
-    
+
     return fig
 
 
 def _apply_altair_colors(fig, color_map: dict):
     """Apply color mapping to Altair chart."""
     # Check if this looks like an Altair chart
-    if not (hasattr(fig, 'encoding') and hasattr(fig, 'encode')):
+    if not (hasattr(fig, "encoding") and hasattr(fig, "encode")):
         return fig
-    
+
     # Create color scale for Altair
     domain = list(color_map.keys())
     range_colors = list(color_map.values())
-    
+
     # Apply color scale
-    if hasattr(fig, 'encoding') and hasattr(fig.encoding, 'color'):
+    if hasattr(fig, "encoding") and hasattr(fig.encoding, "color"):
         fig = fig.encode(
-            color=alt.Color(
-                fig.encoding.color.field + ':N',
-                scale=alt.Scale(domain=domain, range=range_colors)
-            )
+            color=alt.Color(fig.encoding.color.field + ":N", scale=alt.Scale(domain=domain, range=range_colors))
         )
-    
+
     return fig
 
 
@@ -822,20 +716,20 @@ def create_chart_annotations(
     highlight_points: Optional[list] = None,
 ) -> list:
     """Create helpful annotations for charts based on insights.
-    
+
     Generates annotations that highlight key insights and guide
     the viewer's attention to important patterns in the data.
-    
+
     Args:
         insights: List of insight strings to annotate
         chart_type: Type of chart (line, bar, scatter)
         highlight_points: Optional list of points to highlight
-        
+
     Returns:
         List of annotation dictionaries for Plotly
     """
     annotations = []
-    
+
     # Position annotations based on chart type
     if chart_type == "line":
         y_positions = [0.9, 0.8, 0.7, 0.6, 0.5]
@@ -843,14 +737,14 @@ def create_chart_annotations(
         y_positions = [0.95, 0.85, 0.75, 0.65, 0.55]
     else:
         y_positions = [0.9, 0.8, 0.7, 0.6, 0.5]
-    
+
     # Create annotations for insights
     for i, insight in enumerate(insights[:5]):  # Limit to 5 annotations
         if i < len(y_positions):
             annotation = {
                 "text": f"💡 {insight}",
                 "xref": "paper",
-                "yref": "paper", 
+                "yref": "paper",
                 "x": 1.02,
                 "y": y_positions[i],
                 "showarrow": False,
@@ -861,7 +755,7 @@ def create_chart_annotations(
                 "xanchor": "left",
             }
             annotations.append(annotation)
-    
+
     # Add highlight point annotations if provided
     if highlight_points:
         for point in highlight_points:
@@ -877,16 +771,16 @@ def create_chart_annotations(
                     "bgcolor": "rgba(255,255,255,0.9)",
                 }
                 annotations.append(highlight_annotation)
-    
+
     return annotations
 
 
 __all__ = [
-    "views_over_time_plotly", 
-    "artist_compare_altair", 
-    "linked_scatter_detail_altair", 
+    "views_over_time_plotly",
+    "artist_compare_altair",
+    "linked_scatter_detail_altair",
     "get_artist_color_map",
     "enhance_chart_beauty",
-    "apply_color_scheme", 
-    "create_chart_annotations"
+    "apply_color_scheme",
+    "create_chart_annotations",
 ]

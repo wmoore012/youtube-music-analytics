@@ -1,6 +1,7 @@
 def test_dataset_adapter_returns_v2_shape():
-    from datasets.music_industry_sentiment_dataset import get_music_industry_dataset
     import importlib.util
+
+    from datasets.music_industry_sentiment_dataset import get_music_industry_dataset
 
     ds = get_music_industry_dataset()
 

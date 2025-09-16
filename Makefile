@@ -5,6 +5,7 @@
 .PHONY: run-etl run-notebooks quality-check deploy monitor
 .PHONY: enterprise-deploy enterprise-test enterprise-monitor
 .PHONY: security-scan compliance-check performance-test
+.PHONY: personal-cleanup-dummy-videos
 
 # Default target
 help: ## Show available commands
@@ -28,6 +29,7 @@ help: ## Show available commands
 	@echo "  quality-check     Run data quality validation"
 	@echo "  ci-local          🚀 Run local CI/CD pipeline (QUICK)"
 	@echo "  ci-comprehensive  🎤 Run comprehensive artist validation"
+	@echo "  personal-cleanup-dummy-videos  ⚠️ PERSONAL: Remove known dummy video_ids from your local DB"
 	@echo ""
 	@echo "🚀 Pipeline Operations:"
 	@echo "  run-etl           Execute core ETL pipeline"
@@ -211,6 +213,14 @@ ci-report: ## Generate AI agent reports only
 	python scripts/enhanced_ci.py --report-only
 	@echo "✅ AI agent reports generated"
 
+# Personal/local cleanup (NOT for CI/CD; avoid committing outputs)
+personal-cleanup-dummy-videos: ## ⚠️ PERSONAL: Remove known dummy video_ids from your local DB (uses .env)
+	@echo "⚠️ PERSONAL MAINTENANCE TASK ⚠️"
+	@echo "This removes dummy video_ids (vid1, vid2, vid3, vidX) from your local database."
+	@echo "It reads DB settings from .env or DATABASE_URL. Do NOT run in shared/production environments."
+	@echo ""
+	python scripts/cleanup_dummy_videos.py --ids vid1 vid2 vid3 vidX --include-metrics
+
 benchmark: ## Run project benchmark and track progress
 	@echo "📊 Running project benchmark..."
 	python scripts/benchmark_progress.py
@@ -220,6 +230,118 @@ setup-sentiment: ## Set up basic sentiment analysis for benchmarking
 	@echo "🎵 Setting up sentiment analysis..."
 	python scripts/setup_sentiment.py
 	@echo "✅ Sentiment analysis setup complete"
+
+# Automation Management (Explicit User Control)
+list-schedules: ## List available automation schedules
+	@echo "🤖 Available automation schedules..."
+	python scripts/automation_manager.py list
+
+test-schedule: ## Test automation schedule (usage: make test-schedule SCHEDULE=standard)
+	@echo "🧪 Testing automation schedule: $(SCHEDULE)"
+	python scripts/automation_manager.py test $(SCHEDULE)
+
+generate-cron-config: ## Generate CRON configuration (usage: make generate-cron-config SCHEDULE=standard)
+	@echo "⚙️ Generating CRON configuration for: $(SCHEDULE)"
+	python scripts/automation_manager.py generate-cron $(SCHEDULE)
+
+apply-cron-schedule: ## Apply CRON schedule (usage: make apply-cron-schedule SCHEDULE=standard)
+	@echo "🚀 Applying CRON schedule: $(SCHEDULE)"
+	python scripts/automation_manager.py apply-cron $(SCHEDULE)
+
+automation-status: ## Show current automation status
+	@echo "📊 Checking automation status..."
+	python scripts/automation_manager.py status
+
+disable-automation: ## Disable all automated processes
+	@echo "⚠️ Disabling all automation..."
+	python scripts/automation_manager.py disable
+
+restore-automation: ## Restore automation from backup
+	@echo "🔄 Restoring automation from backup..."
+	python scripts/automation_manager.py restore-cron
+
+# Quick automation setup commands
+setup-minimal-automation: ## Set up minimal automation (weekly health checks only)
+	@echo "🤖 Setting up minimal automation..."
+	python scripts/automation_manager.py generate-cron conservative
+	python scripts/automation_manager.py apply-cron conservative --force
+
+setup-standard-automation: ## Set up standard automation (daily ETL, weekly reports)
+	@echo "🤖 Setting up standard automation..."
+	python scripts/automation_manager.py generate-cron standard
+	@echo "📋 Review the generated configuration before applying:"
+	@echo "   cat config/automation/generated_standard_cron.txt"
+	@echo "🚀 Apply with: make apply-cron-schedule SCHEDULE=standard"
+
+setup-enterprise-automation: ## Set up enterprise automation (production monitoring)
+	@echo "🏢 Setting up enterprise automation..."
+	python scripts/automation_manager.py generate-cron enterprise
+	@echo "📋 Review the generated configuration before applying:"
+	@echo "   cat config/automation/generated_enterprise_cron.txt"
+	@echo "🚀 Apply with: make apply-cron-schedule SCHEDULE=enterprise"
+
+# User Experience Optimization Commands
+quickstart: ## Complete setup with sample data (transparent process)
+	@echo "🚀 YouTube Music Analytics - Quick Start"
+	@echo "Built by Grammy-nominated producer + M.S. Data Science student"
+	@echo ""
+	@echo "This will:"
+	@echo "  1. Install dependencies and verify environment"
+	@echo "  2. Set up database schema"
+	@echo "  3. Load sample music data (if available)"
+	@echo "  4. Run validation checks"
+	@echo ""
+	@read -p "Continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	$(MAKE) setup
+	$(MAKE) db-init
+	$(MAKE) ci-report
+	@echo "✅ Quick start complete! Check ci_validation_report.json for system status"
+
+setup: ## Install dependencies and verify environment
+	@echo "📦 Installing dependencies..."
+	@echo "  • Upgrading pip..."
+	pip install --upgrade pip
+	@echo "  • Installing requirements..."
+	pip install -r requirements.txt
+	@echo "  • Installing package in development mode..."
+	pip install -e .
+	@echo "✅ Dependencies installed"
+
+dev-environment: ## Complete development environment setup
+	@echo "🛠️ Setting up development environment..."
+	@echo "This will install:"
+	@echo "  • Pre-commit hooks for code quality"
+	@echo "  • Testing and linting tools"
+	@echo "  • Development dependencies"
+	@echo ""
+	@read -p "Continue? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	$(MAKE) dev
+	@echo "✅ Development environment ready"
+
+configure-channels: ## Set up YouTube channels for data collection
+	@echo "🎵 Configuring YouTube channels..."
+	@echo "You'll need:"
+	@echo "  • YouTube Data API key"
+	@echo "  • Channel URLs for artists you want to track"
+	@echo ""
+	@echo "See .env.example for configuration format"
+	@echo "Run: cp .env.example .env"
+	@echo "Then edit .env with your settings"
+
+run-examples: ## Run example analyses with current data
+	@echo "📊 Running example analyses..."
+	@echo "Available examples:"
+	@echo "  • Artist comparison analysis"
+	@echo "  • Sentiment trend analysis"
+	@echo "  • Data quality validation"
+	@echo ""
+	@read -p "Which example? (comparison/sentiment/quality): " example; \
+	case $$example in \
+		comparison) python execute_artist_comparison.py ;; \
+		sentiment) echo "Sentiment analysis example - run: python test_current_sentiment_model.py" ;; \
+		quality) python execute_data_quality.py ;; \
+		*) echo "Invalid option. Choose: comparison, sentiment, or quality" ;; \
+	esac
 
 ci-local: ## Run local CI/CD pipeline (quick validation)
 	@echo "🚀 Running local CI/CD pipeline..."

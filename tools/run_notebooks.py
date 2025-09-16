@@ -54,11 +54,7 @@ def execute_notebook(in_path: str, output_dir: str = "notebooks/executed") -> Di
 
     # Minimal summary (safe for CI assertions)
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
-    summary = (
-        f"# Executed Notebook: {name}\n\n"
-        f"- Time (UTC): {ts}\n"
-        f"- Status: SUCCESS\n"
-    )
+    summary = f"# Executed Notebook: {name}\n\n" f"- Time (UTC): {ts}\n" f"- Status: SUCCESS\n"
     with open(summary_path, "w", encoding="utf-8") as fh:
         fh.write(summary)
 

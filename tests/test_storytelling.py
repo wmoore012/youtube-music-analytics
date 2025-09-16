@@ -36,4 +36,3 @@ def test_story_block_returns_html_for_testing():
     assert len(re.findall(r"<li>.*?</li>", html)) >= 2
     # Figure HTML embedded
     assert "dummy-fig" in html
-
