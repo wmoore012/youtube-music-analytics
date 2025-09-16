@@ -131,6 +131,11 @@ run-etl: ## Execute core ETL pipeline
 	python tools/etl/run_focused_etl.py
 	@echo "✅ ETL pipeline complete"
 
+normalize-videos: ## Populate music_videos_normalized from existing youtube tables (fast)
+	@echo "🎼 Normalizing music videos into music_videos_normalized..."
+	python scripts/normalize_music_videos.py
+	@echo "✅ Normalization complete"
+
 run-notebooks: ## Generate analytics notebooks
 	@echo "📊 Generating analytics notebooks..."
 	python tools/run_notebooks.py

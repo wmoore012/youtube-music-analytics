@@ -308,7 +308,7 @@ def update_performance_metrics(engine) -> dict:
                 SELECT
                     yv.channel_title as artist_name,
                     COUNT(DISTINCT yv.video_id) as total_videos,
-                    COALESCE(SUM(ym.views), 0) as total_views,
+                    COALESCE(SUM(ym.view_count), 0) as total_views,
                     COUNT(yc.comment_id) as total_comments,
                     COALESCE(AVG(cs.sentiment_score), 0) as avg_sentiment
                 FROM youtube_videos yv

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
@@ -9,9 +10,13 @@ import pandas as pd
 def ensure_cols(df: pd.DataFrame, cols: Iterable[str], fill: Optional[object] = None) -> pd.DataFrame:
     """Ensure dataframe has the specified columns; add them filled with `fill` if missing."""
     df = df.copy()
+    fill_mapping = fill if isinstance(fill, Mapping) else None
     for c in cols:
         if c not in df.columns:
-            df[c] = fill
+            if fill_mapping is not None:
+                df[c] = fill_mapping.get(c)
+            else:
+                df[c] = fill
     return df
 
 

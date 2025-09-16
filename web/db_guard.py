@@ -31,24 +31,33 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
 
 
 # ── Engine factory with kill-switch & RO mode ──────────────────────────────
-def get_engine(schema: str, *, ro: bool = False, echo: bool = False) -> Engine:
+def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = False) -> Engine:
     """Get database engine with kill-switch and optional read-only mode."""
-    # Use existing environment variables
-    if schema == "icatalog_public":
-        url = os.getenv("DATABASE_URL")
+    schema_normalized = (schema or "").strip().lower()
+    database_url = os.getenv("DATABASE_URL")
+
+    if schema_normalized == "icatalog_public":
+        url = database_url
         if not url:
             raise ValueError("DATABASE_URL environment variable not set")
     else:
-        # Construct URL from components
+        # Construct URL from components (default to the local analytics database)
         host = os.getenv("DB_HOST", "127.0.0.1")
-        # Respect .env; default to standard local MySQL port and root user
         port = os.getenv("DB_PORT", "3306")
         user = os.getenv("DB_USER", "root")
         password = os.getenv("DB_PASS")
+
         if not password:
-            raise ValueError("DB_PASS environment variable not set")
-        db_name = os.getenv("DB_NAME", "yt_proj")
-        url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+            if database_url:
+                url = database_url
+            else:
+                raise ValueError("DB_PASS environment variable not set")
+        else:
+            db_name = os.getenv("DB_NAME", "yt_proj")
+            # Allow explicit schema overrides when provided
+            if schema_normalized and schema_normalized not in {"public", "icatalog_public"}:
+                db_name = schema
+            url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
     if ro:
         # Check if URL already has query parameters

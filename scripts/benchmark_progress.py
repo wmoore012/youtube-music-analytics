@@ -755,6 +755,16 @@ def save_benchmark_to_database(data):
         db_data = data.copy()
         db_data["benchmark_id"] = benchmark_id
 
+        raw_date = db_data.pop("date", None)
+        if raw_date:
+            try:
+                db_data["benchmark_date"] = datetime.fromisoformat(raw_date)
+            except ValueError:
+                db_data["benchmark_date"] = raw_date
+
+        # Column not stored in the relational table (kept in JSON export only)
+        db_data.pop("available_columns", None)
+
         # Convert availability flags to enum values
         db_data["sentiment_available"] = "available" if data.get("sentiment_available", 0) else "not_available"
         db_data["bot_detection_available"] = "available" if data.get("bot_detection_available", 0) else "not_available"
@@ -938,7 +948,10 @@ def main():
     analyze_history_and_print(benchmark_data)
 
     # Ask for notes
-    notes = input("\nAny notes about this benchmark? (optional): ").strip()
+    try:
+        notes = input("\nAny notes about this benchmark? (optional): ").strip()
+    except EOFError:
+        notes = ""
     if notes:
         benchmark_data["notes"] = notes
 

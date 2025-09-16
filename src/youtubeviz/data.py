@@ -4,6 +4,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import date, timedelta
+from time import perf_counter
 from typing import Iterable, Optional
 
 import pandas as pd
@@ -182,7 +183,13 @@ def load_artist_daily_metrics(
     if normalize_aliases and not df.empty:
         alias_map = _build_artist_alias_map(eng)
         if alias_map:
-            df["artist_name"] = df["artist_name"].map(lambda n: alias_map.get(str(n), str(n)))
+            def _canonical(name: object) -> str:
+                raw = str(name)
+                if raw in alias_map:
+                    return alias_map[raw]
+                return alias_map.get(raw.lower(), raw)
+
+            df["artist_name"] = df["artist_name"].map(_canonical)
     return df
 
 
@@ -385,6 +392,39 @@ def compute_yoy_views(df: pd.DataFrame) -> pd.DataFrame:
     data["year"] = data["date"].dt.year
     yoy = data.groupby(["artist_name", "year"], as_index=False)["views"].sum().rename(columns={"views": "year_views"})
     return yoy
+
+
+def run_artist_metrics_pipeline(
+    *,
+    engine=None,
+    artists: Iterable[str] | None = None,
+    start: Optional[date] = None,
+    end: Optional[date] = None,
+    rpm_usd: float | dict[str, float] | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Execute an end-to-end pipeline from DB load to revenue summary."""
+
+    daily = load_artist_daily_metrics(artists=artists, start=start, end=end, engine=engine)
+    revenue = compute_estimated_revenue(daily, rpm_usd=rpm_usd)
+    return {"daily_metrics": daily, "revenue": revenue}
+
+
+def benchmark_run_artist_metrics_pipeline(
+    *, engine=None, iterations: int = 1, **kwargs
+) -> dict[str, float | int | pd.DataFrame]:
+    """Benchmark the end-to-end pipeline to detect performance regressions."""
+
+    runs = max(1, int(iterations))
+    total = 0.0
+    last_result: dict[str, pd.DataFrame] | None = None
+    for _ in range(runs):
+        start_time = perf_counter()
+        last_result = run_artist_metrics_pipeline(engine=engine, **kwargs)
+        total += perf_counter() - start_time
+
+    rows = len(last_result["daily_metrics"]) if last_result else 0
+    avg_duration = total / runs if runs else 0.0
+    return {"iterations": runs, "rows": rows, "duration_sec": avg_duration, "last_result": last_result}
 
 
 def load_comment_examples(

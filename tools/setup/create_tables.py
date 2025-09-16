@@ -199,6 +199,191 @@ def create_youtube_tables() -> bool:
           KEY `idx_source` (`source`)
         )
         """,
+        """
+        CREATE TABLE IF NOT EXISTS `artist_aliases` (
+          `canonical_name` varchar(255) NOT NULL,
+          `alias` varchar(255) NOT NULL DEFAULT '',
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          `updated_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`canonical_name`, `alias`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `artist_performance_summary` (
+          `artist_name` varchar(255) NOT NULL,
+          `total_videos` int DEFAULT '0',
+          `total_views` bigint DEFAULT '0',
+          `total_comments` int DEFAULT '0',
+          `avg_sentiment` decimal(5,3) DEFAULT '0.000',
+          `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (`artist_name`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `comment_bot_analysis` (
+          `comment_id` text,
+          `video_id` text,
+          `author_name` text,
+          `comment_text` text,
+          `bot_score` double DEFAULT NULL,
+          `bot_risk_level` text,
+          `duplicate_count_local` bigint DEFAULT NULL,
+          `duplicate_count_global` bigint DEFAULT NULL,
+          `burst_score` double DEFAULT NULL,
+          `author_repetition_score` double DEFAULT NULL,
+          `engagement_score` double DEFAULT NULL,
+          `emoji_count` bigint DEFAULT NULL,
+          `is_whitelisted` tinyint(1) DEFAULT NULL,
+          `analyzed_at` timestamp NULL DEFAULT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `comment_sentiment` (
+          `comment_id` varchar(255) NOT NULL,
+          `video_id` varchar(255) NOT NULL,
+          `comment_text` text,
+          `sentiment_score` decimal(5,3) DEFAULT NULL,
+          `confidence_score` decimal(5,3) DEFAULT NULL,
+          `created_at` datetime DEFAULT NULL,
+          `processed_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          `confidence` decimal(5,3) DEFAULT '0.000',
+          `beat_appreciation` tinyint(1) DEFAULT '0',
+          PRIMARY KEY (`comment_id`),
+          KEY `idx_video_id` (`video_id`),
+          KEY `idx_sentiment_score` (`sentiment_score`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `comment_sentiment_backup` (
+          `comment_id` varchar(255) NOT NULL,
+          `video_id` varchar(255) NOT NULL,
+          `comment_text` text,
+          `sentiment_score` decimal(5,3) DEFAULT NULL,
+          `confidence_score` decimal(5,3) DEFAULT NULL,
+          `created_at` datetime DEFAULT NULL,
+          `processed_at` datetime DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `isrc_recordings` (
+          `isrc` char(12) NOT NULL,
+          `title` varchar(300) NOT NULL,
+          `artist_primary` varchar(255) NOT NULL,
+          `cc` char(2) GENERATED ALWAYS AS (substr(`isrc`,1,2)) STORED,
+          `registrant` char(3) GENERATED ALWAYS AS (substr(`isrc`,3,3)) STORED,
+          `year_code` char(2) GENERATED ALWAYS AS (substr(`isrc`,6,2)) STORED,
+          `designation` char(5) GENERATED ALWAYS AS (substr(`isrc`,8,5)) STORED,
+          `release_date` date DEFAULT NULL,
+          `source` varchar(100) DEFAULT NULL,
+          `metadata` json DEFAULT NULL,
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (`isrc`),
+          CONSTRAINT `isrc_format_chk` CHECK (regexp_like(`isrc`,_utf8mb4'^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$'))
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `isrc_artists` (
+          `isrc` char(12) NOT NULL,
+          `artist_name` varchar(255) NOT NULL,
+          `role` enum('primary','feature','remixer','producer') NOT NULL DEFAULT 'primary',
+          PRIMARY KEY (`isrc`,`artist_name`,`role`),
+          CONSTRAINT `fk_isrc_artists_isrc` FOREIGN KEY (`isrc`) REFERENCES `isrc_recordings` (`isrc`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `music_videos_normalized` (
+          `video_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `artist_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `title` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `isrc` char(12) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `published_at` datetime DEFAULT NULL,
+          `total_views` bigint DEFAULT '0',
+          `total_likes` int DEFAULT '0',
+          `total_comments` int DEFAULT '0',
+          `est_revenue_usd` decimal(10,2) DEFAULT '0.00',
+          `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`video_id`),
+          KEY `idx_artist` (`artist_name`),
+          KEY `idx_isrc` (`isrc`),
+          KEY `idx_published` (`published_at`),
+          KEY `idx_revenue` (`est_revenue_usd`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `songs` (
+          `isrc` char(12) NOT NULL,
+          `title` varchar(255) DEFAULT NULL,
+          `artist` varchar(255) DEFAULT NULL,
+          PRIMARY KEY (`isrc`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `video_recording_link` (
+          `video_id` varchar(50) NOT NULL,
+          `isrc` char(12) NOT NULL,
+          `match_method` enum('explicit_isrc','title_parse','fingerprint','catalog_api','manual') NOT NULL,
+          `confidence` decimal(4,3) NOT NULL DEFAULT '0.000',
+          `matched_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`video_id`,`isrc`),
+          KEY `idx_isrc` (`isrc`),
+          KEY `idx_confidence` (`confidence`),
+          CONSTRAINT `fk_vrl_isrc` FOREIGN KEY (`isrc`) REFERENCES `isrc_recordings` (`isrc`),
+          CONSTRAINT `fk_vrl_video` FOREIGN KEY (`video_id`) REFERENCES `youtube_videos` (`video_id`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `youtube_etl_runs` (
+          `channel_id` varchar(255) NOT NULL,
+          `run_date` date NOT NULL,
+          `started_at` datetime DEFAULT NULL,
+          `finished_at` datetime DEFAULT NULL,
+          `status` varchar(32) DEFAULT NULL,
+          `run_type` varchar(10) DEFAULT 'manual',
+          `reason` text,
+          `error_message` text,
+          `videos_processed` int DEFAULT '0',
+          `metrics_collected` int DEFAULT '0',
+          PRIMARY KEY (`channel_id`,`run_date`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `youtube_sentiment` (
+          `isrc` char(12) NOT NULL,
+          `video_id` varchar(50) NOT NULL,
+          `fetch_datetime` datetime NOT NULL,
+          `sentiment_score` float DEFAULT NULL,
+          `sentiment_magnitude` float DEFAULT NULL,
+          `compound_score` float DEFAULT NULL,
+          `positive_score` float DEFAULT NULL,
+          `neutral_score` float DEFAULT NULL,
+          `negative_score` float DEFAULT NULL,
+          `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (`isrc`,`video_id`,`fetch_datetime`),
+          KEY `idx_ysent_video` (`video_id`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `youtube_sentiment_by_video` (
+          `video_id` varchar(50) NOT NULL,
+          `fetch_datetime` datetime NOT NULL,
+          `sentiment_score` float DEFAULT NULL,
+          `compound_score` float DEFAULT NULL,
+          `comment_count` int DEFAULT NULL,
+          `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (`video_id`,`fetch_datetime`)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS `youtube_sentiment_summary` (
+          `video_id` varchar(50) NOT NULL,
+          `avg_sentiment` float NOT NULL,
+          `comment_count` int NOT NULL,
+          `last_updated` datetime NOT NULL,
+          PRIMARY KEY (`video_id`)
+        )
+        """,
     ]
 
     try:

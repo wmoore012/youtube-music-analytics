@@ -49,11 +49,13 @@ class YouTubeChannelETL:
         db_pass: str,
         db_name: str,
         session: Optional[requests.Session] = None,
+        api_base_url: str = "https://www.googleapis.com/youtube/v3",
     ) -> None:
         if not api_key:
             raise ValueError("YOUTUBE_API_KEY is required")
         self.api_key = api_key
         self.s = session or requests.Session()
+        self.api_base_url = api_base_url.rstrip("/")
         self.db_args = dict(
             host=db_host or "127.0.0.1",
             port=int(db_port or 3306),
@@ -68,7 +70,7 @@ class YouTubeChannelETL:
 
     # --------------------- YouTube REST helpers ---------------------
     def _api_get(self, path: str, params: Dict[str, str]) -> Dict[str, Any]:
-        url = f"https://www.googleapis.com/youtube/v3/{path}"
+        url = f"{self.api_base_url}/{path}"
         p = {"key": self.api_key, **params}
         self.logger.debug(f"GET {path} params={p}")
         r = self.s.get(url, params=p, timeout=30)
