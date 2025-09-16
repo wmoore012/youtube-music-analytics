@@ -181,6 +181,24 @@ def create_youtube_tables() -> bool:
           CONSTRAINT `chk_model_accuracy` CHECK (`accuracy_pct` BETWEEN 0 AND 100)
         )
         """,
+        """
+        CREATE TABLE IF NOT EXISTS `operational_health_log` (
+          `id` bigint NOT NULL AUTO_INCREMENT,
+          `recorded_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          `source` varchar(100) NOT NULL,
+          `lookback_days` int NOT NULL,
+          `data_freshness_hours` decimal(8,2) NOT NULL,
+          `coverage_ratio` decimal(5,2) NOT NULL,
+          `average_daily_views` decimal(12,2) NOT NULL,
+          `engagement_rate` decimal(5,2) NOT NULL,
+          `reliability_score` decimal(5,2) NOT NULL,
+          `stale_channels` json NOT NULL,
+          `notes` json NOT NULL,
+          PRIMARY KEY (`id`),
+          KEY `idx_recorded_at` (`recorded_at` DESC),
+          KEY `idx_source` (`source`)
+        )
+        """,
     ]
 
     try:

@@ -37,6 +37,34 @@ cp .env.example .env
 python tools/setup/create_tables.py
 ```
 
+## Some things under the hood that keep this platform reliable
+
+- **Operational health history**: Each CI run and scheduled job writes to the
+  `operational_health_log` table. It tracks freshness, coverage, engagement, and
+  reliability so you can review how the warehouse evolves. If the database is
+  unreachable the insert fails, forcing real infrastructure to be ready before
+  anyone claims success.
+- **Strict CI expectations**: `make ci` executes formatting checks, duplicate
+  detection, operational analytics, and notebook validation. The pipeline stops
+  immediately when required environment variables or tables are missing—there are
+  no synthetic fallbacks.
+- **Notebook execution guarantees**: Storytelling notebooks must be run with live
+  data prior to commit. The enhanced CI report highlights unexecuted cells so the
+  review team knows every visualization reflects current metrics.
+
+## Repository map
+
+This reference helps new contributors orient themselves quickly.
+
+| Path | Purpose |
+| --- | --- |
+| `src/youtubeviz/` | Analytics modules, including operational monitoring and storytelling helpers |
+| `scripts/enhanced_ci.py` | CI orchestrator that prints remediation guidance when checks fail |
+| `tools/setup/` | Database provisioning utilities (table creation, schema maintenance) |
+| `tools/etl/` | Focused, comprehensive, and production pipeline entry points |
+| `notebooks/` | Executed storytelling notebooks connecting metrics to artist narratives |
+| `tests/` | Pytest suite covering parsing, CI guards, operations monitoring, and tooling |
+
 ## Deployment Options
 
 ### Option 1: Development & Testing
@@ -109,6 +137,16 @@ python tools/webhooks/setup_integrations.py
 - **GDPR/CCPA Ready**: Privacy-first architecture with data subject rights
 - **Role-Based Access**: Granular permissions and multi-tenant support
 - **Audit Logging**: Complete activity tracking for compliance and forensics
+
+## About the creator
+
+Hi, I'm **Wilton Moore**. I earned a Grammy nomination in 2021 for my work as an
+audio engineer and have contributed to major label releases that demanded
+meticulous engineering. I bring that same attention to detail into data science.
+This project exists to help labels invest wisely while treating artists with the
+respect their craft deserves. Every recommendation in this repository is framed
+with empathy—these metrics represent people putting their lives into music, and
+the analytics are here to elevate them, not reduce them to numbers.
 
 ## 🛠️ Advanced Configuration
 

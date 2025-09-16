@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-🚀 Enhanced CI/CD Pipeline - Senior Level Standards
-==================================================
+🚀 Enhanced CI/CD Pipeline – Production-Ready Checks
+===================================================
 
-Comprehensive quality validation system for production-ready code.
+Comprehensive quality validation system for reliable, shareable code.
 Built for Grammy-nominated producer + M.S. Data Science portfolio.
 
 Features:
-- Senior-level code quality standards
+- Production-ready code quality standards
 - Extensive commenting validation
 - Database integrity checks
 - AI agent intelligence reporting
@@ -28,14 +28,26 @@ import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+import pandas as pd
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.youtubeviz.operations_monitor import (
+    OperationalHealthSnapshot,
+    analyze_operational_health,
+    record_operational_health_snapshot,
+)
 
 
 @dataclass
 class CodeQualityMetrics:
-    """Code quality assessment results for senior-level evaluation."""
+    """Code quality assessment results for production-ready reviews."""
 
     formatting_score: float = 0.0  # 0-100
     linting_issues: int = 0
@@ -85,6 +97,7 @@ class CIValidationResult:
     code_quality: CodeQualityMetrics = None
     test_results: TestExecutionResults = None
     database_integrity: DatabaseIntegrityResults = None
+    operational_health: OperationalHealthSnapshot | None = None
 
     # AI agent insights
     recommendations: List[str] = field(default_factory=list)
@@ -98,13 +111,15 @@ class CIValidationResult:
             self.test_results = TestExecutionResults()
         if self.database_integrity is None:
             self.database_integrity = DatabaseIntegrityResults()
+        if self.operational_health is None:
+            self.operational_health = OperationalHealthSnapshot()
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
 
 
 class EnhancedCI:
     """
-    Senior-level CI/CD pipeline with comprehensive validation.
+    High-confidence CI/CD pipeline with comprehensive validation.
 
     Designed for Grammy-nominated producer + M.S. Data Science portfolio
     to demonstrate production-ready engineering practices.
@@ -117,7 +132,7 @@ class EnhancedCI:
         self.warnings: List[str] = []
         self.results = CIValidationResult()
 
-        # Senior-level standards configuration
+        # Production-ready standards configuration
         self.max_line_length = 120
         self.min_comment_ratio = 0.15  # 15% of lines should be comments
         self.max_function_loc = 50  # Maximum lines per function
@@ -168,7 +183,7 @@ class EnhancedCI:
 
     def validate_code_quality(self) -> CodeQualityMetrics:
         """
-        Comprehensive code quality validation with senior-level standards.
+        Comprehensive code quality validation with production-ready standards.
 
         Validates:
         - Code formatting and style consistency
@@ -177,7 +192,7 @@ class EnhancedCI:
         - Type hint coverage
         - Documentation completeness
         """
-        print("\n🔍 VALIDATING CODE QUALITY (Senior-Level Standards)")
+        print("\n🔍 VALIDATING CODE QUALITY (Production-Ready Standards)")
         print("=" * 60)
 
         metrics = CodeQualityMetrics()
@@ -274,7 +289,7 @@ class EnhancedCI:
                     self.log_warning(f"Found {metrics.linting_issues} linting issues")
 
                 # Show issue breakdown
-                print(f"   📊 Issue breakdown:")
+                print("   📊 Issue breakdown:")
                 for category, count in issue_categories.items():
                     if count > 0:
                         category_name = {
@@ -287,7 +302,7 @@ class EnhancedCI:
                         print(f"     {category_name}: {count}")
 
                 # Show first 10 issues for context
-                print(f"   📝 Sample issues:")
+                print("   📝 Sample issues:")
                 issue_lines = [line for line in lines if ":" in line and line.strip()][:10]
                 for line in issue_lines:
                     if line.strip():
@@ -303,7 +318,7 @@ class EnhancedCI:
         self.log_info("Validating comment quality and coverage...")
         metrics.comment_quality_score = self._validate_commenting()
 
-        # 4. Check for duplicate code (senior-level requirement)
+        # 4. Check for duplicate code to keep modules tidy
         self.log_info("Detecting duplicate code patterns...")
         metrics.duplicate_code_detected = self._detect_duplicate_code()
 
@@ -507,7 +522,7 @@ except Exception as e:
 
     def _validate_commenting(self) -> float:
         """
-        Validate extensive commenting requirements for senior-level code.
+        Validate extensive commenting requirements for production-ready code.
 
         Checks for:
         - Minimum comment ratio (15% of lines)
@@ -582,7 +597,7 @@ except Exception as e:
         Detect duplicate function definitions and code patterns.
 
         This addresses the issue we saw earlier with duplicate functions
-        in charts.py and ensures senior-level code organization.
+        in charts.py and keeps the structure easy to maintain.
 
         Enhanced to provide specific recommendations for combining functions.
         """
@@ -598,32 +613,19 @@ except Exception as e:
                     content = f.read()
 
                 tree = ast.parse(content)
-                function_names = []
-                function_details = {}
 
-                for node in ast.walk(tree):
+                module_function_locations: Dict[str, List[int]] = {}
+                for node in tree.body:
                     if isinstance(node, ast.FunctionDef):
-                        function_names.append(node.name)
-                        function_details[node.name] = {
-                            "line": node.lineno,
-                            "args": len(node.args.args),
-                            "docstring": ast.get_docstring(node) is not None,
-                        }
+                        module_function_locations.setdefault(node.name, []).append(node.lineno)
 
-                # Check for duplicate function names
-                seen = set()
-                for name in function_names:
-                    if name in seen:
-                        self.log_error(
-                            f"{py_file}: Duplicate function definition '{name}' at line {function_details[name]['line']}"
-                        )
+                for name, lines in module_function_locations.items():
+                    if len(lines) > 1:
                         duplicates_found = True
+                        for duplicate_line in lines[1:]:
+                            self.log_error(f"{py_file}: Duplicate top-level function '{name}' at line {duplicate_line}")
 
-                        # Track for recommendations
-                        if str(py_file) not in duplicate_functions:
-                            duplicate_functions[str(py_file)] = []
-                        duplicate_functions[str(py_file)].append(name)
-                    seen.add(name)
+                        duplicate_functions.setdefault(str(py_file), []).append({"name": name, "lines": lines})
 
             except Exception as e:
                 self.log_warning(f"Could not analyze {py_file} for duplicates: {e}")
@@ -636,8 +638,9 @@ except Exception as e:
             for file_path, functions in duplicate_functions.items():
                 print(f"   📁 {file_path}:")
                 for func in functions:
-                    print(f"     🔧 Combine duplicate '{func}' functions into single implementation")
-                    print(f"     💡 Consider using parameters or factory pattern to reduce duplication")
+                    line_list = ", ".join(str(line) for line in func["lines"])
+                    print(f"     🔧 Combine duplicate '{func['name']}' functions defined at lines {line_list}")
+                    print("     💡 Consider using parameters or factory pattern to reduce duplication")
 
         return duplicates_found
 
@@ -850,20 +853,20 @@ except Exception as e:
         self.log_success(f"Function analysis report saved to {report_path}")
 
         # Display summary
-        print(f"\n📋 FUNCTION ANALYSIS SUMMARY:")
+        print("\n📋 FUNCTION ANALYSIS SUMMARY:")
         print(f"   📊 Total files with combinable functions: {len(file_issue_count)}")
         print(f"   🔧 Total function groups to analyze: {len(functions_to_combine)}")
         print(f"   🤖 AI patterns detected: {len(ai_patterns)}")
         print(f"   🎯 Priority files for refactoring: {len(priority_files[:10])}")
 
         if priority_files:
-            print(f"\n🎯 TOP PRIORITY FILES FOR REFACTORING:")
+            print("\n🎯 TOP PRIORITY FILES FOR REFACTORING:")
             for file_path, count in priority_files[:5]:
                 print(f"   📁 {file_path}: {count} combinable functions")
 
         return analysis_report
 
-    def _analyze_system_health(self) -> Dict[str, any]:
+    def _analyze_system_health(self) -> Dict[str, Any]:
         """Analyze overall system health for AI agent intelligence."""
         health_metrics = {
             "overall_status": "healthy",
@@ -873,27 +876,80 @@ except Exception as e:
             "trend_analysis": {},
         }
 
+        critical_systems: List[str] = []
+        warning_systems: List[str] = []
+        healthy_systems: List[str] = []
+
         # Analyze code quality trends
         if self.results.code_quality.duplicate_code_detected:
-            health_metrics["critical_issues"].append("Duplicate code detected - refactoring needed")
-
-        if self.results.code_quality.comment_quality_score < 60:
-            health_metrics["warnings"].append("Low comment quality may impact maintainability")
+            message = "Duplicate code detected - refactoring needed"
+            health_metrics["critical_issues"].append(message)
+            critical_systems.append("code_quality")
+        elif self.results.code_quality.comment_quality_score < 60:
+            message = "Low comment quality may impact maintainability"
+            health_metrics["warnings"].append(message)
+            warning_systems.append("code_quality")
+        else:
+            healthy_systems.append("code_quality")
 
         # Analyze test coverage health
-        if self.results.test_results.coverage_percentage < 50:
+        coverage = self.results.test_results.coverage_percentage
+        if coverage < 50:
             health_metrics["critical_issues"].append("Test coverage critically low")
-        elif self.results.test_results.coverage_percentage < self.min_test_coverage:
+            critical_systems.append("testing")
+        elif coverage < self.min_test_coverage:
             health_metrics["warnings"].append("Test coverage below production standards")
+            warning_systems.append("testing")
+        else:
+            healthy_systems.append("testing")
 
         # Database health indicators
-        if self.results.database_integrity.data_quality_score < 70:
+        data_quality = self.results.database_integrity.data_quality_score
+        if data_quality < 70:
             health_metrics["critical_issues"].append("Data quality issues detected")
+            critical_systems.append("database")
+        elif data_quality < 85:
+            health_metrics["warnings"].append("Data quality requires attention")
+            warning_systems.append("database")
+        else:
+            healthy_systems.append("database")
 
-        # Set overall status
-        if health_metrics["critical_issues"]:
+        # Operational readiness assessment
+        operations_snapshot = self.results.operational_health
+        if operations_snapshot:
+            reliability = operations_snapshot.reliability_score
+            if reliability < 55:
+                health_metrics["critical_issues"].append("Operational reliability critically low")
+                critical_systems.append("operations")
+            elif reliability < 75:
+                health_metrics["warnings"].append("Operational reliability requires follow-up")
+                warning_systems.append("operations")
+            else:
+                healthy_systems.append("operations")
+
+            health_metrics["operational_snapshot"] = operations_snapshot.to_dict()
+
+        # Determine overall health for downstream reporting
+        if critical_systems:
+            overall_health = "CRITICAL"
+        elif warning_systems:
+            overall_health = "WARNING"
+        else:
+            overall_health = "HEALTHY"
+
+        health_metrics.update(
+            {
+                "overall_health": overall_health,
+                "critical_systems": critical_systems,
+                "warning_systems": warning_systems,
+                "healthy_systems": healthy_systems,
+            }
+        )
+
+        # Maintain backward compatible status flag
+        if overall_health == "CRITICAL":
             health_metrics["overall_status"] = "critical"
-        elif len(health_metrics["warnings"]) > 5:
+        elif overall_health == "WARNING":
             health_metrics["overall_status"] = "degraded"
 
         return health_metrics
@@ -909,7 +965,7 @@ except Exception as e:
 
         return validation
 
-    def _analyze_failure_patterns(self) -> Dict[str, any]:
+    def _analyze_failure_patterns(self) -> Dict[str, Any]:
         """Analyze failure patterns for predictive insights."""
         patterns = {
             "recurring_issues": [],
@@ -936,7 +992,7 @@ except Exception as e:
 
         return patterns
 
-    def _analyze_performance_metrics(self) -> Dict[str, any]:
+    def _analyze_performance_metrics(self) -> Dict[str, Any]:
         """Analyze performance metrics and trends."""
         performance = {"current_metrics": {}, "bottlenecks": [], "optimization_opportunities": []}
 
@@ -951,9 +1007,17 @@ except Exception as e:
 
         return performance
 
-    def _validate_notebook_outputs(self) -> Dict[str, any]:
+    def _validate_notebook_outputs(self) -> Dict[str, Any]:
         """Validate notebook outputs and data patterns for AI analysis."""
-        validation = {"notebooks_found": 0, "validation_results": {}, "data_patterns": [], "anomalies": []}
+        validation = {
+            "notebooks_found": 0,
+            "notebooks_validated": 0,
+            "validation_failed": 0,
+            "validation_results": {},
+            "data_patterns": [],
+            "anomalies": [],
+            "issues_found": [],
+        }
 
         # Check for notebook files
         notebook_files = list(Path(".").rglob("*.ipynb"))
@@ -964,6 +1028,7 @@ except Exception as e:
 
             # Check for executed notebooks
             executed_notebooks = [nb for nb in notebook_files if "executed" in str(nb)]
+            validation["notebooks_validated"] = len(executed_notebooks)
             if executed_notebooks:
                 validation["data_patterns"].append(f"Found {len(executed_notebooks)} executed notebooks")
             else:
@@ -975,7 +1040,7 @@ except Exception as e:
         """
         Validate function complexity and LOC limits for maintainable code.
 
-        Senior-level requirement: Functions should be focused and readable.
+        Functions should be focused and readable so reviewers can trust changes.
         """
         all_compliant = True
 
@@ -1030,14 +1095,19 @@ except Exception as e:
                 recommendations.append("URGENT: Investigate data quality issues - may indicate ETL pipeline problems")
 
         # System health recommendations
-        if system_health["overall_health"] == "CRITICAL":
+        overall_health = system_health.get("overall_health")
+
+        if overall_health == "CRITICAL":
             recommendations.append("System health is critical - recommend immediate remediation before proceeding")
-        elif system_health["overall_health"] == "WARNING":
+        elif overall_health == "WARNING":
             recommendations.append("System health has warnings - address before production deployment")
 
         # Failure pattern recommendations
         for pattern in failure_patterns.get("recurring_issues", []):
-            if pattern["type"] == "duplicate_code":
+            if isinstance(pattern, dict):
+                if pattern.get("type") == "duplicate_code":
+                    recommendations.append("Refactor duplicate code to improve maintainability and reduce bug risk")
+            elif isinstance(pattern, str) and "duplicate" in pattern.lower():
                 recommendations.append("Refactor duplicate code to improve maintainability and reduce bug risk")
 
         # Performance recommendations
@@ -1060,7 +1130,7 @@ except Exception as e:
         """
         Execute comprehensive test suite with coverage and performance analysis.
 
-        Senior-level testing includes:
+        Thorough testing includes:
         - Unit, integration, and system tests
         - Coverage reporting with thresholds
         - Performance benchmarking
@@ -1092,19 +1162,21 @@ except Exception as e:
             results.execution_time = time.time() - start_time
 
             # Parse test results
-            output_lines = result.stdout.split("\n")
-            for line in output_lines:
-                if "passed" in line and "failed" in line:
-                    # Parse pytest summary line
-                    parts = line.split()
-                    for i, part in enumerate(parts):
-                        if part == "passed":
-                            results.passed_tests = int(parts[i - 1])
-                        elif part == "failed":
-                            results.failed_tests = int(parts[i - 1])
-                        elif part == "skipped":
-                            results.skipped_tests = int(parts[i - 1])
+            output = result.stdout
+            output_lines = output.split("\n")
 
+            def _extract_count(label: str) -> int:
+                match = re.search(rf"(\d+)\s+{label}", output)
+                if match:
+                    try:
+                        return int(match.group(1))
+                    except ValueError:
+                        return 0
+                return 0
+
+            results.passed_tests = _extract_count("passed")
+            results.failed_tests = _extract_count("failed")
+            results.skipped_tests = _extract_count("skipped")
             results.total_tests = results.passed_tests + results.failed_tests + results.skipped_tests
 
             # Parse coverage from JSON report
@@ -1140,7 +1212,7 @@ except Exception as e:
         """
         Validate database schema integrity and data quality.
 
-        Senior-level database validation includes:
+        Reliable database validation includes:
         - Schema consistency checks
         - Referential integrity validation
         - Data quality metrics
@@ -1220,6 +1292,92 @@ except Exception as e:
 
         return results
 
+    def _load_operational_dataframe(self, lookback_days: int = 14) -> pd.DataFrame:
+        """Load recent operational metrics and require live warehouse data."""
+
+        end_date = datetime.now(timezone.utc).date()
+        start_date = end_date - timedelta(days=lookback_days)
+
+        try:
+            from src.youtubeviz.data import load_artist_daily_metrics
+        except ImportError as exc:  # pragma: no cover - defensive guard
+            raise RuntimeError(
+                "Operational metrics loader unavailable. Install the analytics package before running CI."
+            ) from exc
+
+        try:
+            live_df = load_artist_daily_metrics(start=start_date, end=end_date)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to load operational metrics from warehouse: {exc}") from exc
+
+        if live_df is None or getattr(live_df, "empty", True):
+            raise RuntimeError(
+                "No operational metrics returned for the last "
+                f"{lookback_days} days. Run the YouTube ETL to populate artist_daily_metrics."
+            )
+
+        prepared = live_df.rename(
+            columns={
+                "date": "metrics_date",
+                "views": "view_count",
+                "likes": "like_count",
+                "comments": "comment_count",
+            }
+        )
+
+        if "fetched_at" not in prepared.columns:
+            prepared["fetched_at"] = prepared["metrics_date"]
+
+        return prepared
+
+    def evaluate_operational_health(self) -> OperationalHealthSnapshot:
+        """Assess production readiness metrics for the analytics pipeline."""
+
+        print("\n📈 ASSESSING PRODUCTION OPERATIONS")
+        print("=" * 60)
+
+        lookback_window = 14
+
+        try:
+            operational_df = self._load_operational_dataframe(lookback_window)
+        except Exception as exc:
+            message = f"Operational analytics failed: {exc}"
+            self.log_error(message)
+            raise
+
+        snapshot = analyze_operational_health(
+            operational_df,
+            lookback_days=lookback_window,
+        )
+        self.log_success("Operational analytics computed")
+
+        print(f"   Data Freshness (hrs): {snapshot.data_freshness_hours:.1f}")
+        print(f"   Artist Coverage: {snapshot.coverage_ratio:.1f}%")
+        print(f"   Reliability Score: {snapshot.reliability_score:.1f}")
+
+        if snapshot.average_daily_views:
+            print(f"   Avg Daily Views: {snapshot.average_daily_views:,.0f}")
+        if snapshot.engagement_rate:
+            print(f"   Engagement Rate: {snapshot.engagement_rate:.1f}%")
+        if snapshot.stale_channels:
+            print("   Stale Channels:")
+            for channel in snapshot.stale_channels:
+                print(f"      - {channel}")
+
+        if snapshot.notes:
+            print("   Insights:")
+            for note in snapshot.notes:
+                print(f"      • {note}")
+
+        record_operational_health_snapshot(
+            snapshot,
+            lookback_days=lookback_window,
+            source="enhanced_ci",
+        )
+        self.log_success("Operational health snapshot recorded")
+
+        return snapshot
+
     def generate_ai_agent_report(self) -> None:
         """
         Generate comprehensive AI agent intelligence report.
@@ -1277,6 +1435,14 @@ except Exception as e:
         elif self.results.database_integrity.data_quality_score < 70.0:
             risk_factors.append("Data quality concerns")
 
+        operations_snapshot = system_health.get("operational_snapshot", {})
+        reliability = operations_snapshot.get("reliability_score")
+        if reliability is not None:
+            if reliability < 55:
+                critical_issues.append("Critical: Operational reliability below 55")
+            elif reliability < 75:
+                risk_factors.append("Operational reliability trending low")
+
         # System performance risks
         if performance_analytics.get("performance_degradation", False):
             risk_factors.append("Performance degradation detected")
@@ -1299,6 +1465,10 @@ except Exception as e:
         recommendations = self._generate_intelligent_recommendations(
             system_health, failure_patterns, performance_analytics, critical_issues, risk_factors
         )
+
+        for note in operations_snapshot.get("notes", []):
+            if note not in recommendations:
+                recommendations.append(note)
 
         self.results.recommendations = recommendations
 
@@ -1324,7 +1494,8 @@ except Exception as e:
         if self.results.database_integrity.data_quality_score < 85.0:
             recommendations.append("Improve data quality validation and cleanup")
 
-        self.results.recommendations = recommendations
+        unique_recommendations = list(dict.fromkeys(recommendations))
+        self.results.recommendations = unique_recommendations
 
         # Save comprehensive report for AI agents
         report_path = "ci_validation_report.json"
@@ -1336,32 +1507,38 @@ except Exception as e:
         self.log_success(f"Enhanced AI agent report saved to {report_path}")
 
         # Display enhanced metrics for AI analysis
-        print(f"\n📊 ENHANCED AI AGENT ANALYSIS:")
-        print(f"   System Health: {system_health['overall_health']}")
+        print("\n📊 ENHANCED AI AGENT ANALYSIS:")
+        print(f"   System Health: {system_health.get('overall_health', 'UNKNOWN')}")
         print(f"   Risk Assessment: {self.results.risk_assessment}")
         print(f"   Deployment Ready: {self.results.deployment_readiness}")
-        print(f"   Critical Systems: {len(system_health['critical_systems'])}")
-        print(f"   Warning Systems: {len(system_health['warning_systems'])}")
-        print(f"   Healthy Systems: {len(system_health['healthy_systems'])}")
+        print(f"   Critical Systems: {len(system_health.get('critical_systems', []))}")
+        print(f"   Warning Systems: {len(system_health.get('warning_systems', []))}")
+        print(f"   Healthy Systems: {len(system_health.get('healthy_systems', []))}")
         print(f"   Failure Patterns: {len(failure_patterns.get('recurring_issues', []))}")
         print(f"   Performance Bottlenecks: {len(performance_analytics.get('bottlenecks', []))}")
         print(f"   Notebooks Validated: {notebook_validation['notebooks_validated']}")
 
+        operations_snapshot = system_health.get("operational_snapshot") or {}
+        if operations_snapshot:
+            print(f"   Operational Reliability: {operations_snapshot.get('reliability_score', 0.0):.1f}")
+            print(f"   Operational Coverage: {operations_snapshot.get('coverage_ratio', 0.0):.1f}%")
+            print(f"   Data Freshness: {operations_snapshot.get('data_freshness_hours', 0.0):.1f} hours")
+
         # Show critical issues if any
         if critical_issues:
-            print(f"\n🚨 CRITICAL ISSUES FOR AI ATTENTION:")
+            print("\n🚨 CRITICAL ISSUES FOR AI ATTENTION:")
             for issue in critical_issues:
                 print(f"   • {issue}")
 
         # Show failure predictions
         if failure_patterns.get("risk_predictions"):
-            print(f"\n🔮 FAILURE RISK PREDICTIONS:")
+            print("\n🔮 FAILURE RISK PREDICTIONS:")
             for prediction in failure_patterns["risk_predictions"]:
                 print(f"   • {prediction['description']}: {prediction['prediction']}")
 
     def generate_final_report(self) -> bool:
         """
-        Generate comprehensive final report with senior-level analysis.
+        Generate comprehensive final report with production-ready analysis.
 
         Returns True if all checks pass, False otherwise.
         """
@@ -1389,13 +1566,17 @@ except Exception as e:
             print("🚫 Address issues before deployment")
 
         # Detailed metrics
-        print(f"\n📊 DETAILED METRICS:")
+        print("\n📊 DETAILED METRICS:")
         print(f"   Execution Time: {self.results.execution_time:.1f}s")
         print(f"   Code Quality Score: {self.results.code_quality.formatting_score:.1f}%")
         print(f"   Comment Coverage: {self.results.code_quality.comment_quality_score:.1f}%")
         print(f"   Test Coverage: {self.results.test_results.coverage_percentage:.1f}%")
         print(f"   Tests Passed: {self.results.test_results.passed_tests}")
         print(f"   Data Quality: {self.results.database_integrity.data_quality_score:.1f}%")
+        if self.results.operational_health:
+            print(f"   Operational Reliability: {self.results.operational_health.reliability_score:.1f}")
+            print(f"   Operational Coverage: {self.results.operational_health.coverage_ratio:.1f}%")
+            print(f"   Data Freshness: {self.results.operational_health.data_freshness_hours:.1f} hours")
 
         # Issues summary
         if self.errors:
@@ -1431,7 +1612,7 @@ except Exception as e:
 
         Returns True if all checks pass, False otherwise.
         """
-        print("🚀 STARTING ENHANCED CI/CD PIPELINE - SENIOR LEVEL")
+        print("🚀 STARTING ENHANCED CI/CD PIPELINE - PRODUCTION-READY MODE")
         print("Grammy-Nominated Producer + M.S. Data Science Standards")
         print("=" * 80)
 
@@ -1456,10 +1637,13 @@ except Exception as e:
             # 4. Database Integrity
             self.results.database_integrity = self.validate_database_integrity()
 
-        # 4. AI Agent Intelligence Report
+        # 4. Operational Readiness Assessment
+        self.results.operational_health = self.evaluate_operational_health()
+
+        # 5. AI Agent Intelligence Report
         self.generate_ai_agent_report()
 
-        # 5. Final Analysis
+        # 6. Final Analysis
         self.results.execution_time = time.time() - start_time
         success = self.generate_final_report()
 
@@ -1467,9 +1651,9 @@ except Exception as e:
 
 
 def main():
-    """Main function with senior-level argument parsing."""
+    """Main function with production-ready argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Enhanced CI/CD Pipeline - Senior Level Standards",
+        description="Enhanced CI/CD Pipeline - Production-Ready Checks",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

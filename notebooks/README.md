@@ -67,18 +67,17 @@ from youtubeviz.utils import safe_head, filter_artists
 from youtubeviz.charts import views_over_time_plotly, artist_compare_altair
 from youtubeviz.data import load_recent_window_days, compute_kpis
 
-# Artist selection (customize for your analysis)
-ARTISTS = [
-    "Artist A",
-    "Artist B",
-    "Artist C",
-    "Artist D",
-    "Artist E",
-]
+# Artist selection (load respectfully from shared roster configuration)
+from pathlib import Path
+import json
+
+roster_path = Path("config/expected_artists.json")
+expected_roster = json.loads(roster_path.read_text())
+tracked_artists = expected_roster["expected_artists"]
 
 # Load and filter data
 df = load_recent_window_days(days=90, engine=engine)
-artist_data = filter_artists(df, "artist_name", ARTISTS)
+artist_data = filter_artists(df, "artist_name", tracked_artists)
 ```
 
 ### Visualization Patterns
@@ -153,30 +152,65 @@ human-friendly markdown summaries here (e.g., `02_artist_comparison_results.md`)
 Use the storytelling helper to place interactive charts next to executive-friendly bullets in the same notebook cell:
 
 ```python
+import json
+from pathlib import Path
+
+import pandas as pd
+
 from youtubeviz.storytelling import story_block, quick_takeaways
 from youtubeviz.charts import views_over_time_advanced
 from youtubeviz.data import load_recent_window_days
 
-ARTISTS = ["Flyana Boss", "COBRAH", "Raiche"]
-df = load_recent_window_days(artists=ARTISTS, days=90)
+roster = json.loads(Path("config/expected_artists.json").read_text())
+tracked_artists = roster["expected_artists"]
+
+recent_metrics = load_recent_window_days(artists=tracked_artists, days=90)
 
 fig = views_over_time_advanced(
-    df,
+    recent_metrics,
     date_col="date",
     value_col="views",
     group_col="artist_name",
     rolling_window=7,
-    highlight_artists=["Flyana Boss"],
+    highlight_artists=[tracked_artists[0]],
 )
 
-bullets = quick_takeaways(
-    artist="Flyana Boss", last_7d_change_pct=32.4, engagement_rate=5.8, standout_video="You Wish"
+momentum = (
+    recent_metrics.groupby("artist_name")
+    .apply(
+        lambda frame: pd.Series(
+            {
+                "seven_day_views": frame.sort_values("date").tail(7)["views"].sum(),
+                "previous_week_views": frame.sort_values("date").tail(14).head(7)["views"].sum(),
+                "engagement_rate": (frame["likes"] + frame["comments"]).sum()
+                / frame["views"].clip(lower=1).sum()
+                * 100,
+                "latest_video": frame.sort_values("date").iloc[-1]["video_title"],
+            }
+        )
+    )
 )
+momentum["seven_day_growth_pct"] = (
+    (momentum["seven_day_views"] - momentum["previous_week_views"])
+    / momentum["previous_week_views"].clip(lower=1)
+    * 100
+)
+
+highlight_artist = momentum.sort_values("seven_day_growth_pct", ascending=False).index[0]
+metrics = momentum.loc[highlight_artist]
+
+bullets = quick_takeaways(
+    artist=highlight_artist,
+    last_7d_change_pct=metrics["seven_day_growth_pct"],
+    engagement_rate=metrics["engagement_rate"],
+    standout_video=metrics["latest_video"],
+)
+
 story_block(
     fig,
-    title="🚀 Flyana Boss is accelerating — 7‑day momentum up",
+    title=f"🚀 {highlight_artist} is accelerating — seven-day momentum is climbing",
     bullets=bullets,
-    caption="Recommendation: accelerate collab outreach + Shorts budget this week",
+    caption="Recommendation: celebrate the progress and plan supportive outreach this week",
 )
 ```
 

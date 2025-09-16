@@ -470,6 +470,10 @@ _RX_BRACKETS = re.compile(r"\s*[\[\(].*?(official|audio|video|hq|mv|lyric).*?[\]
 # More comprehensive regex for featuring clauses
 # Handles variations like "ft.", "feat.", "featuring", "ft", etc.
 # Also handles cases where the featuring clause is in parentheses or brackets
+# Patterns used to detect collaborator clauses that should not be considered
+# part of the canonical song title. The logic downstream originally duplicated
+# these extraction steps in multiple branches; they now funnel through a single
+# helper so future tweaks only need to be made in one place.
 _RX_FEAT_CLAUSE = re.compile(r"(?:\(|\[|\s+)(?:ft\.?|feat\.?|featuring|ft|feat)\s+([^)\]]+)(?:\)|\])?", re.I)
 # Only match "with" when it's in parentheses or brackets, or preceded by a dash
 # This helps avoid splitting titles like "Sleep With The Light On"
@@ -526,6 +530,55 @@ def _split_primary_block(block: str) -> List[str]:
         filtered_parts.append(part)
 
     return filtered_parts if filtered_parts else parts
+
+
+def _extract_collaboration_clauses(title: str) -> Tuple[str, List[str]]:
+    """Remove featuring/with clauses and collect collaborator names.
+
+    The parser previously redefined a tiny `_extract` helper in several
+    conditional branches. This consolidated helper ensures those branches stay
+    in sync and makes it easier to adjust collaboration parsing rules without
+    hunting for duplicated logic.
+    """
+
+    if not title:
+        return "", []
+
+    remaining_title = title.strip()
+    collaborators: List[str] = []
+
+    while True:
+        matched_clause = False
+
+        for pattern in (_RX_FEAT_CLAUSE, _RX_WITH_CLAUSE):
+            match = pattern.search(remaining_title)
+            if not match:
+                continue
+
+            captured_names = match.group(1)
+            segments = [captured_names]
+
+            # Collaborators embedded in a feat. clause sometimes use "with"
+            # inside the captured text ("feat. Guest One with Crew Two"). We
+            # split on "with" only in that situation to avoid breaking titles
+            # such as "Sleep With The Light On" that reach this helper via the
+            # dedicated _RX_WITH_CLAUSE pattern.
+            if pattern is _RX_FEAT_CLAUSE and re.search(r"\bwith\b", captured_names, re.I):
+                segments = re.split(r"\bwith\b", captured_names, flags=re.I)
+
+            for segment in segments:
+                names = [name for name in _split_primary_block(segment) if name]
+                if names:
+                    collaborators.extend(names)
+
+            remaining_title = remaining_title[: match.start()].strip()
+            matched_clause = True
+
+        if not matched_clause:
+            break
+
+    deduped_collaborators = list(dict.fromkeys(collaborators))
+    return remaining_title, deduped_collaborators
 
 
 def _is_ripper_channel(channel_name: str) -> bool:
@@ -719,25 +772,13 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
             # If it does, extract just the title part
             title_part, _ = label_match.groups()
 
-        # Extract featuring artists if present
-        featured = []
-
-        def _extract(rx, tgt):
-            m = rx.search(tgt)
-            if not m:
-                return tgt
-            names = _split_primary_block(m.group(1))
-            featured.extend(names)
-            return tgt[: m.start()].strip()
-
-        title_part = _extract(_RX_FEAT_CLAUSE, title_part)
-        title_part = _extract(_RX_WITH_CLAUSE, title_part)
+        title_part, featured = _extract_collaboration_clauses(title_part)
 
         # Return early with the parsed information
         return {
             "title": title_part.strip(" \"'"),
             "primary": list(dict.fromkeys(primary_artists)),
-            "featured": list(dict.fromkeys(featured)),
+            "featured": featured,
         }
 
     # 0.6️⃣ Check for "with the label" phrases
@@ -776,25 +817,13 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
         primary_artists = extracted_artists
         title_part = cleaned
 
-        # Extract featuring artists if present
-        featured = []
-
-        def _extract(rx, tgt):
-            m = rx.search(tgt)
-            if not m:
-                return tgt
-            names = _split_primary_block(m.group(1))
-            featured.extend(names)
-            return tgt[: m.start()].strip()
-
-        title_part = _extract(_RX_FEAT_CLAUSE, title_part)
-        title_part = _extract(_RX_WITH_CLAUSE, title_part)
+        title_part, featured = _extract_collaboration_clauses(title_part)
 
         # Return early with extracted artists
         return {
             "title": title_part.strip(" \"'"),
             "primary": list(dict.fromkeys(primary_artists)),
-            "featured": list(dict.fromkeys(featured)),
+            "featured": featured,
         }
 
     # 0.8️⃣ Handle quoted titles like 'LUTE "GED (Gettin Every Dolla)" (7.7.24)'
@@ -811,24 +840,12 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
             primary_artists = [potential_artist]
             title_part = quoted_title
 
-            # Extract featuring artists if present
-            featured = []
-
-            def _extract(rx, tgt):
-                m = rx.search(tgt)
-                if not m:
-                    return tgt
-                names = _split_primary_block(m.group(1))
-                featured.extend(names)
-                return tgt[: m.start()].strip()
-
-            title_part = _extract(_RX_FEAT_CLAUSE, title_part)
-            title_part = _extract(_RX_WITH_CLAUSE, title_part)
+            title_part, featured = _extract_collaboration_clauses(title_part)
 
             return {
                 "title": title_part.strip(" \"'"),
                 "primary": list(dict.fromkeys(primary_artists)),
-                "featured": list(dict.fromkeys(featured)),
+                "featured": featured,
             }
 
     # 1️⃣ detect Topic channel ⇒ channel artist is authoritative
@@ -873,18 +890,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
         title_part, primary_artists = cleaned, []
 
     # 3️⃣ pull out feat. / with clauses from *title_part*
-    featured = []
-
-    def _extract(rx, tgt):
-        m = rx.search(tgt)
-        if not m:
-            return tgt
-        names = _split_primary_block(m.group(1))
-        featured.extend(names)
-        return tgt[: m.start()].strip()
-
-    title_part = _extract(_RX_FEAT_CLAUSE, title_part)
-    title_part = _extract(_RX_WITH_CLAUSE, title_part)
+    title_part, featured = _extract_collaboration_clauses(title_part)
 
     # 4️⃣ if Topic channel provided artist, make it *the* primary artist
     if topic_artist:
