@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
-"""
-Simple progress tracking for the YouTube analytics project.
-No fancy metrics, just honest assessment of where things stand.
-"""
+"""Track ETL/model progress, compute descriptive stats, and flag suspicious jumps."""
+
+from __future__ import annotations
 
 import json
+import logging
 import math
 import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from statistics import StatisticsError
 
 import numpy as np
 import pandas as pd
+
+# --- Policy knobs (one place, easy to audit) ---
+SIGMA_Z_THRESH = 3.0  # classic 3σ control limit (68–95–99.7 rule)
+ROBUST_Z_THRESH = 3.0  # MAD-based z (~σ via 0.6745 scaling)
+IQR_K = 1.5  # Tukey's inner fences (whiskers on boxplots)
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(message)s")
+log = logging.getLogger("benchmarks")
 
 # Metrics configuration - whether higher values are better
 METRIC_SPEC = {
@@ -54,26 +61,30 @@ def _fd_binned_mode(values: pd.Series, max_bins: int = 50):
     return float((edges[idx] + edges[idx + 1]) / 2)
 
 
-def summarize_series(s: pd.Series):
-    """Return nerd-grade summary stats for a numeric series."""
-    x = pd.to_numeric(s, errors="coerce").dropna()
+def summarize_series(s: pd.Series) -> dict | None:
+    """Summarize a numeric series with robust and classical statistics."""
+
+    x = pd.to_numeric(s, errors="coerce").dropna().to_numpy()
     n = int(x.size)
     if n == 0:
         return None
+
     mean = float(x.mean())
-    median = float(x.median())
+    median = float(np.median(x))
     std = float(x.std(ddof=1)) if n > 1 else 0.0
     se = (std / math.sqrt(n)) if n > 1 else 0.0
     ci95 = (mean - 1.96 * se, mean + 1.96 * se) if n > 1 else (mean, mean)
-    q25, q75 = (float(x.quantile(0.25)), float(x.quantile(0.75))) if n > 1 else (median, median)
+    if n > 1:
+        q25, q75 = float(np.percentile(x, 25)), float(np.percentile(x, 75))
+    else:
+        q25 = q75 = median
     iqr = q75 - q25
-    mad = float(np.median(np.abs(x - median))) if n > 1 else 0.0  # Median Absolute Deviation
+    mad = float(np.median(np.abs(x - median))) if n > 1 else 0.0
 
-    # Mode: try exact mode first; fall back to binned mode
     try:
-        mode_val = float(x.mode(dropna=True).iloc[0])
+        mode_val = float(pd.Series(x).mode(dropna=True).iloc[0])
     except Exception:
-        mode_val = _fd_binned_mode(x)
+        mode_val = _fd_binned_mode(pd.Series(x))
 
     return {
         "n": n,
@@ -91,80 +102,65 @@ def summarize_series(s: pd.Series):
     }
 
 
-def robust_z(latest: float, median: float, mad: float):
-    """Robust z-score using MAD (scaled so ~N(0,1) under normality)."""
+def robust_z(latest: float, median: float, mad: float) -> float:
+    """MAD-based z (~N(0,1) if normal). Scales by 0.6745 to align with σ."""
+
     if mad <= 0:
         return 0.0
-    return 0.6745 * (latest - median) / mad  # 0.6745 makes MAD comparable to σ under normality
+    return 0.6745 * (latest - median) / mad
 
 
-def z_score(latest: float, mean: float, std: float):
-    if std <= 0:
-        return 0.0
-    return (latest - mean) / std
+def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[str]:
+    """Compare ``latest`` to history and return short, human-readable flags."""
 
-
-def is_improvement(metric: str, latest: float, baseline: float, higher_is_better: bool):
-    if math.isnan(latest) or math.isnan(baseline):
-        return False
-    return (latest > baseline) if higher_is_better else (latest < baseline)
-
-
-def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict):
-    """Return list of anomaly/celebration messages for `latest` vs history described by `stats`."""
-    flags = []
+    flags: list[str] = []
     hib = spec["higher_is_better"]
 
-    # Classic 3-sigma control limits
-    z = z_score(latest, stats["mean"], stats["std"])
-
-    # Robust checks
+    z = 0.0 if stats["std"] == 0 else (latest - stats["mean"]) / stats["std"]
     rz = robust_z(latest, stats["median"], stats["mad"])
-    lower_iqr = stats["q25"] - 1.5 * stats["iqr"]
-    upper_iqr = stats["q75"] + 1.5 * stats["iqr"]
+    low_fence = stats["q25"] - IQR_K * stats["iqr"]
+    high_fence = stats["q75"] + IQR_K * stats["iqr"]
 
-    # "Too good to be true" = it's an improvement AND way outside normal
-    if is_improvement(metric, latest, stats["mean"], hib):
-        if abs(z) >= 3 or abs(rz) >= 3:
+    improved = (latest > stats["mean"]) if hib else (latest < stats["mean"])
+
+    if improved and (abs(z) >= SIGMA_Z_THRESH or abs(rz) >= ROBUST_Z_THRESH):
+        flags.append(
+            f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={rz:.2f}). Recheck sample size, caching, and code paths."
+        )
+
+    if latest < low_fence or latest > high_fence:
+        fences = f"[{low_fence:.3g}, {high_fence:.3g}]"
+        flags.append(f"🚩 {metric}: outside Tukey IQR fences {fences}.")
+
+    if stats["se"] > 0 and (latest < stats["ci95_low"] or latest > stats["ci95_high"]):
+        if not flags:
             flags.append(
-                f"🚩 {metric}: improved by ≥3σ (z={z:.2f}, rZ={rz:.2f}). Double-check measurement, sample, and code paths."
+                f"🎉 {metric}: outside 95% CI (mean {stats['mean']:.3g} ± {1.96 * stats['se']:.3g})."
             )
-        if latest < lower_iqr or latest > upper_iqr:
-            flags.append(f"🚩 {metric}: outside Tukey IQR fence [{lower_iqr:.3g}, {upper_iqr:.3g}]. Possible anomaly.")
 
-    # Celebrate sane wins (outside 95% CI but not crazy)
-    if stats["se"] > 0:
-        if latest < stats["ci95_low"] or latest > stats["ci95_high"]:
-            if not flags:
-                flags.append(
-                    f"🎉 {metric}: outside 95% CI (mean {stats['mean']:.3g} ± {1.96*stats['se']:.3g}). Likely real improvement."
-                )
-
-    # Gentle heads-up on huge single-run jumps
     prev = stats.get("_prev")
-    if prev is not None:
-        delta = latest - prev
-        rel = (delta / abs(prev)) if prev not in (0, None) else float("inf")
-        if abs(rel) >= 2.0:  # ≥ 200% change run-over-run
-            flags.append(f"⚠️ {metric}: {rel:+.1f}× change vs last run. Investigate input size, caching, and sampling.")
+    if prev is not None and prev not in (0, None):
+        rel = (latest - prev) / abs(prev)
+        if abs(rel) >= 2.0:
+            flags.append(f"⚠️ {metric}: {rel:+.1f}× change vs prior run.")
 
     return flags
 
 
-def analyze_history_and_print(benchmark_data, history_path="benchmarks.json"):
-    """Load history, compute stats, and print nerd-grade analysis with anomaly detection."""
-    # Load history
+def analyze_history_and_print(benchmark_data, history_path: str | Path = "benchmarks.json") -> None:
+    """Print compact descriptives and anomaly flags for known metrics."""
+
     try:
-        with open(history_path, "r") as f:
-            history_list = json.load(f)
+        with open(history_path, "r", encoding="utf-8") as fh:
+            history_list = json.load(fh)
         hist = pd.DataFrame(history_list)
-    except Exception:
+    except (OSError, ValueError) as exc:
+        log.debug("No usable history at %s: %s", history_path, exc)
         hist = pd.DataFrame()
 
-    # Append current row (in-memory) for comparison context
     hist = pd.concat([hist, pd.DataFrame([benchmark_data])], ignore_index=True)
 
-    numeric_cols = [c for c in hist.columns if c in METRIC_SPEC]
+    numeric_cols = [col for col in hist.columns if col in METRIC_SPEC]
     if not numeric_cols:
         print("\n🧪 No numeric metrics found to summarize yet.")
         return
@@ -173,20 +169,20 @@ def analyze_history_and_print(benchmark_data, history_path="benchmarks.json"):
     prev_row = hist.iloc[-2] if len(hist) > 1 else None
 
     print("\n🧠 Data Nerd Pack (descriptives + error bars)")
-    print("-" * 80)
-    header = f"{'Metric':28s} {'Latest':>10s} {'Mean±SE (95% CI)':>28s} {'Median':>10s} {'Mode':>10s} {'σ':>7s}"
-    print(header)
-    print("-" * 80)
+    print("-" * 78)
+    print(f"{'Metric':26s} {'Latest':>10s} {'Mean±SE (95% CI)':>26s} {'Median':>10s} {'Mode':>8s} {'σ':>6s}")
+    print("-" * 78)
 
     for col in numeric_cols:
         spec = METRIC_SPEC[col]
-        s = pd.to_numeric(hist[col], errors="coerce").dropna()
-        stats = summarize_series(s[:-1]) if s.size > 1 else summarize_series(s)
+        series = pd.to_numeric(hist[col], errors="coerce").dropna()
+        stats = summarize_series(series[:-1]) if series.size > 1 else summarize_series(series)
         if not stats:
             continue
 
-        # stash previous value for "huge jump" heuristic
-        stats["_prev"] = float(prev_row[col]) if prev_row is not None and pd.notna(prev_row[col]) else None
+        stats["_prev"] = (
+            float(prev_row[col]) if prev_row is not None and pd.notna(prev_row[col]) else None
+        )
 
         latest_val = float(latest_row.get(col, np.nan)) if pd.notna(latest_row.get(col, np.nan)) else np.nan
         ci_str = (
@@ -196,33 +192,56 @@ def analyze_history_and_print(benchmark_data, history_path="benchmarks.json"):
         )
         mode_str = "—" if stats["mode"] is None else f"{stats['mode']:.3g}"
 
-        print(f"{col:28s} {latest_val:10.3g} {ci_str:>28s} {stats['median']:10.3g} {mode_str:10s} {stats['std']:7.3g}")
-
-        # Flags go here
-        flags = flag_anomalies(col, latest_val, stats, spec)
-        for msg in flags:
-            print(f"   {msg}")
-
-    print("-" * 80)
-    print("ⓘ Mean±SE uses 95% CI; also checking 3σ control limits and robust MAD/IQR fences.\n")
-
-
-def get_test_coverage():
-    """Get current test coverage percentage."""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", "--cov=src", "--cov=web", "--cov-report=json:coverage.json", "--quiet"],
-            capture_output=True,
-            timeout=60,
+        print(
+            f"{col:26s} {latest_val:10.3g} {ci_str:>26s} {stats['median']:10.3g} {mode_str:>8s} {stats['std']:6.3g}"
         )
 
-        if os.path.exists("coverage.json"):
-            with open("coverage.json", "r") as f:
-                data = json.load(f)
-                return data.get("totals", {}).get("percent_covered", 0.0)
-    except:
-        pass
-    return 0.0
+        for msg in flag_anomalies(col, latest_val, stats, spec):
+            print(f"   {msg}")
+
+    print("-" * 78)
+    print("ⓘ Mean±SE gives a 95% CI; also checking 3σ, robust MAD z, and Tukey fences.\n")
+
+
+def run_subprocess(cmd: list[str], timeout: int = 60) -> tuple[int, str, str]:
+    """Run a subprocess and return ``(returncode, stdout, stderr)``."""
+
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
+    except subprocess.TimeoutExpired as exc:
+        return 124, "", f"timeout after {timeout}s: {exc}"
+    except Exception as exc:
+        return 1, "", f"{type(exc).__name__}: {exc}"
+
+
+def get_test_coverage() -> float:
+    """Run pytest with coverage and return the percent covered."""
+
+    rc, _, err = run_subprocess(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--cov=src",
+            "--cov=web",
+            "--cov-report=json:coverage.json",
+            "--quiet",
+        ],
+        timeout=90,
+    )
+
+    if rc != 0:
+        log.warning("pytest/coverage failed (rc=%s): %s", rc, err[:200])
+
+    try:
+        with open("coverage.json", "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        return float(data.get("totals", {}).get("percent_covered", 0.0))
+    except (OSError, ValueError) as exc:
+        if rc == 0:
+            log.warning("coverage.json unreadable: %s", exc)
+        return 0.0
 
 
 def count_duplicate_functions():
@@ -242,13 +261,14 @@ def count_duplicate_functions():
             continue
 
         try:
-            with open(py_file, "r") as f:
+            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
                 for pattern in duplicate_patterns:
                     count = content.count(pattern)
                     if count > 1:
                         duplicates += count - 1  # Count extras as duplicates
-        except:
+        except OSError as exc:
+            log.debug("Skipping %s while counting duplicates: %s", py_file, exc)
             continue
 
     return duplicates
@@ -256,12 +276,11 @@ def count_duplicate_functions():
 
 def get_database_metrics():
     """Get detailed database metrics for resume-worthy analytics."""
-    try:
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                """
+    rc, stdout, stderr = run_subprocess(
+        [
+            sys.executable,
+            "-c",
+            """
 import sys
 import time
 import pandas as pd
@@ -314,7 +333,7 @@ try:
             comment_count = df['comment_count'].sum()
         elif 'comments' in df.columns:
             comment_count = len(df)  # Each row might be a comment
-    except:
+    except Exception:
         pass
 
     print(f"TOTAL_RECORDS:{total_records}")
@@ -342,24 +361,29 @@ except Exception as e:
     print("COMMENT_COUNT:0")
     print("AVAILABLE_COLUMNS:")
 """,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
+        ],
+        timeout=60,
+    )
 
-        if result.returncode == 0:
-            metrics = {}
-            for line in result.stdout.strip().split("\n"):
-                if ":" in line and not line.startswith("ERROR"):
-                    key, value = line.split(":", 1)
-                    try:
-                        metrics[key.lower()] = float(value) if "." in value else int(value)
-                    except:
-                        metrics[key.lower()] = value
-            return metrics
-    except:
-        pass
+    if stderr:
+        log.debug("database metrics stderr: %s", stderr[:200])
+    if rc != 0:
+        log.warning("database metrics command failed (rc=%s)", rc)
+
+    metrics: dict[str, float | int | str] = {}
+    for line in stdout.splitlines():
+        if ":" not in line or line.startswith("ERROR"):
+            continue
+        key, value = line.split(":", 1)
+        cleaned = value.strip()
+        try:
+            num = float(cleaned)
+            metrics[key.lower()] = int(num) if num.is_integer() else num
+        except ValueError:
+            metrics[key.lower()] = cleaned
+
+    if metrics:
+        return metrics
 
     return {
         "total_records": 0,
@@ -371,50 +395,46 @@ except Exception as e:
     }
 
 
-def run_existing_model_benchmarks():
-    """Run existing sentiment model comparison benchmarks."""
-    try:
-        print("  • Running existing model comparison benchmarks...")
+def run_existing_model_benchmarks() -> dict[str, float]:
+    """Run the comprehensive sentiment benchmark script and parse accuracy lines."""
 
-        # Try to run the comprehensive model test
-        result = subprocess.run(
-            [sys.executable, "tools/sentiment/comprehensive_model_test.py"], capture_output=True, text=True, timeout=120
-        )
+    print("  • Running existing model comparison benchmarks...")
 
-        if result.returncode == 0:
-            # Parse results from the output
-            output_lines = result.stdout.split("\n")
-            model_results = {}
+    rc, stdout, stderr = run_subprocess(
+        [sys.executable, "tools/sentiment/comprehensive_model_test.py"], timeout=120
+    )
 
-            for line in output_lines:
-                if "Accuracy:" in line and "%" in line:
-                    # Extract model accuracy from output
-                    parts = line.split()
-                    for i, part in enumerate(parts):
-                        if part.endswith("%"):
-                            accuracy = float(part.replace("%", ""))
-                            model_name = " ".join(parts[: i - 1]).strip()
-                            if model_name:
-                                model_results[model_name] = accuracy
+    if rc != 0:
+        log.warning("Model benchmark command failed (rc=%s): %s", rc, stderr[:200])
+        return {}
 
-            return model_results
-        else:
-            print(f"    Model benchmark failed: {result.stderr[:100]}")
+    model_results: dict[str, float] = {}
+    for line in stdout.split("\n"):
+        if "Accuracy:" not in line or "%" not in line:
+            continue
+        parts = line.split()
+        for idx, part in enumerate(parts):
+            if part.endswith("%"):
+                try:
+                    accuracy = float(part.rstrip("%"))
+                except ValueError:
+                    continue
+                model_name = " ".join(parts[: max(idx - 1, 0)]).strip()
+                if model_name:
+                    model_results[model_name] = accuracy
+                break
 
-    except Exception as e:
-        print(f"    Model benchmark error: {e}")
-
-    return {}
+    return model_results
 
 
-def get_model_performance():
-    """Benchmark sentiment analysis and bot detection with resume-worthy metrics."""
-    try:
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                """
+def get_model_performance() -> dict[str, float | int | str]:
+    """Benchmark sentiment and bot detection helpers via a small harness."""
+
+    rc, stdout, stderr = run_subprocess(
+        [
+            sys.executable,
+            "-c",
+            """
 import sys
 import time
 import numpy as np
@@ -463,16 +483,16 @@ try:
         try:
             from src.youtubeviz.music_sentiment import analyze_comment
             sentiment_analyzer = analyze_comment
-        except:
+        except ImportError:
             try:
                 from src.youtubeviz.enhanced_music_sentiment import EnhancedMusicSentimentAnalyzer
                 analyzer = EnhancedMusicSentimentAnalyzer()
                 sentiment_analyzer = analyzer.analyze_comment
-            except:
+            except ImportError:
                 try:
                     from src.youtubeviz.production_music_sentiment import analyze_comment
                     sentiment_analyzer = analyze_comment
-                except:
+                except ImportError:
                     pass
 
         if sentiment_analyzer:
@@ -514,12 +534,15 @@ try:
         try:
             from src.youtubeviz.bot_detection import is_likely_bot
             bot_detector = is_likely_bot
-        except:
+        except ImportError:
             try:
                 from src.youtubeviz.bot_detection import analyze_comments
-                # If it's the batch function, we'll test differently
-                bot_detector = lambda x: analyze_comments([x])[0] if analyze_comments([x]) else False
-            except:
+
+                def bot_detector(comment):
+                    results = analyze_comments([comment])
+                    return bool(results and results[0])
+
+            except ImportError:
                 pass
 
         if bot_detector:
@@ -585,24 +608,36 @@ except Exception as e:
     print("BOT_DETECTION_THROUGHPUT:0")
     print("BOT_DETECTION_PRECISION:0")
 """,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=45,
-        )
+        ],
+        timeout=60,
+    )
 
-        if result.returncode == 0:
-            metrics = {}
-            for line in result.stdout.strip().split("\n"):
-                if ":" in line and not line.startswith("ERROR"):
-                    key, value = line.split(":", 1)
-                    try:
-                        metrics[key.lower()] = float(value) if "." in value else int(value)
-                    except:
-                        metrics[key.lower()] = value
-            return metrics
-    except:
-        pass
+    if stderr:
+        log.debug("model performance stderr: %s", stderr[:200])
+    if rc != 0:
+        log.warning("model performance command failed (rc=%s)", rc)
+        return {
+            "sentiment_avg_time": 0,
+            "sentiment_total_time": 0,
+            "sentiment_comments_tested": 0,
+            "bot_detection_time": 0,
+            "bot_detection_available": 0,
+        }
+
+    metrics: dict[str, float | int | str] = {}
+    for line in stdout.splitlines():
+        if ":" not in line or line.startswith("ERROR"):
+            continue
+        key, value = line.split(":", 1)
+        cleaned = value.strip()
+        try:
+            num = float(cleaned)
+            metrics[key.lower()] = int(num) if num.is_integer() else num
+        except ValueError:
+            metrics[key.lower()] = cleaned
+
+    if metrics:
+        return metrics
 
     return {
         "sentiment_avg_time": 0,
@@ -622,12 +657,13 @@ def count_lines_of_code():
             continue
 
         try:
-            with open(py_file, "r") as f:
+            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
                 # Count non-empty, non-comment lines
                 code_lines = [l for l in lines if l.strip() and not l.strip().startswith("#")]
                 total_lines += len(code_lines)
-        except:
+        except OSError as exc:
+            log.debug("Skipping %s while counting LOC: %s", py_file, exc)
             continue
 
     return total_lines
@@ -767,16 +803,17 @@ def save_benchmark(data):
     benchmarks = []
     if os.path.exists(benchmark_file):
         try:
-            with open(benchmark_file, "r") as f:
+            with open(benchmark_file, "r", encoding="utf-8") as f:
                 benchmarks = json.load(f)
-        except:
+        except (OSError, ValueError) as exc:
+            log.warning("Unable to read %s: %s", benchmark_file, exc)
             benchmarks = []
 
     # Add new benchmark
     benchmarks.append(data)
 
     # Save updated benchmarks to JSON
-    with open(benchmark_file, "w") as f:
+    with open(benchmark_file, "w", encoding="utf-8") as f:
         json.dump(benchmarks, f, indent=2)
 
     # Try to save to database
@@ -790,8 +827,7 @@ def save_benchmark(data):
 
 def main():
     """Run benchmark and save results."""
-    print("📊 Running project benchmark...")
-    print("This might take a minute while we test the models...")
+    print("📊 Running project benchmark (tests, data quality, models)...")
 
     # Collect all metrics
     print("  • Getting test coverage...")
@@ -911,7 +947,7 @@ def main():
 
     # Show progress if we have previous benchmarks
     try:
-        with open("benchmarks.json", "r") as f:
+        with open("benchmarks.json", "r", encoding="utf-8") as f:
             all_benchmarks = json.load(f)
 
         if len(all_benchmarks) > 1:
@@ -965,7 +1001,8 @@ def main():
                 elif sentiment_change > 0.001:
                     print(f"🐌 Sentiment analysis got slower by {sentiment_change*1000:.1f}ms")
 
-    except:
+    except (OSError, ValueError) as exc:
+        log.info("No previous benchmark history available: %s", exc)
         print("\n🎯 This is your first benchmark - future runs will show progress!")
 
 

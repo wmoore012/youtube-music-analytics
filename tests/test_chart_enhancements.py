@@ -154,6 +154,23 @@ class TestApplyColorScheme:
         # Should return a result
         assert result is not None
 
+    def test_apply_plotly_colors_without_explicit_artists(self):
+        """Plotly figures should receive palette colors even without explicit artist list."""
+
+        go = pytest.importorskip("plotly.graph_objects")
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(name="Artist A", x=[1, 2], y=[1, 2]))
+        fig.add_trace(go.Scatter(name="Artist B", x=[1, 2], y=[2, 3]))
+
+        colors = _get_scheme_colors("vibrant")
+
+        result = apply_color_scheme(fig, scheme_name="vibrant")
+
+        assert result is fig
+        assert fig.data[0].line.color == colors[0]
+        assert fig.data[1].line.color == colors[1]
+
 
 class TestCreateChartAnnotations:
     """Test chart annotation creation."""

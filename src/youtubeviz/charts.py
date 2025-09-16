@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Mapping, Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 import pandas as pd
 
@@ -17,6 +17,52 @@ try:
     import altair as alt
 except Exception:  # pragma: no cover - optional
     alt = None
+
+
+_SCHEME_COLORS: dict[str, list[str]] = {
+    "vibrant": [
+        "#FF6B6B",
+        "#4ECDC4",
+        "#45B7D1",
+        "#96CEB4",
+        "#FFEAA7",
+        "#DDA0DD",
+        "#98D8C8",
+        "#F7DC6F",
+        "#BB8FCE",
+        "#85C1E9",
+    ],
+    "pastel": [
+        "#FFB3BA",
+        "#FFDFBA",
+        "#FFFFBA",
+        "#BAFFC9",
+        "#BAE1FF",
+        "#E1BAFF",
+        "#FFBAE1",
+        "#C9FFBA",
+        "#BAFFE1",
+        "#E1FFBA",
+        "#FFD1FF",
+        "#E0BBE4",
+        "#957DAD",
+        "#D291BC",
+        "#FEC8D8",
+        "#FFDFD3",
+    ],
+    "monochrome": [
+        "#2C3E50",
+        "#34495E",
+        "#7F8C8D",
+        "#95A5A6",
+        "#BDC3C7",
+        "#ECF0F1",
+        "#3498DB",
+        "#5DADE2",
+        "#85C1E9",
+        "#AED6F1",
+    ],
+}
 
 
 def _default_palette(n: int) -> list[str]:
@@ -97,54 +143,27 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
 
 
 def _get_scheme_colors(scheme_name: str) -> list[str]:
-    """Get color palette for a specific scheme.
+    """Return colors for the requested ``scheme_name`` (case insensitive)."""
 
-    Args:
-        scheme_name: Color scheme name (vibrant, pastel, monochrome)
+    key = (scheme_name or "vibrant").lower()
+    colors = _SCHEME_COLORS.get(key, _SCHEME_COLORS["vibrant"])
+    return list(colors)
 
-    Returns:
-        List of hex color codes
-    """
-    schemes = {
-        "vibrant": [
-            "#FF6B6B",
-            "#4ECDC4",
-            "#45B7D1",
-            "#96CEB4",
-            "#FFEAA7",
-            "#DDA0DD",
-            "#98D8C8",
-            "#F7DC6F",
-            "#BB8FCE",
-            "#85C1E9",
-        ],
-        "pastel": [
-            "#FFB3BA",
-            "#FFDFBA",
-            "#FFFFBA",
-            "#BAFFC9",
-            "#BAE1FF",
-            "#E1BAFF",
-            "#FFBAE1",
-            "#C9FFBA",
-            "#BAFFE1",
-            "#E1FFBA",
-        ],
-        "monochrome": [
-            "#2C3E50",
-            "#34495E",
-            "#7F8C8D",
-            "#95A5A6",
-            "#BDC3C7",
-            "#ECF0F1",
-            "#3498DB",
-            "#5DADE2",
-            "#85C1E9",
-            "#AED6F1",
-        ],
-    }
 
-    return schemes.get(scheme_name, schemes["vibrant"])
+def _extract_plotly_series_labels(chart) -> list[str]:
+    """Return a unique, ordered list of trace labels from a Plotly figure."""
+
+    labels: list[str] = []
+
+    for trace in getattr(chart, "data", []) or []:
+        name = getattr(trace, "name", None)
+        if not name:
+            continue
+        label = str(name).split(" (", 1)[0].strip()
+        if label and label not in labels:
+            labels.append(label)
+
+    return labels
 
 
 def enhance_chart_beauty(
@@ -271,124 +290,178 @@ def enhance_chart_beauty(
 def apply_color_scheme(
     chart,
     scheme_name: Optional[str] = None,
-    custom_colors: Optional[dict] = None,
-    artists: Optional[list] = None,
+    custom_colors: Optional[Mapping[str, str]] = None,
+    artists: Optional[Sequence[str]] = None,
 ):
-    """Apply color scheme to chart.
+    """Apply consistent artist colors to Plotly or Altair charts."""
 
-    Args:
-        chart: Chart object to modify
-        scheme_name: Color scheme name or None to use env default
-        custom_colors: Custom color mapping dict
-        artists: List of artist names for color assignment
-
-    Returns:
-        Chart with applied colors
-    """
     if chart is None:
         return chart
 
-    # Determine color scheme
-    if not scheme_name:
-        scheme_name = os.getenv("ARTIST_COLOR_SCHEME", "vibrant")
+    resolved_scheme = (scheme_name or os.getenv("ARTIST_COLOR_SCHEME", "vibrant")).lower()
+    base_palette = _get_scheme_colors(resolved_scheme)
 
-    # Get colors
+    color_map: dict[str, str] = {}
+    artists_list = [str(name) for name in artists] if artists else []
+
+    if artists_list:
+        color_map.update(get_artist_color_map(artists_list))
+
+    candidate_labels: list[str] = []
+
+    def _extend(labels: Sequence[str] | None) -> None:
+        if not labels:
+            return
+        for label in labels:
+            if not isinstance(label, str):
+                continue
+            normalized = label.strip()
+            if normalized and normalized not in candidate_labels:
+                candidate_labels.append(normalized)
+
+    _extend(artists_list)
+
+    trace_labels = _extract_plotly_series_labels(chart)
+    _extend(trace_labels)
+
     if custom_colors:
-        color_map = custom_colors
-    elif artists:
-        # Use existing color mapping function
-        color_map = get_artist_color_map(artists)
-    else:
-        # Use scheme colors directly
-        colors = _get_scheme_colors(scheme_name)
-        color_map = {f"Item {i}": color for i, color in enumerate(colors)}
+        for label, color in custom_colors.items():
+            if isinstance(label, str) and isinstance(color, str):
+                normalized = label.strip()
+                if not normalized:
+                    continue
+                color_map[normalized] = color
+                if normalized not in candidate_labels:
+                    candidate_labels.append(normalized)
 
-    # Apply to Plotly chart
-    if hasattr(chart, "update_traces"):
-        if hasattr(chart, "data") and chart.data:
-            # Try to update existing traces
-            for i, trace in enumerate(chart.data):
-                if hasattr(trace, "name") and trace.name in color_map:
-                    trace.marker = dict(color=color_map[trace.name])
-        return chart
+    if not candidate_labels:
+        trace_count = len(getattr(chart, "data", []) or [])
+        default_count = trace_count if trace_count else len(base_palette)
+        candidate_labels = [f"Series {i + 1}" for i in range(default_count)]
 
-    # Apply to Altair chart
-    elif hasattr(chart, "encoding") and hasattr(chart, "encode"):
-        if hasattr(chart.encoding, "color") and hasattr(chart.encoding.color, "field"):
-            # Create color scale for Altair
-            domain = list(color_map.keys())
-            range_colors = [color_map[key] for key in domain]
+    for idx, label in enumerate(candidate_labels):
+        if label not in color_map:
+            color_map[label] = base_palette[idx % len(base_palette)]
 
-            enhanced = chart.encode(
-                color=alt.Color(chart.encoding.color.field, scale=alt.Scale(domain=domain, range=range_colors))
-            )
-            return enhanced
+    if hasattr(chart, "update_traces") and hasattr(chart, "data"):
+        return _apply_plotly_colors(chart, color_map)
+
+    if alt is not None and hasattr(chart, "encoding") and hasattr(chart, "encode"):
+        return _apply_altair_colors(chart, color_map)
 
     return chart
 
 
+def _apply_plotly_colors(fig, color_map: Mapping[str, str]):
+    """Apply ``color_map`` to a Plotly figure in place."""
+
+    if go is None:
+        return fig
+
+    for trace in getattr(fig, "data", []):
+        name = getattr(trace, "name", None)
+        if not name:
+            continue
+        series_name = str(name).split(" (")[0]
+        color = color_map.get(series_name)
+        if not color:
+            continue
+        if hasattr(trace, "line") and trace.line is not None:
+            trace.line.color = color
+        if hasattr(trace, "marker") and trace.marker is not None:
+            trace.marker.color = color
+        elif hasattr(trace, "marker"):
+            trace.marker = {"color": color}
+
+    return fig
+
+
+def _apply_altair_colors(fig, color_map: Mapping[str, str]):
+    """Apply ``color_map`` to an Altair chart when possible."""
+
+    if alt is None or not (hasattr(fig, "encoding") and hasattr(fig, "encode")):
+        return fig
+
+    color_encoding = getattr(fig.encoding, "color", None)
+    if not getattr(color_encoding, "field", None):
+        return fig
+
+    domain = list(color_map.keys())
+    range_colors = [color_map[label] for label in domain]
+
+    return fig.encode(color=alt.Color(color_encoding.field, scale=alt.Scale(domain=domain, range=range_colors)))
+
+
 def create_chart_annotations(
-    insights: list[str],
+    insights: Optional[Sequence[str]] = None,
     chart_type: str = "line",
-    highlight_points: Optional[list] = None,
-) -> list[dict]:
-    """Create annotations for chart insights and highlights.
+    highlight_points: Optional[Sequence[Mapping[str, Any]]] = None,
+) -> list[dict[str, Any]]:
+    """Generate Plotly-style annotations for insights and highlights."""
 
-    Args:
-        insights: List of insight text to annotate
-        chart_type: Type of chart (affects positioning)
-        highlight_points: Optional list of points to highlight with arrows
+    annotations: list[dict[str, Any]] = []
+    insight_texts = [str(text) for text in (insights or [])][:5]
 
-    Returns:
-        List of annotation dictionaries for Plotly
-    """
-    annotations = []
-
-    # Position settings by chart type
-    positions = {
-        "line": {"y_base": 0.95, "y_step": -0.08},
-        "bar": {"y_base": 1.02, "y_step": -0.06},
-        "scatter": {"y_base": 0.98, "y_step": -0.07},
+    layout_defaults = {
+        "line": {"x": 0.02, "xanchor": "left", "y_base": 0.94, "y_step": -0.08},
+        "bar": {"x": 0.98, "xanchor": "right", "y_base": 1.04, "y_step": -0.07},
+        "scatter": {"x": 0.02, "xanchor": "left", "y_base": 0.9, "y_step": -0.07},
     }
+    config = layout_defaults.get(chart_type, layout_defaults["line"])
 
-    pos_config = positions.get(chart_type, positions["line"])
+    for idx, insight in enumerate(insight_texts):
+        annotations.append(
+            {
+                "text": f"💡 {insight}",
+                "xref": "paper",
+                "yref": "paper",
+                "x": config["x"],
+                "y": config["y_base"] + idx * config["y_step"],
+                "xanchor": config["xanchor"],
+                "showarrow": False,
+                "font": {"size": 11, "color": "#666666"},
+                "bgcolor": "rgba(255, 255, 255, 0.8)",
+                "bordercolor": "#CCCCCC",
+                "borderwidth": 1,
+                "borderpad": 4,
+            }
+        )
 
-    # Add insight annotations (limit to 5)
-    for i, insight in enumerate(insights[:5]):
-        annotation = {
-            "text": f"💡 {insight}",
-            "x": 0.02,
-            "y": pos_config["y_base"] + (i * pos_config["y_step"]),
-            "xref": "paper",
-            "yref": "paper",
-            "showarrow": False,
-            "font": {"size": 11, "color": "#666666"},
-            "bgcolor": "rgba(255, 255, 255, 0.8)",
-            "bordercolor": "#CCCCCC",
-            "borderwidth": 1,
-            "borderpad": 4,
-        }
-        annotations.append(annotation)
-
-    # Add highlight point annotations
     if highlight_points:
+        defaults = {
+            "text": "📍",
+            "xref": "x",
+            "yref": "y",
+            "showarrow": True,
+            "arrowhead": 2,
+            "arrowsize": 1,
+            "arrowwidth": 2,
+            "arrowcolor": "#FF6B6B",
+            "font": {"size": 10, "color": "#FF6B6B"},
+            "bgcolor": "rgba(255, 255, 255, 0.9)",
+            "bordercolor": "#FF6B6B",
+            "borderwidth": 1,
+        }
+        override_keys = {
+            "text",
+            "xref",
+            "yref",
+            "arrowhead",
+            "arrowsize",
+            "arrowwidth",
+            "arrowcolor",
+            "font",
+            "bgcolor",
+            "bordercolor",
+            "borderwidth",
+        }
         for point in highlight_points:
-            if isinstance(point, dict) and "x" in point and "y" in point:
-                highlight_annotation = {
-                    "text": point.get("text", "📍"),
-                    "x": point["x"],
-                    "y": point["y"],
-                    "showarrow": True,
-                    "arrowhead": 2,
-                    "arrowsize": 1,
-                    "arrowwidth": 2,
-                    "arrowcolor": "#E74C3C",
-                    "font": {"size": 10, "color": "#E74C3C"},
-                    "bgcolor": "rgba(255, 255, 255, 0.9)",
-                    "bordercolor": "#E74C3C",
-                    "borderwidth": 1,
-                }
-                annotations.append(highlight_annotation)
+            if isinstance(point, Mapping) and {"x", "y"}.issubset(point):
+                highlight = {**defaults, "x": point["x"], "y": point["y"]}
+                for key in override_keys:
+                    if key in point:
+                        highlight[key] = point[key]
+                annotations.append(highlight)
 
     return annotations
 
@@ -577,202 +650,6 @@ def linked_scatter_detail_altair(
         return combo
     except Exception:
         return base
-
-
-def apply_color_scheme(
-    fig,
-    scheme_name: Optional[str] = None,
-    custom_colors: Optional[dict] = None,
-    artists: Optional[list] = None,
-):
-    """Apply consistent color schemes from .env config and color files.
-
-    Reads color configuration from environment variables and config files
-    to ensure consistent artist colors across all visualizations.
-
-    Args:
-        fig: Chart figure to apply colors to
-        scheme_name: Name of color scheme (vibrant, pastel, monochrome)
-        custom_colors: Optional dict of custom color mappings
-        artists: List of artists to generate colors for
-
-    Returns:
-        Figure with applied color scheme
-    """
-    # Get scheme from env if not provided
-    if not scheme_name:
-        scheme_name = os.getenv("ARTIST_COLOR_SCHEME", "vibrant")
-
-    # Load custom colors from config files
-    color_map = {}
-    if artists:
-        color_map = get_artist_color_map(artists)
-
-    # Override with custom colors if provided
-    if custom_colors:
-        color_map.update(custom_colors)
-
-    # Apply scheme-based colors for any missing artists
-    if artists and scheme_name:
-        scheme_colors = _get_scheme_colors(scheme_name)
-        for i, artist in enumerate(artists):
-            if artist not in color_map:
-                color_map[artist] = scheme_colors[i % len(scheme_colors)]
-
-    # Apply colors to figure
-    if hasattr(fig, "update_traces") and color_map:
-        # Plotly figure
-        return _apply_plotly_colors(fig, color_map)
-    elif hasattr(fig, "mark_bar") and color_map:
-        # Altair chart
-        return _apply_altair_colors(fig, color_map)
-
-    return fig
-
-
-def _get_scheme_colors(scheme_name: str) -> list:
-    """Get color palette for a named scheme."""
-    schemes = {
-        "vibrant": [
-            "#FF6B6B",
-            "#4ECDC4",
-            "#45B7D1",
-            "#96CEB4",
-            "#FFEAA7",
-            "#DDA0DD",
-            "#98D8C8",
-            "#F7DC6F",
-            "#BB8FCE",
-            "#85C1E9",
-        ],
-        "pastel": [
-            "#FFB3BA",
-            "#BAFFC9",
-            "#BAE1FF",
-            "#FFFFBA",
-            "#FFD1FF",
-            "#E0BBE4",
-            "#957DAD",
-            "#D291BC",
-            "#FEC8D8",
-            "#FFDFD3",
-        ],
-        "monochrome": [
-            "#2C3E50",
-            "#34495E",
-            "#7F8C8D",
-            "#95A5A6",
-            "#BDC3C7",
-            "#ECF0F1",
-            "#3498DB",
-            "#5DADE2",
-            "#85C1E9",
-            "#AED6F1",
-        ],
-    }
-
-    return schemes.get(scheme_name, schemes["vibrant"])
-
-
-def _apply_plotly_colors(fig, color_map: dict):
-    """Apply color mapping to Plotly figure."""
-    if go is None:
-        return fig
-
-    # Update traces with mapped colors
-    for trace in fig.data:
-        if hasattr(trace, "name") and trace.name:
-            # Extract artist name from trace name (handle "Artist (daily)" format)
-            artist_name = trace.name.split(" (")[0]
-            if artist_name in color_map:
-                trace.line.color = color_map[artist_name]
-                trace.marker.color = color_map[artist_name]
-
-    return fig
-
-
-def _apply_altair_colors(fig, color_map: dict):
-    """Apply color mapping to Altair chart."""
-    # Check if this looks like an Altair chart
-    if not (hasattr(fig, "encoding") and hasattr(fig, "encode")):
-        return fig
-
-    # Create color scale for Altair
-    domain = list(color_map.keys())
-    range_colors = list(color_map.values())
-
-    # Apply color scale
-    if hasattr(fig, "encoding") and hasattr(fig.encoding, "color"):
-        fig = fig.encode(
-            color=alt.Color(fig.encoding.color.field + ":N", scale=alt.Scale(domain=domain, range=range_colors))
-        )
-
-    return fig
-
-
-def create_chart_annotations(
-    insights: list,
-    chart_type: str = "line",
-    highlight_points: Optional[list] = None,
-) -> list:
-    """Create helpful annotations for charts based on insights.
-
-    Generates annotations that highlight key insights and guide
-    the viewer's attention to important patterns in the data.
-
-    Args:
-        insights: List of insight strings to annotate
-        chart_type: Type of chart (line, bar, scatter)
-        highlight_points: Optional list of points to highlight
-
-    Returns:
-        List of annotation dictionaries for Plotly
-    """
-    annotations = []
-
-    # Position annotations based on chart type
-    if chart_type == "line":
-        y_positions = [0.9, 0.8, 0.7, 0.6, 0.5]
-    elif chart_type == "bar":
-        y_positions = [0.95, 0.85, 0.75, 0.65, 0.55]
-    else:
-        y_positions = [0.9, 0.8, 0.7, 0.6, 0.5]
-
-    # Create annotations for insights
-    for i, insight in enumerate(insights[:5]):  # Limit to 5 annotations
-        if i < len(y_positions):
-            annotation = {
-                "text": f"💡 {insight}",
-                "xref": "paper",
-                "yref": "paper",
-                "x": 1.02,
-                "y": y_positions[i],
-                "showarrow": False,
-                "font": {"size": 10, "color": "#666"},
-                "bgcolor": "rgba(255,255,255,0.8)",
-                "bordercolor": "#DDD",
-                "borderwidth": 1,
-                "xanchor": "left",
-            }
-            annotations.append(annotation)
-
-    # Add highlight point annotations if provided
-    if highlight_points:
-        for point in highlight_points:
-            if isinstance(point, dict) and "x" in point and "y" in point:
-                highlight_annotation = {
-                    "text": point.get("text", "📍"),
-                    "x": point["x"],
-                    "y": point["y"],
-                    "showarrow": True,
-                    "arrowhead": 2,
-                    "arrowcolor": "#FF6B6B",
-                    "font": {"size": 12, "color": "#FF6B6B"},
-                    "bgcolor": "rgba(255,255,255,0.9)",
-                }
-                annotations.append(highlight_annotation)
-
-    return annotations
 
 
 __all__ = [

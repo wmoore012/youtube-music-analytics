@@ -1,23 +1,23 @@
 {
-  "timestamp": "2025-09-16T00:36:12.012286",
-  "total_combinable_groups": 19,
-  "total_ai_patterns": 55,
+  "timestamp": "2025-09-16T01:55:54.871735",
+  "total_combinable_groups": 16,
+  "total_ai_patterns": 56,
   "priority_files": [
     {
       "file": "scripts/enhanced_ci.py",
-      "total_issues": 14,
+      "total_issues": 11,
       "combinable_groups": [
         {
           "pattern": "validate_",
           "description": "Validation functions",
           "functions": [
+            "validate_environment_safety",
             "validate_code_quality",
             "validate_database_operations",
             "_validate_schema_integrity",
             "_validate_commenting",
             "_validate_notebook_outputs",
             "_validate_function_complexity",
-            "_validate_notebook_outputs",
             "validate_database_integrity"
           ],
           "count": 8
@@ -28,12 +28,9 @@
           "functions": [
             "_analyze_system_health",
             "_analyze_failure_patterns",
-            "_analyze_performance_metrics",
-            "_analyze_system_health",
-            "_analyze_failure_patterns",
             "_analyze_performance_metrics"
           ],
-          "count": 6
+          "count": 3
         }
       ],
       "recommendations": [
@@ -94,53 +91,6 @@
         "Create test base classes for common setup/teardown",
         "Extract validation helpers into test utilities",
         "Use parameterized tests to reduce duplicate test functions"
-      ]
-    },
-    {
-      "file": "src/youtubeviz/charts.py",
-      "total_issues": 8,
-      "combinable_groups": [
-        {
-          "pattern": "enhance_chart_",
-          "description": "Chart enhancement functions",
-          "functions": [
-            "enhance_chart_beauty",
-            "enhance_chart_beauty"
-          ],
-          "count": 2
-        },
-        {
-          "pattern": "apply_color_",
-          "description": "Color application functions",
-          "functions": [
-            "apply_color_scheme",
-            "apply_color_scheme"
-          ],
-          "count": 2
-        },
-        {
-          "pattern": "create_chart_",
-          "description": "Chart creation functions",
-          "functions": [
-            "create_chart_annotations",
-            "create_chart_annotations"
-          ],
-          "count": 2
-        },
-        {
-          "pattern": "_get_",
-          "description": "Getter functions",
-          "functions": [
-            "_get_scheme_colors",
-            "_get_scheme_colors"
-          ],
-          "count": 2
-        }
-      ],
-      "recommendations": [
-        "Create ChartEnhancer class to consolidate enhancement functions",
-        "Implement ColorSchemeManager for color-related functions",
-        "Extract annotation logic into AnnotationBuilder class"
       ]
     },
     {
@@ -228,6 +178,26 @@
         "Extract common patterns into utility functions",
         "Consider using composition over inheritance",
         "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_database_schema.py",
+      "total_issues": 2,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "_validate_isrc_format",
+            "_validate_sentiment_score"
+          ],
+          "count": 2
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
       ]
     },
     {
