@@ -117,6 +117,16 @@ python tools/webhooks/setup_integrations.py
 - **Revenue Forecasting**: Predictive analytics for earnings and growth projections
 - **Artist Portfolio Management**: Multi-artist performance tracking and comparison
 
+## Code Review Automation (Codex)
+
+If your repository has GitHub Codex code review enabled, you can request an automated review on any open Pull Request by commenting:
+
+```
+@codex review
+```
+
+Codex will react with 👀 to acknowledge and then post a standard code review in the PR once complete.
+
 ### Enterprise Data Pipeline
 - **99.9% Uptime SLA**: Production-grade reliability with automated failover
 - **Horizontal Scaling**: Auto-scaling infrastructure for high-volume data processing
