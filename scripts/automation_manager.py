@@ -115,6 +115,17 @@ class AutomationManager:
         cron_lines.append(f"# Schedule: {schedule.get('description', 'No description')}")
         cron_lines.append("")
 
+        # Add explicit environment configuration so cron executes reliably
+        env_shell = os.getenv("CRON_SHELL", "/bin/bash")
+        env_path = os.getenv("CRON_PATH", os.getenv("PATH", "/usr/local/bin:/usr/bin:/bin"))
+        env_mailto = os.getenv("CRON_EMAIL", "admin@yourdomain.com")
+
+        cron_lines.append("# Environment configuration for cron jobs")
+        cron_lines.append(f"SHELL={env_shell}")
+        cron_lines.append(f"PATH={env_path}")
+        cron_lines.append(f"MAILTO={env_mailto}")
+        cron_lines.append("")
+
         for process in processes:
             name = process["name"]
             command = process["command"]
