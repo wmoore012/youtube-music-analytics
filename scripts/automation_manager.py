@@ -3,8 +3,8 @@
 Automation Manager - Explicit User Control Over Scheduled Tasks
 
 This script provides transparent, user-controlled automation for the
-YouTube Music Analytics platform. Built with Grammy-level reliability
-and M.S. Data Science rigor.
+YouTube analytics platform. It is designed for predictable scheduling
+across development, staging, and production environments.
 
 Key Principles:
 - No hidden processes or automatic startup

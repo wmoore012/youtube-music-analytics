@@ -1,434 +1,53 @@
-# 🏗️ Technical Architecture
-## *Senior-Level System Design for Music Industry Analytics*
+# Architecture
 
-[![Grammy Nominated Producer](https://img.shields.io/badge/Grammy-Nominated%20Producer-gold?style=flat-square)](https://www.grammy.com)
-[![M.S. Data Science](https://img.shields.io/badge/M.S.-Data%20Science-blue?style=flat-square)](https://github.com/wmoore012)
+This repository contains an end-to-end YouTube analytics stack focused on music industry reporting. The system is split into loosely coupled layers so that ingestion, storage, analytics, and presentation can evolve independently.
 
----
+## High level flow
+1. **Acquisition** – `web/youtube_channel_etl.py` coordinates calls to the YouTube Data API via helpers in `web/youtube_integration.py`. Raw channel, video, and metric payloads are persisted to staging tables for traceability before being normalised.
+2. **Normalisation and enrichment** – the ETL helpers in `web/etl_helpers.py` transform raw responses into relational records. Sentiment scoring and DSP enrichment jobs live alongside the YouTube logic but are optional entry points invoked from `tools/etl/` scripts.
+3. **Storage** – MySQL is the canonical store. Schemas are defined in `tools/setup/create_tables.py` and migrations are executed via script to keep CI and production environments aligned. Aggregated exports (CSV/JSONL) under `music_analysis_tables/` and `time_series_tracking/` are derived directly from the database.
+4. **Analytics** – the `src/youtubeviz/` package powers charting, storytelling, and comment analysis. Supporting scripts under `scripts/` and notebooks under `notebooks/` consume the same package to keep KPI logic centralised.
+5. **Validation and monitoring** – CI tooling (`scripts/enhanced_ci.py`, `tools/etl/run_comprehensive_etl.py`, `scripts/system_health_monitor.py`) validates schema constraints, null policies, notebook execution, and operational metrics before code reaches production.
 
-## 🎯 **Architecture Philosophy**
-
-This platform is designed with **production-grade standards** that reflect both Grammy-level quality expectations and M.S. Data Science rigor. Every architectural decision balances **performance, maintainability, and business value**.
-
-### **Core Principles**
-1. **🎵 Music Industry First**: Architecture decisions prioritize music business needs
-2. **📊 Data Science Rigor**: Statistical validity and experimental design built-in
-3. **🚀 Production Ready**: Enterprise-grade reliability and performance
-4. **🔧 Developer Experience**: Clean, maintainable code that scales with teams
-
----
-
-## 🏛️ **System Overview**
-
-```mermaid
-graph TB
-    subgraph "Data Sources"
-        YT[YouTube API v3]
-        SP[Spotify API]
-        TT[TikTok API]
-    end
-
-    subgraph "ETL Layer"
-        ETL[Bulletproof ETL Engine]
-        SENT[Sentiment Analysis Pipeline]
-        BOT[Bot Detection System]
-    end
-
-    subgraph "Storage Layer"
-        DB[(MySQL 8.0+)]
-        CACHE[Redis Cache]
-        FILES[File Storage]
-    end
-
-    subgraph "Analytics Layer"
-        CORE[Core Analytics Engine]
-        ML[ML Models]
-        STATS[Statistical Analysis]
-    end
-
-    subgraph "Presentation Layer"
-        API[REST API]
-        DASH[Interactive Dashboards]
-        NOTEBOOKS[Jupyter Notebooks]
-    end
-
-    YT --> ETL
-    SP --> ETL
-    TT --> ETL
-
-    ETL --> DB
-    ETL --> SENT
-    SENT --> BOT
-    BOT --> DB
-
-    DB --> CACHE
-    DB --> CORE
-    CORE --> ML
-    CORE --> STATS
-
-    CORE --> API
-    CORE --> DASH
-    CORE --> NOTEBOOKS
+```
+YouTube API → web/youtube_channel_etl.py → MySQL (youtube_* tables)
+                                      ↘ analytics exports → notebooks / dashboards
 ```
 
----
-
-## 🔧 **Component Architecture**
-
-### **1. ETL Engine (`web/youtube_channel_etl.py`)**
-
-**Design Pattern**: Bulletproof Execution with Graceful Degradation
-
-```python
-class YouTubeChannelETL:
-    """
-    Production-grade ETL with music industry-specific optimizations.
-
-    Grammy-level reliability: Never fails silently, always provides context.
-    """
-
-    def __init__(self):
-        self.rate_limiter = AdaptiveRateLimiter()  # YouTube API compliance
-        self.error_handler = MusicIndustryErrorHandler()  # Business context
-        self.data_validator = SchemaValidator()  # Data quality assurance
-```
-
-**Key Features**:
-- **🛡️ Fault Tolerance**: Exponential backoff with jitter for API rate limits
-- **📊 Data Quality**: Real-time validation with music industry context
-- **🔄 Incremental Processing**: Delta loads to minimize API usage
-- **📈 Performance Monitoring**: Sub-second response time tracking
-
-### **2. Sentiment Analysis Pipeline (`src/youtubeviz/music_sentiment.py`)**
-
-**Design Pattern**: Domain-Specific NLP with Cultural Context
-
-```python
-class MusicIndustrySentimentAnalyzer:
-    """
-    Sentiment analysis optimized for music industry comments.
-
-    Understands Gen-Z slang, music terminology, and cultural context
-    that generic sentiment models miss.
-    """
-
-    def __init__(self):
-        self.base_model = VADERSentiment()
-        self.music_lexicon = MusicSlangDictionary()  # Industry-specific terms
-        self.bot_detector = CommentBotDetector()     # Filter fake engagement
-```
-
-**Innovations**:
-- **🎵 Music Context**: Custom lexicon for music industry terminology
-- **🤖 Bot Detection**: ML-based filtering of artificial engagement
-- **🌍 Cultural Awareness**: Multi-language support for global artists
-- **📊 Confidence Scoring**: Reliability metrics for business decisions
-
-### **3. Data Storage Strategy**
-
-**Design Pattern**: Hybrid Storage with Performance Optimization
-
-```sql
--- Optimized schema for music industry queries
-CREATE TABLE youtube_videos (
-    video_id VARCHAR(11) PRIMARY KEY,
-    artist_name VARCHAR(255) NOT NULL,
-    title TEXT NOT NULL,
-    view_count BIGINT,
-    like_count INT,
-    published_at DATETIME,
-
-    -- Performance indexes for common queries
-    INDEX idx_artist_published (artist_name, published_at),
-    INDEX idx_performance (view_count, like_count),
-    INDEX idx_trending (published_at, view_count)
-);
-```
-
-**Storage Layers**:
-1. **Hot Data** (MySQL): Recent metrics for real-time dashboards
-2. **Warm Data** (Compressed): Historical trends for analysis
-3. **Cold Data** (Archive): Long-term storage for research
-4. **Cache Layer** (Redis): Sub-second query response
-
-### **4. Analytics Engine (`src/youtubeviz/`)**
-
-**Design Pattern**: Modular Analytics with Business Context
-
-```python
-# Clean separation of concerns
-from youtubeviz.data import load_youtube_data          # Data access
-from youtubeviz.charts import create_performance_chart # Visualization
-from youtubeviz.storytelling import narrative_intro    # Business context
-from youtubeviz.utils import calculate_momentum        # Core metrics
-```
-
-**Module Responsibilities**:
-- **`data.py`**: Optimized data loading with caching
-- **`charts.py`**: Interactive visualizations with music industry theming
-- **`storytelling.py`**: Business narrative generation
-- **`utils.py`**: Core analytics functions with statistical rigor
-
----
-
-## 🚀 **Performance Architecture**
-
-### **Scalability Targets**
-- **📊 Data Volume**: 10M+ records with sub-second queries
-- **👥 Concurrent Users**: 100+ simultaneous dashboard users
-- **🔄 ETL Throughput**: 1M+ API calls per day within rate limits
-- **📈 Growth Capacity**: 10x data growth without architecture changes
-
-### **Performance Optimizations**
-
-#### **Database Layer**
-```sql
--- Partitioning strategy for time-series data
-CREATE TABLE youtube_metrics (
-    video_id VARCHAR(11),
-    metrics_date DATE,
-    view_count BIGINT,
-    -- Partitioned by month for optimal query performance
-) PARTITION BY RANGE (YEAR(metrics_date) * 100 + MONTH(metrics_date));
-```
-
-#### **Caching Strategy**
-```python
-@cached(ttl=300)  # 5-minute cache for real-time feel
-def get_artist_performance(artist_name: str, days: int = 30):
-    """Cached artist performance with intelligent invalidation."""
-    return calculate_performance_metrics(artist_name, days)
-```
-
-#### **Query Optimization**
-- **Materialized Views**: Pre-computed aggregations for common queries
-- **Index Strategy**: Composite indexes for multi-column filters
-- **Connection Pooling**: Efficient database connection management
-- **Query Monitoring**: Automatic slow query detection and optimization
-
----
-
-## 🛡️ **Security & Compliance**
-
-### **Data Protection**
-```python
-class DataProtectionLayer:
-    """
-    Grammy-level data security with music industry compliance.
-    """
-
-    def __init__(self):
-        self.encryption = AES256Encryption()
-        self.access_control = RoleBasedAccess()
-        self.audit_logger = ComplianceAuditLogger()
-```
-
-**Security Measures**:
-- **🔐 Encryption**: AES-256 for data at rest and in transit
-- **🎫 Authentication**: OAuth2 with role-based access control
-- **📝 Audit Trails**: Complete logging for compliance requirements
-- **🛡️ API Security**: Rate limiting and request validation
-
-### **YouTube API Compliance**
-- **📅 Data Retention**: Configurable retention policies (30-day default)
-- **🔄 Automatic Cleanup**: Scheduled deletion of expired data
-- **📊 Usage Monitoring**: Real-time API quota tracking
-- **⚖️ Terms Compliance**: Built-in ToS validation
-
----
-
-## 🔬 **Data Science Architecture**
-
-### **Statistical Rigor**
-```python
-class StatisticalAnalysis:
-    """
-    M.S. Data Science level statistical analysis with business context.
-    """
-
-    def calculate_significance(self, metric_a, metric_b):
-        """Statistical significance testing with effect size."""
-        t_stat, p_value = stats.ttest_ind(metric_a, metric_b)
-        effect_size = cohen_d(metric_a, metric_b)
-
-        return {
-            'significant': p_value < 0.05,
-            'p_value': p_value,
-            'effect_size': effect_size,
-            'business_impact': self._interpret_for_music_industry(effect_size)
-        }
-```
-
-**Research Standards**:
-- **📊 Hypothesis Testing**: Proper statistical significance testing
-- **📈 Effect Size**: Cohen's d for practical significance
-- **🔄 Cross-Validation**: Time-series aware validation for predictions
-- **📝 Reproducibility**: Seed management and version control for models
-
-### **Machine Learning Pipeline**
-```python
-# Production ML pipeline with music industry features
-pipeline = Pipeline([
-    ('feature_engineering', MusicIndustryFeatures()),
-    ('scaling', RobustScaler()),
-    ('model', GradientBoostingRegressor()),
-    ('calibration', CalibratedClassifierCV())
-])
-```
-
-**ML Architecture**:
-- **🎵 Domain Features**: Music industry-specific feature engineering
-- **🔄 Online Learning**: Models that adapt to changing trends
-- **📊 Model Monitoring**: Performance tracking with business metrics
-- **🎯 A/B Testing**: Framework for testing model improvements
-
----
-
-## 📊 **Monitoring & Observability**
-
-### **System Health Dashboard**
-```python
-class SystemHealthMonitor:
-    """
-    Production monitoring with music industry KPIs.
-    """
-
-    def check_system_health(self):
-        return {
-            'etl_pipeline': self._check_etl_health(),
-            'data_quality': self._check_data_quality(),
-            'api_performance': self._check_api_performance(),
-            'business_metrics': self._check_business_kpis()
-        }
-```
-
-**Monitoring Layers**:
-1. **🔧 Infrastructure**: Server health, database performance
-2. **📊 Application**: ETL pipeline status, query performance
-3. **💼 Business**: Data freshness, analysis accuracy
-4. **👥 User Experience**: Dashboard load times, error rates
-
-### **Alerting Strategy**
-- **🚨 Critical**: Data pipeline failures, security breaches
-- **⚠️ Warning**: Performance degradation, data quality issues
-- **📊 Info**: Successful deployments, usage statistics
-- **📈 Business**: Trending artists, viral content detection
-
----
-
-## 🔄 **Development & Deployment**
-
-### **CI/CD Pipeline**
-```yaml
-# .github/workflows/production.yml
-name: Grammy-Level Quality Assurance
-on: [push, pull_request]
-
-jobs:
-  quality_gates:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Code Quality (Black, flake8, mypy)
-      - name: Security Scan (bandit, safety)
-      - name: Test Suite (pytest with 85%+ coverage)
-      - name: Performance Tests (load testing)
-      - name: Music Industry Validation (domain-specific tests)
-```
-
-**Quality Standards**:
-- **📝 Code Quality**: Black formatting, comprehensive linting
-- **🧪 Testing**: 85%+ coverage with integration tests
-- **🔒 Security**: Automated vulnerability scanning
-- **📊 Performance**: Load testing with realistic data volumes
-
-### **Deployment Strategy**
-- **🔵 Blue-Green**: Zero-downtime deployments
-- **🎯 Feature Flags**: Gradual rollout of new features
-- **📊 Monitoring**: Real-time health checks during deployment
-- **🔄 Rollback**: Automatic rollback on failure detection
-
----
-
-## 🎯 **Business Intelligence Architecture**
-
-### **Executive Dashboard Design**
-```python
-class ExecutiveDashboard:
-    """
-    C-suite level insights with Grammy producer perspective.
-    """
-
-    def generate_investment_recommendations(self):
-        """AI-powered investment recommendations for A&R."""
-        return {
-            'emerging_artists': self._identify_momentum_artists(),
-            'market_opportunities': self._analyze_genre_trends(),
-            'risk_assessment': self._calculate_investment_risk(),
-            'roi_projections': self._project_return_on_investment()
-        }
-```
-
-**Business Intelligence Features**:
-- **💰 Investment Analysis**: ROI calculations for artist development
-- **📈 Trend Prediction**: Early identification of emerging genres
-- **🎯 Market Segmentation**: Audience analysis for targeted marketing
-- **📊 Competitive Intelligence**: Benchmarking against industry standards
-
----
-
-## 🚀 **Future Architecture Roadmap**
-
-### **Phase 1: Current State** ✅
-- YouTube analytics with sentiment analysis
-- Interactive dashboards and notebooks
-- Production-grade ETL pipeline
-
-### **Phase 2: Multi-Platform** 🔄
-- Spotify, Apple Music, TikTok integration
-- Cross-platform correlation analysis
-- Unified artist performance scoring
-
-### **Phase 3: Predictive Analytics** 📈
-- Chart position prediction models
-- Viral content probability scoring
-- Optimal release timing recommendations
-
-### **Phase 4: Real-Time Intelligence** ⚡
-- Live streaming analytics
-- Real-time trend detection
-- Automated alert system for opportunities
-
----
-
-## 📚 **Technical Documentation**
-
-### **For Senior Engineers**
-- **[API Reference](api-reference.md)**: Complete endpoint documentation
-- **[Database Schema](database-schema.md)**: Detailed table structures
-- **[Performance Tuning](performance-guide.md)**: Optimization strategies
-- **[Security Guide](security-guide.md)**: Implementation details
-
-### **For Data Scientists**
-- **[Feature Engineering](feature-engineering.md)**: Music industry features
-- **[Model Documentation](model-docs.md)**: Algorithm explanations
-- **[Statistical Methods](statistical-methods.md)**: Research methodology
-- **[Validation Framework](validation-framework.md)**: Testing strategies
-
-### **For Business Stakeholders**
-- **[Business Logic](business-logic.md)**: How metrics translate to decisions
-- **[ROI Calculations](roi-methodology.md)**: Investment analysis methods
-- **[Industry Benchmarks](industry-benchmarks.md)**: Performance standards
-- **[Use Case Library](use-cases.md)**: Real-world applications
-
----
-
-<div align="center">
-
-## 🎵 **Architecture Built for Grammy-Level Excellence** 📊
-
-**Where music industry expertise meets data science rigor**
-**Production-ready • Scalable • Business-focused**
-
-*Designed by a Grammy-nominated producer with M.S. Data Science*
-
-</div>
+## Key components
+
+### Data ingestion
+- `web/youtube_channel_etl.py` – batch ETL runner that orchestrates extract, transform, and load steps for channels configured in environment variables.
+- `web/youtube_integration.py` – API client utilities for playlist discovery, video lookups, and metric refreshes. Designed to be reusable from CLI scripts and scheduled jobs.
+- `web/spotify_extract.py` / `web/tidal_extract.py` – optional DSP importers used when building cross-platform analysis.
+
+### Data modelling
+- `tools/setup/create_tables.py` contains the canonical schema. It defines the raw, metrics, comment, and summary tables plus supporting indexes.
+- SQLAlchemy connections are created via `web/db_guard.py`, which enforces read-only toggles and environment-driven credentials.
+- Derived exports (e.g. `music_analysis_tables/artist_music_summary.csv`) are produced by utility scripts in `scripts/` and `tools/analytics/`.
+
+### Processing & automation
+- `tools/etl/run_focused_etl.py` – smallest pipeline for local runs; executes channel ingestion and essential analytics.
+- `tools/etl/run_comprehensive_etl.py` – full pipeline including quality checks, performance metric refresh, and optional sentiment scoring.
+- `tools/etl/run_production_pipeline.py` – orchestrates stage-by-stage execution for scheduled jobs, emitting progress updates for monitoring.
+- `scripts/automation_manager.py` – manages cron templates and ensures operators opt into automation explicitly.
+
+### Analytics consumers
+- `src/youtubeviz/normalization.py`, `src/youtubeviz/data.py` – shared utilities for notebooks and dashboards.
+- `scripts/benchmark_progress.py`, `scripts/system_health_monitor.py` – generate data quality and operational reports from the warehouse.
+- Notebooks in `notebooks/` depend on the canonical datasets exported by the ETL; the repo enforces notebook execution in CI to guarantee reproducible visuals.
+
+### Observability
+- `scripts/enhanced_ci.py` runs linting, duplicate detection, notebook validation, and data integrity checks.
+- `system_health_dashboard.json` captures the latest health snapshot generated by monitoring scripts.
+- Log files under `logs/` provide historical context for ETL runs and notebook execution.
+
+## Configuration
+- Environment variables are loaded from `.env` to configure API keys, database credentials, and channel lists.
+- Artist expectations live in `config/expected_artists.json` and feed validation scripts as well as notebook assertions.
+- Chart styling can be overridden through `ARTIST_COLORS_JSON` or `ARTIST_COLORS_FILE`; see `docs/ARTIST_COLORS.md`.
+
+## Extending the system
+- Add new ingestion sources by following the pattern in `web/youtube_integration.py`: isolate API access, persist raw payloads, and expose small transformation helpers.
+- Extend analytics by creating new modules under `src/youtubeviz/` and covering them with unit tests in `tests/`.
+- Update documentation in tandem with code so CLI tools, notebooks, and tests continue to reference the correct operational guides.

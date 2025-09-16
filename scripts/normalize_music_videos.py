@@ -11,17 +11,21 @@ from __future__ import annotations
 
 import argparse
 
+from dotenv import load_dotenv
+
 from youtubeviz.normalization import run_normalization
 
 
 def main() -> int:
+    # Load environment variables from .env if present
+    load_dotenv()
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="Plan only (no DB writes)")
     args = parser.parse_args()
 
     if args.dry_run:
-        from youtubeviz.normalization import build_normalized_rows
         from web.db_guard import get_engine
+        from youtubeviz.normalization import build_normalized_rows
 
         eng = get_engine(ro=True)
         rows = list(build_normalized_rows(eng))

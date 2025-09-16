@@ -5,8 +5,6 @@ Test Suite for Repository Switcher - TDD Implementation
 
 Comprehensive test coverage for repository management functionality.
 Following TDD principles with test-first development.
-
-Built by Grammy-nominated producer + M.S. Data Science student.
 """
 
 import json

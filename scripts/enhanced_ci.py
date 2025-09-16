@@ -4,7 +4,8 @@
 ===================================================
 
 Comprehensive quality validation system for reliable, shareable code.
-Built for Grammy-nominated producer + M.S. Data Science portfolio.
+Designed to enforce the repository's operational requirements across
+linting, testing, and data validation.
 
 Features:
 - Production-ready code quality standards
@@ -121,8 +122,8 @@ class EnhancedCI:
     """
     High-confidence CI/CD pipeline with comprehensive validation.
 
-    Designed for Grammy-nominated producer + M.S. Data Science portfolio
-    to demonstrate production-ready engineering practices.
+    Designed for this repository to demonstrate production-ready
+    engineering practices and reproducible analytics.
     """
 
     def __init__(self, fix_issues: bool = False, report_only: bool = False):
@@ -1560,7 +1561,7 @@ except Exception as e:
         if self.results.success:
             print("🎉 ALL SENIOR-LEVEL CHECKS PASSED!")
             print("✅ Ready for production deployment")
-            print("✅ Meets Grammy-nominated producer + M.S. Data Science standards")
+            print("✅ Meets repository quality standards")
         else:
             print("❌ SENIOR-LEVEL STANDARDS NOT MET")
             print("🚫 Address issues before deployment")
@@ -1613,7 +1614,7 @@ except Exception as e:
         Returns True if all checks pass, False otherwise.
         """
         print("🚀 STARTING ENHANCED CI/CD PIPELINE - PRODUCTION-READY MODE")
-        print("Grammy-Nominated Producer + M.S. Data Science Standards")
+        print("Repository quality standards")
         print("=" * 80)
 
         start_time = time.time()

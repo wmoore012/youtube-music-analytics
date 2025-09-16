@@ -3,10 +3,9 @@
 System Health Monitor - Production-Grade Monitoring
 ==================================================
 
-Comprehensive monitoring and observability for the YouTube music analytics platform.
-Demonstrates advanced data engineering practices for portfolio showcase.
-
-Built by Grammy-nominated producer + M.S. Data Science student.
+Comprehensive monitoring and observability for the YouTube analytics platform.
+Captures database connectivity, freshness, and quality metrics to support
+operational readiness checks.
 """
 
 import json
@@ -334,8 +333,8 @@ except Exception as e:
 def main():
     """Run system health monitoring."""
     print("🏥 SYSTEM HEALTH MONITOR")
-    print("YouTube Music Analytics Platform")
-    print("Built by Grammy-nominated producer + M.S. Data Science student")
+    print("YouTube Analytics Platform")
+    print("Operational readiness report")
     print("=" * 70)
 
     monitor = SystemHealthMonitor()

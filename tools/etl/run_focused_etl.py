@@ -15,9 +15,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+# Preflight utilities
+import os
+import subprocess
 from datetime import datetime, timedelta
 
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import text
 
 from tools.etl.sentiment_analysis import process_sentiment_analysis
@@ -256,12 +260,110 @@ def run_bot_detection(engine) -> dict:
         return {"processed": 0, "status": "failed", "error": str(e)}
 
 
+def preflight_setup() -> dict:
+    """Ensure environment, tables, optional seed load, normalization, and quick DQ summary.
+
+    Returns a dict with simple metrics to include in the final summary.
+    """
+    print("🧰 Preflight: environment, tables, and normalization")
+    # 1) Load .env (best-effort; non-destructive)
+    try:
+        repo_root = Path(__file__).resolve().parents[2]
+        load_dotenv(dotenv_path=repo_root / ".env", override=False)
+        print("   ✅ .env loaded (if present)")
+    except Exception:
+        print("   ⚠️ Could not load .env (continuing)")
+
+    # 2) Ensure tables exist (call script to avoid import path/package name clashes)
+    try:
+        result = subprocess.run([sys.executable, "tools/setup/create_tables.py"], capture_output=True, text=True)
+        if result.returncode == 0:
+            print("   ✅ Tables ready")
+        else:
+            print("   ⚠️ Table creation script returned non-zero exit code")
+            if result.stdout:
+                print("      ├─ stdout:")
+                print("\n".join(["      │ " + line for line in result.stdout.strip().splitlines()[-10:]]))
+            if result.stderr:
+                print("      ├─ stderr:")
+                print("\n".join(["      │ " + line for line in result.stderr.strip().splitlines()[-10:]]))
+    except Exception as e:
+        print(f"   ❌ Failed ensuring tables: {e}")
+
+    # 3) Optional: seed songs from CSV via env var AUTO_LOAD_SONGS_CSV
+    songs_inserted = 0
+    songs_rejected = 0
+    csv_path = os.getenv("AUTO_LOAD_SONGS_CSV")
+    if csv_path:
+        try:
+            # Use subprocess to avoid import collisions on 'scripts' package name
+            result = subprocess.run(
+                [sys.executable, "scripts/load_songs_csv.py", csv_path], capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                # Try to parse summary line
+                line = (result.stdout or "").strip().splitlines()[-1] if (result.stdout or "").strip() else ""
+                print(f"   🎵 {line or 'Songs CSV loaded'}")
+            else:
+                print("   ⚠️ Songs CSV loader returned non-zero exit code")
+                if result.stdout:
+                    print("      ├─ stdout:")
+                    print("\n".join(["      │ " + l for l in result.stdout.strip().splitlines()[-10:]]))
+                if result.stderr:
+                    print("      ├─ stderr:")
+                    print("\n".join(["      │ " + l for l in result.stderr.strip().splitlines()[-10:]]))
+        except Exception as e:
+            print(f"   ❌ Failed loading songs CSV '{csv_path}': {e}")
+
+    # 4) Run normalization to populate music_videos_normalized
+    normalized = 0
+    try:
+        # Lazy import to reduce top-level import fragility
+        from src.youtubeviz.normalization import run_normalization
+
+        normalized = run_normalization()
+        print(f"   ✅ Normalized rows upserted: {normalized}")
+    except Exception as e:
+        print(f"   ❌ Normalization failed: {e}")
+
+    # 5) Quick DQ: count null ISRCs in normalized + songs count
+    try:
+        eng = get_engine()
+        with eng.connect() as conn:
+            songs_cnt = int(conn.execute(text("SELECT COUNT(*) FROM songs")).scalar() or 0)
+            norm_cnt = int(conn.execute(text("SELECT COUNT(*) FROM music_videos_normalized")).scalar() or 0)
+            isrc_nulls = int(
+                conn.execute(
+                    text("SELECT COUNT(*) FROM music_videos_normalized WHERE isrc IS NULL OR TRIM(isrc) = ''")
+                ).scalar()
+                or 0
+            )
+        print(
+            f"   📈 DQ snapshot -> songs: {songs_cnt}, normalized: {norm_cnt}, normalized.isrc NULL/blank: {isrc_nulls}"
+        )
+    except Exception as e:
+        songs_cnt = norm_cnt = isrc_nulls = 0
+        print(f"   ⚠️ DQ snapshot failed: {e}")
+
+    return {
+        "songs_inserted": songs_inserted,
+        "songs_rejected": songs_rejected,
+        "normalized_upserts": normalized,
+        "songs_count": songs_cnt,
+        "normalized_count": norm_cnt,
+        "normalized_isrc_nulls": isrc_nulls,
+    }
+
+
 def main():
     """Run the focused ETL pipeline."""
     print("🚀 Starting Focused ETL Pipeline")
     print("=" * 50)
 
     try:
+        # Run preflight once to make onboarding/first-run smooth
+        pre = preflight_setup()
+
         engine = get_engine()
 
         # Step 1: Run bot detection (before sentiment analysis)

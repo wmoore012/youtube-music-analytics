@@ -4,9 +4,11 @@ from __future__ import annotations
 import logging
 import os
 from functools import wraps
+from pathlib import Path
 from time import perf_counter
 from typing import Any, Callable
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
@@ -34,6 +36,13 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
 def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = False) -> Engine:
     """Get database engine with kill-switch and optional read-only mode."""
     schema_normalized = (schema or "").strip().lower()
+    # Best-effort load of .env from repo root if not already present in env
+    try:
+        repo_root = Path(__file__).resolve().parents[1]
+        load_dotenv(dotenv_path=repo_root / ".env", override=False)
+    except Exception:
+        pass
+
     database_url = os.getenv("DATABASE_URL")
 
     if schema_normalized == "icatalog_public":

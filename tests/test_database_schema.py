@@ -3,10 +3,8 @@
 Test Suite for Database Schema Validation - TDD Implementation
 ============================================================
 
-Comprehensive test coverage for YouTube music analytics database schema.
-Tests the sophisticated ISRC tracking, sentiment analysis, and performance metrics.
-
-Built by Grammy-nominated producer + M.S. Data Science student.
+Comprehensive test coverage for the YouTube analytics database schema.
+Tests the ISRC tracking, sentiment analysis, and performance metrics helpers.
 """
 
 import json
