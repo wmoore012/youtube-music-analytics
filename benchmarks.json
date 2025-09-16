@@ -1,0 +1,30 @@
+[
+  {
+    "date": "2025-09-15T21:52:18.527313",
+    "test_coverage": 4.160443780669938,
+    "duplicate_functions": 4,
+    "lines_of_code": 29471,
+    "notes": "need to reconnect sentiment analysis model",
+    "existing_model_benchmarks": {},
+    "total_records": 1370,
+    "unique_videos": 932,
+    "unique_artists": 6,
+    "unique_channels": 6,
+    "date_range_days": 3136,
+    "date_range_years": 8.59,
+    "load_time_seconds": 0.564,
+    "throughput_rows_per_sec": 2428.2,
+    "null_percentage": 0.12,
+    "comment_count": 349254,
+    "available_columns": "video_id,title,artist_name,view_count,like_count,comment_count,published_at,metrics_date,fetched_at,duration",
+    "sentiment_available": 0,
+    "bot_detection_available": 0,
+    "sentiment_avg_time": 0,
+    "sentiment_p95_time": 0,
+    "sentiment_throughput": 0,
+    "sentiment_comments_tested": 0,
+    "bot_detection_avg_time": 0,
+    "bot_detection_throughput": 0,
+    "bot_detection_precision": 0
+  }
+]

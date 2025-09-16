@@ -1,8 +1,9 @@
-# Git Configuration
-.env
-.env.local
-.env.production
-.env.staging
+# Git Configuration (STAGING REPO - FULL ACCESS FOR AGENT COLLABORATION)
+# All .env files allowed in staging for agent access
+# .env
+# .env.local
+# .env.production
+# .env.staging
 
 # Python
 __pycache__/
@@ -70,10 +71,10 @@ docs/_build/
 # PyBuilder
 target/
 
-# Jupyter Notebook
+# Jupyter Notebook (staging repo allows notebooks)
 .ipynb_checkpoints
 *-checkpoint.ipynb
-*.ipynb
+# *.ipynb  # Allow notebooks in staging for development
 
 # IPython
 profile_default/
@@ -144,46 +145,46 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
-# Database backups
-*.sql
+# Database backups (staging repo allows .sql files for development)
+# *.sql  # Allow SQL files in staging for schema reference
 *.bak
 *.backup
 
-# Log files
-*.log
-logs/
+# Log files (staging repo allows logs for debugging)
+# *.log  # Allow log files in staging for debugging
+# logs/  # Allow logs directory in staging
 
 # Temporary files
 tmp/
 temp/
 cache/
 
-# API Keys and Secrets (already covered by .env but being explicit)
-secrets/
-credentials/
-api_keys/
-tokens/
+# API Keys and Secrets (STAGING ALLOWS FOR AGENT ACCESS - PRIVATE REPO)
+# secrets/  # Allow secrets directory in private staging repo
+# credentials/  # Allow credentials for agent development access
+# api_keys/  # Allow API keys in private staging repo
+# tokens/  # Allow tokens for development
 
-# Personal documentation and AI coding style docs
-DOCS/
-docs/personal/
-*.playbook.md
-*AGENT*.md
-*TECH_DEBT*.md
+# Personal documentation and AI coding style docs (ALLOW FOR AGENT COLLABORATION)
+# DOCS/  # Allow documentation for agent reference
+# docs/personal/  # Allow personal docs for context
+# *.playbook.md  # Allow playbooks for agent guidance
+# *AGENT*.md  # Allow agent documentation
+# *TECH_DEBT*.md  # Allow tech debt tracking
 
-# Data files (if you don't want to track raw data)
-data/
-datasets/
-*.csv
-*.json
+# Data files (staging repo allows development data)
+# data/  # Allow data directory in staging
+# datasets/  # Allow datasets in staging for development
+# *.csv  # Allow CSV files in staging for analysis
+# *.json  # Allow JSON config files in staging
 *.xlsx
 *.xls
 
-# Model files (if large)
-models/
-*.pkl
-*.pickle
-*.joblib
+# Model files (staging repo allows models for agent analysis)
+# models/  # Allow models directory for agent access
+# *.pkl  # Allow pickle files for model analysis
+# *.pickle
+# *.joblib
 
 # Plots and generated images (optional - you might want to track these)
 plots/

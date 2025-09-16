@@ -1,0 +1,40 @@
+{
+  "pipeline": {
+    "name": "YouTube Analytics Production ETL",
+    "version": "1.0.0",
+    "environment": "production"
+  },
+  "data_quality": {
+    "fail_on_duplicates": false,
+    "max_duplicate_percentage": 15.0,
+    "required_freshness_hours": 48,
+    "enable_cleanup": true
+  },
+  "etl": {
+    "batch_size": 100,
+    "timeout_minutes": 60,
+    "retry_attempts": 3,
+    "enable_caching": true
+  },
+  "notebooks": {
+    "execute_on_success": true,
+    "timeout_minutes": 30,
+    "fail_on_notebook_error": false
+  },
+  "monitoring": {
+    "enable_alerts": true,
+    "alert_email": "admin@yourdomain.com",
+    "slack_webhook": null,
+    "log_retention_days": 30
+  },
+  "cleanup": {
+    "remove_duplicates": true,
+    "archive_old_data": false,
+    "retention_days": 90
+  },
+  "performance": {
+    "parallel_processing": true,
+    "max_workers": 4,
+    "memory_limit_gb": 8
+  }
+}

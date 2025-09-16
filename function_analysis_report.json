@@ -1,0 +1,275 @@
+{
+  "timestamp": "2025-09-16T00:36:12.012286",
+  "total_combinable_groups": 19,
+  "total_ai_patterns": 55,
+  "priority_files": [
+    {
+      "file": "scripts/enhanced_ci.py",
+      "total_issues": 14,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_code_quality",
+            "validate_database_operations",
+            "_validate_schema_integrity",
+            "_validate_commenting",
+            "_validate_notebook_outputs",
+            "_validate_function_complexity",
+            "_validate_notebook_outputs",
+            "validate_database_integrity"
+          ],
+          "count": 8
+        },
+        {
+          "pattern": "analyze_",
+          "description": "Analysis functions",
+          "functions": [
+            "_analyze_system_health",
+            "_analyze_failure_patterns",
+            "_analyze_performance_metrics",
+            "_analyze_system_health",
+            "_analyze_failure_patterns",
+            "_analyze_performance_metrics"
+          ],
+          "count": 6
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_youtube_helpers_v2.py",
+      "total_issues": 10,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "test_validate_video_data_valid",
+            "test_validate_video_data_missing_id",
+            "test_validate_video_data_missing_snippet",
+            "test_validate_video_data_null_title",
+            "test_validate_video_data_null_input",
+            "test_validate_video_data_non_dict_input",
+            "test_validate_playlist_data_valid",
+            "test_validate_playlist_data_missing_id",
+            "test_validate_playlist_data_null_id",
+            "test_validate_playlist_data_null_input"
+          ],
+          "count": 10
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "tests/test_storytelling_error_handling.py",
+      "total_issues": 8,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "test_validate_empty_data",
+            "test_validate_none_data",
+            "test_validate_missing_columns",
+            "test_validate_good_data",
+            "test_validate_insufficient_rows",
+            "test_validate_high_null_values",
+            "test_validate_artist_comparison_single_artist",
+            "test_validate_sentiment_analysis_low_comments"
+          ],
+          "count": 8
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "src/youtubeviz/charts.py",
+      "total_issues": 8,
+      "combinable_groups": [
+        {
+          "pattern": "enhance_chart_",
+          "description": "Chart enhancement functions",
+          "functions": [
+            "enhance_chart_beauty",
+            "enhance_chart_beauty"
+          ],
+          "count": 2
+        },
+        {
+          "pattern": "apply_color_",
+          "description": "Color application functions",
+          "functions": [
+            "apply_color_scheme",
+            "apply_color_scheme"
+          ],
+          "count": 2
+        },
+        {
+          "pattern": "create_chart_",
+          "description": "Chart creation functions",
+          "functions": [
+            "create_chart_annotations",
+            "create_chart_annotations"
+          ],
+          "count": 2
+        },
+        {
+          "pattern": "_get_",
+          "description": "Getter functions",
+          "functions": [
+            "_get_scheme_colors",
+            "_get_scheme_colors"
+          ],
+          "count": 2
+        }
+      ],
+      "recommendations": [
+        "Create ChartEnhancer class to consolidate enhancement functions",
+        "Implement ColorSchemeManager for color-related functions",
+        "Extract annotation logic into AnnotationBuilder class"
+      ]
+    },
+    {
+      "file": "tests/test_sql_helpers_v2.py",
+      "total_issues": 5,
+      "combinable_groups": [
+        {
+          "pattern": "_get_",
+          "description": "Getter functions",
+          "functions": [
+            "test_get_connection_public_schema",
+            "test_get_connection_default_schema",
+            "test_get_table_returns_correct_table",
+            "test_get_table_raises_error_if_not_initialized",
+            "test_get_table_raises_key_error_for_unknown_table"
+          ],
+          "count": 5
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "src/youtubeviz/storytelling.py",
+      "total_issues": 4,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_data_for_storytelling",
+            "_validate_artist_comparison_data",
+            "_validate_sentiment_data",
+            "_validate_trend_data"
+          ],
+          "count": 4
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_comprehensive_data_cleanup.py",
+      "total_issues": 3,
+      "combinable_groups": [
+        {
+          "pattern": "_get_",
+          "description": "Getter functions",
+          "functions": [
+            "test_get_configured_artists",
+            "test_get_configured_artists_empty",
+            "test_get_configured_artists_unknown"
+          ],
+          "count": 3
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "scripts/run_local_ci.py",
+      "total_issues": 3,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_notebook_syntax",
+            "validate_execute_scripts",
+            "validate_artist_data"
+          ],
+          "count": 3
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_bot_detection.py",
+      "total_issues": 2,
+      "combinable_groups": [
+        {
+          "pattern": "analyze_",
+          "description": "Analysis functions",
+          "functions": [
+            "test_analyze_bot_patterns_happy",
+            "test_analyze_bot_patterns_empty"
+          ],
+          "count": 2
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "scripts/validate_artist_data.py",
+      "total_issues": 2,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_artist_consistency",
+            "validate_notebook_outputs"
+          ],
+          "count": 2
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    }
+  ],
+  "recommendations": []
+}

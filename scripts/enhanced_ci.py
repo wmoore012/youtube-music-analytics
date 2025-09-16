@@ -141,6 +141,31 @@ class EnhancedCI:
         """Log informational message."""
         print(f"ℹ️  {message}")
 
+    def validate_environment_safety(self) -> bool:
+        """Validate environment safety before proceeding with CI."""
+        self.log_info("🔒 Validating environment safety...")
+
+        try:
+            result = subprocess.run(
+                ["python", "scripts/env_safety_checker.py"], capture_output=True, text=True, timeout=30
+            )
+
+            if result.returncode == 0:
+                self.log_success("Environment safety validation passed")
+                return True
+            else:
+                self.log_error("Environment safety validation failed")
+                print(result.stdout)
+                print(result.stderr)
+                return False
+
+        except subprocess.TimeoutExpired:
+            self.log_error("Environment safety check timed out")
+            return False
+        except Exception as e:
+            self.log_error(f"Environment safety check failed: {e}")
+            return False
+
     def validate_code_quality(self) -> CodeQualityMetrics:
         """
         Comprehensive code quality validation with senior-level standards.
@@ -1413,6 +1438,12 @@ except Exception as e:
         start_time = time.time()
 
         if not self.report_only:
+            # 0. Environment Safety Check (CRITICAL FIRST)
+            env_safety_passed = self.validate_environment_safety()
+            if not env_safety_passed:
+                self.log_error("Environment safety check failed - aborting CI pipeline")
+                return False
+
             # 1. Code Quality Validation
             self.results.code_quality = self.validate_code_quality()
 

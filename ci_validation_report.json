@@ -1,0 +1,121 @@
+{
+  "basic_metrics": {
+    "success": false,
+    "execution_time": 0.0,
+    "timestamp": "2025-09-16T00:36:06.724269",
+    "code_quality": {
+      "formatting_score": 100.0,
+      "linting_issues": 1235,
+      "type_coverage": 0.0,
+      "security_vulnerabilities": 0,
+      "complexity_score": 0.0,
+      "documentation_coverage": 0.0,
+      "comment_quality_score": 78.08149505599533,
+      "loc_compliance": false,
+      "duplicate_code_detected": true
+    },
+    "test_results": {
+      "total_tests": 0,
+      "passed_tests": 0,
+      "failed_tests": 0,
+      "skipped_tests": 0,
+      "coverage_percentage": 3.9983596473241745,
+      "performance_benchmarks": {},
+      "execution_time": 1.942908763885498
+    },
+    "database_integrity": {
+      "schema_consistency": true,
+      "referential_integrity": true,
+      "data_quality_score": 85.0,
+      "performance_metrics": {},
+      "record_counts": {
+        "total_records": 1373,
+        "unique_artists": 6,
+        "unique_videos": 932
+      },
+      "anomaly_detection": []
+    },
+    "recommendations": [
+      "URGENT: Implement comprehensive test suite - current coverage indicates high production risk",
+      "System health is critical - recommend immediate remediation before proceeding",
+      "Refactor duplicate code to improve maintainability and reduce bug risk",
+      "Increase code commenting for better maintainability",
+      "Refactor duplicate code into reusable functions",
+      "Increase test coverage to 85.0%",
+      "Increase code commenting for better maintainability",
+      "Refactor duplicate code into reusable functions",
+      "Increase test coverage to 85.0%"
+    ],
+    "risk_assessment": "CRITICAL",
+    "deployment_readiness": false
+  },
+  "enhanced_analysis": {
+    "system_health": {
+      "overall_health": "CRITICAL",
+      "critical_systems": [
+        "Test coverage"
+      ],
+      "warning_systems": [],
+      "healthy_systems": [
+        "Code formatting",
+        "Database integrity"
+      ]
+    },
+    "failure_patterns": {
+      "recurring_issues": [
+        {
+          "type": "duplicate_code",
+          "severity": "HIGH",
+          "description": "Duplicate function definitions indicate copy-paste programming",
+          "prediction": "Will lead to maintenance issues and bugs"
+        }
+      ],
+      "failure_trends": [
+        {
+          "type": "test_coverage_decline",
+          "severity": "CRITICAL",
+          "description": "Extremely low test coverage",
+          "prediction": "High probability of production failures"
+        }
+      ],
+      "risk_predictions": []
+    },
+    "performance_analytics": {
+      "performance_degradation": false,
+      "bottlenecks": [],
+      "optimization_opportunities": []
+    },
+    "notebook_validation": {
+      "notebooks_validated": 21,
+      "validation_passed": 4,
+      "validation_failed": 17,
+      "issues_found": [
+        {
+          "type": "unexecuted_notebooks",
+          "count": 17,
+          "recommendation": "Execute notebooks to validate outputs"
+        }
+      ]
+    },
+    "risk_factors": [
+      "Duplicate code patterns detected"
+    ],
+    "critical_issues": [
+      "Critical: >50 linting issues indicate systemic code quality problems",
+      "Critical: Test coverage below 25% indicates high deployment risk"
+    ],
+    "recommendations": [
+      "URGENT: Implement comprehensive test suite - current coverage indicates high production risk",
+      "System health is critical - recommend immediate remediation before proceeding",
+      "Refactor duplicate code to improve maintainability and reduce bug risk",
+      "Increase code commenting for better maintainability",
+      "Refactor duplicate code into reusable functions",
+      "Increase test coverage to 85.0%",
+      "Increase code commenting for better maintainability",
+      "Refactor duplicate code into reusable functions",
+      "Increase test coverage to 85.0%"
+    ],
+    "deployment_readiness": false,
+    "risk_assessment": "CRITICAL"
+  }
+}

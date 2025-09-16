@@ -1,0 +1,50 @@
+{
+  "repositories": {
+    "public": {
+      "name": "origin",
+      "url": "https://github.com/wmoore012/youtube-music-analytics.git",
+      "description": "Public portfolio repository",
+      "excluded_files": [
+        ".env*",
+        "*.db",
+        "*.log",
+        "data/",
+        "logs/",
+        "models/",
+        "reports/",
+        "*.csv",
+        "*.jsonl",
+        "benchmarks.json",
+        "coverage.json",
+        "system_health_dashboard.json",
+        "*_validation_report.json",
+        "*_analysis_report.json"
+      ],
+      "required_files": [
+        "README.md",
+        "README_PORTFOLIO.md",
+        "docs/",
+        "src/",
+        "tests/",
+        "scripts/",
+        ".github/workflows/"
+      ]
+    },
+    "staging": {
+      "name": "staging",
+      "url": "https://github.com/wmoore012/staging_yt_analytics.git",
+      "description": "Private staging repository - full codebase",
+      "excluded_files": [],
+      "required_files": [
+        "*"
+      ]
+    }
+  },
+  "current_target": "staging",
+  "auto_switch_rules": {
+    "development": "staging",
+    "testing": "staging",
+    "production": "public",
+    "portfolio": "public"
+  }
+}

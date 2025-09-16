@@ -1,0 +1,256 @@
+id,phrase,sentiment,intent,category,aspect,confidence,context_notes,beat_appreciation,gen_z_slang,toxicity,nsfw
+0b0dfda9-08a3-45c5-9066-318412a9ce27,this is sick,positive,praise,praise_general,general,0.95,Classic music slang - 'sick' means awesome,False,False,none,False
+8d29cfbd-4484-4c6b-b3f7-18e9bf82476a,so sick,positive,praise,praise_general,general,0.9,Variation of 'sick' meaning awesome,False,False,none,False
+a06af23b-989f-4f10-ab4f-ee958f294d55,that's sick,positive,praise,praise_general,general,0.9,Variation of 'sick' meaning awesome,False,False,none,False
+63727149-87f4-48b6-81a8-b09b32453201,sick beat,positive,praise,praise_production,beat,0.95,'Sick' applied to beat/production,True,False,none,False
+6f083484-df63-4f35-9aad-21d42f890b6b,sick flow,positive,praise,praise_performance,vocals,0.95,'Sick' applied to rap flow,False,False,none,False
+c566ed7c-2cc3-464f-b2db-40f6c7d98d24,this hard,positive,praise,praise_general,general,0.95,'Hard' means impressive in music context,False,False,none,False
+63309d8e-9c26-4e42-87bc-a162afaa19fd,goes hard,positive,praise,praise_general,general,0.95,Song/beat hits hard emotionally,False,False,none,False
+9f6c27b2-5626-4e96-8020-4db52eb9439b,hard af,positive,praise,praise_general,general,0.95,Very impressive (af = as fuck),False,True,light,False
+ee7738cf-a836-48f7-a1bf-bb13eae45c2e,hard as shit,positive,praise,praise_general,general,0.95,"Very impressive, strong emphasis",False,False,light,False
+45cdacb8-77e3-44cf-974b-e8185c9ef60c,this hard af,positive,praise,praise_general,general,0.95,This is very impressive,False,True,light,False
+63b3607f-ae06-4170-9e6b-aefc8fac9257,this crazy,positive,praise,praise_general,general,0.9,'Crazy' means amazing in music context,False,False,none,False
+f5dfee15-8ddb-49cf-869c-d657bebf96d1,bro this crazy,positive,praise,praise_general,general,0.9,Casual expression of amazement,False,False,none,False
+1e4bdebe-fa2e-47bb-8c54-c56233610e68,fire,positive,praise,praise_general,general,0.95,Universal music praise term,False,False,none,False
+54ba6b0e-01a8-42cf-9add-9afba76ae673,this fire,positive,praise,praise_general,general,0.9,This is excellent,False,False,none,False
+5cc2ef74-0de7-4a7e-bfe9-f5eaca83f8a6,straight fire,positive,praise,praise_general,general,0.95,Pure excellence,False,False,none,False
+7084c4d9-73f0-4708-af1a-b3434edb7c72,slaps,positive,praise,praise_general,general,0.9,Song hits hard/sounds great,False,False,none,False
+3e551175-a5cf-43b2-9bf2-133b8da5dc96,this slaps,positive,praise,praise_general,general,0.9,This song hits hard,False,False,none,False
+32eb71a6-7781-49b0-a12d-0874e8870951,banger,positive,praise,praise_general,general,0.95,Great song that hits hard,False,False,none,False
+c4952177-9287-422f-8cc4-a28437a93e2f,goated,positive,praise,praise_general,general,0.9,Greatest of all time,False,True,none,False
+27cc0048-d80f-43e1-9c5a-fe5518d3450e,hits different,positive,praise,praise_general,general,0.85,Uniquely good/special,False,True,none,False
+ee8dea00-dacb-469f-b733-970fadf96efe,chef's kiss,positive,praise,praise_general,general,0.9,Perfect/excellent,False,True,none,False
+203a0761-171a-4bbd-9fad-926978422d81,iconic,positive,praise,praise_general,general,0.85,Legendary/memorable,False,False,none,False
+b2ccc2e7-56fc-4f22-9836-00ecfe614c45,fucking queen,positive,praise,praise_performance,artist,0.95,High praise for female artist,False,False,light,False
+e1d18015-6884-4f2c-ad94-a9786f1a1bc7,queen,positive,praise,praise_performance,artist,0.85,Praise for female artist,False,False,none,False
+434aafb1-e10b-454e-b309-bdd62609fd2b,yes queen,positive,praise,praise_performance,artist,0.9,Supportive praise for female artist,False,False,none,False
+cc9e7ace-cdbf-42d7-b74b-c8ce435c47d3,go off king,positive,praise,praise_performance,artist,0.95,Praise for male artist performance,False,False,none,False
+4df77509-716f-4b1b-9697-0d21016a073a,go off queen,positive,praise,praise_performance,artist,0.95,Praise for female artist performance,False,False,none,False
+46ca6e28-e2d3-46f4-80c3-508f3433eb4a,ate that,positive,praise,praise_performance,artist,0.95,Performed excellently,False,True,none,False
+f1fbf44a-f8e2-40de-8638-c4506eb10eee,devoured,positive,praise,praise_performance,artist,0.9,Dominated the performance,False,True,none,False
+1515106c-6da0-4287-b93d-ee9e1c25a2e2,served,positive,praise,praise_performance,artist,0.85,Delivered excellent performance,False,True,none,False
+3026768d-90d3-4b35-bc89-d911e521e40a,understood the assignment,positive,praise,praise_performance,artist,0.9,Did exactly what was needed,False,True,none,False
+e010ecd9-cf1c-4f6c-b98c-c6688c18cc14,snapped,positive,praise,praise_performance,artist,0.9,Performed exceptionally well,False,False,none,False
+c5d33dc4-aa3e-48bf-850a-139cdd97cd83,slay,positive,praise,praise_performance,artist,0.9,Perform excellently,False,True,none,False
+391e9a6f-40f4-4e1e-bd3d-3b940ebece95,talent,positive,praise,praise_performance,artist,0.85,Recognition of skill,False,False,none,False
+61da387d-cf2b-48c8-b000-d55c5aa04e2c,the beat though,positive,praise,praise_production,beat,0.95,Appreciation for beat/production,True,False,none,False
+8deeaad4-c8ad-4921-9ac8-fbadf46d3f57,the beat tho,positive,praise,praise_production,beat,0.95,Casual appreciation for beat,True,False,none,False
+27d85971-99bd-43c4-a0b9-87a9531aa141,beat goes hard,positive,praise,praise_production,beat,0.95,Beat is impressive,True,False,none,False
+947ac4d1-ec01-456d-bb8e-2a1d76d6cf3e,beat slaps,positive,praise,praise_production,beat,0.9,Beat hits hard,True,False,none,False
+7bdcfbb2-a64e-456a-93c8-c903b70c2746,this will go crazy in the club,positive,praise,praise_general,general,0.85,Predictive praise for club play,False,False,none,False
+2190d3fc-0a1d-4e99-9e13-26ac4b7bb54a,this just passed the car test,positive,praise,praise_production,mix,0.85,Mix quality approved in car,True,False,none,False
+2f8acee3-6ae7-48bf-a1bb-0afc698a24eb,sheeeesh,positive,praise,hype_excitement,general,0.9,Expression of amazement,False,True,none,False
+0bd239f0-4903-4062-92e2-4e78d7e46c1a,oh my,positive,praise,hype_excitement,general,0.8,Excitement/surprise,False,False,none,False
+c4313fd1-8eac-4e1f-8745-cb291269e339,fuck it up,positive,praise,hype_excitement,artist,0.85,Encouragement to perform well,False,False,light,False
+d4b9be9c-8b01-445b-8def-106ab1157ec1,yessir,positive,praise,hype_excitement,general,0.85,Affirmative excitement,False,False,none,False
+1b89cd36-9436-4d85-8de0-3f30741e364d,periodt,positive,praise,hype_excitement,general,0.85,End of discussion - strong agreement,False,True,none,False
+b1ab26ec-866d-4ddf-aed3-cc6e422a1d71,no cap,positive,praise,hype_excitement,general,0.8,No lie/for real - agreement,False,True,none,False
+0f16d366-1a9c-493f-b97c-4e4c6607ee09,on repeat,positive,praise,engagement_behavioral,general,0.95,Playing song repeatedly,False,False,none,False
+b5739961-a266-4609-a050-ed79d8026d24,on my gym playlist,positive,praise,engagement_behavioral,general,0.8,Behavioral endorsement - adding to playlist,False,False,none,False
+aa83f1e1-aefb-4830-bb70-2f97e85d165d,no skips,positive,praise,engagement_behavioral,general,0.9,Every song is good - no need to skip,False,False,none,False
+402647af-c5e7-4a9c-bed0-6cbfb16d6bc4,saved my life,positive,praise,engagement_behavioral,general,0.9,Song had major emotional impact,False,False,none,False
+b45df3b0-09f9-4836-a52b-a9cc8fae84a4,for the culture,positive,praise,cultural_identity,general,0.9,Supporting cultural representation,False,False,none,False
+b18e0e60-232e-4dbf-b8e0-fcdcf2e48f85,we stan,positive,praise,cultural_identity,artist,0.85,Community support for artist,False,True,none,False
+cc5de3e0-1c53-40f8-87b6-741cfba452b6,real music is back,positive,praise,cultural_identity,general,0.8,Appreciation for authentic music,False,False,none,False
+092836e8-c02b-4e6b-8672-30d17d5e27da,drop the album already!,positive,anticipation,anticipation_demand,artist,0.85,Excited demand for album - exclamation shows enthusiasm,False,False,none,False
+524be9a5-d4a6-4a89-928d-823df617f592,we need the album NOW 🔥,positive,anticipation,anticipation_demand,artist,0.85,Urgent excited request - caps + emoji = positive,False,False,none,False
+0e1fec08-328d-4f31-ae94-4b47f83bd04e,friday can't come sooner,positive,anticipation,anticipation_demand,general,0.8,Anticipation with clear positive sentiment,False,False,none,False
+a31cdff0-6c23-459f-b24a-c3d3c576b329,I'm adding this to my playlist,positive,anticipation,engagement_behavioral,general,0.85,Behavioral endorsement with future action,False,False,none,False
+928e8628-18ee-403e-8aea-993b064aebd6,drop the album,neutral,request,neutral_requests,artist,0.9,Request without opinion cues - neutral per SemEval,False,False,none,False
+2d631eb0-b932-424b-9d15-b4c1eba4cfed,we need the album,neutral,request,neutral_requests,artist,0.85,Request without excitement markers,False,False,none,False
+61418e83-eaeb-41e3-9ca0-d3c7c73c1668,need the lyrics,neutral,request,neutral_requests,lyrics,0.8,Content request without opinion,False,False,none,False
+3dee7947-3436-497a-83b1-86c372b5d5e3,drop the visuals,neutral,request,neutral_requests,marketing,0.85,Request for music video,False,False,none,False
+4e5b5e36-6150-4d38-b7a6-e474a49b26bc,clean version pls,neutral,request,neutral_requests,general,0.8,Format request,False,False,none,False
+17f29220-5f82-45af-815b-a0d7bce3db65,need the instrumental,neutral,request,neutral_requests,beat,0.9,Request for instrumental version,True,False,none,False
+46ca2a1e-6d4e-4365-b436-1ee6827a61d8,who mixed this,neutral,info,neutral_questions,mix,0.85,Information request without opinion,True,False,none,False
+09852e76-672d-4b75-8a00-ee7a3cc8a856,who produced this,neutral,info,neutral_questions,beat,0.85,Producer inquiry without praise,True,False,none,False
+82defce8-bf36-49c2-b30a-1e31307837ec,what's the sample,neutral,info,neutral_questions,beat,0.9,Sample information request,True,False,none,False
+3056375d-0a54-49a8-a4d1-669af981fe34,lyrics?,neutral,info,neutral_questions,lyrics,0.85,Simple lyrics request,False,False,none,False
+6ca62a55-cf0f-45f4-9a23-30f660d30c53,release date?,neutral,info,neutral_questions,rollout,0.85,Release information request,False,False,none,False
+971cc152-7035-4184-bef7-c43ca871922e,this ain't it chief,negative,critique,criticism_negative,general,0.95,This is not good,False,False,none,False
+fe45e68a-f295-4b0a-bfbb-bb4068e26990,mid,negative,critique,criticism_negative,general,0.9,Mediocre/average in bad way,False,True,none,False
+2471534e-8206-4b7f-af00-8ad16d12f759,this is basura,negative,critique,criticism_negative,general,0.85,This is trash (Spanish),False,False,light,False
+2895e03e-5df8-49dc-91df-12cd38da1424,flop,negative,critique,criticism_negative,general,0.9,Commercial/artistic failure,False,False,none,False
+9f189718-f806-466c-af90-227918b28aa3,overrated,negative,critique,criticism_negative,general,0.8,Gets more praise than deserved,False,False,none,False
+86169db6-2f84-4cac-b2bb-302e4ffae8d3,fell off,negative,critique,criticism_negative,artist,0.85,Quality declined,False,False,none,False
+633a7bf4-5b14-40cd-baa6-248bcba807a8,skip,negative,critique,criticism_negative,general,0.85,Not worth listening to,False,False,none,False
+471f737b-7371-48d1-b583-9ec00c91c4b6,mix sounds chaotic,negative,critique,criticism_constructive,mix,0.7,Production feedback,True,False,none,False
+d3eb0396-6333-452e-9aee-84d940d8031a,flow is repetitive,negative,critique,criticism_constructive,vocals,0.75,Technical criticism,False,False,none,False
+01841156-d32f-4fd4-b479-05a13acfdd5f,"Hottie, Baddie, Maddie",positive,praise,praise_performance,artist,0.85,Real fan comment - compliment sequence,False,False,none,False
+92eb1e4c-16bb-489b-bf5f-070aad6f2c7a,Part two pleaseee wtfff,positive,anticipation,anticipation_demand,general,0.75,Excited request - multiple e's + wtf show enthusiasm,False,False,none,False
+12167ef2-b44d-4130-8a11-70d2b958933b,sheeeeesh my nigga snapped 🔥🔥🔥🔥,positive,praise,hype_excitement,artist,0.9,Hype expression with praise,False,True,strong,False
+0e0e307d-be76-4c4d-8042-69eca4ccf897,Bestie goals fr 🤞,positive,praise,cultural_identity,artist,0.8,Cultural praise with emoji,False,True,none,False
+fadbee3b-0a4d-4882-b26d-052a5e141500,this fye,positive,praise,praise_general,general,0.8,This is fire/excellent,False,True,none,False
+2e3a27c4-3639-431a-86c5-f22de008ddb3,absolutely sending me,positive,praise,hype_excitement,general,0.75,Very funny/entertaining,False,True,none,False
+2ec35d1c-4d60-4741-965a-f34edd323698,living for this,positive,praise,engagement_behavioral,general,0.85,Really enjoying this,False,False,none,False
+cf8805e7-ecd8-4333-b8b5-5501271459ec,this is everything,positive,praise,praise_general,general,0.85,Perfect/complete satisfaction,False,False,none,False
+e0828040-7dd1-4b28-88e7-d4464871e38d,10/10,positive,praise,praise_general,general,0.95,Perfect score,False,False,none,False
+1dfaf4bd-242f-44fa-8292-c8974e2895ce,SOTY,positive,praise,praise_general,general,0.9,Song of the year,False,False,none,False
+31fc4987-7a5e-40b6-9e86-bb46cbc056e2,AOTY,positive,praise,praise_general,general,0.9,Album of the year,False,False,none,False
+2b70cf01-fe8b-4e84-b803-27da19da1dd3,been on repeat since it dropped,positive,praise,engagement_behavioral,general,0.95,Playing since release,False,False,none,False
+5b2d76ba-38c6-4f96-a654-21474b610ae2,went platinum in my car,positive,praise,engagement_behavioral,general,0.85,Heavy rotation in car,False,False,none,False
+b67573b8-11ca-42b5-bc3d-03b3e52ea447,for the girls,positive,praise,cultural_identity,general,0.85,Supporting female empowerment,False,False,none,False
+94d2bc64-7461-4b12-8509-0b8bb834495e,who made this beat bro,positive,praise,praise_production,beat,0.9,Appreciative inquiry about producer,True,False,none,False
+7a0ab22e-4c06-4993-b60d-42ad3f2f3ae2,who approved this,negative,critique,criticism_negative,general,0.85,Questioning quality control,False,False,none,False
+979ac021-eb0c-4437-8d80-d14f6849f4ab,turn it off,negative,critique,criticism_negative,general,0.9,Stop playing this,False,False,none,False
+6b8f3ca3-6180-41f4-8d5d-6ac35bff6659,nobody asked for this,negative,critique,criticism_negative,general,0.85,Unwanted content,False,False,none,False
+df630f2f-2191-451e-8ae5-36bc816d24cd,Spotify link?,neutral,request,neutral_requests,marketing,0.85,Platform link request,False,False,none,False
+49c82994-c935-4d7f-af2d-960ba20ae9b5,Apple Music link?,neutral,request,neutral_requests,marketing,0.85,Platform link request,False,False,none,False
+9d141f40-5ebd-45a2-8ab0-4d09989a07ac,tracklist when,neutral,info,neutral_questions,rollout,0.8,Release information request,False,False,none,False
+50b60a99-34b5-426a-a174-516b77158ea3,it's giving,positive,praise,hype_excitement,general,0.75,It's providing/delivering vibes,False,True,none,False
+0a5c345a-4b15-45fd-825a-12cf2e0f1dc0,main character energy,positive,praise,praise_performance,artist,0.8,"Confident, leading energy",False,True,none,False
+a6c9fe42-b405-49db-8400-b6e441fe978b,rent free,positive,praise,engagement_behavioral,general,0.75,Living in my head rent free,False,True,none,False
+c1877e57-8eca-4caf-a713-4923caf58887,obsessed,positive,praise,engagement_behavioral,general,0.8,Really love this,False,True,none,False
+7f478a5d-e628-4138-b3ec-a59baa060ec7,not me crying,positive,praise,hype_excitement,general,0.7,Emotional positive response,False,True,none,False
+6109ad1a-2634-4d1f-a1aa-c5482e735a89,I'm deceased,positive,praise,hype_excitement,general,0.75,Very funny/entertaining,False,True,none,False
+295d4942-d546-406c-881f-1328fb06a10a,sent me,positive,praise,hype_excitement,general,0.7,Made me laugh/react strongly,False,True,none,False
+25a4f945-bb84-403e-abc9-b6d35695f196,I can't even,positive,praise,hype_excitement,general,0.7,Overwhelmed in good way,False,True,none,False
+982bd15a-f1d5-4255-a571-681fdf88485e,speechless,positive,praise,hype_excitement,general,0.75,Too good for words,False,False,none,False
+75ce4400-8c65-473a-b4c8-cbcac0ab4f2d,anthem,positive,praise,praise_general,general,0.85,Song that represents/inspires,False,False,none,False
+4f6289a4-e5ef-456c-92a6-e36d84b79e5d,summer anthem,positive,praise,praise_general,general,0.85,Perfect summer song,False,False,none,False
+67dbabf8-f24a-43bc-a926-b5771a8cec9f,vibe,positive,praise,praise_general,general,0.75,Good feeling/mood,False,False,none,False
+f16e721f-c61a-4b50-984c-4fdbb683c087,vibes,positive,praise,praise_general,general,0.75,Good feelings/mood,False,False,none,False
+c2cb47be-1e61-45aa-aa39-5c3e9714351b,mood,positive,praise,praise_general,general,0.7,Relatable feeling,False,False,none,False
+9e4f7247-89a3-4fbf-9547-9a654b0777c0,energy,positive,praise,praise_performance,artist,0.75,Good performance energy,False,False,none,False
+bbe053a0-e799-430e-9180-e44820036aaa,this on repeat all day,positive,praise,engagement_behavioral,general,0.9,Playing all day long,False,False,none,False
+ad918d08-1b45-43e9-9a20-317e5e5b9586,front to back no skips,positive,praise,engagement_behavioral,general,0.95,Entire album is excellent,False,False,none,False
+49bb38bf-c69e-46e5-921d-b4478c1cae9c,went platinum in my headphones,positive,praise,engagement_behavioral,general,0.85,Heavy personal listening,False,False,none,False
+cbdcba64-751f-4d7b-ad72-b078ced134ff,went platinum in my room,positive,praise,engagement_behavioral,general,0.85,Heavy home listening,False,False,none,False
+66a7ca56-67ae-4b17-90ee-82a0e3738184,workout playlist,positive,praise,engagement_behavioral,general,0.8,Good for working out,False,False,none,False
+63162b84-af87-49dc-bb9b-e782ec53a767,hottie,positive,praise,praise_performance,artist,0.8,Attractive person compliment,False,False,none,False
+1cab0993-1699-46f8-9d7e-2aabd8e4d676,baddie,positive,praise,praise_performance,artist,0.8,"Attractive, confident person",False,False,none,False
+e5a2390f-f71c-47d0-a089-0e140396714f,hot bish,positive,praise,praise_performance,artist,0.8,"Attractive person, casual",False,False,light,False
+2d841447-e66d-4fdc-8f5e-7b6ee3da1c27,bad bish,positive,praise,praise_performance,artist,0.8,"Confident, attractive person",False,False,light,False
+0dff1d10-08b6-45cd-855b-57d073783d5b,YES MOTHER,positive,praise,praise_performance,artist,0.9,High praise for female artists,False,True,none,False
+3f3f963b-362c-4e5e-ae1a-86504b3aad62,beat is fire,positive,praise,praise_production,beat,0.95,Beat is excellent,True,False,none,False
+cc582483-0985-4a92-b6ed-a53afb66e83e,production is clean,positive,praise,praise_production,mix,0.85,High quality production,True,False,none,False
+4ea6ce9d-dd29-4c25-bee2-5f7da20c7041,mix is clean,positive,praise,praise_production,mix,0.85,High quality mixing,True,False,none,False
+9def9e55-b99a-4686-8b6e-b66d6fe767d9,harmonies hit different,positive,praise,praise_production,vocals,0.8,Unique vocal harmonies,True,False,none,False
+2341ed8c-a023-448b-a686-b49fd909536c,100/10,positive,praise,praise_general,general,0.95,Beyond perfect score,False,False,none,False
+d2670a5d-4bf1-495c-9e56-472175277b71,11/10,positive,praise,praise_general,general,0.95,Exceeds perfect score,False,False,none,False
+ab912677-5302-48f7-9c27-6f250f020949,100!,positive,praise,praise_general,general,0.9,Perfect/complete approval,False,False,none,False
+83b4ec97-5a65-4700-8d82-51d0fb2bc0b0,went double wood,negative,critique,criticism_negative,general,0.8,Sold very poorly (opposite of platinum),False,False,none,False
+2de90fe4-24e8-463a-8331-cae294c32ede,industry plant,negative,critique,criticism_negative,artist,0.75,Artificially promoted artist,False,False,none,False
+15d95a62-ec33-4367-a3ba-e20f6164b52d,sounds the same every track,negative,critique,criticism_negative,general,0.75,Lack of variety criticism,False,False,none,False
+341564f6-6072-40ae-af89-1768902ef548,this ain't real hip-hop,negative,critique,criticism_negative,general,0.7,Gatekeeping/authenticity criticism,False,False,none,False
+d54524dc-3524-434f-a085-553ca8fd50b1,who asked for this remix,negative,critique,criticism_negative,general,0.75,Unwanted remix,False,False,none,False
+78be3e27-856d-4f6e-82cf-7f851c2e93c6,album rollout ain't rollouting,negative,critique,criticism_negative,rollout,0.65,Marketing criticism,False,False,none,False
+b543e8c3-5abc-41d8-b0e6-c890975d82aa,no replay value,negative,critique,criticism_negative,general,0.8,Not worth repeated listening,False,False,none,False
+a2fb34b9-61c1-4f4b-beb1-eabcaabefcf8,overproduced,negative,critique,criticism_constructive,mix,0.75,Too much production,True,False,none,False
+185b357e-015e-43eb-8b26-a768acdcd751,mix is muddy,negative,critique,criticism_constructive,mix,0.8,Poor mix quality,True,False,none,False
+0d368a1c-4f01-41f8-9195-f787b75dda98,too much autotune,negative,critique,criticism_constructive,vocals,0.75,Overuse of vocal processing,False,False,none,False
+0496214d-e4c0-474f-9a94-771b1b314bec,visuals when?,neutral,request,neutral_requests,marketing,0.8,When will music video come,False,False,none,False
+6a024575-08cb-4181-ae1e-787e35dea4b7,post the video link,neutral,request,neutral_requests,marketing,0.85,Request for video link,False,False,none,False
+b327a0b2-a78e-42ce-a3cb-5e409715fa1f,where can I stream this,neutral,info,neutral_questions,marketing,0.85,Platform availability question,False,False,none,False
+01fa962b-4f07-460a-9656-41bcc2a9895b,link pls,neutral,request,neutral_requests,marketing,0.8,Request for link,False,False,none,False
+cb082f69-9863-4418-a2a6-3f48cbed8d7f,pre-save link?,neutral,request,neutral_requests,marketing,0.8,Pre-save request,False,False,none,False
+10be960a-a416-4098-9429-de8b8518dd26,upload to SoundCloud pls,neutral,request,neutral_requests,marketing,0.8,Platform upload request,False,False,none,False
+b9a024bb-b77e-4de7-ad0e-b0335a949aa6,put this on YouTube too,neutral,request,neutral_requests,marketing,0.8,Platform request,False,False,none,False
+84e240a2-a1e7-4ff8-abb2-39bfc02dd178,need the radio edit,neutral,request,neutral_requests,general,0.8,Clean version request,False,False,none,False
+681a92eb-4bf2-4f26-bfea-f2c6847c003d,make this a single,neutral,request,neutral_requests,rollout,0.75,Single release request,False,False,none,False
+8be6ebd3-c8ec-4622-b128-bcc3b0b99093,drop the deluxe,neutral,request,neutral_requests,rollout,0.8,Deluxe version request,False,False,none,False
+9834f3e4-979b-4e9a-80ce-9f851eb5c72a,official audio when,neutral,info,neutral_questions,rollout,0.8,Release timing question,False,False,none,False
+11b8746a-1b49-448d-9a63-0930cb21eeab,full version when,neutral,info,neutral_questions,rollout,0.8,Complete version timing,False,False,none,False
+54e7f18b-e849-4ba3-ab9b-c9651269c188,any BTS?,neutral,info,neutral_questions,marketing,0.8,Behind the scenes inquiry,False,False,none,False
+7c9a2f38-7d51-4c53-808b-016e86649434,behind the scenes link?,neutral,info,neutral_questions,marketing,0.8,BTS content request,False,False,none,False
+4284f8d1-bf6c-41f2-82a3-b54d4e6bd5f0,is the sample cleared,neutral,info,neutral_questions,beat,0.85,Legal/sample clearance question,True,False,none,False
+05f40258-0370-4c3b-b007-e78d7985a9a5,release time?,neutral,info,neutral_questions,rollout,0.85,Specific release timing,False,False,none,False
+b9687bae-55ed-41f7-b5ab-991fb024f49d,timezone for the drop?,neutral,info,neutral_questions,rollout,0.8,Release timezone question,False,False,none,False
+fc490021-159d-494b-92ab-7f2547022330,vinyl release date?,neutral,info,neutral_questions,marketing,0.8,Physical release question,False,False,none,False
+f345ea21-6f0b-4add-a5fc-5218165d52b2,"Tour when, I'm buying",positive,anticipation,anticipation_demand,artist,0.85,Excited tour anticipation with commitment,False,False,none,False
+36a04cb2-a40c-438b-9d28-8ed895545a9d,"merch when, take my money",positive,anticipation,anticipation_demand,marketing,0.85,Excited merchandise request,False,False,none,False
+3a621205-6fcc-4be3-bc1b-5e742cb5ec00,remix with ____ would slap,positive,anticipation,anticipation_demand,general,0.8,Excited collaboration suggestion,False,False,none,False
+aed4ec91-b843-4e86-9864-670a29cffff8,open verse challenge pls 🔥,positive,anticipation,anticipation_demand,general,0.8,Excited request with emoji booster,False,False,none,False
+dcee25e4-2de3-44b0-a808-4fb9efd3adab,MV teaser got me hyped,positive,anticipation,anticipation_demand,marketing,0.85,Excited by preview content,False,False,none,False
+5e172784-7f70-4c5e-985b-61405368fa02,premiere tonight let's go,positive,anticipation,anticipation_demand,rollout,0.85,Excited for premiere,False,False,none,False
+d6357769-f976-4f52-9bbb-c2c807f8b893,Cuz I willie 😖😚💕,positive,praise,hype_excitement,general,0.7,Playful expression with positive emojis,False,False,none,False
+3723ccd4-ddce-4ddf-8eb2-de0b7db1500f,my legs are spread!!,positive,praise,hype_excitement,general,0.75,Excitement/anticipation expression,False,False,none,True
+3928a611-28b3-45c5-886e-f280b3476ca0,wtfff,positive,praise,hype_excitement,general,0.7,Extended WTF showing excitement,False,True,none,False
+5db66787-5870-4359-84ac-b00611f33780,fr,positive,praise,hype_excitement,general,0.6,For real - agreement/emphasis,False,True,none,False
+04319314-9bd4-4766-b2e7-f13ceab3dc1b,this hard as fuck,positive,praise,praise_general,general,0.95,"Very impressive, explicit version",False,False,light,False
+36f4c62d-c044-4f08-b998-170db1d98e16,way too hard,positive,praise,praise_general,general,0.9,Extremely impressive,False,False,none,False
+4d7c7188-5e69-4aaa-9a99-de64c0fee89d,so crazy good,positive,praise,praise_general,general,0.85,Very amazing/impressive,False,False,none,False
+56a75183-8fb1-4206-8477-c18df12a9f8a,absolutely fire,positive,praise,praise_general,general,0.9,Completely excellent,False,False,none,False
+422ef761-e6f4-41bc-abbb-3744d831c46f,pure fire,positive,praise,praise_general,general,0.95,Absolute excellence,False,False,none,False
+b7b9919c-98e5-4d77-84d0-b16e9e9b2c42,king,positive,praise,praise_performance,artist,0.85,Praise for male artist,False,False,none,False
+caa0df67-1378-4d2e-bcbc-8a22b2fa5e5f,go off bestie,positive,praise,praise_performance,artist,0.85,Friendly encouragement,False,True,none,False
+46def7b8-b84b-4d2f-976b-2cc7e9fd8485,bestie,positive,praise,cultural_identity,artist,0.75,Friend/supportive term,False,True,none,False
+58c039bc-0281-455b-84b7-156647decc8d,album no skips,positive,praise,engagement_behavioral,general,0.9,No bad songs on album,False,False,none,False
+78b9349a-8158-4d45-bb0c-33eed829f5ff,this deserves a grammy,positive,praise,praise_general,general,0.85,Award-worthy quality,False,False,none,False
+1b7a6b20-24a4-41fa-8734-a95de6ef2e98,artist of the year,positive,praise,praise_performance,artist,0.9,Top artist recognition,False,False,none,False
+6d36a198-99ba-4d78-b5d0-decc520db497,album of the year,positive,praise,praise_general,general,0.9,Top album recognition,False,False,none,False
+2adf62bf-85ff-47e6-b93a-3556ec017169,insane vocals,positive,praise,praise_performance,vocals,0.85,Exceptional vocal performance,False,False,none,False
+bf880f67-7fff-48b1-a412-e1a0a0e51b3a,vocals are crazy,positive,praise,praise_performance,vocals,0.85,Amazing vocal performance,False,False,none,False
+3c40221a-3758-413a-a382-f0e67d1b9267,unmatched,positive,praise,praise_general,general,0.85,Without equal/superior,False,False,none,False
+fa82c84d-97ad-42d3-815a-bd76272cf5db,stan,positive,praise,cultural_identity,artist,0.8,Support/love this artist,False,True,none,False
+2ba1010b-be68-488e-8503-1a67d06775c5,stan forever,positive,praise,cultural_identity,artist,0.85,Permanent support,False,True,none,False
+47489a1e-bd7b-4db2-9be3-c491192db723,legendary,positive,praise,praise_general,general,0.85,Epic/historic quality,False,False,none,False
+e3944631-30b4-42fd-a206-072af48ea369,lowkey fire,positive,praise,praise_general,general,0.8,Somewhat excellent,False,True,none,False
+4ec02be5-972c-4bee-88f3-97276a84abf3,highkey obsessed,positive,praise,engagement_behavioral,general,0.85,Very obsessed,False,True,none,False
+e9b52dea-092e-410f-a079-6730f4c84c9a,lowkey obsessed,positive,praise,engagement_behavioral,general,0.8,Somewhat obsessed,False,True,none,False
+1ce1cd7d-e47f-4f99-86ca-a7ed334e8d1a,different breed,positive,praise,praise_performance,artist,0.85,Uniquely talented,False,True,none,False
+e106b2b2-45c4-41f6-80d5-8955bac0e51f,built different,positive,praise,praise_performance,artist,0.85,Uniquely made/talented,False,True,none,False
+6c0e8255-e174-4381-b106-c51e6ae9cfc9,that's it that's the tweet,positive,praise,hype_excitement,general,0.75,Perfect summary/agreement,False,True,none,False
+1d857652-2482-41ab-b4db-8cd5e9fc651d,say less,positive,praise,hype_excitement,general,0.7,I'm convinced/agree,False,True,none,False
+89a3c4bb-36f6-46e4-98bf-696ac45c4439,bet,positive,praise,hype_excitement,general,0.65,Agreement/approval,False,True,none,False
+6f70b0fc-f745-4514-81d7-d90ac555439c,facts,positive,praise,hype_excitement,general,0.7,Truth/agreement,False,True,none,False
+3f80879a-3187-4977-9657-94d31811a294,we love to see it,positive,praise,cultural_identity,general,0.8,Community approval,False,True,none,False
+314a2413-0e85-46ce-a7ae-30e4d83f038b,flames,positive,praise,praise_general,general,0.85,Excellent/fire,False,False,none,False
+18a2d95a-77e0-4960-bcd1-f11f362aed26,this is a whole vibe,positive,praise,praise_general,general,0.8,Complete mood/feeling,False,False,none,False
+82d4ae06-9533-4f4e-8495-eac0e2cd3751,adding to my playlist,positive,praise,engagement_behavioral,general,0.85,Personal endorsement,False,False,none,False
+d0d90c96-dd68-41c0-8556-901cb67d45c1,spotify wrapped,positive,praise,engagement_behavioral,general,0.75,Year-end listening stats reference,False,False,none,False
+eb4e21c4-9701-4cda-b27e-025bf048dedc,this is bussin,positive,praise,praise_general,general,0.85,This is excellent,False,True,none,False
+9fa7ece9-6882-4180-a067-7e24a9fa0034,sending me,positive,praise,hype_excitement,general,0.75,Making me react strongly,False,True,none,False
+5c3f6970-eaa9-4833-9c5a-94fa30b03fed,I'm weak,positive,praise,hype_excitement,general,0.7,Laughing/positive reaction,False,True,none,False
+c656e3fa-911e-449d-86ab-3fc45dbf46ea,I'm screaming,positive,praise,hype_excitement,general,0.75,Excited reaction,False,True,none,False
+ec120378-33b0-4757-a22a-bb9ef104473e,this is iconic,positive,praise,praise_general,general,0.85,This is legendary,False,False,none,False
+4c1a4346-c13e-4903-9408-646e87e2e32c,this sent me,positive,praise,hype_excitement,general,0.7,Made me react strongly,False,True,none,False
+447a3a43-e81c-4608-99d6-2cf6ddf9a1cb,beat is sick,positive,praise,praise_production,beat,0.9,Beat is awesome,True,False,none,False
+6a6aa911-db23-4dc4-9c53-3c63af8a63d6,beat is crazy,positive,praise,praise_production,beat,0.9,Beat is amazing,True,False,none,False
+8689afd4-6d22-4338-91b6-644454cca5cf,beat is insane,positive,praise,praise_production,beat,0.9,Beat is incredible,True,False,none,False
+5473beb4-3de9-49d3-b16c-684645d5e9de,drums hit different,positive,praise,praise_production,beat,0.85,Unique drum sound,True,False,none,False
+be96413c-a937-4df2-968a-aed9e5c0826b,bass goes hard,positive,praise,praise_production,beat,0.85,Strong bass line,True,False,none,False
+c95fd947-6467-4d90-b0bb-b303754ddf25,pure talent,positive,praise,praise_performance,artist,0.9,Exceptional natural ability,False,False,none,False
+df0b97c4-b213-4fb6-be18-6e06077329dc,the talent jumped out,positive,praise,praise_performance,artist,0.9,Talent clearly displayed,False,True,none,False
+026b78a8-7859-45be-b7bd-0a11dca00153,you slid,positive,praise,praise_performance,artist,0.85,You delivered well,False,True,none,False
+86d37e40-cae5-4c5a-8d47-82b27be583d8,slid on this,positive,praise,praise_performance,artist,0.85,Delivered on this track,False,True,none,False
+11fe5072-e664-4588-b211-e810df655eca,ate and left no crumbs,positive,praise,praise_performance,artist,0.95,Perfect performance,False,True,none,False
+7905c3d2-5749-43b9-8a1d-83df01e8e986,this song is so overrated bro,negative,critique,criticism_negative,general,0.8,Song gets too much praise,False,False,none,False
+4c66d561-7424-47fb-8c2d-14e750ddbbf0,flop — turn this off,negative,critique,criticism_negative,general,0.9,"Failure, stop playing",False,False,none,False
+92e987fb-2321-4fc3-a3d5-5f937fefce40,numbers look cooked,negative,critique,criticism_negative,marketing,0.75,Suspicious streaming numbers,False,False,none,False
+9148c400-27d7-4520-9b0d-811bfa409abc,switch up the flow,negative,critique,criticism_constructive,vocals,0.7,Suggestion for improvement,False,False,none,False
+3b3b46e4-5267-4d1f-8925-adbd02bd307e,BTS photos please!,neutral,request,neutral_requests,marketing,0.8,Behind the scenes photo request,False,False,none,False
+931b3598-a73b-4132-959d-0ab480ede9eb,instrumental?,neutral,info,neutral_questions,beat,0.85,Instrumental version inquiry,True,False,none,False
+b93fe84a-c36c-4a3b-9718-9ccd875a064d,these lyrics!,positive,praise,praise_general,lyrics,0.8,Praise for lyrics with exclamation,False,False,none,False
+9e04bebe-0818-4464-9108-d9fd50c90abc,lyrics hit different,positive,praise,praise_general,lyrics,0.85,Unique lyrical impact,False,False,none,False
+98dccd74-e2a5-4e76-b475-3888875e0057,this live would go crazy,positive,anticipation,anticipation_demand,artist,0.85,Excited about live performance potential,False,False,none,False
+e78f11b5-196a-4032-b152-42b187fecead,this hard as hell,positive,praise,praise_general,general,0.9,Very impressive,False,False,light,False
+70c6bcfc-5d13-41c0-a1fa-d2d976424520,sick track,positive,praise,praise_general,general,0.9,Awesome song,False,False,none,False
+14750260-8aff-4b7f-86f8-c415f05cfd3f,song slaps,positive,praise,praise_general,general,0.9,Song is excellent,False,False,none,False
+022fb217-10ab-4fc5-be34-f8a5146b2e84,goated song,positive,praise,praise_general,general,0.95,Greatest song of all time,False,False,none,False
+c49eed9c-f495-4551-8608-85a6b37eac04,goated artist,positive,praise,praise_performance,artist,0.95,Greatest artist of all time,False,False,none,False
+589bf592-0401-4692-8d66-235522925224,this fye my boi,positive,praise,praise_general,general,0.8,"This is excellent, friend",False,True,none,False
+b7c0184b-7441-4dd4-8b4c-7d51524150be,sheeesh,positive,praise,hype_excitement,general,0.85,Expression of amazement,False,True,none,False
+189fa5c9-5453-4074-9767-7f917b6a20c1,sheesh,positive,praise,hype_excitement,general,0.8,Casual amazement,False,True,none,False
+1e533d45-e345-4f64-a10e-24f18ae2ba8d,yessuh,positive,praise,hype_excitement,general,0.85,Casual affirmative excitement,False,False,none,False
+e146a990-26e3-410b-89dc-cf6c514c4e9c,oh my yes,positive,praise,hype_excitement,general,0.85,Enthusiastic approval,False,False,none,False
+1c831bda-22f3-40cb-89a6-60f3677943ac,bitchhh,positive,praise,hype_excitement,general,0.8,Extended excitement,False,True,light,False
+e865078f-312d-450d-9eea-274ea0714e6f,queen energy,positive,praise,praise_performance,artist,0.85,"Confident, powerful performance",False,False,none,False
+6a5ee55d-671f-408e-a661-3e7830d59434,slayed,positive,praise,praise_performance,artist,0.9,Performed excellently,False,True,none,False
+e368518d-0f1a-4f41-ac3b-1240bfd47387,slaying,positive,praise,praise_performance,artist,0.9,Currently performing excellently,False,True,none,False
+12663903-f538-4126-95fa-9493410970db,period,positive,praise,hype_excitement,general,0.75,End of discussion,False,True,none,False
+84e62fea-77d8-4df7-ab0a-223fa9106b45,this goes hard,positive,praise,praise_general,general,0.9,This is impressive,False,False,none,False
+d728f783-b4b4-43c3-bdfc-28970950555f,goes crazy,positive,praise,praise_general,general,0.85,Is amazing/wild,False,False,none,False
+4b7022f8-6230-4436-84f2-22ef02a81af6,absolutely insane,positive,praise,praise_general,general,0.85,Completely incredible,False,False,none,False
+6e4366d4-c90e-4c94-92c9-e5dbf92cc1d2,this is unmatched,positive,praise,praise_general,general,0.85,Without equal,False,False,none,False
+d2538ff6-1227-4d87-8fbf-a51e1290ac89,vocals are insane,positive,praise,praise_performance,vocals,0.85,Incredible vocal performance,False,False,none,False
+ca5a44a2-7628-486a-8bca-58b082792494,I'm crying,positive,praise,hype_excitement,general,0.7,Emotional positive response,False,True,none,False
+893cd934-cdaf-4018-ad36-adb7188d7d22,this is a bop,positive,praise,praise_general,general,0.85,This is a great song,False,False,none,False
+08739b1b-f301-4fbd-960f-8ad7ec5c3d70,certified banger,positive,praise,praise_general,general,0.9,Officially a great song,False,False,none,False
+36302e8b-0e12-40c3-97f2-e3654794a2df,this hits,positive,praise,praise_general,general,0.8,This is good/impactful,False,False,none,False
+12a6629d-3abf-4eaa-a11d-c7a4906881c4,straight banger,positive,praise,praise_general,general,0.9,Pure great song,False,False,none,False
+a7cb3589-9ad8-40df-b4d1-984dd741d2e6,this is it,positive,praise,praise_general,general,0.8,This is the one/perfect,False,False,none,False
+c7ce8004-31da-40d2-a42d-bafa982ffdc7,we need more,positive,anticipation,anticipation_demand,general,0.75,Want more content,False,False,none,False
+4e602604-4b4b-4f91-864e-4f340556e712,keep them coming,positive,anticipation,anticipation_demand,general,0.75,Continue producing content,False,False,none,False
+db53f15b-5557-402f-92c5-f8e63777a12a,more like this please,positive,anticipation,anticipation_demand,general,0.8,Request for similar content,False,False,none,False
+464a2432-d7c2-455a-bd4f-c0b4bd281729,this energy,positive,praise,praise_performance,artist,0.75,This performance energy,False,False,none,False
