@@ -13,7 +13,17 @@ from collections import Counter
 from pathlib import Path
 from typing import Sequence
 
-from sqlalchemy import Column, Integer, MetaData, String, Table, insert, inspect, select, text
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    insert,
+    inspect,
+    select,
+    text,
+)
 from sqlalchemy.engine import Engine
 
 ALIAS_TABLE_NAME = "artist_aliases"

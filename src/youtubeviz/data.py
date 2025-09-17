@@ -183,6 +183,7 @@ def load_artist_daily_metrics(
     if normalize_aliases and not df.empty:
         alias_map = _build_artist_alias_map(eng)
         if alias_map:
+
             def _canonical(name: object) -> str:
                 raw = str(name)
                 if raw in alias_map:

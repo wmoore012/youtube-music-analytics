@@ -410,8 +410,7 @@ def main():
 
         # Step 6: Run analysis notebooks (organized under notebooks/analysis and notebooks/quality)
         notebooks_to_run = [
-            "notebooks/analysis/02_artist_comparison.ipynb",
-            "notebooks/quality/03_appendix_data_quality.ipynb",
+            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
         notebook_results = run_notebooks(notebooks_to_run)
 

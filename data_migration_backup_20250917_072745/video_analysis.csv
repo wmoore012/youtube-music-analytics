@@ -1,0 +1,4 @@
+video_id,title,artist_name,view_count,like_count,engagement_rate
+vid1,Song A,Artist A,100000,5000,5.0
+vid2,Song B,Artist B,250000,12500,5.0
+vid3,Song C,Artist C,80000,4000,5.0

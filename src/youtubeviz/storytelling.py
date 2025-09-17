@@ -588,6 +588,48 @@ def handle_missing_data_gracefully(
     return cleaned_data, explanation
 
 
+def _test_imports():
+    """Helper function to test imports - can be mocked for testing"""
+    import src.youtubeviz.charts
+    import src.youtubeviz.data
+    import src.youtubeviz.storytelling
+
+    return src.youtubeviz.storytelling
+
+
+def validate_package_installation() -> bool:
+    """
+    Verify that 'pip install -e .' was run and src.youtubeviz is importable.
+
+    This function tests the critical import paths that were causing the
+    ModuleNotFoundError in notebooks.
+
+    Returns:
+        bool: True if all imports work, False if any fail
+    """
+    try:
+        # Test the critical imports that were failing
+        storytelling_module = _test_imports()
+
+        # Verify key functions are available
+        assert hasattr(storytelling_module, "story_block")
+        assert hasattr(storytelling_module, "quick_takeaways")
+
+        return True
+
+    except ImportError as e:
+        print(f"❌ Package installation issue: {e}")
+        print("💡 Solution: Run 'pip install -e .' in the project root directory")
+        return False
+    except AssertionError as e:
+        print(f"❌ Package structure issue: Missing expected functions")
+        print("💡 Check that the storytelling module has the required functions")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error during package validation: {e}")
+        return False
+
+
 def generate_data_quality_report(data: pd.DataFrame, analysis_type: str = "general") -> str:
     """
     Generate a comprehensive data quality report for educational purposes.

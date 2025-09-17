@@ -259,8 +259,7 @@ class TestNotebookFiles:
             "notebooks/editable/02_artist_comparison.ipynb",
             "notebooks/editable/03_appendix_data_quality_clean.ipynb",
             "notebooks/editable/04_sentiment_deep_dive_fun.ipynb",
-            "notebooks/analysis/01_music_focused_analytics.ipynb",
-            "notebooks/analysis/02_artist_comparison.ipynb",
+            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
 
         for notebook in expected_notebooks:

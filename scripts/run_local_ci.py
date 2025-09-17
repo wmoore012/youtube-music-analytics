@@ -73,7 +73,7 @@ class LocalCI:
         """Validate notebook JSON syntax."""
         print("\n🧪 Validating notebook syntax...")
 
-        notebook_dirs = ["notebooks/editable", "notebooks/analysis", "notebooks/executed"]
+        notebook_dirs = ["notebooks"]
 
         for notebook_dir in notebook_dirs:
             if not os.path.exists(notebook_dir):

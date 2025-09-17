@@ -224,7 +224,7 @@ except Exception as e:
         echo "📊 Notebook Statistics:"
         echo "   - Editable notebooks: $(find notebooks/editable -name '*.ipynb' | wc -l)"
         echo "   - Executed notebooks: $(find notebooks/executed -name '*.ipynb' | wc -l)"
-        echo "   - Analysis notebooks: $(find notebooks/analysis -name '*.ipynb' | wc -l)"
+        echo "   - Active notebooks: $(find notebooks -maxdepth 1 -name '*.ipynb' | wc -l)"
         echo ""
         echo "🔍 Quality Checks:"
         echo "   ✅ No duplicate notebooks"

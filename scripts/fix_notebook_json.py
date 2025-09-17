@@ -104,7 +104,7 @@ def main():
     print("🔧 FIXING NOTEBOOK JSON ISSUES")
     print("=" * 40)
 
-    notebook_dirs = ["notebooks/editable", "notebooks/analysis", "notebooks/executed"]
+    notebook_dirs = ["notebooks"]
 
     fixed_count = 0
     total_count = 0

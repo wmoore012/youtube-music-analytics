@@ -13,7 +13,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "benchmark_progress.py"
 
 
@@ -107,4 +106,3 @@ def test_analyze_history_prints_table_header(benchmark_module, capsys):
 
     assert "Data Nerd Pack" in captured.out
     assert "Mean±SE (95% CI)" in captured.out
-

@@ -2,13 +2,39 @@
 from __future__ import annotations
 
 """
-ETL helper utilities that keep notebooks clean.
+ETL Helper Utilities - YouTube Music Analytics Platform
+
+This is the main utility module for the YouTube analytics ETL pipeline.
+It contains all core database operations, data normalization, and ETL tracking functions.
+
+🏗️ ARCHITECTURE OVERVIEW:
+This module follows the "kitchen sink" pattern common in data engineering where
+related utilities are kept together to avoid import complexity and maintain cohesion.
+
+📋 MODULE SECTIONS:
+1. Database Connection & Core Utilities - Engine setup, table reflection, SQL helpers
+2. Generic Upsert & Data Manipulation - Reusable database operations
+3. Spotify Data Processing - Spotify API data normalization and processing
+4. YouTube Data Processing - YouTube API data normalization and processing
+5. Tidal Data Processing & Label Management - Tidal integration and label cleanup
+6. Bulk Operations & Performance - High-performance database operations
+7. ETL Execution Tracking & Logging - Pipeline monitoring and run tracking
+
+🎯 BUSINESS CONTEXT:
+This module supports music industry analytics by processing data from multiple
+streaming platforms (Spotify, YouTube, Tidal) and normalizing it for analysis.
+The goal is to help music labels identify promising artists and track performance.
+
+💡 USAGE PATTERNS:
+- Notebooks import specific functions they need
+- ETL scripts use the full pipeline functions
+- Tests use the utility functions for setup/teardown
 
 Usage
 -----
 from web.etl_helpers import (
-    get_engine, reflect_global_tables, get_or_create,
-    normalize_spotify_track, normalize_youtube_video
+    get_engine, get_or_create, normalize_spotify_track,
+    normalize_youtube_video, start_etl_run
 )
 """
 
@@ -32,9 +58,9 @@ from sqlalchemy import insert
 from sqlalchemy.engine import Connection  # used for type hints
 from sqlalchemy.engine import Engine
 
-# --------------------------------------------------------------------------- #
-# … other imports / code above stay unchanged …
-# --------------------------------------------------------------------------- #
+# ============================================================================
+# 1. DATABASE CONNECTION & CORE UTILITIES
+# ============================================================================
 
 
 def read_sql_safe(sql: str, engine: Engine, **kw):
@@ -165,21 +191,26 @@ from typing import Any
 
 # ── 1️⃣  Make sure every table you need is listed ────────────────
 ALL_TABLE_NAMES = [
-    "album_sentiment_summary",
-    "album_type_l10n",
-    "albums",
     "artist_aliases",
-    "artists",
-    "dsp_providers",
-    "labels",
-    "role_types",
-    "song_artist_roles",
-    "song_versions",
-    "songs",
-    "spotify_tracks",
-    "tidal_tracks_raw",
-    "twitter_cost_tracking",
-    "twitter_tweets",
+    "artist_performance_summary",
+    "comment_bot_analysis",
+    "comment_sentiment",
+    "comment_sentiment_backup",
+    "isrc_artists",
+    "isrc_recordings",
+    "music_videos_normalized",
+    "operational_health_log",
+    "project_benchmark_models",
+    "project_benchmarks",
+    "songs",  # Keep for backward compatibility if needed
+    "video_recording_link",
+    "youtube_comments",
+    "youtube_etl_runs",
+    "youtube_metrics",
+    "youtube_playlists_raw",
+    "youtube_sentiment",
+    "youtube_sentiment_by_video",
+    "youtube_sentiment_summary",
     "youtube_videos",
     "youtube_videos_raw",
 ]
@@ -245,9 +276,9 @@ def get_table(name: str):
         raise KeyError(f"Unknown table '{name}'. Check ALL_TABLE_NAMES.") from exc
 
 
-# ──────────────────────────────────────────────────────────────────
-# 2.  GENERIC UPSERT UTILS
-# ──────────────────────────────────────────────────────────────────
+# ============================================================================
+# 2. GENERIC UPSERT & DATA MANIPULATION UTILITIES
+# ============================================================================
 def get_or_create(conn: Connection, table: Table, **kwargs) -> int:
     """
     Return the PK for the row matching **kwargs.
@@ -262,9 +293,9 @@ def get_or_create(conn: Connection, table: Table, **kwargs) -> int:
     return res.inserted_primary_key[0]
 
 
-# ──────────────────────────────────────────────────────────────────
-# 3.  DOMAIN-SPECIFIC NORMALISATION
-# ──────────────────────────────────────────────────────────────────
+# ============================================================================
+# 3. SPOTIFY & YOUTUBE DATA NORMALIZATION
+# ============================================================================
 
 # ---------------------------------------------------------------------------
 # Module-level in-memory caches
@@ -556,6 +587,127 @@ from typing import Dict
 from sqlalchemy import Table, select
 from sqlalchemy.engine import Connection
 
+# ============================================================================
+# 3. SPOTIFY DATA PROCESSING
+# ============================================================================
+# Functions for processing Spotify API data, including track normalization,
+# metadata extraction, and backward compatibility handling.
+
+
+def _validate_spotify_track_isrc(track: dict) -> str:
+    """Extract and validate ISRC from Spotify track."""
+    isrc = track.get("external_ids", {}).get("isrc")
+    if not isrc:
+        raise ValueError("Missing ISRC → skipping this track")
+    return isrc
+
+
+def _get_spotify_dsp_id(conn: Connection, dsp_id: int = None) -> int:
+    """Get or create Spotify DSP ID."""
+    if dsp_id is not None:
+        return dsp_id
+
+    dsp_providers_tbl = get_table("dsp_providers")
+    dsp_id = conn.execute(
+        select(dsp_providers_tbl.c.DSPName).where(dsp_providers_tbl.c.DSPName == "Spotify").limit(1)
+    ).scalar_one_or_none()
+
+    if dsp_id is None:
+        ensure_dsp_rows(conn.engine, ["Spotify"])
+        dsp_id = conn.execute(
+            select(dsp_providers_tbl.c.DSPName).where(dsp_providers_tbl.c.DSPName == "Spotify").limit(1)
+        ).scalar_one_or_none()
+        if dsp_id is None:
+            raise ValueError("Could not find or create DSP 'Spotify'")
+
+    return dsp_id
+
+
+def _extract_spotify_album_info(track: dict) -> tuple[str, str, int, str]:
+    """Extract album information from Spotify track."""
+    album = track.get("album") or {}
+    album_name = album.get("name")
+    album_release_date = album.get("release_date")
+
+    # Extract release year
+    release_year = None
+    if album_release_date:
+        release_year_match = re.match(r"^(\d{4})", album_release_date)
+        if release_year_match:
+            release_year = int(release_year_match.group(1))
+
+    # Get album artwork URL
+    art_url = None
+    if album.get("images") and len(album["images"]) > 0:
+        target_size = 640
+        closest_image = min(
+            album["images"],
+            key=lambda img: abs(img.get("width", 0) - target_size) + abs(img.get("height", 0) - target_size),
+        )
+        art_url = closest_image.get("url")
+
+    return album_name, album_release_date, release_year, art_url
+
+
+def _build_spotify_stream_record(track: dict, isrc: str, dsp_id: int) -> dict:
+    """Build stream metrics record for Spotify track."""
+    return {
+        "isrc": isrc,
+        "dsp_name": "Spotify" if dsp_id == "Spotify" else dsp_id,
+        "fetch_datetime": datetime.now(timezone.utc),
+        "popularity": track.get("popularity"),
+        "track_number": track.get("track_number"),
+        "disc_number": track.get("disc_number"),
+    }
+
+
+def _handle_spotify_backward_compatibility(
+    song_id: str,
+    dsp_id: int,
+    track: dict,
+    title: str,
+    album_name: str,
+    album_release_date: str,
+    raw_label: str,
+    dsp_record_id: str,
+) -> dict:
+    """Handle backward compatibility for old calling patterns."""
+    import inspect
+
+    frame = inspect.currentframe().f_back.f_back  # Go up two frames
+    if not frame:
+        return None
+
+    # Check for old signature with 'tables' parameter
+    if len(frame.f_locals) >= 3 and "tables" in frame.f_locals:
+        return {
+            "SongID": song_id,
+            "DSPID": dsp_id,
+            "VersionTag": "Original",
+            "TrackTitle": title,
+            "AlbumName": album_name,
+            "ReleaseDate": album_release_date,
+            "RecordLabel": raw_label,
+            "Popularity": track.get("popularity"),
+            "DurationMS": track.get("duration_ms"),
+        }
+
+    # Check for etl_pipeline.ipynb usage pattern
+    if len(frame.f_locals) == 2 and "conn" in frame.f_locals and "t" in frame.f_locals:
+        return {
+            "SongID": song_id,
+            "DSPID": dsp_id,
+            "DSPRecordID": dsp_record_id,
+            "Title": title,
+            "AlbumName": album_name,
+            "ReleaseDate": album_release_date,
+            "Label": raw_label,
+            "Popularity": track.get("popularity"),
+            "DurationMS": track.get("duration_ms"),
+        }
+
+    return None
+
 
 def normalize_spotify_track(
     track: dict,
@@ -572,71 +724,30 @@ def normalize_spotify_track(
 
     Similar to normalize_tidal but adapted for Spotify data structure.
     """
-    # Extract ISRC from track
-    isrc = track.get("external_ids", {}).get("isrc")
-    if not isrc:
-        raise ValueError("Missing ISRC → skipping this track")
+    # Extract and validate ISRC
+    isrc = _validate_spotify_track_isrc(track)
 
-    # 1) SongID lookup
+    # Validate song exists in database
     if songs_tbl is None:
         songs_tbl = get_table("songs")
-    # Check if the song exists in the database
     exists = conn.execute(select(songs_tbl.c.ISRC).where(songs_tbl.c.ISRC == isrc)).scalar_one_or_none()
     if exists is None:
         raise ValueError(f"No Songs entry for ISRC={isrc!r}")
 
-    # Use ISRC as the song identifier
     song_id = isrc
-
-    # 2) Get DSP ID if not provided
-    if dsp_id is None:
-        dsp_providers_tbl = get_table("dsp_providers")
-        dsp_id = conn.execute(
-            select(dsp_providers_tbl.c.DSPName).where(dsp_providers_tbl.c.DSPName == "Spotify").limit(1)
-        ).scalar_one_or_none()
-        if dsp_id is None:
-            # Ensure the DSP exists
-            ensure_dsp_rows(conn.engine, ["Spotify"])
-            # Try again
-            dsp_id = conn.execute(
-                select(dsp_providers_tbl.c.DSPName).where(dsp_providers_tbl.c.DSPName == "Spotify").limit(1)
-            ).scalar_one_or_none()
-            if dsp_id is None:
-                raise ValueError("Could not find or create DSP 'Spotify'")
-
-    # 3) Extract metadata
+    dsp_id = _get_spotify_dsp_id(conn, dsp_id)
     title = track.get("name")
 
-    # 4) Album info and artwork
+    # Extract album information
+    album_name, album_release_date, release_year, art_url = _extract_spotify_album_info(track)
+
+    # Process label and album
     album = track.get("album") or {}
-    album_name = album.get("name")
-    album_release_date = album.get("release_date")
-    release_year = None
-    if album_release_date:
-        # Extract year from release date (could be YYYY, YYYY-MM, or YYYY-MM-DD)
-        release_year_match = re.match(r"^(\d{4})", album_release_date)
-        if release_year_match:
-            release_year = int(release_year_match.group(1))
-
-    # Get album artwork
-    art_url = None
-    if album.get("images") and len(album["images"]) > 0:
-        # Find the closest image to 640x640
-        target_size = 640
-        closest_image = min(
-            album["images"],
-            key=lambda img: abs(img.get("width", 0) - target_size) + abs(img.get("height", 0) - target_size),
-        )
-        art_url = closest_image.get("url")
-
-    # 5) Clean label from album data
     raw_label = album.get("label")
     label_id = get_or_create_label(conn, _strip_year_and_suffix(raw_label)) if raw_label else None
-
-    # 6) Create or get album
     album_id = get_or_create_album(conn, album_name, label_id, release_year) if album_name else None
 
-    # 7) Build song_update
+    # Build return data
     song_update = {
         "song_id": song_id,
         "isrc": isrc,
@@ -647,67 +758,31 @@ def normalize_spotify_track(
         "album_id": album_id,
     }
 
-    # 8) Identifiers tuple
     dsp_record_id = track.get("id")
     si_tuple = (song_id, dsp_id, dsp_record_id)
 
-    # 9) Raw metadata JSON
     raw_meta = {k: make_json_safe(v) for k, v in track.items()}
     raw_meta_json = json.dumps(raw_meta)
 
-    # 10) Stream metrics
-    stream_rec = {
-        "isrc": isrc,
-        "dsp_name": "Spotify" if dsp_id == "Spotify" else dsp_id,
-        "fetch_datetime": datetime.now(timezone.utc),
-        "popularity": track.get("popularity"),
-        "track_number": track.get("track_number"),
-        "disc_number": track.get("disc_number"),
-    }
+    stream_rec = _build_spotify_stream_record(track, isrc, dsp_id)
 
-    # 11) Add to song version batch
+    # Add to song version batch
     batch_upsert_song_version(isrc, "Spotify", dsp_record_id, title, album_name)
 
-    # For backward compatibility with existing code
-    # Check if called with the old signature
-    import inspect
-
-    frame = inspect.currentframe().f_back
-    if frame:
-        # Check for the old signature with 'tables' parameter
-        if len(frame.f_locals) >= 3 and "tables" in frame.f_locals:
-            # If called with old signature, return old format
-            old_format = {
-                "SongID": song_id,
-                "DSPID": dsp_id,
-                "VersionTag": "Original",  # Default version
-                "TrackTitle": title,
-                "AlbumName": album_name,
-                "ReleaseDate": album_release_date,
-                "RecordLabel": raw_label,
-                "Popularity": track.get("popularity"),
-                "DurationMS": track.get("duration_ms"),
-            }
-            return old_format
-
-        # Check for the etl_pipeline.ipynb usage pattern
-        # In this case, we're called with just (track, conn)
-        if len(frame.f_locals) == 2 and "conn" in frame.f_locals and "t" in frame.f_locals:
-            # Return a format compatible with the existing pipeline
-            pipeline_format = {
-                "SongID": song_id,
-                "DSPID": dsp_id,
-                "DSPRecordID": dsp_record_id,
-                "Title": title,
-                "AlbumName": album_name,
-                "ReleaseDate": album_release_date,
-                "Label": raw_label,
-                "Popularity": track.get("popularity"),
-                "DurationMS": track.get("duration_ms"),
-            }
-            return pipeline_format
+    # Handle backward compatibility
+    compat_result = _handle_spotify_backward_compatibility(
+        song_id, dsp_id, track, title, album_name, album_release_date, raw_label, dsp_record_id
+    )
+    if compat_result is not None:
+        return compat_result
 
     return song_update, si_tuple, stream_rec, raw_meta_json
+
+
+# ============================================================================
+# 4. YOUTUBE DATA PROCESSING
+# ============================================================================
+# Functions for processing YouTube API data and video normalization.
 
 
 def normalize_youtube_video(
@@ -772,9 +847,11 @@ except NameError:  # __all__ not yet defined → create it
     ]
 
 
-# ──────────────────────────────────────────────────────────────────
-# 4.  TIDAL HELPERS
-# ──────────────────────────────────────────────────────────────────
+# ============================================================================
+# ============================================================================
+# 5. TIDAL DATA PROCESSING & LABEL MANAGEMENT
+# ============================================================================
+# Functions for processing Tidal API data, label management, and copyright processing.
 def clean_label_name(name: str) -> str:
     """
     Clean a label name by removing common suffixes and standardizing format.
@@ -1175,6 +1252,117 @@ def make_json_safe(obj):
     return str(obj)
 
 
+def _validate_tidal_track_isrc(track: Any) -> str:
+    """Extract and validate ISRC from Tidal track."""
+    isrc = getattr(track, "isrc", None)
+    if not isrc:
+        raise ValueError("Missing ISRC → skipping this track")
+    return isrc
+
+
+def _extract_tidal_metadata(track: Any) -> tuple[str, str, str, int, str]:
+    """Extract basic metadata from Tidal track."""
+    title = getattr(track, "name", None)
+    iswc = getattr(track, "iswc", None)
+    album_name = getattr(track.album, "title", None) if getattr(track, "album", None) else None
+
+    # Extract release year
+    release_year = None
+    release_date = getattr(track.album, "release_date", None) if getattr(track, "album", None) else None
+    if release_date:
+        release_year_match = re.match(r"^(\d{4})", str(release_date))
+        if release_year_match:
+            release_year = int(release_year_match.group(1))
+
+    # Get artwork URL
+    art_url = None
+    if getattr(track, "album", None) and hasattr(track.album, "picture"):
+        try:
+            art_url = track.album.picture(640, 640)
+        except Exception:
+            pass
+
+    return title, iswc, album_name, release_year, art_url
+
+
+def _process_tidal_copyright(track: Any, conn: Connection) -> tuple[int, int]:
+    """Process Tidal copyright information into label and distributor IDs."""
+    raw_cp = getattr(track, "copyright", "") or ""
+    cp = _clean_copyright(raw_cp)
+
+    if "/" in cp:
+        raw_lbl, raw_dist = [p.strip() or None for p in cp.split("/", 1)]
+    else:
+        raw_lbl, raw_dist = (cp or None, None)
+
+    label_id = get_or_create_label(conn, _strip_year_and_suffix(raw_lbl)) if raw_lbl else None
+    distributor_id = get_or_create_label(conn, _strip_year_and_suffix(raw_dist)) if raw_dist else None
+
+    return label_id, distributor_id
+
+
+def _build_tidal_stream_record(track: Any, isrc: str, dsp_id: int) -> dict:
+    """Build stream metrics record for Tidal track."""
+    return {
+        "isrc": isrc,
+        "dsp_name": "Tidal" if dsp_id == "Tidal" else dsp_id,
+        "fetch_datetime": datetime.now(timezone.utc),
+        "popularity": getattr(track, "popularity", None),
+        "track_number": getattr(track, "track_num", None),
+        "disc_number": getattr(track, "disc_number", None),
+    }
+
+
+def _handle_tidal_backward_compatibility(
+    track: Any,
+    song_id: str,
+    isrc: str,
+    title: str,
+    album_name: str,
+    art_url: str,
+    label_id: int,
+    album_id: int,
+    dsp_id: int,
+    dsp_record_id: str,
+) -> tuple:
+    """Handle backward compatibility for old Tidal calling patterns."""
+    import inspect
+
+    frame = inspect.currentframe().f_back.f_back  # Go up two frames
+    if not frame:
+        return None
+
+    # Check if called from etl_pipeline.ipynb with (t, conn, tidal_dsp_id)
+    args = list(frame.f_locals.values())
+    if len(args) >= 3 and isinstance(args[0], object) and isinstance(args[1], Connection) and isinstance(args[2], int):
+
+        old_song_update = {
+            "SongID": song_id,
+            "ISRC": isrc,
+            "Title": title,
+            "AlbumName": album_name,
+            "ArtworkURL": art_url,
+            "label_id": label_id,
+            "album_id": album_id,
+        }
+        old_stream_record = {
+            "SongID": song_id,
+            "DSPID": dsp_id,
+            "DSPRecordID": dsp_record_id,
+            "FetchDateTime": datetime.now(timezone.utc),
+            "Popularity": getattr(track, "popularity", None),
+            "DurationSec": getattr(track, "duration", None),
+            "TrackName": title,
+            "TrackNumber": getattr(track, "track_num", None),
+            "ReplayGain": getattr(track, "replay_gain", None),
+            "Peak": getattr(track, "peak", None),
+            "AudioQuality": getattr(track, "audio_quality", None),
+        }
+        return old_song_update, old_stream_record
+
+    return None
+
+
 def normalize_tidal(
     track: Any,
     conn: Connection,
@@ -1193,57 +1381,28 @@ def normalize_tidal(
     - If songs_tbl is provided, it will be used instead of looking up the table
     - Returns a tuple of (song_update, stream_record) if called with the old signature
     """
-    isrc = getattr(track, "isrc", None)
-    if not isrc:
-        raise ValueError("Missing ISRC → skipping this track")
+    # Extract and validate ISRC
+    isrc = _validate_tidal_track_isrc(track)
 
-    # 1) SongID lookup
+    # Validate song exists in database
     if songs_tbl is None:
         songs_tbl = get_table("songs")
-    # Check if the song exists in the database
     exists = conn.execute(select(songs_tbl.c.ISRC).where(songs_tbl.c.ISRC == isrc)).scalar_one_or_none()
     if exists is None:
         raise ValueError(f"No Songs entry for ISRC={isrc!r}")
 
-    # Use ISRC as the song identifier
     song_id = isrc
 
-    # 2) Metadata
-    title = getattr(track, "name", None)
-    iswc = getattr(track, "iswc", None)
-    album_name = getattr(track.album, "title", None) if getattr(track, "album", None) else None
+    # Extract metadata
+    title, iswc, album_name, release_year, art_url = _extract_tidal_metadata(track)
 
-    # Extract release year if available
-    release_year = None
-    release_date = getattr(track.album, "release_date", None) if getattr(track, "album", None) else None
-    if release_date:
-        # Extract year from release date (could be YYYY, YYYY-MM, or YYYY-MM-DD)
-        release_year_match = re.match(r"^(\d{4})", str(release_date))
-        if release_year_match:
-            release_year = int(release_year_match.group(1))
+    # Process copyright information
+    label_id, distributor_id = _process_tidal_copyright(track, conn)
 
-    # Optional artwork URL
-    art_url = None
-    if getattr(track, "album", None) and hasattr(track.album, "picture"):
-        try:
-            art_url = track.album.picture(640, 640)
-        except Exception:
-            pass
-
-    # 3) Clean copyright into label/dist
-    raw_cp = getattr(track, "copyright", "") or ""
-    cp = _clean_copyright(raw_cp)
-    if "/" in cp:
-        raw_lbl, raw_dist = [p.strip() or None for p in cp.split("/", 1)]
-    else:
-        raw_lbl, raw_dist = (cp or None, None)
-    label_id = get_or_create_label(conn, _strip_year_and_suffix(raw_lbl)) if raw_lbl else None
-    distributor_id = get_or_create_label(conn, _strip_year_and_suffix(raw_dist)) if raw_dist else None
-
-    # 4) Create or get album
+    # Create or get album
     album_id = get_or_create_album(conn, album_name, label_id, release_year) if album_name else None
 
-    # 5) Build song_update
+    # Build return data
     song_update = {
         "song_id": song_id,
         "isrc": isrc,
@@ -1256,68 +1415,24 @@ def normalize_tidal(
         "album_id": album_id,
     }
 
-    # 6) Identifiers tuple
     dsp_record_id = str(getattr(track, "id", None))
     si_tuple = (song_id, dsp_id, dsp_record_id)
 
-    # 7) Raw metadata JSON
     raw_meta = {k: make_json_safe(v) for k, v in track.__dict__.items()}
     raw_meta_json = json.dumps(raw_meta)
 
-    # 8) Stream metrics
-    stream_rec = {
-        "isrc": isrc,
-        "dsp_name": "Tidal" if dsp_id == "Tidal" else dsp_id,
-        "fetch_datetime": datetime.now(timezone.utc),
-        "popularity": getattr(track, "popularity", None),
-        "track_number": getattr(track, "track_num", None),
-        "disc_number": getattr(track, "disc_number", None),
-    }
+    stream_rec = _build_tidal_stream_record(track, isrc, dsp_id)
 
-    # 9) Add to song version batch
+    # Add to song version batch
     batch_upsert_song_version(isrc, "Tidal", dsp_record_id, title, album_name)
 
-    # For backward compatibility with existing code
-    # Check if called with the old signature (track, conn, tidal_dsp_id)
-    import inspect
+    # Handle backward compatibility
+    compat_result = _handle_tidal_backward_compatibility(
+        track, song_id, isrc, title, album_name, art_url, label_id, album_id, dsp_id, dsp_record_id
+    )
+    if compat_result is not None:
+        return compat_result
 
-    frame = inspect.currentframe().f_back
-    if frame:
-        # Check if we're being called from Cell 7 in etl_pipeline.ipynb
-        # In this case, we're called with (t, conn, tidal_dsp_id)
-        args = list(frame.f_locals.values())
-        if (
-            len(args) >= 3
-            and isinstance(args[0], object)
-            and isinstance(args[1], Connection)
-            and isinstance(args[2], int)
-        ):
-            # Convert to old format for backward compatibility
-            old_song_update = {
-                "SongID": song_id,
-                "ISRC": isrc,
-                "Title": title,
-                "AlbumName": album_name,
-                "ArtworkURL": art_url,
-                "label_id": label_id,
-                "album_id": album_id,
-            }
-            old_stream_record = {
-                "SongID": song_id,
-                "DSPID": dsp_id,
-                "DSPRecordID": dsp_record_id,
-                "FetchDateTime": datetime.now(timezone.utc),
-                "Popularity": getattr(track, "popularity", None),
-                "DurationSec": getattr(track, "duration", None),
-                "TrackName": title,
-                "TrackNumber": getattr(track, "track_num", None),
-                "ReplayGain": getattr(track, "replay_gain", None),
-                "Peak": getattr(track, "peak", None),
-                "AudioQuality": getattr(track, "audio_quality", None),
-            }
-            return old_song_update, old_stream_record
-
-    # Otherwise, return the new format
     return song_update, si_tuple, stream_rec, raw_meta_json
 
 
@@ -1394,7 +1509,12 @@ def safe_upsert_legacy(conn, tbl, record: dict) -> None:
     conn.execute(stmt)
 
 
-# FAST MYSQL UPSERT!!!
+# ============================================================================
+# 6. BULK OPERATIONS & PERFORMANCE
+# ============================================================================
+# High-performance database operations for ETL processing.
+
+
 def bulk_upsert(
     engine: Engine,
     table: Table,
@@ -1561,6 +1681,101 @@ def seed_role_types(engine: Engine) -> None:
         conn.execute(stmt, to_insert)
 
 
+def _is_featured_artist(name: str) -> bool:
+    """Return True if the artist name indicates they are featured (contains feat., ft., etc.)"""
+    import re
+
+    pattern = r"feat\.?|ft\.?|featuring"
+    return bool(re.search(pattern, name.lower()))
+
+
+def _extract_featured_from_title(title: str) -> list[str]:
+    """
+    Extract featured artist names from track title.
+    Example: "I'm Good (feat. Erick Lottary)" -> ["Erick Lottary"]
+    """
+    import re
+
+    featured_artists = []
+    pattern = r"\((?:feat\.?|ft\.?|featuring)\s+([^)]+)\)"
+    match = re.search(pattern, title, re.IGNORECASE)
+    if match:
+        artists_part = match.group(1)
+        for artist in re.split(r",\s*|&\s*", artists_part):
+            featured_artists.append(artist.strip())
+    return featured_artists
+
+
+def _get_role_ids(conn: Connection) -> tuple[int, int]:
+    """Get primary and featured role IDs from database."""
+    roles_tbl = get_table("role_types")
+    role_id_map = {row.role_name: row.role_id for row in conn.execute(select(roles_tbl))}
+
+    primary_role_id = role_id_map.get("Primary")
+    featured_role_id = role_id_map.get("Featured")
+
+    if not primary_role_id or not featured_role_id:
+        raise ValueError("Role types 'Primary' and 'Featured' must exist before calling seed_song_artist_roles")
+
+    return primary_role_id, featured_role_id
+
+
+def _process_track_artists(conn: Connection, track: dict) -> tuple[list[tuple], list[int]]:
+    """Process track artists and detect featured artists."""
+    artists = []
+    auto_featured = []
+
+    track_title = track["name"]
+    featured_from_title = _extract_featured_from_title(track_title)
+
+    # Process each artist
+    for art in track["artists"]:
+        name = art["name"]
+        aid = get_or_create_artist(conn, name)
+
+        is_featured = _is_featured_artist(name)
+        artists.append((aid, name))
+        if is_featured:
+            auto_featured.append(len(artists))  # Store 1-based index
+
+    # Match artists with featured names from title
+    if featured_from_title:
+        for i, (aid, name) in enumerate(artists, 1):
+            for featured_name in featured_from_title:
+                if featured_name.lower() in name.lower() or name.lower() in featured_name.lower():
+                    if i not in auto_featured:
+                        auto_featured.append(i)
+                        break
+
+    return artists, auto_featured
+
+
+def _determine_primary_indices(artists: list, auto_featured: list[int]) -> list[int]:
+    """Determine which artist indices should be primary."""
+    if len(artists) == 1:
+        return [1]  # Single artist is always primary
+    elif auto_featured and len(auto_featured) < len(artists):
+        # Some featured artists detected, others are primary
+        return [i for i in range(1, len(artists) + 1) if i not in auto_featured]
+    else:
+        return [1]  # Default: first artist is primary
+
+
+def _insert_artist_role(conn: Connection, isrc: str, artist_id: int, role_id: int) -> None:
+    """Insert artist role assignment into database."""
+    song_artist_roles_tbl = get_table("song_artist_roles")
+
+    link_payload = {
+        "isrc": isrc,
+        "artist_id": artist_id,
+        "role_id": role_id,
+    }
+
+    stmt = mysql_insert(song_artist_roles_tbl).values(link_payload)
+    stmt = stmt.on_duplicate_key_update(role_id=text("VALUES(role_id)"))
+    conn.execute(stmt)
+
+
 def seed_song_artist_roles(conn: Connection, raw_tracks: list[dict]) -> None:
     """
     Idempotently seed song_artist_roles table with artist role assignments.
@@ -1575,112 +1790,27 @@ def seed_song_artist_roles(conn: Connection, raw_tracks: list[dict]) -> None:
     - Assigns primary/featured roles based on detection
     - Inserts/updates rows in song_artist_roles table
     """
-    import re
-
-    # Helper function to detect if an artist is featured based on name
-    def is_featured_artist(name: str) -> bool:
-        """Return True if the artist name indicates they are featured (contains feat., ft., etc.)"""
-        pattern = r"feat\.?|ft\.?|featuring"
-        return bool(re.search(pattern, name.lower()))
-
-    # Helper function to extract featured artists from track title
-    def extract_featured_from_title(title: str) -> list[str]:
-        """
-        Extract featured artist names from track title.
-        Example: "I'm Good (feat. Erick Lottary)" -> ["Erick Lottary"]
-        """
-        featured_artists = []
-        pattern = r"\((?:feat\.?|ft\.?|featuring)\s+([^)]+)\)"
-        match = re.search(pattern, title, re.IGNORECASE)
-        if match:
-            artists_part = match.group(1)
-            for artist in re.split(r",\s*|&\s*", artists_part):
-                featured_artists.append(artist.strip())
-        return featured_artists
-
-    # Get necessary tables
     songs_tbl = get_table("songs")
-    roles_tbl = get_table("role_types")
-    song_artist_roles_tbl = get_table("song_artist_roles")
-
-    # Get role IDs
-    role_id_map = {row.role_name: row.role_id for row in conn.execute(select(roles_tbl))}
-
-    # Get the primary and featured artist role IDs
-    primary_role_id = role_id_map.get("Primary")
-    featured_role_id = role_id_map.get("Featured")
-
-    if not primary_role_id or not featured_role_id:
-        # This should not happen as seed_role_types should be called before this function
-        raise ValueError("Role types 'Primary' and 'Featured' must exist before calling seed_song_artist_roles")
+    primary_role_id, featured_role_id = _get_role_ids(conn)
 
     for track in raw_tracks:
         isrc = track.get("external_ids", {}).get("isrc")
         if not isrc:
             continue
 
-        # Check if the song exists
+        # Check if song exists
         if conn.execute(select(songs_tbl.c.isrc).where(songs_tbl.c.isrc == isrc)).scalar_one_or_none() is None:
             continue
 
-        # Get all artists for this track and auto-detect featured artists
-        artists = []
-        auto_featured = []  # Track which artists are automatically detected as featured
+        # Process artists and determine roles
+        artists, auto_featured = _process_track_artists(conn, track)
+        primary_indices = _determine_primary_indices(artists, auto_featured)
 
-        # Extract featured artists from track title
-        track_title = track["name"]
-        featured_from_title = extract_featured_from_title(track_title)
-
-        for art in track["artists"]:
-            name = art["name"]
-            # Use get_or_create_artist to ensure the artist exists and get their ID
-            aid = get_or_create_artist(conn, name)
-
-            # Check if artist is featured based on their name
-            is_featured = is_featured_artist(name)
-            artists.append((aid, name))
-            if is_featured:
-                auto_featured.append(len(artists))  # Store the 1-based index
-
-        # Check if any artists match the featured artists extracted from the title
-        if featured_from_title:
-            for i, (aid, name) in enumerate(artists, 1):
-                for featured_name in featured_from_title:
-                    # Simple case-insensitive comparison
-                    if featured_name.lower() in name.lower() or name.lower() in featured_name.lower():
-                        if i not in auto_featured:
-                            auto_featured.append(i)
-                            break
-
-        # Determine primary and featured artists
-        if len(artists) == 1:
-            # If there's only one artist, they're automatically the primary artist
-            primary_indices = [1]
-        elif auto_featured and len(auto_featured) < len(artists):
-            # We have some auto-detected featured artists, but not all artists are featured
-            primary_indices = [i for i in range(1, len(artists) + 1) if i not in auto_featured]
-        else:
-            # Default: first artist is primary, rest are featured
-            primary_indices = [1]
-
-        # Insert artist roles into database
+        # Insert artist roles
         for i, (aid, name) in enumerate(artists, 1):
             is_primary = i in primary_indices
             role_id = primary_role_id if is_primary else featured_role_id
-
-            # Insert into database
-            link_payload = {
-                "isrc": isrc,
-                "artist_id": aid,
-                "role_id": role_id,
-            }
-
-            # Use MySQL's INSERT ... ON DUPLICATE KEY UPDATE for idempotence
-            stmt = mysql_insert(song_artist_roles_tbl).values(link_payload)
-            stmt = stmt.on_duplicate_key_update(
-                role_id=text("VALUES(role_id)"),
-            )
-            conn.execute(stmt)
+            _insert_artist_role(conn, isrc, aid, role_id)
 
 
 # ── 1) DEBUG logging setup – only affects this notebook session ──────────────
@@ -1971,6 +2101,12 @@ def detect_run_type() -> str:
         return "cron"
 
     return "manual"
+
+
+# ============================================================================
+# 7. ETL EXECUTION TRACKING & LOGGING
+# ============================================================================
+# Functions for tracking ETL pipeline execution, logging runs, and monitoring performance.
 
 
 def start_etl_run(channel_id: str, reason: str = None, engine: Engine = None) -> dict:

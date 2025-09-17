@@ -1,0 +1,12 @@
+{
+  "description": "Personal issue video IDs that need to be filtered at API level",
+  "note": "These are the 4 problematic videos mentioned in requirements that were being deleted every ETL run. Now we filter them before they reach the database.",
+  "video_ids": [
+    "REPLACE_WITH_ACTUAL_VIDEO_ID_1",
+    "REPLACE_WITH_ACTUAL_VIDEO_ID_2",
+    "REPLACE_WITH_ACTUAL_VIDEO_ID_3",
+    "REPLACE_WITH_ACTUAL_VIDEO_ID_4"
+  ],
+  "last_updated": "2024-01-01",
+  "updated_by": "ETL System"
+}

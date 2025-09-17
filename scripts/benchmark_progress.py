@@ -134,9 +134,7 @@ def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[
 
     if stats["se"] > 0 and (latest < stats["ci95_low"] or latest > stats["ci95_high"]):
         if not flags:
-            flags.append(
-                f"🎉 {metric}: outside 95% CI (mean {stats['mean']:.3g} ± {1.96 * stats['se']:.3g})."
-            )
+            flags.append(f"🎉 {metric}: outside 95% CI (mean {stats['mean']:.3g} ± {1.96 * stats['se']:.3g}).")
 
     prev = stats.get("_prev")
     if prev is not None and prev not in (0, None):
@@ -180,9 +178,7 @@ def analyze_history_and_print(benchmark_data, history_path: str | Path = "benchm
         if not stats:
             continue
 
-        stats["_prev"] = (
-            float(prev_row[col]) if prev_row is not None and pd.notna(prev_row[col]) else None
-        )
+        stats["_prev"] = float(prev_row[col]) if prev_row is not None and pd.notna(prev_row[col]) else None
 
         latest_val = float(latest_row.get(col, np.nan)) if pd.notna(latest_row.get(col, np.nan)) else np.nan
         ci_str = (
@@ -192,9 +188,7 @@ def analyze_history_and_print(benchmark_data, history_path: str | Path = "benchm
         )
         mode_str = "—" if stats["mode"] is None else f"{stats['mode']:.3g}"
 
-        print(
-            f"{col:26s} {latest_val:10.3g} {ci_str:>26s} {stats['median']:10.3g} {mode_str:>8s} {stats['std']:6.3g}"
-        )
+        print(f"{col:26s} {latest_val:10.3g} {ci_str:>26s} {stats['median']:10.3g} {mode_str:>8s} {stats['std']:6.3g}")
 
         for msg in flag_anomalies(col, latest_val, stats, spec):
             print(f"   {msg}")
@@ -400,9 +394,7 @@ def run_existing_model_benchmarks() -> dict[str, float]:
 
     print("  • Running existing model comparison benchmarks...")
 
-    rc, stdout, stderr = run_subprocess(
-        [sys.executable, "tools/sentiment/comprehensive_model_test.py"], timeout=120
-    )
+    rc, stdout, stderr = run_subprocess([sys.executable, "tools/sentiment/comprehensive_model_test.py"], timeout=120)
 
     if rc != 0:
         log.warning("Model benchmark command failed (rc=%s): %s", rc, stderr[:200])

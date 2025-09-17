@@ -1,0 +1,405 @@
+{
+  "model_name": "stock_vader",
+  "total_cases": 32,
+  "correct_cases": 8,
+  "accuracy": 0.25,
+  "processing_time_seconds": 0.0003800392150878906,
+  "throughput_cases_per_second": 84201.83688833124,
+  "category_stats": {
+    "production_praise": {
+      "correct": 2,
+      "total": 4,
+      "accuracy": 0.5
+    },
+    "negative": {
+      "correct": 0,
+      "total": 4,
+      "accuracy": 0.0
+    },
+    "gen_z_positive": {
+      "correct": 2,
+      "total": 6,
+      "accuracy": 0.3333333333333333
+    },
+    "music_slang": {
+      "correct": 0,
+      "total": 6,
+      "accuracy": 0.0
+    },
+    "neutral_request": {
+      "correct": 1,
+      "total": 2,
+      "accuracy": 0.5
+    },
+    "enthusiasm": {
+      "correct": 0,
+      "total": 4,
+      "accuracy": 0.0
+    },
+    "cultural_positive": {
+      "correct": 1,
+      "total": 4,
+      "accuracy": 0.25
+    },
+    "neutral_question": {
+      "correct": 2,
+      "total": 2,
+      "accuracy": 1.0
+    }
+  },
+  "detailed_results": [
+    {
+      "phrase": "this is sick",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.5106,
+      "category": "music_slang",
+      "pos_score": 0.0,
+      "neg_score": 0.623,
+      "neu_score": 0.377
+    },
+    {
+      "phrase": "this slaps",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "music_slang",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "straight fire",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.128,
+      "category": "music_slang",
+      "pos_score": 0.442,
+      "neg_score": 0.558,
+      "neu_score": 0.0
+    },
+    {
+      "phrase": "goes hard",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.1027,
+      "category": "music_slang",
+      "pos_score": 0.0,
+      "neg_score": 0.583,
+      "neu_score": 0.417
+    },
+    {
+      "phrase": "banger",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "music_slang",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "goated",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "music_slang",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "no cap this slaps",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.296,
+      "category": "gen_z_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.423,
+      "neu_score": 0.577
+    },
+    {
+      "phrase": "periodt",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "gen_z_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "it's giving main character energy",
+      "expected": "positive",
+      "predicted": "positive",
+      "correct": true,
+      "compound_score": 0.5423,
+      "category": "gen_z_positive",
+      "pos_score": 0.6,
+      "neg_score": 0.0,
+      "neu_score": 0.4
+    },
+    {
+      "phrase": "chef's kiss",
+      "expected": "positive",
+      "predicted": "positive",
+      "correct": true,
+      "compound_score": 0.4215,
+      "category": "gen_z_positive",
+      "pos_score": 0.737,
+      "neg_score": 0.0,
+      "neu_score": 0.263
+    },
+    {
+      "phrase": "hits different",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "gen_z_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "I'm obsessed",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.1779,
+      "category": "gen_z_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.63,
+      "neu_score": 0.37
+    },
+    {
+      "phrase": "fucking queen",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "cultural_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "go off king",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "cultural_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "bad bish",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.5423,
+      "category": "cultural_positive",
+      "pos_score": 0.0,
+      "neg_score": 0.778,
+      "neu_score": 0.222
+    },
+    {
+      "phrase": "YES MOTHER",
+      "expected": "positive",
+      "predicted": "positive",
+      "correct": true,
+      "compound_score": 0.4019,
+      "category": "cultural_positive",
+      "pos_score": 0.73,
+      "neg_score": 0.0,
+      "neu_score": 0.27
+    },
+    {
+      "phrase": "the vocals are insane",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.4019,
+      "category": "production_praise",
+      "pos_score": 0.0,
+      "neg_score": 0.474,
+      "neu_score": 0.526
+    },
+    {
+      "phrase": "production is clean",
+      "expected": "positive",
+      "predicted": "positive",
+      "correct": true,
+      "compound_score": 0.4019,
+      "category": "production_praise",
+      "pos_score": 0.574,
+      "neg_score": 0.0,
+      "neu_score": 0.426
+    },
+    {
+      "phrase": "harmonies hit different",
+      "expected": "positive",
+      "predicted": "positive",
+      "correct": true,
+      "compound_score": 0.3182,
+      "category": "production_praise",
+      "pos_score": 0.535,
+      "neg_score": 0.0,
+      "neu_score": 0.465
+    },
+    {
+      "phrase": "the beat though",
+      "expected": "positive",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "production_praise",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "fuck it up",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.5423,
+      "category": "enthusiasm",
+      "pos_score": 0.0,
+      "neg_score": 0.636,
+      "neu_score": 0.364
+    },
+    {
+      "phrase": "the way I screamed",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.3182,
+      "category": "enthusiasm",
+      "pos_score": 0.0,
+      "neg_score": 0.434,
+      "neu_score": 0.566
+    },
+    {
+      "phrase": "lowkey fire",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.34,
+      "category": "enthusiasm",
+      "pos_score": 0.0,
+      "neg_score": 0.706,
+      "neu_score": 0.294
+    },
+    {
+      "phrase": "highkey obsessed",
+      "expected": "positive",
+      "predicted": "negative",
+      "correct": false,
+      "compound_score": -0.1779,
+      "category": "enthusiasm",
+      "pos_score": 0.0,
+      "neg_score": 0.63,
+      "neu_score": 0.37
+    },
+    {
+      "phrase": "this ain't it chief",
+      "expected": "negative",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "negative",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "mid",
+      "expected": "negative",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "negative",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "cringe",
+      "expected": "negative",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "negative",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "trash",
+      "expected": "negative",
+      "predicted": "neutral",
+      "correct": false,
+      "compound_score": 0.0,
+      "category": "negative",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "I need the lyrics",
+      "expected": "neutral",
+      "predicted": "neutral",
+      "correct": true,
+      "compound_score": 0.0,
+      "category": "neutral_request",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "who produced this",
+      "expected": "neutral",
+      "predicted": "neutral",
+      "correct": true,
+      "compound_score": 0.0,
+      "category": "neutral_question",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "what's the sample",
+      "expected": "neutral",
+      "predicted": "neutral",
+      "correct": true,
+      "compound_score": 0.0,
+      "category": "neutral_question",
+      "pos_score": 0.0,
+      "neg_score": 0.0,
+      "neu_score": 1.0
+    },
+    {
+      "phrase": "clean version pls",
+      "expected": "neutral",
+      "predicted": "positive",
+      "correct": false,
+      "compound_score": 0.4588,
+      "category": "neutral_request",
+      "pos_score": 0.8,
+      "neg_score": 0.0,
+      "neu_score": 0.2
+    }
+  ],
+  "timestamp": "2025-09-17T01:35:10.941677"
+}
