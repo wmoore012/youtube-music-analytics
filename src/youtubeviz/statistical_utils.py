@@ -8,7 +8,41 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from scipy import stats
+
+# Auto-install scipy if needed
+try:
+    from .auto_install import ensure
+    scipy_module = ensure('scipy')
+    
+    if scipy_module:
+        from scipy import stats
+        HAS_SCIPY = True
+    else:
+        raise ImportError("scipy not available")
+        
+except ImportError:
+    HAS_SCIPY = False
+    warnings.warn(
+        "scipy not available. Statistical functions will use simplified approximations. "
+        "Install scipy for full statistical functionality: pip install scipy",
+        UserWarning
+    )
+    
+    # Create a mock stats module for fallback
+    class MockStats:
+        @staticmethod
+        def norm():
+            class MockNorm:
+                @staticmethod
+                def ppf(x):
+                    # Simple approximation for normal distribution percentile point function
+                    if x <= 0.5:
+                        return -1.96 if x <= 0.025 else (-0.67 if x <= 0.16 else 0)
+                    else:
+                        return 1.96 if x >= 0.975 else (0.67 if x >= 0.84 else 0)
+            return MockNorm()
+    
+    stats = MockStats()
 
 
 def calculate_wilson_intervals(
@@ -47,6 +81,17 @@ def calculate_wilson_intervals(
 
     # Calculate proportions
     p = successes / totals
+
+    if not HAS_SCIPY:
+        # Fallback to simple normal approximation when scipy not available
+        z_score = 1.96  # Approximate 95% confidence
+        std_error = np.sqrt(p * (1 - p) / totals)
+        margin = z_score * std_error
+        
+        lower = np.maximum(0, p - margin)
+        upper = np.minimum(1, p + margin)
+        
+        return lower, upper
 
     # Z-score for confidence level
     z = stats.norm.ppf(1 - (1 - confidence) / 2)

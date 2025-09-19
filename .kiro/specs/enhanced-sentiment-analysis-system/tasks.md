@@ -24,12 +24,14 @@
   - Ensure all variants maintain VADER's booster math consistency
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-- [x] 4. Create comprehensive evaluation framework
-  - Implement SentimentEvaluationFramework class for multi-model comparison
-  - Add paired testing functionality for identical comment sets
-  - Create GroupKFold cross-validation by video_id to prevent data leakage
-  - Implement McNemar's test for paired classifier statistical comparison
-  - Add bootstrap confidence interval calculation for performance deltas
+- [-] 4. Create comprehensive evaluation framework
+  - Implement SentimentEvaluationFramework class structure with data models
+  - Add ExperimentConfig class for reproducibility tracking
+  - Create ClassMetrics, McNemarResult, and SliceMetrics data structures
+  - Complete paired testing functionality for identical comment sets
+  - Implement GroupKFold cross-validation by video_id to prevent data leakage
+  - Add McNemar's test for paired classifier statistical comparison
+  - Implement bootstrap confidence interval calculation for performance deltas
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
 
 - [ ] 5. Build YouTube comment fetching system for evaluation
@@ -40,7 +42,7 @@
   - Ensure data retention compliance with configurable cleanup policies
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 6. Implement statistical testing and multiple comparison correction
+- [x] 6. Implement statistical testing and multiple comparison correction
   - Create MultipleComparisonCorrection class for FDR control
   - Implement Benjamini-Hochberg procedure for slice analysis p-value adjustment
   - Add slice-based evaluation for emoji-heavy, booster-present, and
@@ -57,30 +59,28 @@
   - Add fingerprint display for build verification and CI integration
   - _Requirements: 6.1, 6.4, 7.4_
 
-- [ ] 8. Build experiment reproducibility system
-  - Create ExperimentConfig class for tracking all experiment parameters
-  - Implement deterministic random seed management across all operations
+- [-] 8. Build experiment reproducibility system
+  - Complete ExperimentConfig implementation with deterministic random seed management
   - Add comprehensive logging of patch_id, code commit, and data timestamps
   - Create experiment metadata export for result traceability
   - Implement fold index logging for cross-validation reproducibility
+  - Store sensitive configuration in .env for privacy control
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [ ] 9. Integrate with existing sentiment analysis pipeline
-  - Create SentimentPipelineIntegration class for backward compatibility
-  - Implement compatibility wrapper for existing
-    youtubeviz.advanced_music_sentiment
-  - Add A/B testing framework for comparing current vs enhanced models
+  - Create SentimentPipelineIntegration class for backward compatibility using existing helpers
+  - Implement compatibility wrapper for existing youtubeviz.advanced_music_sentiment
+  - Add A/B testing framework for comparing current vs enhanced models with database data
   - Create migration utilities for existing data format compatibility
-  - Ensure API consistency validation between old and new implementations
+  - Store proprietary enhancement formulas in configurable .env location for privacy
   - _Requirements: 5.6, 8.5_
 
 - [ ] 10. Implement comprehensive testing suite
-  - Create unit tests for deterministic ID generation and Unicode normalization
-  - Add integration tests for VADER variant creation and scoring consistency
-  - Implement evaluation framework tests with mock data and known results
+  - Create unit tests for deterministic ID generation and Unicode normalization using unique database values
+  - Add integration tests for VADER variant creation and scoring consistency with real data
+  - Implement evaluation framework tests with database helpers, no dummy data
   - Create performance tests for large dataset processing and memory usage
-  - Add validation tests for statistical test implementations and
-    reproducibility
+  - Add validation tests for statistical test implementations and reproducibility
   - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.5, 5.3, 5.4, 5.5, 7.1_
 
 - [ ] 11. Create production deployment and monitoring system

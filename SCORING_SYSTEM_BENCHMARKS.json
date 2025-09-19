@@ -1,0 +1,89 @@
+[
+  {
+    "timestamp": "2025-09-18T05:13:23.044282",
+    "total_records_processed": 2846,
+    "total_execution_time": 0.06429624557495117,
+    "overall_throughput": 44263.85980317267,
+    "individual_benchmarks": {
+      "Momentum Scoring": {
+        "records_processed": 1373,
+        "execution_time": 0.017950057983398438,
+        "throughput": 76490.00361279355,
+        "results_generated": 7,
+        "success": true
+      },
+      "Engagement Scoring": {
+        "records_processed": 100,
+        "execution_time": 0.0030641555786132812,
+        "throughput": 32635.4186118892,
+        "results_generated": 100,
+        "success": true
+      },
+      "Engine Integration": {
+        "records_processed": 1373,
+        "execution_time": 0.04328203201293945,
+        "throughput": 0,
+        "results_generated": 0,
+        "success": true
+      }
+    }
+  },
+  {
+    "timestamp": "2025-09-18T05:24:13.280741",
+    "total_records_processed": 2846,
+    "total_execution_time": 0.07151198387145996,
+    "overall_throughput": 39797.5254765072,
+    "individual_benchmarks": {
+      "Momentum Scoring": {
+        "records_processed": 1373,
+        "execution_time": 0.02546381950378418,
+        "throughput": 53919.6407591547,
+        "results_generated": 7,
+        "success": true
+      },
+      "Engagement Scoring": {
+        "records_processed": 100,
+        "execution_time": 0.0043182373046875,
+        "throughput": 23157.597173144877,
+        "results_generated": 100,
+        "success": true
+      },
+      "Engine Integration": {
+        "records_processed": 1373,
+        "execution_time": 0.04172992706298828,
+        "throughput": 0,
+        "results_generated": 0,
+        "success": true
+      }
+    }
+  },
+  {
+    "timestamp": "2025-09-18T05:27:02.066546",
+    "total_records_processed": 2846,
+    "total_execution_time": 0.059357404708862305,
+    "overall_throughput": 47946.840229271016,
+    "individual_benchmarks": {
+      "Momentum Scoring": {
+        "records_processed": 1373,
+        "execution_time": 0.02134227752685547,
+        "throughput": 64332.40305643684,
+        "results_generated": 6,
+        "success": true
+      },
+      "Engagement Scoring": {
+        "records_processed": 100,
+        "execution_time": 0.0032701492309570312,
+        "throughput": 30579.644211140276,
+        "results_generated": 100,
+        "success": true
+      },
+      "Engine Integration": {
+        "records_processed": 1373,
+        "execution_time": 0.034744977951049805,
+        "throughput": 0,
+        "results_generated": 0,
+        "success": true
+      }
+    }
+  }
+]

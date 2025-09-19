@@ -1,39 +1,83 @@
 #!/usr/bin/env python3
 """
-🔧 Dependency Checker - Check if all required packages are installed
+🔧 Dependency Checker - Check and auto-install required packages
 
 Run this before using the 🚀 play button to make sure everything is ready.
+Now with AUTO-INSTALL capability!
 
 Usage:
     python 🔧_CHECK_DEPENDENCIES.py
+    python 🔧_CHECK_DEPENDENCIES.py --auto-install
 """
 
 import sys
+import argparse
 from pathlib import Path
 
+# Add parent directory to path to find our modules
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+sys.path.insert(0, str(project_root))
 
-def check_dependency(package_name, import_name=None):
-    """Check if a package is installed and importable."""
+try:
+    from src.youtubeviz.auto_install import AutoInstaller, ensure, check_available
+    AUTO_INSTALL_AVAILABLE = True
+except ImportError:
+    AUTO_INSTALL_AVAILABLE = False
+
+
+def check_dependency(package_name, import_name=None, auto_install=False):
+    """Check if a package is installed and importable, optionally auto-installing."""
     if import_name is None:
         import_name = package_name
 
+    # First check if it's available
+    if AUTO_INSTALL_AVAILABLE and check_available(package_name, import_name):
+        print(f"✅ {package_name}")
+        return True
+    
+    # Try regular import
     try:
         __import__(import_name)
         print(f"✅ {package_name}")
         return True
     except ImportError:
-        print(f"❌ {package_name} - MISSING")
-        return False
+        if auto_install and AUTO_INSTALL_AVAILABLE:
+            print(f"📦 {package_name} - Installing...")
+            module = ensure(package_name, import_name)
+            if module:
+                print(f"✅ {package_name} - INSTALLED")
+                return True
+            else:
+                print(f"❌ {package_name} - INSTALL FAILED")
+                return False
+        else:
+            print(f"❌ {package_name} - MISSING")
+            return False
 
 
 def main():
-    """Check all required dependencies."""
-    print("🔧" + "=" * 50)
-    print("🔍 MusicScope™ Dependency Checker")
-    print("🔧" + "=" * 50)
+    """Check all required dependencies with optional auto-install."""
+    parser = argparse.ArgumentParser(description="Check and install MusicScope™ dependencies")
+    parser.add_argument('--auto-install', action='store_true', 
+                       help='Automatically install missing packages')
+    args = parser.parse_args()
+
+    print("🔧" + "=" * 60)
+    print("�  MusicScope™ Dependency Checker")
+    if args.auto_install and AUTO_INSTALL_AVAILABLE:
+        print("🚀 AUTO-INSTALL MODE ENABLED")
+    print("🔧" + "=" * 60)
     print()
 
-    # Core Python packages
+    if not AUTO_INSTALL_AVAILABLE and args.auto_install:
+        print("⚠️  Auto-install not available (missing auto_install module)")
+        print("    Falling back to check-only mode")
+        print()
+
+    auto_install = args.auto_install and AUTO_INSTALL_AVAILABLE
+
+    # Core Python packages (should always be available)
     print("📦 Core Python packages:")
     core_deps = [
         ("sys", "sys"),
@@ -43,7 +87,7 @@ def main():
         ("pathlib", "pathlib"),
     ]
 
-    core_ok = all(check_dependency(pkg, imp) for pkg, imp in core_deps)
+    core_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in core_deps)
     print()
 
     # Data science packages
@@ -54,18 +98,18 @@ def main():
         ("scipy", "scipy"),
     ]
 
-    data_ok = all(check_dependency(pkg, imp) for pkg, imp in data_deps)
+    data_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in data_deps)
     print()
 
     # Visualization packages
     print("📈 Visualization packages:")
     viz_deps = [
         ("plotly", "plotly"),
-        ("plotly.graph_objects", "plotly.graph_objects"),
-        ("plotly.express", "plotly.express"),
+        ("matplotlib", "matplotlib"),
+        ("seaborn", "seaborn"),
     ]
 
-    viz_ok = all(check_dependency(pkg, imp) for pkg, imp in viz_deps)
+    viz_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in viz_deps)
     print()
 
     # Database packages
@@ -75,39 +119,66 @@ def main():
         ("pymysql", "pymysql"),
     ]
 
-    db_ok = all(check_dependency(pkg, imp) for pkg, imp in db_deps)
+    db_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in db_deps)
     print()
 
     # Notebook packages
     print("📓 Notebook packages:")
     nb_deps = [
         ("nbconvert", "nbconvert"),
-        ("jupyter", "jupyter"),
+        ("ipywidgets", "ipywidgets"),
+        ("tqdm", "tqdm"),
     ]
 
-    nb_ok = all(check_dependency(pkg, imp) for pkg, imp in nb_deps)
+    nb_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in nb_deps)
+    print()
+
+    # Optional enhancement packages
+    print("✨ Optional enhancements:")
+    optional_deps = [
+        ("rich", "rich"),
+        ("psutil", "psutil"),
+        ("memory-profiler", "memory_profiler"),
+    ]
+
+    optional_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in optional_deps)
     print()
 
     # Overall status
-    all_ok = core_ok and data_ok and viz_ok and db_ok and nb_ok
+    essential_ok = core_ok and data_ok and viz_ok and db_ok and nb_ok
+    all_ok = essential_ok and optional_ok
 
-    if all_ok:
-        print("🎉" + "=" * 50)
-        print("✅ ALL DEPENDENCIES READY!")
-        print("🎉" + "=" * 50)
+    if essential_ok:
+        print("🎉" + "=" * 60)
+        print("✅ ESSENTIAL DEPENDENCIES READY!")
+        if not optional_ok:
+            print("⚠️  Some optional packages missing (not critical)")
+        print("🎉" + "=" * 60)
         print()
         print("🚀 You can now run: python 🚀_RUN_NOTEBOOK_CREATION.py")
         print()
+        
+        if AUTO_INSTALL_AVAILABLE:
+            print("💡 Pro tip: Run with --auto-install to install missing packages automatically")
+            print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
+        print()
     else:
-        print("🚨" + "=" * 50)
-        print("❌ MISSING DEPENDENCIES!")
-        print("🚨" + "=" * 50)
+        print("🚨" + "=" * 60)
+        print("❌ MISSING ESSENTIAL DEPENDENCIES!")
+        print("🚨" + "=" * 60)
         print()
-        print("🔧 To install missing packages:")
-        print("   pip install pandas numpy scipy plotly sqlalchemy pymysql nbconvert jupyter")
+        
+        if AUTO_INSTALL_AVAILABLE and not auto_install:
+            print("🚀 Quick fix: Run with auto-install")
+            print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
+            print()
+        
+        print("🔧 Manual installation:")
+        print("   pip install pandas numpy scipy plotly matplotlib seaborn")
+        print("   pip install sqlalchemy pymysql nbconvert ipywidgets tqdm")
         print()
-        print("   Or if you have a requirements.txt:")
-        print("   pip install -r requirements.txt")
+        print("   Or install everything at once:")
+        print("   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory-profiler")
         print()
         sys.exit(1)
 

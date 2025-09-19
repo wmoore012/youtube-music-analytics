@@ -1,0 +1,266 @@
+{
+  "timestamp": "2025-09-18T04:25:49.399606",
+  "total_comments_evaluated": 300,
+  "variants_tested": [
+    "stock_vader",
+    "enhanced_minimal",
+    "enhanced_moderate",
+    "enhanced_comprehensive",
+    "enhanced_aggressive",
+    "enhanced_hybrid"
+  ],
+  "summary_stats": {
+    "stock_vader": {
+      "sentiment_distribution": {
+        "positive": 182,
+        "neutral": 62,
+        "negative": 56
+      },
+      "avg_compound_score": 0.32125666666666663,
+      "std_compound_score": 0.5201210252031896,
+      "positive_rate": 0.6066666666666667,
+      "negative_rate": 0.18666666666666668,
+      "neutral_rate": 0.20666666666666667
+    },
+    "enhanced_minimal": {
+      "sentiment_distribution": {
+        "positive": 209,
+        "neutral": 60,
+        "negative": 31
+      },
+      "avg_compound_score": 0.4389366666666667,
+      "std_compound_score": 0.45366467142875927,
+      "positive_rate": 0.6966666666666667,
+      "negative_rate": 0.10333333333333333,
+      "neutral_rate": 0.2
+    },
+    "enhanced_moderate": {
+      "sentiment_distribution": {
+        "positive": 210,
+        "neutral": 59,
+        "negative": 31
+      },
+      "avg_compound_score": 0.4451296666666667,
+      "std_compound_score": 0.45559806798506947,
+      "positive_rate": 0.7,
+      "negative_rate": 0.10333333333333333,
+      "neutral_rate": 0.19666666666666666
+    },
+    "enhanced_comprehensive": {
+      "sentiment_distribution": {
+        "positive": 215,
+        "neutral": 58,
+        "negative": 27
+      },
+      "avg_compound_score": 0.4597003333333333,
+      "std_compound_score": 0.4471750581244265,
+      "positive_rate": 0.7166666666666667,
+      "negative_rate": 0.09,
+      "neutral_rate": 0.19333333333333333
+    },
+    "enhanced_aggressive": {
+      "sentiment_distribution": {
+        "positive": 217,
+        "neutral": 56,
+        "negative": 27
+      },
+      "avg_compound_score": 0.46952733333333335,
+      "std_compound_score": 0.4486249393874094,
+      "positive_rate": 0.7233333333333334,
+      "negative_rate": 0.09,
+      "neutral_rate": 0.18666666666666668
+    },
+    "enhanced_hybrid": {
+      "sentiment_distribution": {
+        "positive": 210,
+        "neutral": 61,
+        "negative": 29
+      },
+      "avg_compound_score": 0.45322833333333334,
+      "std_compound_score": 0.4517311960397176,
+      "positive_rate": 0.7,
+      "negative_rate": 0.09666666666666666,
+      "neutral_rate": 0.20333333333333334
+    }
+  },
+  "disagreement_analysis": {
+    "enhanced_aggressive_vs_enhanced_comprehensive": {
+      "agreements": "298",
+      "total": 300,
+      "agreement_rate": 0.9933333333333333,
+      "disagreement_rate": 0.00666666666666671
+    },
+    "enhanced_aggressive_vs_enhanced_hybrid": {
+      "agreements": "291",
+      "total": 300,
+      "agreement_rate": 0.97,
+      "disagreement_rate": 0.030000000000000027
+    },
+    "enhanced_aggressive_vs_enhanced_minimal": {
+      "agreements": "292",
+      "total": 300,
+      "agreement_rate": 0.9733333333333334,
+      "disagreement_rate": 0.026666666666666616
+    },
+    "enhanced_aggressive_vs_enhanced_moderate": {
+      "agreements": "293",
+      "total": 300,
+      "agreement_rate": 0.9766666666666667,
+      "disagreement_rate": 0.023333333333333317
+    },
+    "enhanced_aggressive_vs_stock_vader": {
+      "agreements": "265",
+      "total": 300,
+      "agreement_rate": 0.8833333333333333,
+      "disagreement_rate": 0.1166666666666667
+    },
+    "enhanced_comprehensive_vs_enhanced_hybrid": {
+      "agreements": "293",
+      "total": 300,
+      "agreement_rate": 0.9766666666666667,
+      "disagreement_rate": 0.023333333333333317
+    },
+    "enhanced_comprehensive_vs_enhanced_minimal": {
+      "agreements": "294",
+      "total": 300,
+      "agreement_rate": 0.98,
+      "disagreement_rate": 0.020000000000000018
+    },
+    "enhanced_comprehensive_vs_enhanced_moderate": {
+      "agreements": "295",
+      "total": 300,
+      "agreement_rate": 0.9833333333333333,
+      "disagreement_rate": 0.01666666666666672
+    },
+    "enhanced_comprehensive_vs_stock_vader": {
+      "agreements": "267",
+      "total": 300,
+      "agreement_rate": 0.89,
+      "disagreement_rate": 0.10999999999999999
+    },
+    "enhanced_hybrid_vs_enhanced_minimal": {
+      "agreements": "297",
+      "total": 300,
+      "agreement_rate": 0.99,
+      "disagreement_rate": 0.010000000000000009
+    },
+    "enhanced_hybrid_vs_enhanced_moderate": {
+      "agreements": "298",
+      "total": 300,
+      "agreement_rate": 0.9933333333333333,
+      "disagreement_rate": 0.00666666666666671
+    },
+    "enhanced_hybrid_vs_stock_vader": {
+      "agreements": "270",
+      "total": 300,
+      "agreement_rate": 0.9,
+      "disagreement_rate": 0.09999999999999998
+    },
+    "enhanced_minimal_vs_enhanced_moderate": {
+      "agreements": "299",
+      "total": 300,
+      "agreement_rate": 0.9966666666666667,
+      "disagreement_rate": 0.0033333333333332993
+    },
+    "enhanced_minimal_vs_stock_vader": {
+      "agreements": "272",
+      "total": 300,
+      "agreement_rate": 0.9066666666666666,
+      "disagreement_rate": 0.09333333333333338
+    },
+    "enhanced_moderate_vs_stock_vader": {
+      "agreements": "272",
+      "total": 300,
+      "agreement_rate": 0.9066666666666666,
+      "disagreement_rate": 0.09333333333333338
+    }
+  },
+  "top_improvements": [
+    {
+      "comment_text": "Yeah this is going on the gym playlist 🔥🔥🔥🔥🔥🔥",
+      "artist": "Flyana Boss",
+      "variant": "enhanced_aggressive",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8807,
+      "compound_enhanced": 0.9828
+    },
+    {
+      "comment_text": "Yeah this is going on the gym playlist 🔥🔥🔥🔥🔥🔥",
+      "artist": "Flyana Boss",
+      "variant": "enhanced_minimal",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8807,
+      "compound_enhanced": 0.9761
+    },
+    {
+      "comment_text": "Yeah this is going on the gym playlist 🔥🔥🔥🔥🔥🔥",
+      "artist": "Flyana Boss",
+      "variant": "enhanced_moderate",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8807,
+      "compound_enhanced": 0.9761
+    },
+    {
+      "comment_text": "Yeah this is going on the gym playlist 🔥🔥🔥🔥🔥🔥",
+      "artist": "Flyana Boss",
+      "variant": "enhanced_comprehensive",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8807,
+      "compound_enhanced": 0.9761
+    },
+    {
+      "comment_text": "Yeah this is going on the gym playlist 🔥🔥🔥🔥🔥🔥",
+      "artist": "Flyana Boss",
+      "variant": "enhanced_hybrid",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8807,
+      "compound_enhanced": 0.9761
+    },
+    {
+      "comment_text": "She building all the anticipation 🔥🔥🔥🔥🔥",
+      "artist": "COBRAH",
+      "variant": "enhanced_aggressive",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8625,
+      "compound_enhanced": 0.9738
+    },
+    {
+      "comment_text": "SHIIIIIIIIIIII- 🔥🔥🔥🔥🔥",
+      "artist": "Raiche",
+      "variant": "enhanced_aggressive",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.875,
+      "compound_enhanced": 0.9726
+    },
+    {
+      "comment_text": "Blytheville Is UP🔥🔥🔥🔥💪🏿💪🏿💪🏿💪🏿!!!!",
+      "artist": "BiC Fizzle",
+      "variant": "enhanced_aggressive",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8679,
+      "compound_enhanced": 0.9644
+    },
+    {
+      "comment_text": "She building all the anticipation 🔥🔥🔥🔥🔥",
+      "artist": "COBRAH",
+      "variant": "enhanced_minimal",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8625,
+      "compound_enhanced": 0.9633
+    },
+    {
+      "comment_text": "She building all the anticipation 🔥🔥🔥🔥🔥",
+      "artist": "COBRAH",
+      "variant": "enhanced_moderate",
+      "improvement_type": "negative → positive",
+      "compound_stock": -0.8625,
+      "compound_enhanced": 0.9633
+    }
+  ],
+  "recommendations": [
+    "Best performing variant: enhanced_aggressive",
+    "Improvement in positive detection: +11.7%",
+    "Stock VADER positive rate: 60.7%",
+    "Enhanced positive rate: 72.3%"
+  ]
+}

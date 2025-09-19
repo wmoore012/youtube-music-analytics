@@ -32,7 +32,7 @@
   - Implement parameter validation with clear error messages
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 5. Implement scoring plugins for existing analytics
+- [x] 5. Implement scoring plugins for existing analytics
   - Write tests for momentum, engagement, and growth potential scoring
   - Create scoring plugins that work with existing database tables
   - Implement artist momentum scoring using youtube_videos and youtube_metrics
@@ -48,7 +48,7 @@
   - Add scoring history and trend analysis features
   - _Requirements: 2.4, 5.1, 5.2, 5.3_
 
-- [ ] 7. Build notebook validation and output explanation system
+- [x] 7. Build notebook validation and output explanation system
   - Write tests for notebook cell output validation and metric explanations
   - Create NotebookValidator with schema validation and error reporting
   - Implement MetricExplainer for clear scoring metric definitions
