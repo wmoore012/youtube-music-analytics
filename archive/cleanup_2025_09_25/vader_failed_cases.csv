@@ -1,0 +1,29 @@
+phrase,expected,predicted,score,category,confidence
+for the girls,positive,neutral,0.0,cultural_identity,0.85
+mom,positive,neutral,0.0,praise_performance,0.75
+nobody asked for this,negative,neutral,0.0,criticism_negative,0.85
+real music is back,positive,neutral,0.0,cultural_identity,0.8
+drop the visuals,neutral,negative,-0.2732,neutral_requests,0.85
+go off king,positive,neutral,0.0,praise_performance,0.95
+so sick,positive,negative,-0.5563,praise_general,0.9
+sheesh,positive,neutral,0.0,hype_excitement,0.85
+who approved this?,negative,positive,0.4215,criticism_negative,0.85
+drop the album,positive,negative,-0.2732,anticipation_demand,0.85
+my nigga snapped,positive,neutral,0.0,praise_performance,0.9
+this ain't it chief,negative,neutral,0.0,criticism_negative,0.95
+wtfff,positive,neutral,0.0,hype_excitement,0.7
+this song is so overrated bro,negative,neutral,0.0,criticism_negative,0.8
+11/10,positive,neutral,0.0,praise_general,0.95
+the beat tho,positive,neutral,0.0,praise_production,0.95
+this slaps,positive,neutral,0.0,praise_general,0.9
+goes hard,positive,negative,-0.1027,praise_general,0.95
+hard af,positive,negative,-0.1027,praise_general,0.95
+turn it off,negative,neutral,0.0,criticism_negative,0.9
+slaps,positive,neutral,0.0,praise_general,0.9
+this fye,positive,neutral,0.0,praise_general,0.8
+goated,positive,neutral,0.0,praise_general,0.9
+beat slaps,positive,neutral,0.0,praise_production,0.9
+sheeesh,positive,neutral,0.0,hype_excitement,0.9
+this hard,positive,negative,-0.1027,praise_general,0.95
+goated artist,positive,neutral,0.0,praise_general,0.95
+switch up the flow,negative,neutral,0.0,criticism_constructive,0.7

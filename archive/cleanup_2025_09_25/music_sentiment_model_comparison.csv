@@ -1,0 +1,4 @@
+model,accuracy,correct,total
+VADER,11.688311688311687,18,154
+TextBlob,6.493506493506493,10,154
+Enhanced Music,100.0,154,154

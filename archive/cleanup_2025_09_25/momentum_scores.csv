@@ -1,0 +1,4 @@
+entity_id,score_value,confidence,momentum_category,growth_component,engagement_component,algorithm_name,algorithm_version,calculation_timestamp
+Rising Star,0.913,1.0,high_momentum,0.855,1,momentum_scorer,1.0.0,2025-09-18 10:56:52.893756
+Established Artist,0.4912,1.0,low_momentum,0.152,1,momentum_scorer,1.0.0,2025-09-18 10:56:52.893756
+Viral Hit,1.0,0.9333,high_momentum,1.0,1,momentum_scorer,1.0.0,2025-09-18 10:56:52.893756

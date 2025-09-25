@@ -1,0 +1,297 @@
+{
+  "timestamp": "2025-09-16T17:38:13.576523",
+  "total_combinable_groups": 29,
+  "total_ai_patterns": 59,
+  "priority_files": [
+    {
+      "file": "web/models.py",
+      "total_issues": 16,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_title",
+            "validate_channel_title",
+            "validate_isrc_format",
+            "validate_comment_text",
+            "validate_author_name",
+            "validate_sentiment_range",
+            "validate_confidence_range",
+            "validate_bot_score_range",
+            "validate_database_url",
+            "validate_api_key",
+            "validate_score_range",
+            "validate_times",
+            "validate_pipeline_result",
+            "validate_video_ids",
+            "validate_channel_ids",
+            "validate_duration_range"
+          ],
+          "count": 16
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "web/validation.py",
+      "total_issues": 14,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_required_environment_variables",
+            "validate_database_connection_string",
+            "validate_youtube_video",
+            "validate_youtube_videos_batch",
+            "validate_youtube_comment",
+            "validate_youtube_comments_batch",
+            "validate_sentiment_result",
+            "validate_bot_detection_result",
+            "validate_etl_config",
+            "validate_video_filter",
+            "validate_video_id_format",
+            "validate_isrc_format",
+            "validate_dataframe_structure",
+            "validate_sentiment_scores"
+          ],
+          "count": 14
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "scripts/enhanced_ci.py",
+      "total_issues": 11,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_environment_safety",
+            "validate_code_quality",
+            "validate_database_operations",
+            "_validate_schema_integrity",
+            "_validate_commenting",
+            "_validate_notebook_outputs",
+            "_validate_function_complexity",
+            "validate_database_integrity"
+          ],
+          "count": 8
+        },
+        {
+          "pattern": "analyze_",
+          "description": "Analysis functions",
+          "functions": [
+            "_analyze_system_health",
+            "_analyze_failure_patterns",
+            "_analyze_performance_metrics"
+          ],
+          "count": 3
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_youtube_helpers_v2.py",
+      "total_issues": 10,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "test_validate_video_data_valid",
+            "test_validate_video_data_missing_id",
+            "test_validate_video_data_missing_snippet",
+            "test_validate_video_data_null_title",
+            "test_validate_video_data_null_input",
+            "test_validate_video_data_non_dict_input",
+            "test_validate_playlist_data_valid",
+            "test_validate_playlist_data_missing_id",
+            "test_validate_playlist_data_null_id",
+            "test_validate_playlist_data_null_input"
+          ],
+          "count": 10
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "tests/test_sentiment_analyzer.py",
+      "total_issues": 8,
+      "combinable_groups": [
+        {
+          "pattern": "analyze_",
+          "description": "Analysis functions",
+          "functions": [
+            "test_analyze_single_comment_success",
+            "test_analyze_single_comment_validation_error",
+            "test_analyze_single_comment_confidence_threshold",
+            "test_analyze_comments_batch_success",
+            "test_analyze_comments_batch_empty",
+            "test_analyze_comments_batch_with_failures",
+            "test_analyze_comments_batch_timeout",
+            "test_analyze_comments_batch_progress_reporting"
+          ],
+          "count": 8
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "tests/test_storytelling_error_handling.py",
+      "total_issues": 8,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "test_validate_empty_data",
+            "test_validate_none_data",
+            "test_validate_missing_columns",
+            "test_validate_good_data",
+            "test_validate_insufficient_rows",
+            "test_validate_high_null_values",
+            "test_validate_artist_comparison_single_artist",
+            "test_validate_sentiment_analysis_low_comments"
+          ],
+          "count": 8
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    },
+    {
+      "file": "web/etl_helpers.py",
+      "total_issues": 6,
+      "combinable_groups": [
+        {
+          "pattern": "_get_",
+          "description": "Getter functions",
+          "functions": [
+            "_get_spotify_dsp_id",
+            "_get_role_ids"
+          ],
+          "count": 2
+        },
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "_validate_spotify_track_isrc",
+            "_validate_tidal_track_isrc"
+          ],
+          "count": 2
+        },
+        {
+          "pattern": "process_",
+          "description": "Processing functions",
+          "functions": [
+            "_process_tidal_copyright",
+            "_process_track_artists"
+          ],
+          "count": 2
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "web/sentiment_analyzer.py",
+      "total_issues": 5,
+      "combinable_groups": [
+        {
+          "pattern": "analyze_",
+          "description": "Analysis functions",
+          "functions": [
+            "_analyze_with_textblob",
+            "_analyze_with_vader",
+            "_analyze_with_simple",
+            "_analyze_single_comment",
+            "analyze_comments_batch"
+          ],
+          "count": 5
+        }
+      ],
+      "recommendations": [
+        "Create SentimentAnalyzer base class",
+        "Extract common analysis patterns into mixins",
+        "Implement strategy pattern for different sentiment models"
+      ]
+    },
+    {
+      "file": "web/data_quality.py",
+      "total_issues": 5,
+      "combinable_groups": [
+        {
+          "pattern": "validate_",
+          "description": "Validation functions",
+          "functions": [
+            "validate_youtube_video_id",
+            "validate_metrics_data",
+            "validate_database_schema",
+            "validate_data_freshness",
+            "validate_data_completeness"
+          ],
+          "count": 5
+        }
+      ],
+      "recommendations": [
+        "Extract common patterns into utility functions",
+        "Consider using composition over inheritance",
+        "Create factory methods for object creation patterns"
+      ]
+    },
+    {
+      "file": "tests/test_sql_helpers_v2.py",
+      "total_issues": 5,
+      "combinable_groups": [
+        {
+          "pattern": "_get_",
+          "description": "Getter functions",
+          "functions": [
+            "test_get_connection_public_schema",
+            "test_get_connection_default_schema",
+            "test_get_table_returns_correct_table",
+            "test_get_table_raises_error_if_not_initialized",
+            "test_get_table_raises_key_error_for_unknown_table"
+          ],
+          "count": 5
+        }
+      ],
+      "recommendations": [
+        "Create test base classes for common setup/teardown",
+        "Extract validation helpers into test utilities",
+        "Use parameterized tests to reduce duplicate test functions"
+      ]
+    }
+  ],
+  "recommendations": []
+}

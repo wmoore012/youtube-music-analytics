@@ -1,0 +1,181 @@
+phrase,sentiment,category,confidence,context_notes,beat_appreciation,gen_z_slang
+this is sick,positive,praise_general,0.95,Classic music slang - 'sick' means awesome/cool,False,False
+so sick,positive,praise_general,0.9,Variation of 'sick' meaning awesome,False,False
+that's sick,positive,praise_general,0.9,Variation of 'sick' meaning awesome,False,False
+sick beat,positive,praise_general,0.95,'Sick' applied to beat/production,True,False
+sick flow,positive,praise_general,0.95,'Sick' applied to rap flow,False,False
+sick track,positive,praise_general,0.95,'Sick' applied to entire song,False,False
+this hard,positive,praise_general,0.95,'Hard' means impressive/good in music context,False,False
+goes hard,positive,praise_general,0.95,Song/beat hits hard emotionally,False,False
+hard af,positive,praise_general,0.95,Very impressive (af = as fuck),False,False
+hard as shit,positive,praise_general,0.95,"Very impressive, strong emphasis",False,False
+so hard,positive,praise_general,0.9,Impressive with emphasis,False,False
+too hard,positive,praise_general,0.9,Extremely impressive,False,False
+this hard af,positive,praise_general,0.95,This is very impressive,False,False
+this hard as shit,positive,praise_general,0.95,"This is very impressive, strong emphasis",False,False
+this crazy,positive,praise_general,0.9,'Crazy' means amazing in music context,False,False
+so crazy,positive,praise_general,0.85,Very amazing/impressive,False,False
+bro this crazy,positive,praise_general,0.9,Casual expression of amazement,False,False
+absolutely crazy,positive,praise_general,0.85,Extremely impressive,False,False
+fire,positive,praise_general,0.95,Universal music praise term,False,False
+this fire,positive,praise_general,0.9,This is excellent,False,False
+straight fire,positive,praise_general,0.95,Pure excellence,False,False
+pure fire,positive,praise_general,0.95,Absolute excellence,False,False
+slaps,positive,praise_general,0.9,Song hits hard/sounds great,False,False
+this slaps,positive,praise_general,0.9,This song hits hard,False,False
+song slaps,positive,praise_general,0.9,Song is excellent,False,False
+banger,positive,praise_general,0.95,Great song that hits hard,False,False
+goated,positive,praise_general,0.9,Greatest of all time,False,False
+goated song,positive,praise_general,0.95,Greatest song of all time,False,False
+goated artist,positive,praise_general,0.95,Greatest artist of all time,False,False
+hits different,positive,praise_general,0.85,Uniquely good/special,False,True
+chef's kiss,positive,praise_general,0.9,Perfect/excellent,False,True
+iconic,positive,praise_general,0.85,Legendary/memorable,False,False
+legendary,positive,praise_general,0.85,Epic/historic quality,False,False
+fucking queen,positive,praise_performance,0.95,High praise for female artist,False,False
+queen,positive,praise_performance,0.85,Praise for female artist,False,False
+yes queen,positive,praise_performance,0.9,Supportive praise for female artist,False,False
+queen energy,positive,praise_performance,0.85,"Confident, powerful performance",False,False
+YES MOTHER,positive,praise_performance,0.9,"High praise, especially for female artists",False,True
+mother,positive,praise_performance,0.8,Praise term in Gen Z culture,False,True
+mom,positive,praise_performance,0.75,Praise term variation,False,True
+go off king,positive,praise_performance,0.95,Praise for male artist performance,False,False
+go off queen,positive,praise_performance,0.95,Praise for female artist performance,False,False
+go off,positive,praise_performance,0.85,Encouragement to perform well,False,False
+go off bestie,positive,praise_performance,0.85,Friendly encouragement,False,False
+ate that,positive,praise_performance,0.95,Performed excellently,False,True
+ate and left no crumbs,positive,praise_performance,0.95,"Perfect performance, nothing left to improve",False,True
+devoured,positive,praise_performance,0.9,Dominated the performance,False,True
+served,positive,praise_performance,0.85,Delivered an excellent performance,False,True
+understood the assignment,positive,praise_performance,0.9,Did exactly what was needed,False,True
+snapped,positive,praise_performance,0.9,Performed exceptionally well,False,False
+my nigga snapped,positive,praise_performance,0.9,Artist performed exceptionally well,False,False
+you slid,positive,praise_performance,0.85,You delivered/performed well,False,True
+slay,positive,praise_performance,0.9,Perform excellently,False,True
+slayed,positive,praise_performance,0.9,Performed excellently,False,True
+slaying,positive,praise_performance,0.9,Currently performing excellently,False,True
+talent,positive,praise_performance,0.85,Recognition of skill,False,False
+pure talent,positive,praise_performance,0.9,Exceptional natural ability,False,False
+the talent jumped out,positive,praise_performance,0.9,Talent was clearly displayed,False,True
+the beat though,positive,praise_production,0.95,Appreciation for the beat/production,True,False
+the beat tho,positive,praise_production,0.95,Casual appreciation for beat,True,False
+beat goes hard,positive,praise_production,0.95,Beat is impressive,True,False
+beat is fire,positive,praise_production,0.95,Beat is excellent,True,False
+beat slaps,positive,praise_production,0.9,Beat hits hard,True,False
+who made this beat,positive,praise_production,0.9,Asking about producer - shows appreciation,True,False
+who made this beat bro,positive,praise_production,0.9,Casual inquiry about producer,True,False
+who produced this,positive,praise_production,0.85,Asking about producer,True,False
+car test passed,positive,praise_production,0.85,Mix sounds good in car speakers,True,False
+passed the car test,positive,praise_production,0.85,Audio quality approved,True,False
+this just passed the car test,positive,praise_production,0.85,Recently confirmed good audio quality,True,False
+sheeeesh,positive,hype_excitement,0.9,Expression of amazement/approval,False,True
+sheeesh,positive,hype_excitement,0.9,Shorter version of amazement,False,True
+sheesh,positive,hype_excitement,0.85,Casual amazement expression,False,True
+oh my,positive,hype_excitement,0.8,Excitement/surprise,False,False
+oh my yes,positive,hype_excitement,0.85,Enthusiastic approval,False,False
+fuck it up,positive,hype_excitement,0.85,Encouragement to perform well,False,False
+yessir,positive,hype_excitement,0.85,Affirmative excitement,False,False
+yessuh,positive,hype_excitement,0.85,Casual affirmative excitement,False,False
+yes sir,positive,hype_excitement,0.8,Formal affirmative excitement,False,False
+bitchhh,positive,hype_excitement,0.8,Extended exclamation of excitement,False,False
+bitch it's giving,positive,hype_excitement,0.85,Excited approval,False,True
+bitch it's givinnnng,positive,hype_excitement,0.85,Very excited approval,False,True
+periodt,positive,hype_excitement,0.85,Period with emphasis - end of discussion,False,True
+period,positive,hype_excitement,0.75,"End of discussion, agreement",False,True
+no cap,positive,hype_excitement,0.8,No lie/for real - agreement,False,True
+for the culture,positive,cultural_identity,0.9,Supporting cultural representation,False,False
+for the culture fr,positive,cultural_identity,0.9,"Supporting culture, for real",False,False
+for the girls,positive,cultural_identity,0.85,Supporting female empowerment,False,False
+real music is back,positive,cultural_identity,0.8,Appreciation for authentic music,False,False
+we stan,positive,cultural_identity,0.85,We support/love this artist,False,True
+I stan,positive,cultural_identity,0.85,I support this artist,False,True
+I stan a queen,positive,cultural_identity,0.9,I support this female artist,False,True
+stan forever,positive,cultural_identity,0.85,Permanent support,False,True
+bestie,positive,cultural_identity,0.75,Friend/supportive term,False,True
+bestie goals,positive,cultural_identity,0.8,Friendship aspirations,False,True
+bestie goals fr,positive,cultural_identity,0.8,Real friendship goals,False,True
+on repeat,positive,engagement_behavioral,0.95,Playing song repeatedly,False,False
+this on repeat,positive,engagement_behavioral,0.95,Playing this song repeatedly,False,False
+been on repeat,positive,engagement_behavioral,0.95,Has been playing repeatedly,False,False
+on repeat all day,positive,engagement_behavioral,0.95,Playing all day long,False,False
+this on repeat all day,positive,engagement_behavioral,0.95,This song playing all day,False,False
+been on repeat since it dropped,positive,engagement_behavioral,0.95,Playing since release,False,False
+no skips,positive,engagement_behavioral,0.9,Every song is good,False,False
+front to back no skips,positive,engagement_behavioral,0.95,Entire album is excellent,False,False
+album no skips,positive,engagement_behavioral,0.9,No bad songs on album,False,False
+went platinum in my car,positive,engagement_behavioral,0.85,Heavy rotation in car,False,False
+went platinum in my headphones,positive,engagement_behavioral,0.85,Heavy personal listening,False,False
+went platinum in my room,positive,engagement_behavioral,0.85,Heavy home listening,False,False
+saved my life,positive,engagement_behavioral,0.9,Song had major emotional impact,False,False
+this saved my life,positive,engagement_behavioral,0.9,This song was emotionally important,False,False
+gym playlist,positive,engagement_behavioral,0.8,Adding to workout playlist,False,False
+on my gym playlist,positive,engagement_behavioral,0.8,In my workout rotation,False,False
+obsessed,positive,engagement_behavioral,0.8,Really love this,False,True
+lowkey obsessed,positive,engagement_behavioral,0.8,Somewhat obsessed,False,True
+highkey obsessed,positive,engagement_behavioral,0.85,Very obsessed,False,True
+drop the album,positive,anticipation_demand,0.85,Wanting album release,False,False
+drop the album already,positive,anticipation_demand,0.85,Impatient for album release,False,False
+we need the album,positive,anticipation_demand,0.8,Community wants album,False,False
+we need the album now,positive,anticipation_demand,0.8,Urgent album request,False,False
+album when,positive,anticipation_demand,0.75,When is album coming,False,False
+need the lyrics,positive,anticipation_demand,0.8,Wanting to engage more with song,False,False
+I need the lyrics,positive,anticipation_demand,0.8,Personal request for lyrics,False,False
+where are the lyrics,positive,anticipation_demand,0.75,Looking for lyrics,False,False
+please come to atlanta,positive,anticipation_demand,0.75,Wanting live performance,False,False
+come to my city,positive,anticipation_demand,0.75,Tour request,False,False
+friday can't come sooner,positive,anticipation_demand,0.8,Anticipating release,False,False
+part two please,positive,anticipation_demand,0.75,Wanting sequel/continuation,False,False
+part two pleaseee,positive,anticipation_demand,0.75,Eager for continuation,False,False
+10/10,positive,praise_general,0.95,Perfect score,False,False
+100/10,positive,praise_general,0.95,Beyond perfect score,False,False
+11/10,positive,praise_general,0.95,Exceeds perfect score,False,False
+100!,positive,praise_general,0.9,Perfect/complete approval,False,False
+SOTY,positive,praise_general,0.9,Song of the year,False,False
+AOTY,positive,praise_general,0.9,Album of the year,False,False
+summer anthem,positive,praise_general,0.85,Perfect summer song,False,False
+hottie,positive,praise_performance,0.8,Attractive person compliment,False,False
+baddie,positive,praise_performance,0.8,"Attractive, confident person",False,False
+hot bish,positive,praise_performance,0.8,"Attractive person, casual",False,False
+bad bish,positive,praise_performance,0.8,"Confident, attractive person",False,False
+hottie baddie,positive,praise_performance,0.85,Combined attractiveness praise,False,False
+this fye,positive,praise_general,0.8,This is fire/excellent,False,True
+this fye my boi,positive,praise_general,0.8,"This is excellent, friend",False,True
+it's giving,positive,hype_excitement,0.75,It's providing/delivering,False,True
+this will go crazy in the club,positive,praise_general,0.85,Will be popular in clubs,False,False
+this ain't it chief,negative,criticism_negative,0.95,This is not good,False,False
+mid,negative,criticism_negative,0.9,Mediocre/average in a bad way,False,True
+basura,negative,criticism_negative,0.85,Trash (Spanish),False,False
+this is basura,negative,criticism_negative,0.85,This is trash,False,False
+went double wood,negative,criticism_negative,0.8,Sold very poorly (opposite of platinum),False,False
+this went double wood,negative,criticism_negative,0.8,This sold very poorly,False,False
+who approved this,negative,criticism_negative,0.85,Questioning quality control,False,False
+who approved this?,negative,criticism_negative,0.85,Questioning decision making,False,False
+turn it off,negative,criticism_negative,0.9,Stop playing this,False,False
+nobody asked for this,negative,criticism_negative,0.85,Unwanted content,False,False
+overrated,negative,criticism_negative,0.8,Gets more praise than deserved,False,False
+this song is so overrated bro,negative,criticism_negative,0.8,Song gets too much praise,False,False
+fell off,negative,criticism_negative,0.85,Quality declined,False,False
+industry plant,negative,criticism_negative,0.75,Artificially promoted artist,False,False
+flop,negative,criticism_negative,0.9,Commercial/artistic failure,False,False
+flop — turn this off,negative,criticism_negative,0.9,"Failure, stop playing",False,False
+skip,negative,criticism_negative,0.85,Not worth listening to,False,False
+who asked for this remix,negative,criticism_negative,0.75,Unwanted remix,False,False
+this ain't real hip-hop,negative,criticism_negative,0.7,Gatekeeping/authenticity criticism,False,False
+sounds the same every track,negative,criticism_negative,0.75,Lack of variety criticism,False,False
+switch up the flow,negative,criticism_constructive,0.7,Suggestion for improvement,False,False
+flow is repetitive,negative,criticism_constructive,0.75,Technical criticism,True,False
+mix sounds chaotic,negative,criticism_constructive,0.7,Production feedback,True,False
+album rollout ain't rollouting,negative,criticism_constructive,0.65,Marketing criticism,False,False
+need the instrumental,neutral,neutral_requests,0.9,Request for instrumental version,True,False
+drop the visuals,neutral,neutral_requests,0.85,Request for music video,False,False
+clean version pls,neutral,neutral_requests,0.8,Request for clean version,False,False
+who mixed this,neutral,neutral_questions,0.85,Information request about mixing,True,False
+who mixed this?,neutral,neutral_questions,0.85,Question about audio engineer,True,False
+what's the sample,neutral,neutral_questions,0.9,Information request about sample,True,False
+what's the sample?,neutral,neutral_questions,0.9,Question about musical sample,True,False
+"Hottie, Baddie, Maddie",positive,praise_performance,0.85,Real fan comment - compliment sequence,False,False
+Cuz I willie,positive,hype_excitement,0.7,Real fan comment - playful expression,False,True
+my legs are spread,positive,hype_excitement,0.75,Real fan comment - excitement/anticipation,False,False
+wtfff,positive,hype_excitement,0.7,Extended WTF showing excitement,False,True
+wtf,neutral,hype_excitement,0.6,Can be positive or negative depending on context,False,False
+fr,positive,hype_excitement,0.6,For real - agreement/emphasis,False,True

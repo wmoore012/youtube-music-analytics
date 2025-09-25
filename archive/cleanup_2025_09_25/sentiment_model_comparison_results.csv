@@ -1,0 +1,221 @@
+comment,expected,predicted,compound_score,correct,category,model,polarity_score
+"Hottie, Baddie, Maddie",positive,neutral,0.0,False,compliment,VADER,
+Part two pleaseee wtfff,positive,neutral,0.0,False,excitement,VADER,
+Cuz I willie 😖😚💕,positive,positive,0.8402,True,emoji_positive,VADER,
+sheeeeesh my nigga snapped 🔥🔥🔥🔥,positive,negative,-0.8225,False,hype,VADER,
+my legs are spread!!,positive,neutral,0.0,False,excitement,VADER,
+Bestie goals fr 🤞,positive,neutral,0.0,False,friendship,VADER,
+🔥🔥🔥,positive,negative,-0.7351,False,emoji_fire,VADER,
+🌊🌊🌊🌊,positive,neutral,0.0,False,emoji_wave,VADER,
+💯💯💯,positive,neutral,0.0,False,emoji_hundred,VADER,
+😍,positive,positive,0.4588,True,emoji_love,VADER,
+😍😍😍,positive,positive,0.8402,True,emoji_love,VADER,
+this is sick,positive,negative,-0.5106,False,sick_positive,VADER,
+this sick,positive,negative,-0.5106,False,sick_positive,VADER,
+so sick,positive,negative,-0.5563,False,sick_positive,VADER,
+that's sick,positive,negative,-0.5106,False,sick_positive,VADER,
+sick beat,positive,negative,-0.5106,False,sick_positive,VADER,
+sick flow,positive,negative,-0.5106,False,sick_positive,VADER,
+fucking queen!,positive,neutral,0.0,False,queen_praise,VADER,
+queen!,positive,neutral,0.0,False,queen_praise,VADER,
+yes queen,positive,positive,0.4019,True,queen_praise,VADER,
+queen energy,positive,positive,0.2732,True,queen_praise,VADER,
+hot bish,positive,neutral,0.0,False,queen_praise,VADER,
+bad bish,positive,negative,-0.5423,False,queen_praise,VADER,
+YES MOTHER!,positive,positive,0.4574,True,queen_praise,VADER,
+go off king,positive,neutral,0.0,False,go_off,VADER,
+go off queen,positive,neutral,0.0,False,go_off,VADER,
+go off,positive,neutral,0.0,False,go_off,VADER,
+go off bestie,positive,neutral,0.0,False,go_off,VADER,
+oh my!,positive,neutral,0.0,False,excitement,VADER,
+oh my yes!,positive,positive,0.4574,True,excitement,VADER,
+yessir!,positive,neutral,0.0,False,excitement,VADER,
+yessuh,positive,neutral,0.0,False,excitement,VADER,
+fuck it up,positive,negative,-0.5423,False,excitement,VADER,
+Bitchhh!,positive,neutral,0.0,False,excitement,VADER,
+"Bitch, it's givinnnng!",positive,negative,-0.6239,False,excitement,VADER,
+10/10,positive,neutral,0.0,False,rating,VADER,
+100!,positive,neutral,0.0,False,rating,VADER,
+100/10,positive,neutral,0.0,False,rating,VADER,
+11/10,positive,neutral,0.0,False,rating,VADER,
+I need the lyrics,positive,neutral,0.0,False,need_want,VADER,
+friday can't come sooner,positive,neutral,0.0,False,need_want,VADER,
+please come to atlanta,positive,positive,0.3182,True,need_want,VADER,
+please come to chicago,positive,positive,0.3182,True,need_want,VADER,
+come to my city,positive,neutral,0.0,False,need_want,VADER,
+this hard af,positive,negative,-0.1027,False,hard_crazy,VADER,
+this hard as shit,positive,negative,-0.6124,False,hard_crazy,VADER,
+this hard,positive,negative,-0.1027,False,hard_crazy,VADER,
+goes hard,positive,negative,-0.1027,False,hard_crazy,VADER,
+Bro this crazy,positive,negative,-0.34,False,hard_crazy,VADER,
+this crazy,positive,negative,-0.34,False,hard_crazy,VADER,
+absolutely crazy,positive,negative,-0.4005,False,hard_crazy,VADER,
+the beat though!,positive,neutral,0.0,False,beat_love,VADER,
+the beat tho!,positive,neutral,0.0,False,beat_love,VADER,
+who made this beat bro?!,positive,neutral,0.0,False,beat_love,VADER,
+beat goes hard,positive,negative,-0.1027,False,beat_love,VADER,
+this beat is fire,positive,negative,-0.34,False,beat_love,VADER,
+beat slaps,positive,neutral,0.0,False,beat_love,VADER,
+you slid,positive,neutral,0.0,False,gen_z_praise,VADER,
+this fye my boi,positive,neutral,0.0,False,gen_z_praise,VADER,
+sheeeesh,positive,neutral,0.0,False,gen_z_hype,VADER,
+sheeesh,positive,neutral,0.0,False,gen_z_hype,VADER,
+no cap,positive,negative,-0.296,False,gen_z_truth,VADER,
+periodt,positive,neutral,0.0,False,gen_z_emphasis,VADER,
+period,positive,neutral,0.0,False,gen_z_emphasis,VADER,
+slay,positive,neutral,0.0,False,gen_z_praise,VADER,
+slayed,positive,neutral,0.0,False,gen_z_praise,VADER,
+slaying,positive,neutral,0.0,False,gen_z_praise,VADER,
+ate that,positive,neutral,0.0,False,gen_z_praise,VADER,
+ate and left no crumbs,positive,negative,-0.296,False,gen_z_praise,VADER,
+devoured,positive,neutral,0.0,False,gen_z_praise,VADER,
+served,positive,neutral,0.0,False,gen_z_praise,VADER,
+understood the assignment,positive,neutral,0.0,False,gen_z_praise,VADER,
+main character energy,positive,positive,0.2732,True,gen_z_praise,VADER,
+it's giving,positive,positive,0.34,True,gen_z_vibe,VADER,
+it's giving main character,positive,positive,0.34,True,gen_z_vibe,VADER,
+vibes,positive,neutral,0.0,False,gen_z_vibe,VADER,
+good vibes,positive,positive,0.4404,True,gen_z_vibe,VADER,
+immaculate vibes,positive,neutral,0.0,False,gen_z_vibe,VADER,
+chef's kiss,positive,positive,0.4215,True,gen_z_praise,VADER,
+hits different,positive,neutral,0.0,False,gen_z_praise,VADER,
+different breed,positive,neutral,0.0,False,gen_z_praise,VADER,
+built different,positive,neutral,0.0,False,gen_z_praise,VADER,
+that's it that's the tweet,positive,neutral,0.0,False,gen_z_emphasis,VADER,
+we stan,positive,neutral,0.0,False,gen_z_support,VADER,
+stan forever,positive,neutral,0.0,False,gen_z_support,VADER,
+iconic,positive,neutral,0.0,False,gen_z_praise,VADER,
+legendary,positive,neutral,0.0,False,gen_z_praise,VADER,
+rent free,positive,positive,0.5106,True,gen_z_impact,VADER,
+living in my head rent free,positive,positive,0.5106,True,gen_z_impact,VADER,
+obsessed,positive,negative,-0.1779,False,gen_z_love,VADER,
+lowkey obsessed,positive,negative,-0.1779,False,gen_z_love,VADER,
+highkey obsessed,positive,negative,-0.1779,False,gen_z_love,VADER,
+not me crying,positive,positive,0.3724,True,gen_z_emotional,VADER,
+I'm deceased,positive,neutral,0.0,False,gen_z_funny,VADER,
+I'm dead,positive,negative,-0.6486,False,gen_z_funny,VADER,
+sent me,positive,neutral,0.0,False,gen_z_funny,VADER,
+I can't even,positive,neutral,0.0,False,gen_z_overwhelmed,VADER,
+I have no words,positive,negative,-0.296,False,gen_z_overwhelmed,VADER,
+speechless,positive,neutral,0.0,False,gen_z_overwhelmed,VADER,
+talent,positive,positive,0.4215,True,gen_z_praise,VADER,
+pure talent,positive,positive,0.4215,True,gen_z_praise,VADER,
+the talent jumped out,positive,positive,0.4215,True,gen_z_praise,VADER,
+okay,neutral,positive,0.2263,False,neutral,VADER,
+alright,neutral,positive,0.25,False,neutral,VADER,
+fine,neutral,positive,0.2023,False,neutral,VADER,
+whatever,neutral,neutral,0.0,True,neutral,VADER,
+this sucks,negative,negative,-0.3612,True,negative,VADER,
+terrible,negative,negative,-0.4767,True,negative,VADER,
+hate this,negative,negative,-0.5719,True,negative,VADER,
+worst song ever,negative,negative,-0.6249,True,negative,VADER,
+"Hottie, Baddie, Maddie",positive,neutral,,False,compliment,TextBlob,0.0
+Part two pleaseee wtfff,positive,neutral,,False,excitement,TextBlob,0.0
+Cuz I willie 😖😚💕,positive,neutral,,False,emoji_positive,TextBlob,0.0
+sheeeeesh my nigga snapped 🔥🔥🔥🔥,positive,neutral,,False,hype,TextBlob,0.0
+my legs are spread!!,positive,neutral,,False,excitement,TextBlob,0.0
+Bestie goals fr 🤞,positive,neutral,,False,friendship,TextBlob,0.0
+🔥🔥🔥,positive,neutral,,False,emoji_fire,TextBlob,0.0
+🌊🌊🌊🌊,positive,neutral,,False,emoji_wave,TextBlob,0.0
+💯💯💯,positive,neutral,,False,emoji_hundred,TextBlob,0.0
+😍,positive,neutral,,False,emoji_love,TextBlob,0.0
+😍😍😍,positive,neutral,,False,emoji_love,TextBlob,0.0
+this is sick,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+this sick,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+so sick,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+that's sick,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+sick beat,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+sick flow,positive,negative,,False,sick_positive,TextBlob,-0.7142857142857143
+fucking queen!,positive,negative,,False,queen_praise,TextBlob,-0.75
+queen!,positive,neutral,,False,queen_praise,TextBlob,0.0
+yes queen,positive,neutral,,False,queen_praise,TextBlob,0.0
+queen energy,positive,neutral,,False,queen_praise,TextBlob,0.0
+hot bish,positive,positive,,True,queen_praise,TextBlob,0.25
+bad bish,positive,negative,,False,queen_praise,TextBlob,-0.6999999999999998
+YES MOTHER!,positive,neutral,,False,queen_praise,TextBlob,0.0
+go off king,positive,neutral,,False,go_off,TextBlob,0.0
+go off queen,positive,neutral,,False,go_off,TextBlob,0.0
+go off,positive,neutral,,False,go_off,TextBlob,0.0
+go off bestie,positive,neutral,,False,go_off,TextBlob,0.0
+oh my!,positive,neutral,,False,excitement,TextBlob,0.0
+oh my yes!,positive,neutral,,False,excitement,TextBlob,0.0
+yessir!,positive,neutral,,False,excitement,TextBlob,0.0
+yessuh,positive,neutral,,False,excitement,TextBlob,0.0
+fuck it up,positive,negative,,False,excitement,TextBlob,-0.4
+Bitchhh!,positive,neutral,,False,excitement,TextBlob,0.0
+"Bitch, it's givinnnng!",positive,neutral,,False,excitement,TextBlob,0.0
+10/10,positive,neutral,,False,rating,TextBlob,0.0
+100!,positive,neutral,,False,rating,TextBlob,0.0
+100/10,positive,neutral,,False,rating,TextBlob,0.0
+11/10,positive,neutral,,False,rating,TextBlob,0.0
+I need the lyrics,positive,neutral,,False,need_want,TextBlob,0.0
+friday can't come sooner,positive,neutral,,False,need_want,TextBlob,0.0
+please come to atlanta,positive,neutral,,False,need_want,TextBlob,0.0
+please come to chicago,positive,neutral,,False,need_want,TextBlob,0.0
+come to my city,positive,neutral,,False,need_want,TextBlob,0.0
+this hard af,positive,negative,,False,hard_crazy,TextBlob,-0.2916666666666667
+this hard as shit,positive,negative,,False,hard_crazy,TextBlob,-0.24583333333333335
+this hard,positive,negative,,False,hard_crazy,TextBlob,-0.2916666666666667
+goes hard,positive,negative,,False,hard_crazy,TextBlob,-0.2916666666666667
+Bro this crazy,positive,negative,,False,hard_crazy,TextBlob,-0.6
+this crazy,positive,negative,,False,hard_crazy,TextBlob,-0.6
+absolutely crazy,positive,negative,,False,hard_crazy,TextBlob,-0.6
+the beat though!,positive,neutral,,False,beat_love,TextBlob,0.0
+the beat tho!,positive,neutral,,False,beat_love,TextBlob,0.0
+who made this beat bro?!,positive,neutral,,False,beat_love,TextBlob,0.0
+beat goes hard,positive,negative,,False,beat_love,TextBlob,-0.2916666666666667
+this beat is fire,positive,neutral,,False,beat_love,TextBlob,0.0
+beat slaps,positive,neutral,,False,beat_love,TextBlob,0.0
+you slid,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+this fye my boi,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+sheeeesh,positive,neutral,,False,gen_z_hype,TextBlob,0.0
+sheeesh,positive,neutral,,False,gen_z_hype,TextBlob,0.0
+no cap,positive,neutral,,False,gen_z_truth,TextBlob,0.0
+periodt,positive,neutral,,False,gen_z_emphasis,TextBlob,0.0
+period,positive,neutral,,False,gen_z_emphasis,TextBlob,0.0
+slay,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+slayed,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+slaying,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+ate that,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+ate and left no crumbs,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+devoured,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+served,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+understood the assignment,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+main character energy,positive,positive,,True,gen_z_praise,TextBlob,0.16666666666666666
+it's giving,positive,neutral,,False,gen_z_vibe,TextBlob,0.0
+it's giving main character,positive,positive,,True,gen_z_vibe,TextBlob,0.16666666666666666
+vibes,positive,neutral,,False,gen_z_vibe,TextBlob,0.0
+good vibes,positive,positive,,True,gen_z_vibe,TextBlob,0.7
+immaculate vibes,positive,neutral,,False,gen_z_vibe,TextBlob,0.0
+chef's kiss,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+hits different,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+different breed,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+built different,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+that's it that's the tweet,positive,neutral,,False,gen_z_emphasis,TextBlob,0.0
+we stan,positive,neutral,,False,gen_z_support,TextBlob,0.0
+stan forever,positive,neutral,,False,gen_z_support,TextBlob,0.0
+iconic,positive,positive,,True,gen_z_praise,TextBlob,0.5
+legendary,positive,positive,,True,gen_z_praise,TextBlob,1.0
+rent free,positive,positive,,True,gen_z_impact,TextBlob,0.4
+living in my head rent free,positive,positive,,True,gen_z_impact,TextBlob,0.4
+obsessed,positive,negative,,False,gen_z_love,TextBlob,-0.5
+lowkey obsessed,positive,negative,,False,gen_z_love,TextBlob,-0.5
+highkey obsessed,positive,negative,,False,gen_z_love,TextBlob,-0.5
+not me crying,positive,negative,,False,gen_z_emotional,TextBlob,-0.2
+I'm deceased,positive,neutral,,False,gen_z_funny,TextBlob,0.0
+I'm dead,positive,negative,,False,gen_z_funny,TextBlob,-0.2
+sent me,positive,neutral,,False,gen_z_funny,TextBlob,0.0
+I can't even,positive,neutral,,False,gen_z_overwhelmed,TextBlob,0.0
+I have no words,positive,neutral,,False,gen_z_overwhelmed,TextBlob,0.0
+speechless,positive,neutral,,False,gen_z_overwhelmed,TextBlob,0.0
+talent,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+pure talent,positive,positive,,True,gen_z_praise,TextBlob,0.21428571428571427
+the talent jumped out,positive,neutral,,False,gen_z_praise,TextBlob,0.0
+okay,neutral,positive,,False,neutral,TextBlob,0.5
+alright,neutral,neutral,,True,neutral,TextBlob,0.0
+fine,neutral,positive,,False,neutral,TextBlob,0.4166666666666667
+whatever,neutral,neutral,,True,neutral,TextBlob,0.0
+this sucks,negative,negative,,True,negative,TextBlob,-0.3
+terrible,negative,negative,,True,negative,TextBlob,-1.0
+hate this,negative,negative,,True,negative,TextBlob,-0.8
+worst song ever,negative,negative,,True,negative,TextBlob,-1.0
