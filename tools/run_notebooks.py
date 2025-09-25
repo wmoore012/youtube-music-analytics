@@ -12,14 +12,14 @@ Designed to be dependency-light and CI-friendly.
 from __future__ import annotations
 
 import argparse
-import os
-import sys
 from datetime import datetime
+import os
 from pathlib import Path
+import sys
 from typing import Dict
 
-import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
+import nbformat
 
 
 def execute_notebook(in_path: str, output_dir: str = "notebooks/executed") -> Dict[str, str]:

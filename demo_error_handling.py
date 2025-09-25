@@ -7,6 +7,7 @@ This demonstrates how the system gracefully handles various data quality issues
 while providing educational error messages and recovery suggestions.
 """
 
+import os
 import sys
 
 import pandas as pd

@@ -329,7 +329,7 @@ class ModelBenchmarkSystem:
         # Transformer Models - Enhanced for music domain
         try:
             from youtubeviz.music_ml_classifier import create_transformer_models
-            
+
             transformer_models = create_transformer_models()
             for model_key, transformer in transformer_models.items():
                 self.models[f"transformer_{model_key}"] = {
@@ -338,16 +338,16 @@ class ModelBenchmarkSystem:
                     "description": f"Music-enhanced transformer: {transformer.model_name}",
                     "scorer": lambda text, t=transformer: self._score_transformer(text, t),
                 }
-                
+
             if transformer_models:
                 print(f"✅ Registered {len(transformer_models)} music-enhanced transformer models")
         except Exception as e:
             print(f"⚠️  Could not register transformer models: {e}")
-            
+
         # Add a specific transformer sentiment model for the benchmark
         try:
             from youtubeviz.music_ml_classifier import MusicSentimentTransformer
-            
+
             # Create the main transformer model for benchmarking
             main_transformer = MusicSentimentTransformer("cardiffnlp/twitter-roberta-base-sentiment-latest")
             self.models["transformer_sentiment"] = {
@@ -372,12 +372,12 @@ class ModelBenchmarkSystem:
         # Enhanced VADER variants with clear descriptions
         vader_descriptions = {
             "minimal": "VADER + Basic Slang (slaps, fire, goated, mid)",
-            "moderate": "VADER + Gen Z Terms (ate, periodt, bussin, cringe)", 
+            "moderate": "VADER + Gen Z Terms (ate, periodt, bussin, cringe)",
             "comprehensive": "VADER + Full Music Lexicon (200+ terms + emoji)",
             "aggressive": "VADER + Experimental Weights (boosted confidence)",
-            "hybrid": "VADER + Context Rules (cultural adjustments)"
+            "hybrid": "VADER + Context Rules (cultural adjustments)",
         }
-        
+
         for variant in VariantType:
             self.models[f"enhanced_vader_{variant.value}"] = {
                 "type": "enhanced_vader",
@@ -416,16 +416,16 @@ class ModelBenchmarkSystem:
     ) -> pd.DataFrame:
         """
         Fetch comments for benchmarking directly from database.
-        
+
         Bypasses unique comment manager to ensure we can always get data for testing.
         """
 
         try:
             # Fetch comments directly from database
             engine = get_engine()
-            
+
             query = """
-            SELECT 
+            SELECT
                 c.comment_id,
                 c.comment_text,
                 c.like_count,
@@ -440,14 +440,14 @@ class ModelBenchmarkSystem:
             ORDER BY RAND()
             LIMIT :sample_size
             """
-            
+
             with engine.connect() as conn:
                 comments_df = pd.read_sql(text(query), conn, params={"sample_size": sample_size})
-            
+
             if comments_df.empty:
                 raise ValueError("No comments found in database")
-            
-            comments_data = comments_df.to_dict('records')
+
+            comments_data = comments_df.to_dict("records")
 
             # Convert to DataFrame with ground truth labels
             df_data = []
@@ -469,26 +469,55 @@ class ModelBenchmarkSystem:
 
                 # Strong positive indicators (these should NEVER be neutral)
                 strong_positive_terms = [
-                    "fire", "slaps", "banger", "goated", "periodt", "ate", "ateee", 
-                    "phenomenal", "masterpiece", "favorite", "love", "amazing", 
-                    "incredible", "perfect", "best", "awesome", "hard", "goes hard",
-                    "bumpin", "bop", "can't wait", "on repeat", "addictive", "great"
+                    "fire",
+                    "slaps",
+                    "banger",
+                    "goated",
+                    "periodt",
+                    "ate",
+                    "ateee",
+                    "phenomenal",
+                    "masterpiece",
+                    "favorite",
+                    "love",
+                    "amazing",
+                    "incredible",
+                    "perfect",
+                    "best",
+                    "awesome",
+                    "hard",
+                    "goes hard",
+                    "bumpin",
+                    "bop",
+                    "can't wait",
+                    "on repeat",
+                    "addictive",
+                    "great",
                 ]
-                
+
                 # Strong negative indicators
                 strong_negative_terms = [
-                    "mid", "trash", "terrible", "awful", "hate", "worst", "bad", 
-                    "sucks", "boring", "overrated", "fell off"
+                    "mid",
+                    "trash",
+                    "terrible",
+                    "awful",
+                    "hate",
+                    "worst",
+                    "bad",
+                    "sucks",
+                    "boring",
+                    "overrated",
+                    "fell off",
                 ]
-                
+
                 # Excitement indicators
                 excitement_indicators = ["🔥", "💗", "<3", "!!!", "fr fr", "no cap"]
-                
+
                 # More inclusive positive detection
                 has_positive_terms = any(term in comment_lower for term in strong_positive_terms)
                 has_excitement = any(indicator in comment_text_item for indicator in excitement_indicators)
                 has_negative_terms = any(term in comment_lower for term in strong_negative_terms)
-                
+
                 # Assign labels based on content, not just engagement
                 if has_positive_terms or (like_count >= 10 and has_excitement):
                     ground_truth = "positive"
@@ -1173,17 +1202,17 @@ class ModelBenchmarkSystem:
             "enhanced_vader_comprehensive": "Enhanced VADER - Rules + your music slang terms",
             "proprietary_enhanced": "Custom Algorithm - Your secret sauce formulas",
             "stock_vader": "Basic VADER - Standard dictionary-based rules",
-            "ml_classifier": "Music ML - Trained on your 267 classifications"
+            "ml_classifier": "Music ML - Trained on your 267 classifications",
         }
 
         for i, result in enumerate(sorted_results, 1):
             model_key = result.model_name.replace(" ", "_").replace("-", "_").lower()
             description = model_descriptions.get(model_key, result.model_name)
-            
+
             # Shorten very long descriptions
             if len(description) > 44:
                 description = description[:41] + "..."
-            
+
             print(
                 f"{i:<4} {result.model_name[:34]:<35} {description:<45} "
                 f"{result.f1_score:.3f}  {result.accuracy:.3f}  {result.processing_time:.2f}s"

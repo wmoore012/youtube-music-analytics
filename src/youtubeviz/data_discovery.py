@@ -5,13 +5,13 @@ Discovers actual database structure, artists, and data without hardcoding.
 Provides dynamic configuration for notebooks and charts.
 """
 
+from datetime import datetime, timedelta
 import logging
 import os
-from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import create_engine, inspect, text
 
 # Load environment variables from .env file
@@ -167,7 +167,7 @@ class DatabaseDiscovery:
             try:
                 result = pd.read_sql(text(sentiment_check_query), self.engine)
                 summary["has_sentiment"] = int(result["count"].iloc[0]) > 0
-            except:
+            except Exception:
                 summary["has_sentiment"] = False
 
             # Check for ISRC data
@@ -177,7 +177,7 @@ class DatabaseDiscovery:
             try:
                 result = pd.read_sql(text(isrc_check_query), self.engine)
                 summary["has_isrc"] = int(result["count"].iloc[0]) > 0
-            except:
+            except Exception:
                 summary["has_isrc"] = False
 
             # Get artists
@@ -287,7 +287,7 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
             """
             data["sentiment_summary"] = pd.read_sql(text(sentiment_query), engine)
             logger.info(f"Loaded {len(data['sentiment_summary'])} sentiment summaries")
-        except:
+        except Exception:
             logger.info("No sentiment summary data available")
 
         # Load metrics data
@@ -311,7 +311,7 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
 
                 data["metrics"] = pd.read_sql(text(metrics_query), engine)
                 logger.info(f"Loaded {len(data['metrics'])} metrics records")
-        except:
+        except Exception:
             logger.info("No metrics data available")
 
     except Exception as e:

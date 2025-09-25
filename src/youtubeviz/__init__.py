@@ -68,6 +68,10 @@ def __getattr__(name):
         from . import content_analysis
 
         return content_analysis
+    elif name == "plugins":
+        from . import plugin_integration
+
+        return plugin_integration
     else:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -89,4 +93,5 @@ __all__ = [
     "advanced_charts",
     "clustering_analysis",
     "content_analysis",
+    "plugins",
 ]

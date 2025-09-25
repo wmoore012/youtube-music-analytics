@@ -52,28 +52,28 @@ from src.youtubeviz.common_helpers import validate_required_fields, safe_divide
 def filter_high_engagement_videos(video_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Filter videos with high engagement rates from a list of video data.
-    
+
     Engagement rate = (likes + comments) / views * 100
     Only includes videos with >1000 views and >5% engagement rate.
-    
+
     Args:
         video_data: List of video dictionaries with metrics
-        
+
     Returns:
         List of high-engagement videos with calculated metrics
-        
+
     Raises:
         ValueError: If required fields are missing from video data
     """
     MIN_VIEWS_THRESHOLD = 1000
     MIN_ENGAGEMENT_THRESHOLD = 5.0
     HIGH_ENGAGEMENT_THRESHOLD = 10.0
-    
+
     if not video_data:
         return []
-    
+
     high_engagement_videos = []
-    
+
     for video in video_data:
         # Validate required fields
         required_fields = ["id", "views", "likes", "comments"]
@@ -81,22 +81,22 @@ def filter_high_engagement_videos(video_data: List[Dict[str, Any]]) -> List[Dict
         if missing_fields:
             logging.warning(f"Skipping video {video.get('id', 'unknown')}: missing {missing_fields}")
             continue
-        
+
         # Filter by minimum views
         if video["views"] < MIN_VIEWS_THRESHOLD:
             continue
-        
+
         # Calculate engagement rate safely
         total_interactions = video["likes"] + video["comments"]
         engagement_rate = safe_divide(total_interactions, video["views"]) * 100
-        
+
         # Filter by minimum engagement
         if engagement_rate < MIN_ENGAGEMENT_THRESHOLD:
             continue
-        
+
         # Categorize engagement level
         engagement_category = "high" if engagement_rate > HIGH_ENGAGEMENT_THRESHOLD else "medium"
-        
+
         high_engagement_videos.append({
             "video_id": video["id"],
             "engagement_rate": round(engagement_rate, 2),
@@ -104,7 +104,7 @@ def filter_high_engagement_videos(video_data: List[Dict[str, Any]]) -> List[Dict
             "view_count": video["views"],
             "total_interactions": total_interactions
         })
-    
+
     return high_engagement_videos
 ```
 
@@ -148,13 +148,13 @@ from src.youtubeviz.common_helpers import execute_query_safely, validate_youtube
 def get_video_statistics(video_id: str) -> Optional[Dict[str, Any]]:
     """
     Retrieve comprehensive statistics for a YouTube video.
-    
+
     Args:
         video_id: YouTube video ID (11 characters)
-        
+
     Returns:
         Dictionary with video statistics or None if not found
-        
+
     Raises:
         ValueError: If video_id format is invalid
         DatabaseError: If database query fails
@@ -162,9 +162,9 @@ def get_video_statistics(video_id: str) -> Optional[Dict[str, Any]]:
     # Validate input
     if not validate_youtube_id(video_id, "video"):
         raise ValueError(f"Invalid YouTube video ID format: {video_id}")
-    
+
     query = """
-        SELECT 
+        SELECT
             video_id,
             title,
             channel_title,
@@ -173,19 +173,19 @@ def get_video_statistics(video_id: str) -> Optional[Dict[str, Any]]:
             comment_count,
             published_at,
             fetched_at
-        FROM youtube_videos 
+        FROM youtube_videos
         WHERE video_id = :video_id
     """
-    
+
     try:
         with get_connection() as conn:
             result = execute_query_safely(conn, query, {"video_id": video_id})
             row = result.fetchone()
-            
+
             if not row:
                 logging.info(f"Video not found in database: {video_id}")
                 return None
-            
+
             # Convert to dictionary with meaningful keys
             return {
                 "video_id": row["video_id"],
@@ -199,7 +199,7 @@ def get_video_statistics(video_id: str) -> Optional[Dict[str, Any]]:
                 "published_at": row["published_at"],
                 "last_updated": row["fetched_at"]
             }
-            
+
     except Exception as e:
         log_error_with_context(e, {"video_id": video_id, "operation": "get_video_statistics"})
         raise DatabaseError(f"Failed to retrieve statistics for video {video_id}") from e
@@ -243,32 +243,32 @@ from src.youtubeviz.common_helpers import safe_divide, validate_required_fields
 def calculate_average_sentiment(comment_data: List[Dict[str, Any]]) -> float:
     """
     Calculate the average sentiment score from a list of comments.
-    
+
     Args:
         comment_data: List of comment dictionaries with sentiment scores
-        
+
     Returns:
         Average sentiment score (-1.0 to 1.0), or 0.0 if no valid scores
-        
+
     Raises:
         ValueError: If comment_data is not a list
     """
     if not isinstance(comment_data, list):
         raise ValueError("comment_data must be a list")
-    
+
     if not comment_data:
         return 0.0
-    
+
     valid_sentiment_scores = []
-    
+
     for comment in comment_data:
         # Validate comment structure
         if not isinstance(comment, dict):
             logging.warning("Skipping non-dictionary comment entry")
             continue
-        
+
         sentiment_score = comment.get("sentiment_score")
-        
+
         # Only include valid sentiment scores
         if sentiment_score is not None and isinstance(sentiment_score, (int, float)):
             # Ensure sentiment score is in valid range
@@ -276,14 +276,14 @@ def calculate_average_sentiment(comment_data: List[Dict[str, Any]]) -> float:
                 valid_sentiment_scores.append(sentiment_score)
             else:
                 logging.warning(f"Sentiment score out of range: {sentiment_score}")
-    
+
     if not valid_sentiment_scores:
         logging.info("No valid sentiment scores found in comment data")
         return 0.0
-    
+
     total_sentiment = sum(valid_sentiment_scores)
     average_sentiment = safe_divide(total_sentiment, len(valid_sentiment_scores), default=0.0)
-    
+
     return round(average_sentiment, 3)
 ```
 
@@ -313,31 +313,31 @@ def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
 **Solution:**
 ```python
 from src.youtubeviz.common_helpers import (
-    execute_query_safely, validate_required_fields, 
+    execute_query_safely, validate_required_fields,
     format_number, get_current_timestamp
 )
 
 def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
     """
     Analyze performance metrics for a YouTube channel.
-    
+
     Calculates comprehensive metrics including video count, total views,
     engagement rates, and growth trends for the specified channel.
-    
+
     Args:
         channel_id: YouTube channel ID (starts with 'UC')
-        
+
     Returns:
         Dictionary containing:
         - basic_metrics: Video count, total views, subscribers
         - engagement_metrics: Average likes, comments, engagement rate
         - content_metrics: Upload frequency, popular video types
         - analysis_timestamp: When analysis was performed
-        
+
     Raises:
         ValueError: If channel_id format is invalid
         DatabaseError: If database queries fail
-        
+
     Example:
         >>> metrics = analyze_channel_performance("UCuAXFkgsw1L7xaCfnd5JJOw")
         >>> print(metrics["basic_metrics"]["total_views"])
@@ -346,27 +346,27 @@ def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
     # Validate channel ID format
     if not channel_id or not isinstance(channel_id, str):
         raise ValueError("channel_id must be a non-empty string")
-    
+
     if not channel_id.startswith("UC") or len(channel_id) != 24:
         raise ValueError(f"Invalid YouTube channel ID format: {channel_id}")
-    
+
     try:
         with get_connection() as conn:
             # Get basic channel metrics
             basic_metrics_query = """
-                SELECT 
+                SELECT
                     COUNT(*) as video_count,
                     SUM(view_count) as total_views,
                     AVG(view_count) as avg_views_per_video,
                     MAX(published_at) as latest_video_date,
                     MIN(published_at) as first_video_date
-                FROM youtube_videos 
+                FROM youtube_videos
                 WHERE channel_id = :channel_id
             """
-            
+
             basic_result = execute_query_safely(conn, basic_metrics_query, {"channel_id": channel_id})
             basic_data = basic_result.fetchone()
-            
+
             if not basic_data or basic_data["video_count"] == 0:
                 logging.warning(f"No videos found for channel: {channel_id}")
                 return {
@@ -376,20 +376,20 @@ def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
                     "content_metrics": {},
                     "analysis_timestamp": get_current_timestamp().isoformat()
                 }
-            
+
             # Get engagement metrics
             engagement_query = """
-                SELECT 
+                SELECT
                     AVG(like_count) as avg_likes,
                     AVG(comment_count) as avg_comments,
                     AVG((like_count + comment_count) / NULLIF(view_count, 0) * 100) as avg_engagement_rate
-                FROM youtube_videos 
+                FROM youtube_videos
                 WHERE channel_id = :channel_id AND view_count > 0
             """
-            
+
             engagement_result = execute_query_safely(conn, engagement_query, {"channel_id": channel_id})
             engagement_data = engagement_result.fetchone()
-            
+
             # Format results
             basic_metrics = {
                 "video_count": basic_data["video_count"],
@@ -401,25 +401,25 @@ def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
                     else 0
                 )
             }
-            
+
             engagement_metrics = {
                 "avg_likes": round(engagement_data["avg_likes"] or 0, 1),
                 "avg_comments": round(engagement_data["avg_comments"] or 0, 1),
                 "avg_engagement_rate": round(engagement_data["avg_engagement_rate"] or 0, 2)
             }
-            
+
             # Calculate upload frequency
             upload_frequency = safe_divide(
-                basic_data["video_count"], 
-                basic_metrics["channel_age_days"], 
+                basic_data["video_count"],
+                basic_metrics["channel_age_days"],
                 default=0
             ) * 30  # Videos per month
-            
+
             content_metrics = {
                 "upload_frequency_per_month": round(upload_frequency, 1),
                 "content_consistency": "high" if upload_frequency > 4 else "medium" if upload_frequency > 1 else "low"
             }
-            
+
             return {
                 "channel_id": channel_id,
                 "basic_metrics": basic_metrics,
@@ -427,7 +427,7 @@ def analyze_channel_performance(channel_id: str) -> Dict[str, Any]:
                 "content_metrics": content_metrics,
                 "analysis_timestamp": get_current_timestamp().isoformat()
             }
-            
+
     except Exception as e:
         log_error_with_context(e, {"channel_id": channel_id, "operation": "analyze_channel_performance"})
         raise DatabaseError(f"Failed to analyze performance for channel {channel_id}") from e

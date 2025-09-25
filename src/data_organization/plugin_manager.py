@@ -4,8 +4,8 @@ import importlib
 import importlib.util
 import inspect
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Dict, List, Optional, Type
 
 from .scoring_plugin import ScoringPlugin, ValidationResult

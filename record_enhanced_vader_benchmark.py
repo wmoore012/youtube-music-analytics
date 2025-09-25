@@ -6,8 +6,8 @@ Records the successful enhancement of VADER for music domain
 in the project benchmarks database for tracking.
 """
 
-import json
 from datetime import datetime
+import json
 
 from sqlalchemy import text
 
@@ -41,7 +41,7 @@ def record_enhanced_vader_benchmark():
 
     # Analyze test cases
     results = []
-    for text in test_cases:
+    for text_item in test_cases:
         result = music_vader.analyze_sentiment(text)
         results.append({"text": text, "sentiment": result["sentiment"], "compound": result["compound"]})
 
@@ -60,7 +60,7 @@ def record_enhanced_vader_benchmark():
     total = len(results)
 
     for result in results:
-        text = result["text"]
+        text_item = result["text"]
         predicted = result["sentiment"]
 
         if text in expected_positive and predicted == "positive":

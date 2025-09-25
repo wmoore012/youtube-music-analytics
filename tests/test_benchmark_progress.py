@@ -7,8 +7,8 @@ functions that power the CLI without executing the CLI itself.
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
+import sys
 
 import pandas as pd
 import pytest

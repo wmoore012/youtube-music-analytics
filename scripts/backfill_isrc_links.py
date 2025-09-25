@@ -13,8 +13,8 @@ from __future__ import annotations
 import sys
 from typing import Any, List, Set, Tuple
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import text
 
 from web.db_guard import get_engine

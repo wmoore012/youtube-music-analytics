@@ -1,5 +1,4 @@
 CREATE DATABASE `yt_proj` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
 CREATE TABLE `artist_aliases` (
   `alias_id` int NOT NULL AUTO_INCREMENT,
   `canonical_name` varchar(255) NOT NULL,
@@ -182,6 +181,88 @@ CREATE TABLE `project_benchmarks` (
   CONSTRAINT `chk_sent_throughput` CHECK ((`sentiment_throughput` >= 0)),
   CONSTRAINT `chk_throughput_nonneg` CHECK ((`throughput_rows_per_sec` >= 0)),
   CONSTRAINT `chk_years_nonneg` CHECK ((`date_range_years` >= 0))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scoring_algorithms` (
+  `algorithm_id` varchar(50) NOT NULL,
+  `algorithm_name` varchar(100) NOT NULL,
+  `version` varchar(20) NOT NULL,
+  `description` text,
+  `author` varchar(100) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`algorithm_id`),
+  UNIQUE KEY `algorithm_name` (`algorithm_name`),
+  KEY `idx_algorithm_name` (`algorithm_name`),
+  KEY `idx_active` (`is_active`),
+  KEY `idx_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scoring_configurations` (
+  `config_id` bigint NOT NULL AUTO_INCREMENT,
+  `algorithm_id` varchar(50) NOT NULL,
+  `environment` varchar(50) NOT NULL DEFAULT 'default',
+  `parameters` json NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`config_id`),
+  UNIQUE KEY `unique_env_algorithm` (`algorithm_id`,`environment`),
+  KEY `idx_environment` (`environment`),
+  KEY `idx_active_config` (`is_active`),
+  CONSTRAINT `scoring_configurations_ibfk_1` FOREIGN KEY (`algorithm_id`) REFERENCES `scoring_algorithms` (`algorithm_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scoring_metrics` (
+  `metric_id` bigint NOT NULL AUTO_INCREMENT,
+  `result_id` bigint NOT NULL,
+  `metric_name` varchar(100) NOT NULL,
+  `metric_value` decimal(15,6) DEFAULT NULL,
+  `metric_text` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`metric_id`),
+  KEY `idx_result_metric` (`result_id`,`metric_name`),
+  KEY `idx_metric_name` (`metric_name`),
+  CONSTRAINT `scoring_metrics_ibfk_1` FOREIGN KEY (`result_id`) REFERENCES `scoring_results` (`result_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=390 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scoring_results` (
+  `result_id` bigint NOT NULL AUTO_INCREMENT,
+  `run_id` varchar(50) NOT NULL,
+  `algorithm_id` varchar(50) NOT NULL,
+  `entity_type` enum('artist','video','channel','comment','playlist') NOT NULL,
+  `entity_id` varchar(255) NOT NULL,
+  `score_type` varchar(50) NOT NULL,
+  `score_value` decimal(10,4) NOT NULL,
+  `confidence_level` decimal(5,4) DEFAULT NULL,
+  `calculation_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `metadata` json DEFAULT NULL,
+  PRIMARY KEY (`result_id`),
+  KEY `idx_entity_score` (`entity_type`,`entity_id`,`score_type`),
+  KEY `idx_algorithm_timestamp` (`algorithm_id`,`calculation_timestamp`),
+  KEY `idx_run_results` (`run_id`),
+  KEY `idx_score_value` (`score_value`),
+  KEY `idx_entity_type` (`entity_type`),
+  CONSTRAINT `scoring_results_ibfk_1` FOREIGN KEY (`run_id`) REFERENCES `scoring_runs` (`run_id`) ON DELETE CASCADE,
+  CONSTRAINT `scoring_results_ibfk_2` FOREIGN KEY (`algorithm_id`) REFERENCES `scoring_algorithms` (`algorithm_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scoring_runs` (
+  `run_id` varchar(50) NOT NULL,
+  `algorithm_id` varchar(50) NOT NULL,
+  `run_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `input_record_count` int NOT NULL DEFAULT '0',
+  `output_record_count` int NOT NULL DEFAULT '0',
+  `execution_time_ms` int DEFAULT NULL,
+  `status` enum('running','completed','failed','cancelled') NOT NULL DEFAULT 'running',
+  `error_message` text,
+  `parameters_used` json DEFAULT NULL,
+  `metadata` json DEFAULT NULL,
+  PRIMARY KEY (`run_id`),
+  KEY `idx_timestamp` (`run_timestamp`),
+  KEY `idx_status` (`status`),
+  KEY `idx_algorithm_run` (`algorithm_id`,`run_timestamp`),
+  CONSTRAINT `scoring_runs_ibfk_1` FOREIGN KEY (`algorithm_id`) REFERENCES `scoring_algorithms` (`algorithm_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `songs` (

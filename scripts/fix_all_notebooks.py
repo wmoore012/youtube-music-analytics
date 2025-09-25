@@ -12,10 +12,10 @@ This script fixes all notebook issues:
 
 import json
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def cleanup_duplicate_notebooks():

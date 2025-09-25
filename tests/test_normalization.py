@@ -5,8 +5,8 @@ Uses an in-memory sqlite engine via SQLAlchemy for fast cycles.
 """
 from __future__ import annotations
 
-import unittest
 from datetime import date, datetime
+import unittest
 
 import pandas as pd
 from sqlalchemy import create_engine, text

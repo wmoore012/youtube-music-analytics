@@ -7,8 +7,8 @@ on real YouTube music comments. Uses the comprehensive variant as the best
 balance of accuracy and robustness.
 """
 
-import re
 from hashlib import md5
+import re
 from typing import Dict, Optional
 
 try:

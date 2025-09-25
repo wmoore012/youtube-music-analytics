@@ -11,10 +11,10 @@ This test suite covers:
 - Integration testing
 """
 
+from datetime import datetime
 import json
 import os
 import tempfile
-from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest

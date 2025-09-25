@@ -4,8 +4,8 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
-import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
+import nbformat
 
 
 def run_notebook(path: Path, timeout: int = 180, kernel_name: str = "python3") -> Path:

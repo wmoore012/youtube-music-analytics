@@ -5,6 +5,7 @@ This module tests the comprehensive error handling system that provides
 educational error messages and graceful degradation for missing data scenarios.
 """
 
+import os
 from unittest.mock import patch
 
 import pandas as pd

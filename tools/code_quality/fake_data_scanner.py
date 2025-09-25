@@ -82,10 +82,10 @@ class FakeDataScanner:
 
         # Patterns that indicate silent error handling
         self.silent_error_patterns = [
-            r"except.*:\s*pass",  # except: pass
-            r"except.*:\s*continue",  # except: continue
-            r"except.*:\s*return\s*$",  # except: return (without value)
-            r"except.*:\s*return\s+None",  # except: return None
+            r"except.*:\s*pass",  # except Exception: pass
+            r"except.*:\s*continue",  # except Exception: continue
+            r"except.*:\s*return\s*$",  # except Exception: return (without value)
+            r"except.*:\s*return\s+None",  # except Exception: return None
         ]
 
         # Boolean field patterns in database operations
@@ -209,7 +209,7 @@ class FakeDataScanner:
 
             # Look for bare except clauses
             elif isinstance(node, ast.ExceptHandler):
-                if node.type is None:  # bare except:
+                if node.type is None:  # bare except Exception:
                     issues.append(
                         CodeIssue(
                             file_path=str(file_path.relative_to(PROJECT_ROOT)),

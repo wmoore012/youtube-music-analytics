@@ -15,8 +15,8 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
 from dotenv import load_dotenv
+import pytest
 from sqlalchemy import create_engine, text
 
 sys.path.append(".")

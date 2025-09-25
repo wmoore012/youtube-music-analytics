@@ -398,11 +398,11 @@ class ETLHealthChecker:
                 # Check latest video data
                 cursor.execute(
                     """
-                    SELECT 
+                    SELECT
                         MAX(fetched_at) as latest_fetch,
                         COUNT(*) as total_videos,
                         COUNT(DISTINCT channel_title) as unique_channels
-                    FROM youtube_videos 
+                    FROM youtube_videos
                     WHERE fetched_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                 """
                 )
@@ -411,10 +411,10 @@ class ETLHealthChecker:
                 # Check latest metrics data
                 cursor.execute(
                     """
-                    SELECT 
+                    SELECT
                         MAX(fetched_at) as latest_metrics,
                         COUNT(*) as total_metrics
-                    FROM youtube_metrics 
+                    FROM youtube_metrics
                     WHERE fetched_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                 """
                 )
@@ -423,11 +423,11 @@ class ETLHealthChecker:
                 # Check ETL run status
                 cursor.execute(
                     """
-                    SELECT 
+                    SELECT
                         MAX(finished_at) as latest_run,
                         COUNT(*) as total_runs,
                         SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful_runs
-                    FROM youtube_etl_runs 
+                    FROM youtube_etl_runs
                     WHERE run_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
                 """
                 )

@@ -9,9 +9,9 @@ Tests the ISRC tracking, sentiment analysis, and performance metrics helpers.
 
 import json
 import os
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 

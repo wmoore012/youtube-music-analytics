@@ -3,8 +3,8 @@
 Create the ultimate MusicScope™ notebook with all 15 data-science-grade charts.
 """
 
-import json
 from datetime import datetime
+import json
 
 
 def create_notebook():

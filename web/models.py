@@ -12,9 +12,10 @@ All models use Pydantic for strict validation and fail-fast error handling.
 Natural keys are used throughout for better debugging and maintainability.
 """
 
-import re
 from datetime import datetime
 from enum import Enum
+import os
+import re
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator

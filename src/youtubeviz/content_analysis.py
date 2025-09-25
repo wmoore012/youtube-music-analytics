@@ -3,9 +3,9 @@ Bulletproof content analysis system for Charts #8-11.
 Implements ISRC balance, dumbbell charts, Cleveland dots with statistical rigor.
 """
 
-import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd

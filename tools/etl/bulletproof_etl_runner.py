@@ -10,10 +10,10 @@ This module provides a robust ETL execution framework with:
 - Detailed logging and monitoring
 """
 
-import logging
-import sys
 from datetime import datetime
+import logging
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Optional
 
 # Add project root to path
@@ -54,7 +54,7 @@ class BulletproofETLRunner:
 
     def initialize_components(self) -> None:
         """Initialize database connection and components with error handling."""
-        context = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")
+        context_item = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")
 
         try:
             logger.info("🔧 Initializing ETL components...")
@@ -95,7 +95,7 @@ class BulletproofETLRunner:
 
     def validate_system_prerequisites(self) -> None:
         """Validate that system is ready for ETL execution."""
-        context = ErrorContext(component="BulletproofETLRunner", operation="validate_system_prerequisites")
+        context_item = ErrorContext(component="BulletproofETLRunner", operation="validate_system_prerequisites")
 
         try:
             logger.info("🔍 Validating system prerequisites...")
@@ -144,7 +144,7 @@ class BulletproofETLRunner:
 
     def process_youtube_data_with_validation(self, channel_ids: List[str]) -> Dict[str, Any]:
         """Process YouTube data with comprehensive validation and error handling."""
-        context = ErrorContext(
+        context_item = ErrorContext(
             component="BulletproofETLRunner",
             operation="process_youtube_data_with_validation",
             user_data={"channel_count": len(channel_ids)},
@@ -243,10 +243,16 @@ class BulletproofETLRunner:
 
     def run_sentiment_analysis_with_validation(self) -> Dict[str, Any]:
         """Run sentiment analysis with comprehensive validation."""
-        context = ErrorContext(component="BulletproofETLRunner", operation="run_sentiment_analysis_with_validation")
+        context_item = ErrorContext(
+            component="BulletproofETLRunner", operation="run_sentiment_analysis_with_validation"
+        )
+
+        start_time = datetime.utcnow()
 
         try:
-            logger.info("🎭 Running sentiment analysis with validation...")
+            self.structured_logger.info(
+                "Running sentiment analysis with validation", context={"operation": "sentiment_analysis_start"}
+            )
 
             # Get unprocessed comments count
             with self.engine.connect() as conn:
@@ -264,31 +270,51 @@ class BulletproofETLRunner:
                 unprocessed_count = result.fetchone()[0]
 
             if unprocessed_count == 0:
-                logger.info("✅ No unprocessed comments found for sentiment analysis")
+                self.structured_logger.info("No unprocessed comments found for sentiment analysis")
                 return {"comments_processed": 0, "errors": []}
 
-            logger.info(f"📊 Processing sentiment for {unprocessed_count:,} comments...")
+            self.structured_logger.info(
+                "Processing sentiment analysis", context={"unprocessed_comments": unprocessed_count}
+            )
 
             # Run sentiment analysis with progress tracking
             with ProgressTracker("Sentiment Analysis", unprocessed_count, log_interval=500) as progress:
                 sentiment_results = self.sentiment_analyzer.score_batch(limit=unprocessed_count)
                 progress.processed_items = sentiment_results.processed
 
+            # Log performance metrics
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            self.performance_logger.log_operation_time(
+                "sentiment_analysis", duration, {"comments_processed": sentiment_results.processed}
+            )
+            self.performance_logger.log_throughput("sentiment_analysis", sentiment_results.processed, duration)
+
             # Update execution statistics
             self.execution_stats["sentiment_scores_generated"] = sentiment_results.processed
 
-            logger.info(f"✅ Sentiment analysis completed: {sentiment_results.processed} comments processed")
+            self.structured_logger.info(
+                "Sentiment analysis completed",
+                context={"comments_processed": sentiment_results.processed},
+                performance_data={
+                    "duration_seconds": duration,
+                    "throughput_per_second": sentiment_results.processed / duration if duration > 0 else 0,
+                },
+            )
 
             return sentiment_results
 
         except Exception as e:
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            self.structured_logger.error(
+                "Sentiment analysis failed", context={"error": str(e), "duration_seconds": duration}
+            )
             raise ETLError(
                 "Failed to run sentiment analysis", context=context, original_error=e, severity=ErrorSeverity.HIGH
             )
 
     def run_final_data_quality_validation(self) -> Dict[str, Any]:
         """Run final comprehensive data quality validation."""
-        context = ErrorContext(component="BulletproofETLRunner", operation="run_final_data_quality_validation")
+        context_item = ErrorContext(component="BulletproofETLRunner", operation="run_final_data_quality_validation")
 
         try:
             logger.info("🔍 Running final data quality validation...")
@@ -330,10 +356,13 @@ class BulletproofETLRunner:
             )
 
     def generate_execution_report(self) -> Dict[str, Any]:
-        """Generate comprehensive execution report."""
+        """Generate comprehensive execution report with performance metrics."""
         execution_time = None
         if self.execution_stats["start_time"] and self.execution_stats["end_time"]:
             execution_time = (self.execution_stats["end_time"] - self.execution_stats["start_time"]).total_seconds()
+
+        # Get performance summary
+        performance_summary = self.performance_logger.get_performance_summary()
 
         report = {
             "execution_summary": {
@@ -351,10 +380,19 @@ class BulletproofETLRunner:
                 "errors_encountered": self.execution_stats["errors_encountered"],
                 "data_quality_issues": self.execution_stats["data_quality_issues"],
             },
+            "performance_metrics": performance_summary,
+            "system_health": {
+                "memory_usage_mb": self._get_memory_usage(),
+                "disk_usage_gb": self._get_disk_usage(),
+                "database_connections": self._get_db_connection_count(),
+            },
             "recommendations": [],
         }
 
-        # Add recommendations based on results
+        # Add performance-based recommendations
+        if execution_time and execution_time > 3600:  # More than 1 hour
+            report["recommendations"].append("Consider optimizing pipeline performance - execution took over 1 hour")
+
         if self.execution_stats["errors_encountered"] > 0:
             report["recommendations"].append("Review error logs and address recurring issues")
 
@@ -364,7 +402,41 @@ class BulletproofETLRunner:
         if self.execution_stats["errors_encountered"] == 0 and self.execution_stats["data_quality_issues"] == 0:
             report["recommendations"].append("ETL execution completed successfully with no issues")
 
+        # Log the comprehensive report
+        self.structured_logger.info(
+            "ETL execution report generated", context=report["execution_summary"], performance_data=performance_summary
+        )
+
         return report
+
+    def _get_memory_usage(self) -> float:
+        """Get current memory usage in MB."""
+        try:
+            import psutil
+
+            process = psutil.Process()
+            return process.memory_info().rss / 1024 / 1024
+        except ImportError:
+            return 0.0
+
+    def _get_disk_usage(self) -> float:
+        """Get current disk usage in GB."""
+        try:
+            import psutil
+
+            disk_usage = psutil.disk_usage(".")
+            return disk_usage.used / 1024 / 1024 / 1024
+        except ImportError:
+            return 0.0
+
+    def _get_db_connection_count(self) -> int:
+        """Get current database connection count."""
+        try:
+            if self.engine:
+                return self.engine.pool.size()
+            return 0
+        except:
+            return 0
 
     def run_bulletproof_etl(self, channel_ids: List[str]) -> Dict[str, Any]:
         """

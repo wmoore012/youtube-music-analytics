@@ -11,7 +11,7 @@ CREATE TABLE scoring_algorithms (
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     INDEX idx_algorithm_name (algorithm_name),
     INDEX idx_active (is_active),
     INDEX idx_created (created_at)
@@ -26,7 +26,7 @@ CREATE TABLE scoring_configurations (
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (algorithm_id) REFERENCES scoring_algorithms(algorithm_id) ON DELETE CASCADE,
     UNIQUE KEY unique_env_algorithm (algorithm_id, environment),
     INDEX idx_environment (environment),
@@ -45,7 +45,7 @@ CREATE TABLE scoring_runs (
     error_message TEXT,
     parameters_used JSON,
     metadata JSON,
-    
+
     FOREIGN KEY (algorithm_id) REFERENCES scoring_algorithms(algorithm_id),
     INDEX idx_timestamp (run_timestamp),
     INDEX idx_status (status),
@@ -64,7 +64,7 @@ CREATE TABLE scoring_results (
     confidence_level DECIMAL(5,4),
     calculation_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     metadata JSON,
-    
+
     FOREIGN KEY (run_id) REFERENCES scoring_runs(run_id) ON DELETE CASCADE,
     FOREIGN KEY (algorithm_id) REFERENCES scoring_algorithms(algorithm_id),
     INDEX idx_entity_score (entity_type, entity_id, score_type),
@@ -81,7 +81,7 @@ CREATE TABLE scoring_metrics (
     metric_name VARCHAR(100) NOT NULL,
     metric_value DECIMAL(15,6),
     metric_text VARCHAR(500),
-    
+
     FOREIGN KEY (result_id) REFERENCES scoring_results(result_id) ON DELETE CASCADE,
     INDEX idx_result_metric (result_id, metric_name),
     INDEX idx_metric_name (metric_name)
@@ -89,7 +89,7 @@ CREATE TABLE scoring_metrics (
 
 -- View for easy querying of latest scoring results per entity
 CREATE VIEW latest_scoring_results AS
-SELECT 
+SELECT
     sr.entity_type,
     sr.entity_id,
     sr.algorithm_id,
@@ -100,7 +100,7 @@ SELECT
     sr.calculation_timestamp,
     sr.metadata,
     ROW_NUMBER() OVER (
-        PARTITION BY sr.entity_type, sr.entity_id, sr.algorithm_id, sr.score_type 
+        PARTITION BY sr.entity_type, sr.entity_id, sr.algorithm_id, sr.score_type
         ORDER BY sr.calculation_timestamp DESC
     ) as rn
 FROM scoring_results sr
@@ -109,7 +109,7 @@ WHERE sa.is_active = TRUE;
 
 -- View for scoring result summaries with run information
 CREATE VIEW scoring_result_summary AS
-SELECT 
+SELECT
     sr.run_id,
     sr.algorithm_id,
     sa.algorithm_name,
@@ -125,5 +125,5 @@ SELECT
 FROM scoring_results sr
 JOIN scoring_algorithms sa ON sr.algorithm_id = sa.algorithm_id
 JOIN scoring_runs srun ON sr.run_id = srun.run_id
-GROUP BY sr.run_id, sr.algorithm_id, sa.algorithm_name, sa.version, 
+GROUP BY sr.run_id, sr.algorithm_id, sa.algorithm_name, sa.version,
          srun.run_timestamp, srun.status, sr.entity_type;

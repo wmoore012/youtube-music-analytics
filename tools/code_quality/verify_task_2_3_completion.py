@@ -44,7 +44,7 @@ def verify_error_handling():
                     files_with_logging += 1
 
                 # Count problematic patterns
-                if "except:\n" in content and "pass" in content:
+                if "except Exception:\n" in content and "pass" in content:
                     bare_except_count += 1
 
             except Exception:

@@ -14,9 +14,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+from datetime import datetime
 import logging
 import re
-from datetime import datetime
 
 import numpy as np
 import pandas as pd

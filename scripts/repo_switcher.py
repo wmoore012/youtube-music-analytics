@@ -10,9 +10,9 @@ publishing builds.
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
 
@@ -207,7 +207,7 @@ class RepositorySwitcher:
                 result = subprocess.run(["find", ".", "-name", pattern, "-type", "f"], capture_output=True, text=True)
                 if result.stdout.strip():
                     excluded_files.extend(result.stdout.strip().split("\n"))
-            except:
+            except Exception:
                 pass
 
         if excluded_files:

@@ -6,9 +6,9 @@ This module tests sentiment models against a scientifically classified
 music slang dictionary to determine the best model for music industry analytics.
 """
 
+from dataclasses import dataclass
 import os
 import sys
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd

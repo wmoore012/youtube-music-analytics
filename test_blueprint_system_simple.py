@@ -4,9 +4,9 @@ Test blueprint execution system with a simple notebook that doesn't require comp
 """
 
 import json
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
 
 from blueprint_execution_system import BlueprintExecutionManager
 

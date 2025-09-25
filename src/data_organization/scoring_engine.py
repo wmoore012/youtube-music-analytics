@@ -42,7 +42,7 @@ class ScoringEngine:
         self._enable_plugin_isolation = True
         self._max_execution_time = 300  # 5 minutes default timeout
         self._max_memory_usage = 1024 * 1024 * 1024  # 1GB default limit
-        
+
         # Storage system
         self._enable_storage = enable_storage
         self._storage = ScoringStorage() if enable_storage else None
@@ -152,8 +152,12 @@ class ScoringEngine:
         return results
 
     def execute_scoring(
-        self, algorithm_name: str, data: pd.DataFrame, parameters: Optional[Dict[str, Any]] = None,
-        store_results: bool = True, entity_type: str = "artist"
+        self,
+        algorithm_name: str,
+        data: pd.DataFrame,
+        parameters: Optional[Dict[str, Any]] = None,
+        store_results: bool = True,
+        entity_type: str = "artist",
     ) -> ScoringResult:
         """Execute scoring with the specified algorithm."""
         if algorithm_name not in self.get_available_algorithms():
@@ -168,18 +172,18 @@ class ScoringEngine:
                 result = self._execute_with_isolation(plugin, data, parameters)
             else:
                 result = plugin.execute(data, parameters)
-            
+
             # Store results if enabled and requested
             if self._enable_storage and store_results and self._storage:
                 try:
                     run_id = self._storage.store_scoring_result(
-                        result, 
+                        result,
                         entity_type=entity_type,
                         run_metadata={
                             "execution_context": "scoring_engine",
                             "input_data_shape": data.shape,
-                            "custom_parameters": parameters is not None
-                        }
+                            "custom_parameters": parameters is not None,
+                        },
                     )
                     # Add run_id to result metadata
                     result.metadata["run_id"] = run_id
@@ -187,7 +191,7 @@ class ScoringEngine:
                 except Exception as storage_error:
                     self._logger.warning(f"Failed to store scoring results: {storage_error}")
                     # Don't fail the entire operation if storage fails
-            
+
             return result
 
         except Exception as e:
@@ -199,9 +203,9 @@ class ScoringEngine:
         self, plugin: ScoringPlugin, data: pd.DataFrame, parameters: Optional[Dict[str, Any]] = None
     ) -> ScoringResult:
         """Execute plugin with isolation and error handling."""
+        from contextlib import contextmanager
         import resource
         import signal
-        from contextlib import contextmanager
 
         @contextmanager
         def timeout_context(seconds):
@@ -303,7 +307,7 @@ class ScoringEngine:
             "search_paths": [str(path) for path in self.plugin_manager._search_paths],
             "storage_enabled": self._enable_storage,
         }
-        
+
         # Add storage status if enabled
         if self._enable_storage and self._storage:
             try:
@@ -313,66 +317,45 @@ class ScoringEngine:
             except Exception as e:
                 status["storage_schema_valid"] = False
                 status["storage_errors"] = [str(e)]
-        
+
         return status
 
     def get_scoring_history(
-        self, 
-        entity_id: str,
-        entity_type: str = "artist",
-        algorithm_name: str = None,
-        days_back: int = 30
+        self, entity_id: str, entity_type: str = "artist", algorithm_name: str = None, days_back: int = 30
     ) -> pd.DataFrame:
         """Get scoring history for an entity."""
         if not self._enable_storage or not self._storage:
             raise ScoringEngineError("Storage is not enabled")
-        
+
         return self._storage.get_scoring_history(
-            entity_id=entity_id,
-            entity_type=entity_type,
-            algorithm_name=algorithm_name,
-            days_back=days_back
+            entity_id=entity_id, entity_type=entity_type, algorithm_name=algorithm_name, days_back=days_back
         )
 
     def get_latest_scores(
-        self,
-        algorithm_name: str = None,
-        entity_type: str = None,
-        entity_ids: List[str] = None,
-        limit: int = 100
+        self, algorithm_name: str = None, entity_type: str = None, entity_ids: List[str] = None, limit: int = 100
     ) -> pd.DataFrame:
         """Get latest scoring results."""
         if not self._enable_storage or not self._storage:
             raise ScoringEngineError("Storage is not enabled")
-        
+
         return self._storage.get_latest_scores(
-            algorithm_name=algorithm_name,
-            entity_type=entity_type,
-            entity_ids=entity_ids,
-            limit=limit
+            algorithm_name=algorithm_name, entity_type=entity_type, entity_ids=entity_ids, limit=limit
         )
 
     def get_entity_rankings(
-        self,
-        algorithm_name: str,
-        entity_type: str = "artist",
-        score_type: str = "primary",
-        limit: int = 50
+        self, algorithm_name: str, entity_type: str = "artist", score_type: str = "primary", limit: int = 50
     ) -> pd.DataFrame:
         """Get entity rankings based on latest scores."""
         if not self._enable_storage or not self._storage:
             raise ScoringEngineError("Storage is not enabled")
-        
+
         return self._storage.get_entity_rankings(
-            algorithm_name=algorithm_name,
-            entity_type=entity_type,
-            score_type=score_type,
-            limit=limit
+            algorithm_name=algorithm_name, entity_type=entity_type, score_type=score_type, limit=limit
         )
 
     def get_algorithm_performance(self, algorithm_name: str = None) -> pd.DataFrame:
         """Get performance statistics for scoring algorithms."""
         if not self._enable_storage or not self._storage:
             raise ScoringEngineError("Storage is not enabled")
-        
+
         return self._storage.get_algorithm_performance(algorithm_name=algorithm_name)

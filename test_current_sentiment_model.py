@@ -9,8 +9,8 @@ fan expressions to see where we need improvements.
 This will help us build a smarter, not bigger, sentiment analyzer!
 """
 
-import sys
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 

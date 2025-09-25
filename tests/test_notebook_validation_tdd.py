@@ -12,9 +12,8 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from create_and_validate_notebooks import NotebookValidator
+import pytest
 
 
 class TestNotebookValidator:

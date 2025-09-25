@@ -11,16 +11,16 @@ Production-grade dataset with:
 
 from __future__ import annotations
 
-import json
-import re
-import sys
-import threading
-import unicodedata
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cached_property
 from hashlib import sha256
+import json
+import re
+import sys
+import threading
 from typing import Dict, Iterable, List, Optional, Tuple
+import unicodedata
 from uuid import NAMESPACE_URL, uuid5
 
 import pandas as pd
@@ -128,6 +128,49 @@ def normalize_text_for_key(text: str) -> str:
     s2 = s1.casefold()
     s3 = _WS.sub(" ", s2).strip()
     return s3
+
+
+def normalize_text_for_transformer(text: str, preserve_emoji: bool = True) -> str:
+    """
+    Enhanced normalization for transformer models with emoji handling.
+    - NFKC normalize
+    - Optionally preserve emoji
+    - Collapse whitespace
+    - Preserve music slang case
+    """
+    # Music slang terms that should preserve case
+    CASE_SENSITIVE_SLANG = ["GOATED", "PERIODT", "SLAY", "QUEEN", "KING", "MOTHER"]
+
+    # Step 1: NFKC normalization
+    s0 = unicodedata.normalize("NFKC", text)
+
+    # Step 2: Handle emoji
+    if preserve_emoji:
+        # Keep emoji but normalize multiple consecutive ones
+        s1 = re.sub(r"([\U0001F300-\U0001FAFF])\1{2,}", r"\1\1", s0)  # Max 2 consecutive
+    else:
+        s1 = _EMOJI_SUBSET.sub(" ", s0)
+
+    # Step 3: Preserve case for specific slang terms
+    preserved_terms = {}
+    for term in CASE_SENSITIVE_SLANG:
+        if term in s1.upper():
+            # Find and preserve the term
+            pattern = re.compile(re.escape(term), re.IGNORECASE)
+            matches = pattern.finditer(s1)
+            for match in matches:
+                placeholder = f"__PRESERVE_{len(preserved_terms)}__"
+                preserved_terms[placeholder] = term
+                s1 = s1[: match.start()] + placeholder + s1[match.end() :]
+
+    # Step 4: Collapse whitespace
+    s2 = _WS.sub(" ", s1).strip()
+
+    # Step 5: Restore preserved terms
+    for placeholder, term in preserved_terms.items():
+        s2 = s2.replace(placeholder, term)
+
+    return s2
 
 
 # --------------------------- Deterministic ID Generation ---------------------------
@@ -320,6 +363,71 @@ class EnhancedMusicSentimentDatasetV2:
                     "Greatest of all time",
                     gen_z_slang=True,
                 ),
+                # New entries based on your feedback
+                EnhancedMusicSlangEntry(
+                    "gas",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.PRAISE_GENERAL,
+                    Aspect.GENERAL,
+                    0.90,
+                    "Gas/gas! means fire/excellent - often with ⛽️ emoji",
+                    gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "get my son on trending",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.CULTURAL_IDENTITY,
+                    Aspect.ARTIST,
+                    0.85,
+                    "Playful support - calling favorite artist 'son' while rooting for success",
+                ),
+                EnhancedMusicSlangEntry(
+                    "I relate to this so much",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.HYPE_EXCITEMENT,
+                    Aspect.LYRICS,
+                    0.80,
+                    "Personal connection and emotional resonance with content",
+                ),
+                EnhancedMusicSlangEntry(
+                    "dopest artists out",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.PRAISE_GENERAL,
+                    Aspect.ARTIST,
+                    0.90,
+                    "High praise - 'dopest' means best/coolest",
+                ),
+                EnhancedMusicSlangEntry(
+                    "modern beauty with vintage voice",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.PRAISE_PERFORMANCE,
+                    Aspect.VOCALS,
+                    0.85,
+                    "Sophisticated praise combining contemporary and classic elements",
+                ),
+                EnhancedMusicSlangEntry(
+                    "perfect balance",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.PRAISE_GENERAL,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Appreciation for artistic harmony and composition",
+                ),
+                EnhancedMusicSlangEntry(
+                    "the outfits",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.HYPE_EXCITEMENT,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Excitement about visual presentation - often with multiple exclamation marks",
+                ),
             ]
         )
 
@@ -419,6 +527,24 @@ class EnhancedMusicSentimentDatasetV2:
                     0.90,
                     "High praise, especially for female artists",
                     gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "my son",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.CULTURAL_IDENTITY,
+                    Aspect.ARTIST,
+                    0.85,
+                    "Playful endearment for favorite artist - shows protective support",
+                ),
+                EnhancedMusicSlangEntry(
+                    "get him on trending",
+                    SentimentLabel.POSITIVE,
+                    Intent.PRAISE,
+                    SlangCategory.ENGAGEMENT_BEHAVIORAL,
+                    Aspect.ARTIST,
+                    0.80,
+                    "Active support for artist success and visibility",
                 ),
             ]
         )
@@ -556,6 +682,273 @@ class EnhancedMusicSentimentDatasetV2:
                     0.90,
                     "Very poor quality",
                 ),
+                # ADD MORE NEGATIVE EXAMPLES TO BALANCE DATASET
+                EnhancedMusicSlangEntry(
+                    "this sucks",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.90,
+                    "Direct negative criticism",
+                ),
+                EnhancedMusicSlangEntry(
+                    "terrible",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Very bad quality",
+                ),
+                EnhancedMusicSlangEntry(
+                    "boring af",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Extremely boring - Gen Z expression",
+                    gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "skip this",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Recommendation to avoid",
+                ),
+                EnhancedMusicSlangEntry(
+                    "not it",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Gen Z way of saying something is bad",
+                    gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "sounds awful",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.90,
+                    "Direct negative assessment",
+                ),
+                EnhancedMusicSlangEntry(
+                    "can't stand this",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Strong dislike expression",
+                ),
+                EnhancedMusicSlangEntry(
+                    "overrated",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Criticism of hype vs quality",
+                ),
+                EnhancedMusicSlangEntry(
+                    "disappointing",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Failed expectations",
+                ),
+                EnhancedMusicSlangEntry(
+                    "weak",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Lacking strength or impact",
+                ),
+                EnhancedMusicSlangEntry(
+                    "not feeling it",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Polite way to express dislike",
+                ),
+                EnhancedMusicSlangEntry(
+                    "meh",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.70,
+                    "Indifferent/unimpressed response",
+                ),
+                EnhancedMusicSlangEntry(
+                    "nah fam",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Casual rejection",
+                    gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "hard pass",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Strong rejection",
+                ),
+                EnhancedMusicSlangEntry(
+                    "yikes",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Expression of dismay",
+                    gen_z_slang=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "off-key",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.VOCALS,
+                    0.85,
+                    "Vocal performance criticism",
+                ),
+                EnhancedMusicSlangEntry(
+                    "messy production",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.MIX,
+                    0.80,
+                    "Poor mixing/production quality",
+                    beat_appreciation=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "generic",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Lacks originality",
+                ),
+                EnhancedMusicSlangEntry(
+                    "try again",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_CONSTRUCTIVE,
+                    Aspect.GENERAL,
+                    0.70,
+                    "Constructive but negative feedback",
+                ),
+                EnhancedMusicSlangEntry(
+                    "not your best work",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_CONSTRUCTIVE,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Polite criticism comparing to previous work",
+                ),
+                EnhancedMusicSlangEntry(
+                    "sounds like everyone else",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Criticism of lack of uniqueness",
+                ),
+                EnhancedMusicSlangEntry(
+                    "outdated",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Criticism of being behind trends",
+                ),
+                EnhancedMusicSlangEntry(
+                    "trying too hard",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Criticism of forced effort",
+                ),
+                EnhancedMusicSlangEntry(
+                    "lost their touch",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.ARTIST,
+                    0.80,
+                    "Artist has declined in quality",
+                ),
+                EnhancedMusicSlangEntry(
+                    "what happened to them",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.ARTIST,
+                    0.75,
+                    "Disappointment in artist's direction",
+                ),
+                EnhancedMusicSlangEntry(
+                    "used to be better",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.ARTIST,
+                    0.80,
+                    "Comparison to better past work",
+                ),
+                EnhancedMusicSlangEntry(
+                    "sellout",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.ARTIST,
+                    0.85,
+                    "Criticism of commercialization",
+                ),
+                EnhancedMusicSlangEntry(
+                    "no soul",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Lacks emotional depth",
+                ),
+                EnhancedMusicSlangEntry(
+                    "sounds robotic",
+                    SentimentLabel.NEGATIVE,
+                    Intent.CRITIQUE,
+                    SlangCategory.CRITICISM_NEGATIVE,
+                    Aspect.VOCALS,
+                    0.80,
+                    "Lacks human emotion in vocals",
+                ),
             ]
         )
 
@@ -601,6 +994,260 @@ class EnhancedMusicSentimentDatasetV2:
                     Aspect.GENERAL,
                     0.80,
                     "Format request without opinion",
+                ),
+                # ADD MORE NEUTRAL EXAMPLES TO BALANCE DATASET
+                EnhancedMusicSlangEntry(
+                    "what genre is this",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Genre classification question",
+                ),
+                EnhancedMusicSlangEntry(
+                    "release date",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.90,
+                    "Factual information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "album name",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Album identification request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "available on spotify",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Platform availability question",
+                ),
+                EnhancedMusicSlangEntry(
+                    "how long is this song",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Duration information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "instrumental version",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Request for instrumental version",
+                ),
+                EnhancedMusicSlangEntry(
+                    "artist name",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.ARTIST,
+                    0.90,
+                    "Artist identification request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "song title",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Song identification request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "where can I buy this",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Purchase information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "concert dates",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.ARTIST,
+                    0.85,
+                    "Tour information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "music video link",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Video link request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "what key is this in",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Musical theory question",
+                ),
+                EnhancedMusicSlangEntry(
+                    "bpm",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.BEAT,
+                    0.80,
+                    "Beats per minute information",
+                    beat_appreciation=True,
+                ),
+                EnhancedMusicSlangEntry(
+                    "chord progression",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Musical structure question",
+                ),
+                EnhancedMusicSlangEntry(
+                    "similar artists",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.ARTIST,
+                    0.80,
+                    "Recommendation request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "first time hearing this",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.75,
+                    "Neutral discovery statement",
+                ),
+                EnhancedMusicSlangEntry(
+                    "remix version",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Remix version request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "acoustic version",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Acoustic version request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "live performance",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Live version request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "radio edit",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Radio version request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "full album",
+                    SentimentLabel.NEUTRAL,
+                    Intent.REQUEST,
+                    SlangCategory.NEUTRAL_REQUESTS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Complete album request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "track listing",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Album contents request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "featuring who",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.ARTIST,
+                    0.80,
+                    "Collaboration information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "record label",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.ARTIST,
+                    0.85,
+                    "Label information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "copyright info",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Legal information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "streaming numbers",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Statistics information request",
+                ),
+                EnhancedMusicSlangEntry(
+                    "chart position",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.85,
+                    "Chart performance question",
+                ),
+                EnhancedMusicSlangEntry(
+                    "music theory analysis",
+                    SentimentLabel.NEUTRAL,
+                    Intent.INFO,
+                    SlangCategory.NEUTRAL_QUESTIONS,
+                    Aspect.GENERAL,
+                    0.80,
+                    "Technical analysis request",
                 ),
             ]
         )
@@ -739,6 +1386,164 @@ class EnhancedMusicSentimentDatasetV2:
 
         self._with_timeout(_dump, timeout_s)
         print(f"💾 JSONL exported: {filename}")
+
+    def export_transformer_format(
+        self,
+        filename: str = "enhanced_music_sentiment_transformer.jsonl",
+        model_name: str = "distilbert-base-uncased",
+        timeout_s: Optional[int] = None,
+    ) -> None:
+        """Export in transformer-compatible format with preprocessing."""
+
+        def _dump_transformer() -> None:
+            try:
+                # Import text processing helpers
+                from youtubeviz.text_processing_helpers import create_music_text_processor
+
+                processor = create_music_text_processor(model_name=model_name)
+
+                with open(filename, "w", encoding="utf-8") as f:
+                    for e in self.entries:
+                        # Create transformer-ready entry
+                        transformer_entry = {
+                            "id": e.id,
+                            "text": e.phrase,
+                            "processed_text": processor.preprocess_text(e.phrase),
+                            "label": e.sentiment.value,
+                            "confidence": e.confidence,
+                            # Transformer-specific fields
+                            "features": processor.analyze_text_features(e.phrase),
+                            # Original metadata
+                            "intent": e.intent.value,
+                            "category": e.category.value,
+                            "aspect": e.aspect.value,
+                            "context_notes": e.context_notes,
+                            "gen_z_slang": e.gen_z_slang,
+                            "beat_appreciation": e.beat_appreciation,
+                            "toxicity": e.toxicity.value,
+                            # Processing metadata
+                            "model_name": model_name,
+                            "processing_version": "1.0",
+                        }
+
+                        f.write(json.dumps(transformer_entry, ensure_ascii=False) + "\n")
+
+            except ImportError:
+                print("⚠️  Text processing helpers not available, using basic format")
+                # Fallback to basic format
+                with open(filename, "w", encoding="utf-8") as f:
+                    for e in self.entries:
+                        basic_entry = {
+                            "id": e.id,
+                            "text": e.phrase,
+                            "label": e.sentiment.value,
+                            "confidence": e.confidence,
+                        }
+                        f.write(json.dumps(basic_entry, ensure_ascii=False) + "\n")
+
+        self._with_timeout(_dump_transformer, timeout_s)
+        print(f"💾 Transformer format exported: {filename}")
+
+    def export_huggingface_format(
+        self,
+        output_dir: str = "enhanced_music_sentiment_hf",
+        test_size: float = 0.2,
+        val_size: float = 0.1,
+        timeout_s: Optional[int] = None,
+    ) -> None:
+        """Export in HuggingFace datasets format with train/val/test splits."""
+
+        def _dump_hf() -> None:
+            import os
+
+            from sklearn.model_selection import train_test_split
+
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Prepare data
+            data = []
+            for e in self.entries:
+                data.append({"text": e.phrase, "label": e.sentiment.value, "confidence": e.confidence, "id": e.id})
+
+            # Create splits
+            train_data, temp_data = train_test_split(
+                data, test_size=(test_size + val_size), random_state=42, stratify=[d["label"] for d in data]
+            )
+
+            if val_size > 0:
+                val_data, test_data = train_test_split(
+                    temp_data,
+                    test_size=(test_size / (test_size + val_size)),
+                    random_state=42,
+                    stratify=[d["label"] for d in temp_data],
+                )
+            else:
+                test_data = temp_data
+                val_data = []
+
+            # Export splits
+            splits = [("train", train_data), ("test", test_data)]
+            if val_data:
+                splits.append(("validation", val_data))
+
+            for split_name, split_data in splits:
+                split_file = os.path.join(output_dir, f"{split_name}.jsonl")
+                with open(split_file, "w", encoding="utf-8") as f:
+                    for item in split_data:
+                        f.write(json.dumps(item, ensure_ascii=False) + "\n")
+                print(f"   {split_name}: {len(split_data)} samples")
+
+            # Create dataset info
+            info = {
+                "dataset_name": "enhanced_music_sentiment",
+                "version": self.dataset_version,
+                "description": "Enhanced music industry sentiment dataset with music slang and cultural expressions",
+                "splits": {split: len(data) for split, data in splits},
+                "labels": list(set(d["label"] for d in data)),
+                "features": {"text": "string", "label": "string", "confidence": "float", "id": "string"},
+            }
+
+            with open(os.path.join(output_dir, "dataset_info.json"), "w") as f:
+                json.dump(info, f, indent=2, ensure_ascii=False)
+
+        self._with_timeout(_dump_hf, timeout_s)
+        print(f"💾 HuggingFace format exported: {output_dir}/")
+
+    def create_transformer_training_config(self, model_name: str = "distilbert-base-uncased") -> Dict[str, any]:
+        """Create training configuration for transformer fine-tuning."""
+
+        # Analyze dataset characteristics
+        stats = self.get_statistics()
+
+        config = {
+            "model_name": model_name,
+            "task": "text-classification",
+            "num_labels": len(stats["sentiment_distribution"]),
+            "label2id": {label: i for i, label in enumerate(stats["sentiment_distribution"].keys())},
+            "id2label": {i: label for i, label in enumerate(stats["sentiment_distribution"].keys())},
+            # Training parameters optimized for music domain
+            "learning_rate": 2e-5,
+            "num_train_epochs": 3,
+            "per_device_train_batch_size": 16,
+            "per_device_eval_batch_size": 16,
+            "warmup_steps": 500,
+            "weight_decay": 0.01,
+            "logging_dir": "./logs",
+            # Music-specific settings
+            "max_length": 128,  # Music comments are typically short
+            "truncation": True,
+            "padding": "max_length",
+            # Dataset info
+            "dataset_size": stats["total_phrases"],
+            "class_distribution": stats["sentiment_distribution"],
+            "avg_confidence": stats["avg_confidence"],
+            # Preprocessing settings
+            "preserve_music_slang": True,
+            "handle_emoji": True,
+            "normalize_unicode": True,
+        }
+
+        return config
 
 
 # --------------------------- Convenience API ---------------------------

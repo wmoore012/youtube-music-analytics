@@ -14,10 +14,10 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-import logging
-import re
 from collections import Counter
 from datetime import datetime, timedelta
+import logging
+import re
 
 import numpy as np
 import pandas as pd
@@ -102,7 +102,7 @@ class EnhancedBotDetector:
     def calculate_bot_score(self, comment_data: dict) -> float:
         """Calculate bot probability score (0.0 = human, 1.0 = bot)."""
         score = 0.0
-        text = comment_data["comment_text"]
+        text_item = comment_data["comment_text"]
 
         # If whitelisted as fan, very low bot score
         if self.is_whitelisted_fan(text):
@@ -172,7 +172,7 @@ class EnhancedBotDetector:
 
     def calculate_engagement_authenticity(self, comment_data: dict) -> float:
         """Calculate engagement authenticity score (higher = more authentic)."""
-        text = comment_data["comment_text"]
+        text_item = comment_data["comment_text"]
 
         # Authentic engagement indicators
         authenticity_score = 0.0

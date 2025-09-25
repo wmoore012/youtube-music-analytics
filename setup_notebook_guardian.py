@@ -4,8 +4,9 @@ Setup script for Notebook Guardian - The AI Agent's Best Friend.
 Ultra-fast, dependency-aware validation for data science workflows.
 """
 
-from setuptools import setup, find_packages
 from pathlib import Path
+
+from setuptools import find_packages, setup
 
 # Read README for long description
 readme_path = Path(__file__).parent / "NOTEBOOK_GUARDIAN_README.md"
@@ -33,21 +34,17 @@ setup(
     classifiers=[
         # Development Status
         "Development Status :: 5 - Production/Stable",
-        
         # Intended Audience
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
-        
         # Topic
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Software Development :: Testing",
-        
         # License
         "License :: OSI Approved :: MIT License",
-        
         # Python versions
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
@@ -56,21 +53,29 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
-        
         # Operating Systems
         "Operating System :: OS Independent",
-        
         # Environment
         "Environment :: Console",
         "Environment :: Web Environment",
-        
         # Natural Language
         "Natural Language :: English",
     ],
     keywords=[
-        "data-science", "validation", "jupyter", "notebook", "ai-agent",
-        "machine-learning", "deep-learning", "dependencies", "automation",
-        "testing", "quality-assurance", "pandas", "scikit-learn", "tensorflow"
+        "data-science",
+        "validation",
+        "jupyter",
+        "notebook",
+        "ai-agent",
+        "machine-learning",
+        "deep-learning",
+        "dependencies",
+        "automation",
+        "testing",
+        "quality-assurance",
+        "pandas",
+        "scikit-learn",
+        "tensorflow",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -91,7 +96,6 @@ setup(
             "nbconvert>=6.0.0",
             "ipywidgets>=7.6.0",
         ],
-        
         # Development dependencies
         "dev": [
             "pytest>=6.0.0",
@@ -104,14 +108,12 @@ setup(
             "mypy>=0.910",
             "pre-commit>=2.15.0",
         ],
-        
         # Documentation dependencies
         "docs": [
             "sphinx>=4.0.0",
             "sphinx-rtd-theme>=0.5.0",
             "myst-parser>=0.15.0",
         ],
-        
         # Machine Learning extras
         "ml": [
             "scikit-learn>=1.0.0",
@@ -119,14 +121,12 @@ setup(
             "lightgbm>=3.2.0",
             "catboost>=1.0.0",
         ],
-        
         # Deep Learning extras
         "dl": [
             "tensorflow>=2.6.0",
             "torch>=1.9.0",
             "torchvision>=0.10.0",
         ],
-        
         # Visualization extras
         "viz": [
             "matplotlib>=3.3.0",
@@ -150,7 +150,6 @@ setup(
         ],
     },
     zip_safe=False,
-    
     # Performance optimizations
     options={
         "bdist_wheel": {
@@ -164,30 +163,55 @@ setup_kwargs = {
     "name": "notebook-guardian",
     "version": version,
     "description": "The AI Agent's Best Friend for Data Science Validation",
-    
     # Marketing keywords for discoverability
     "keywords": [
         # AI/ML Keywords
-        "artificial-intelligence", "machine-learning", "deep-learning", 
-        "data-science", "mlops", "ai-agent", "automation",
-        
-        # Validation Keywords  
-        "validation", "testing", "quality-assurance", "data-validation",
-        "schema-validation", "type-checking", "error-detection",
-        
+        "artificial-intelligence",
+        "machine-learning",
+        "deep-learning",
+        "data-science",
+        "mlops",
+        "ai-agent",
+        "automation",
+        # Validation Keywords
+        "validation",
+        "testing",
+        "quality-assurance",
+        "data-validation",
+        "schema-validation",
+        "type-checking",
+        "error-detection",
         # Jupyter/Python Keywords
-        "jupyter", "notebook", "python", "pandas", "numpy", "scikit-learn",
-        "tensorflow", "pytorch", "matplotlib", "seaborn", "plotly",
-        
+        "jupyter",
+        "notebook",
+        "python",
+        "pandas",
+        "numpy",
+        "scikit-learn",
+        "tensorflow",
+        "pytorch",
+        "matplotlib",
+        "seaborn",
+        "plotly",
         # Workflow Keywords
-        "ci-cd", "pipeline", "reproducibility", "research", "education",
-        "dependency-management", "package-installation", "auto-install",
-        
+        "ci-cd",
+        "pipeline",
+        "reproducibility",
+        "research",
+        "education",
+        "dependency-management",
+        "package-installation",
+        "auto-install",
         # Performance Keywords
-        "fast", "parallel", "efficient", "optimized", "lightning-fast",
-        "high-performance", "scalable", "production-ready"
+        "fast",
+        "parallel",
+        "efficient",
+        "optimized",
+        "lightning-fast",
+        "high-performance",
+        "scalable",
+        "production-ready",
     ],
-    
     # Detailed project information
     "project_urls": {
         "Homepage": "https://github.com/ai-agent-collective/notebook-guardian",

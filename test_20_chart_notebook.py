@@ -6,12 +6,12 @@ Creates, executes, and validates the dynamic notebook with real data.
 Ensures all 20 charts are generated and final status matches expectations.
 """
 
+from datetime import datetime
 import json
 import logging
+from pathlib import Path
 import re
 import subprocess
-from datetime import datetime
-from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

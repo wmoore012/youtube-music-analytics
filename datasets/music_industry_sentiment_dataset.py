@@ -23,9 +23,9 @@ Authors: Music Analytics Research Team
 Version: 1.0
 """
 
-import random
 from dataclasses import dataclass
 from enum import Enum
+import random
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd

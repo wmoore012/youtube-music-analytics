@@ -23,9 +23,9 @@ Usage Examples:
 """
 
 import os
+from pathlib import Path
 import re
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 

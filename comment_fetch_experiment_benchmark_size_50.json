@@ -1,0 +1,18 @@
+{
+  "experiment_id": "benchmark_size_50",
+  "timestamp": "2025-09-18T09:35:57.853887+00:00",
+  "random_seed": 42,
+  "limit": 50,
+  "video_ids": null,
+  "artists": null,
+  "stratify_by_engagement": true,
+  "query_parameters": {
+    "limit": 50,
+    "random_seed": 42
+  },
+  "comments_fetched": 50,
+  "artists_found": 6,
+  "engagement_distribution": {
+    "high_engagement": 50
+  }
+}

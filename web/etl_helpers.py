@@ -40,21 +40,21 @@ from web.etl_helpers import (
 
 __doctest__ = False  # 🚫 Skip doc‑string doctests when PyCharm / pytest runs the module
 import contextlib
+from contextlib import contextmanager
 import json
 import os
-import re
-from contextlib import contextmanager
 from pathlib import Path
+import re
 
-import pandas as pd
 from dotenv import load_dotenv  # NEW: enables load_dotenv()
+import pandas as pd
 from sqlalchemy import MetaData  # fixes NameError in init_tables()
 from sqlalchemy import Table  # used for type hints all over the file
 from sqlalchemy import create_engine  # used in get_engine()
+from sqlalchemy import insert
 from sqlalchemy import inspect  # used in bulk_upsert()
 from sqlalchemy import select  # already imported later, but safe to add here
 from sqlalchemy import text  # used in several on_duplicate_key_update() calls
-from sqlalchemy import insert
 from sqlalchemy.engine import Connection  # used for type hints
 from sqlalchemy.engine import Engine
 
@@ -354,7 +354,7 @@ def detect_version_type(track_title: str, album_title: str = None) -> str:
     # First, try to extract version from parentheses in the track title
     m = re.match(r"^(.*?)\s*\(([^)]+)\)", track_title)
     if m:
-        version_text = m.group(2).strip()
+        version_text_item = m.group(2).strip()
         # Check if the extracted version matches any of our known version types
         for version_type, pattern in version_keywords.items():
             if re.search(pattern, version_text, re.IGNORECASE):

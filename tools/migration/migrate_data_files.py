@@ -8,8 +8,9 @@ allowing users to migrate scattered data files into organized database tables.
 
 import argparse
 import json
-import sys
+import os
 from pathlib import Path
+import sys
 from typing import Any, Dict
 
 from sqlalchemy import create_engine

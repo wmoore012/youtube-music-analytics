@@ -12,12 +12,12 @@ Provides rigorous statistical evaluation with multiple testing approaches includ
 
 from __future__ import annotations
 
-import json
-import random
-import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import random
 from typing import Any, Dict, List, Optional, Tuple, Union
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -32,6 +32,15 @@ from sklearn.metrics import (
     recall_score,
 )
 from sklearn.model_selection import GroupKFold
+
+# Import ML data models for transformer-ready preprocessing
+try:
+    from youtubeviz.ml_data_models import DataSplit, MLComment, MLDataset, SentimentLabel, TransformerConfig
+    from youtubeviz.unique_comment_manager import UniqueCommentManager
+
+    ML_MODELS_AVAILABLE = True
+except ImportError:
+    ML_MODELS_AVAILABLE = False
 
 # --------------------------- Data Models ---------------------------
 
@@ -723,7 +732,7 @@ class SentimentEvaluationFramework:
         if hasattr(model, "get_params"):
             try:
                 config.update(model.get_params())
-            except:
+            except Exception:
                 pass
 
         if hasattr(model, "__dict__"):
@@ -732,7 +741,7 @@ class SentimentEvaluationFramework:
                 for key, value in model.__dict__.items():
                     if isinstance(value, (str, int, float, bool, type(None))):
                         config[key] = value
-            except:
+            except Exception:
                 pass
 
         return config
@@ -766,6 +775,10 @@ class SentimentEvaluationFramework:
             idiom_pattern = r"\b(this slaps|ate and left no crumbs|hits different|goes hard|chef\'s kiss)\b"
             return text_series.str.contains(idiom_pattern, case=False, regex=True, na=False)
 
+        def has_music_slang(text_series):
+            music_slang_pattern = r"\b(banger|fire|goated|slaps|mid|trash|cringe|periodt)\b"
+            return text_series.str.contains(music_slang_pattern, case=False, regex=True, na=False)
+
         def is_long_comment(text_series):
             return text_series.str.len() > 100
 
@@ -776,9 +789,418 @@ class SentimentEvaluationFramework:
             "emoji_heavy": has_emoji,
             "booster_present": has_boosters,
             "idiom_present": has_idioms,
+            "music_slang_present": has_music_slang,
             "long_comments": is_long_comment,
             "short_comments": is_short_comment,
         }
+
+    # ===== TRANSFORMER-READY DATA PREPARATION =====
+
+    def prepare_transformer_dataset(
+        self,
+        comments: List[str],
+        labels: Optional[List[str]] = None,
+        video_ids: Optional[List[str]] = None,
+        transformer_config: Optional["TransformerConfig"] = None,
+        use_unique_comments: bool = True,
+    ) -> Optional["MLDataset"]:
+        """
+        Prepare transformer-ready dataset with proper preprocessing.
+
+        Args:
+            comments: List of comment texts
+            labels: Optional sentiment labels
+            video_ids: Optional video IDs for grouping
+            transformer_config: Transformer preprocessing configuration
+            use_unique_comments: Whether to ensure comment uniqueness
+
+        Returns:
+            MLDataset ready for transformer training or None if failed
+        """
+        if not ML_MODELS_AVAILABLE:
+            warnings.warn("ML data models not available. Install required dependencies.")
+            return None
+
+        try:
+            # Use default transformer config if not provided
+            if transformer_config is None:
+                transformer_config = TransformerConfig(
+                    model_name="distilbert-base-uncased",
+                    max_length=512,
+                    preserve_music_slang=True,
+                    normalize_emoji=False,
+                    handle_mentions=True,
+                )
+
+            # Initialize unique comment manager if requested
+            comment_manager = None
+            if use_unique_comments:
+                comment_manager = UniqueCommentManager()
+
+            # Create ML dataset
+            dataset = MLDataset(
+                name="transformer_evaluation_dataset",
+                description="Dataset prepared for transformer model evaluation",
+                version="1.0",
+            )
+
+            # Process each comment
+            processed_comments = []
+            seen_hashes = set()
+
+            for i, comment_text in enumerate(comments):
+                try:
+                    # Skip if using unique comments and already seen
+                    if use_unique_comments and comment_manager:
+                        if comment_manager.is_comment_used(comment_text):
+                            continue
+
+                    # Preprocess for transformers
+                    normalized_text = self._preprocess_for_transformer(comment_text, transformer_config)
+
+                    if not normalized_text.strip():
+                        continue
+
+                    # Create unique hash
+                    import hashlib
+
+                    unique_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()[:16]
+
+                    if unique_hash in seen_hashes:
+                        continue
+                    seen_hashes.add(unique_hash)
+
+                    # Create metadata
+                    from youtubeviz.ml_data_models import CommentMetadata, MusicDomain
+
+                    metadata = CommentMetadata(
+                        comment_id=unique_hash,
+                        video_id=video_ids[i] if video_ids and i < len(video_ids) else f"video_{i}",
+                        like_count=0,
+                        music_domain=self._classify_music_domain_simple(comment_text),
+                        contains_music_slang=self._contains_music_slang_simple(comment_text),
+                        slang_terms=self._extract_slang_terms_simple(comment_text),
+                    )
+
+                    # Create ML comment
+                    ml_comment = MLComment(
+                        text=comment_text,
+                        normalized_text=normalized_text,
+                        sentiment_label=SentimentLabel(labels[i]) if labels and i < len(labels) else None,
+                        token_count=len(normalized_text.split()),
+                        contains_emoji=self._contains_emoji_simple(comment_text),
+                        emoji_count=self._count_emoji_simple(comment_text),
+                        data_split=DataSplit.UNLABELED,
+                        unique_hash=unique_hash,
+                        metadata=metadata,
+                    )
+
+                    processed_comments.append(ml_comment)
+
+                    # Allocate comment if using unique manager
+                    if use_unique_comments and comment_manager:
+                        comment_manager.allocate_comment(
+                            comment_text=comment_text,
+                            usage_type="evaluation",
+                            system_name="transformer_evaluation",
+                            notes="Allocated for transformer evaluation",
+                        )
+
+                except Exception as e:
+                    warnings.warn(f"Failed to process comment {i}: {e}")
+                    continue
+
+            # Add processed comments to dataset
+            for comment in processed_comments:
+                dataset.add_comment(comment)
+
+            print(f"✅ Prepared transformer dataset: {len(processed_comments)} unique comments")
+            return dataset
+
+        except Exception as e:
+            warnings.warn(f"Failed to prepare transformer dataset: {e}")
+            return None
+
+    def create_transformer_splits(
+        self,
+        dataset: "MLDataset",
+        train_ratio: float = 0.7,
+        val_ratio: float = 0.15,
+        test_ratio: float = 0.15,
+        group_by_video: bool = True,
+        random_seed: int = 42,
+    ) -> "MLDataset":
+        """
+        Create train/validation/test splits for transformer training.
+
+        Args:
+            dataset: ML dataset to split
+            train_ratio: Training set ratio
+            val_ratio: Validation set ratio
+            test_ratio: Test set ratio
+            group_by_video: Whether to group by video_id to prevent leakage
+            random_seed: Random seed for reproducibility
+
+        Returns:
+            Dataset with updated split assignments
+        """
+        if not ML_MODELS_AVAILABLE:
+            return dataset
+
+        try:
+            # Validate ratios
+            if abs(train_ratio + val_ratio + test_ratio - 1.0) > 0.001:
+                raise ValueError("Split ratios must sum to 1.0")
+
+            # Get labeled comments only
+            labeled_comments = dataset.get_labeled_comments()
+            if len(labeled_comments) < 10:
+                warnings.warn("Insufficient labeled comments for splitting")
+                return dataset
+
+            # Set random seed
+            np.random.seed(random_seed)
+
+            if group_by_video:
+                # Group by video to prevent data leakage
+                video_groups = {}
+                for comment in labeled_comments:
+                    video_id = comment.metadata.video_id
+                    if video_id not in video_groups:
+                        video_groups[video_id] = []
+                    video_groups[video_id].append(comment)
+
+                # Shuffle video groups
+                video_ids = list(video_groups.keys())
+                np.random.shuffle(video_ids)
+
+                # Split videos into train/val/test
+                n_videos = len(video_ids)
+                train_end = int(n_videos * train_ratio)
+                val_end = int(n_videos * (train_ratio + val_ratio))
+
+                train_videos = video_ids[:train_end]
+                val_videos = video_ids[train_end:val_end]
+                test_videos = video_ids[val_end:]
+
+                # Assign splits
+                for comment in labeled_comments:
+                    video_id = comment.metadata.video_id
+                    if video_id in train_videos:
+                        comment.data_split = DataSplit.TRAIN
+                    elif video_id in val_videos:
+                        comment.data_split = DataSplit.VALIDATION
+                    else:
+                        comment.data_split = DataSplit.TEST
+
+            else:
+                # Simple random split
+                np.random.shuffle(labeled_comments)
+                n_comments = len(labeled_comments)
+
+                train_end = int(n_comments * train_ratio)
+                val_end = int(n_comments * (train_ratio + val_ratio))
+
+                for i, comment in enumerate(labeled_comments):
+                    if i < train_end:
+                        comment.data_split = DataSplit.TRAIN
+                    elif i < val_end:
+                        comment.data_split = DataSplit.VALIDATION
+                    else:
+                        comment.data_split = DataSplit.TEST
+
+            # Update dataset statistics
+            dataset._update_statistics()
+
+            print(
+                f"✅ Created transformer splits: "
+                f"{dataset.train_count} train, "
+                f"{dataset.validation_count} val, "
+                f"{dataset.test_count} test"
+            )
+
+            return dataset
+
+        except Exception as e:
+            warnings.warn(f"Failed to create transformer splits: {e}")
+            return dataset
+
+    def export_transformer_data(
+        self, dataset: "MLDataset", output_dir: str = "transformer_data", format_type: str = "jsonl"
+    ) -> Dict[str, str]:
+        """
+        Export transformer-ready data in specified format.
+
+        Args:
+            dataset: ML dataset to export
+            output_dir: Output directory
+            format_type: Export format (jsonl, csv, parquet)
+
+        Returns:
+            Dictionary mapping split names to file paths
+        """
+        if not ML_MODELS_AVAILABLE:
+            return {}
+
+        try:
+            import os
+
+            os.makedirs(output_dir, exist_ok=True)
+
+            exported_files = {}
+
+            # Export each split
+            for split in [DataSplit.TRAIN, DataSplit.VALIDATION, DataSplit.TEST]:
+                split_comments = dataset.get_split(split)
+                if not split_comments:
+                    continue
+
+                # Prepare data for export
+                export_data = []
+                for comment in split_comments:
+                    export_data.append(comment.to_training_dict())
+
+                if not export_data:
+                    continue
+
+                # Export based on format
+                filename = f"{split.value}.{format_type}"
+                filepath = os.path.join(output_dir, filename)
+
+                if format_type == "jsonl":
+                    import json
+
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        for item in export_data:
+                            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+                elif format_type == "csv":
+                    df = pd.DataFrame(export_data)
+                    df.to_csv(filepath, index=False)
+
+                elif format_type == "parquet":
+                    try:
+                        import pyarrow as pa
+                        import pyarrow.parquet as pq
+
+                        df = pd.DataFrame(export_data)
+                        table = pa.Table.from_pandas(df)
+                        pq.write_table(table, filepath)
+                    except ImportError:
+                        warnings.warn("PyArrow not available, falling back to CSV")
+                        df = pd.DataFrame(export_data)
+                        df.to_csv(filepath.replace(".parquet", ".csv"), index=False)
+
+                exported_files[split.value] = filepath
+                print(f"✅ Exported {len(export_data)} {split.value} samples to {filepath}")
+
+            return exported_files
+
+        except Exception as e:
+            warnings.warn(f"Failed to export transformer data: {e}")
+            return {}
+
+    # ===== HELPER METHODS FOR TRANSFORMER PREPROCESSING =====
+
+    def _preprocess_for_transformer(self, text: str, config: "TransformerConfig") -> str:
+        """Preprocess text for transformer models."""
+        import re
+
+        # Start with original text
+        processed = text.strip()
+
+        # Handle mentions if requested
+        if config.handle_mentions:
+            processed = re.sub(r"@\w+", "[USER]", processed)
+
+        # Preserve music slang if requested
+        if config.preserve_music_slang:
+            # Don't lowercase music slang terms
+            music_slang = ["GOATED", "PERIODT", "SLAY", "FIRE", "SLAPS", "BANGER", "HITS DIFFERENT", "GOES HARD"]
+            # Simple preservation - more sophisticated version would use NER
+            pass
+
+        # Normalize emoji if requested
+        if config.normalize_emoji:
+            emoji_map = {"🔥": " fire ", "💯": " hundred ", "😍": " love ", "😭": " crying ", "👑": " crown "}
+            for emoji, text_replacement in emoji_map.items():
+                processed = processed.replace(emoji, text_replacement)
+
+        # Basic cleanup
+        processed = re.sub(r"\s+", " ", processed)  # Collapse whitespace
+        processed = processed.strip()
+
+        return processed
+
+    def _classify_music_domain_simple(self, text: str) -> "MusicDomain":
+        """Simple music domain classification."""
+        if not ML_MODELS_AVAILABLE:
+            return "general"
+
+        from youtubeviz.ml_data_models import MusicDomain
+
+        text_lower = text.lower()
+
+        if any(term in text_lower for term in ["song", "track", "album", "music"]):
+            return MusicDomain.MUSIC_DISCUSSION
+        elif any(term in text_lower for term in ["live", "concert", "performance"]):
+            return MusicDomain.LIVE_PERFORMANCE
+        elif any(term in text_lower for term in ["video", "mv", "official"]):
+            return MusicDomain.MUSIC_VIDEO
+        else:
+            return MusicDomain.GENERAL
+
+    def _contains_music_slang_simple(self, text: str) -> bool:
+        """Simple music slang detection."""
+        text_lower = text.lower()
+        slang_terms = [
+            "slaps",
+            "banger",
+            "fire",
+            "goated",
+            "hits different",
+            "goes hard",
+            "periodt",
+            "no cap",
+            "mid",
+            "trash",
+        ]
+        return any(term in text_lower for term in slang_terms)
+
+    def _extract_slang_terms_simple(self, text: str) -> List[str]:
+        """Simple slang term extraction."""
+        text_lower = text.lower()
+        slang_terms = [
+            "slaps",
+            "banger",
+            "fire",
+            "goated",
+            "hits different",
+            "goes hard",
+            "periodt",
+            "no cap",
+            "mid",
+            "trash",
+        ]
+        return [term for term in slang_terms if term in text_lower]
+
+    def _contains_emoji_simple(self, text: str) -> bool:
+        """Simple emoji detection."""
+        import re
+
+        emoji_pattern = re.compile(
+            r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]+"
+        )
+        return bool(emoji_pattern.search(text))
+
+    def _count_emoji_simple(self, text: str) -> int:
+        """Simple emoji counting."""
+        import re
+
+        emoji_pattern = re.compile(
+            r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]"
+        )
+        return len(emoji_pattern.findall(text))
 
 
 # --------------------------- Convenience Functions ---------------------------

@@ -4,8 +4,8 @@ Create a working notebook that actually generates charts with real data.
 Focus on the 5 functions we know exist and work.
 """
 
-import json
 from datetime import datetime
+import json
 
 
 def create_working_notebook():

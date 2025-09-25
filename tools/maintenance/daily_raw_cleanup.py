@@ -15,8 +15,8 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-import logging
 from datetime import datetime
+import logging
 
 import pandas as pd
 from sqlalchemy import text

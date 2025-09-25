@@ -55,7 +55,7 @@ python tools/monitor.py --etl-status
 python tools/etl.py                    # Run ETL
 python tools/monitor.py                # Check quality
 
-# Weekly maintenance  
+# Weekly maintenance
 python tools/monitor.py --full-check   # Deep quality check
 python tools/maintenance/cleanup.py    # Clean old data
 
@@ -67,7 +67,7 @@ python tools/setup.py --full-setup     # Complete setup
 
 Each tool includes:
 - ✅ Comprehensive error handling
-- 📊 Progress reporting  
+- 📊 Progress reporting
 - 🔧 Configurable options
 - 📝 Detailed logging
 - ⚡ Performance optimization

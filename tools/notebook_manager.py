@@ -4,11 +4,11 @@ Notebook Management System for MusicScope™
 Handles archiving, versioning, and creation of new notebooks.
 """
 
+from datetime import datetime
 import json
 import os
-import shutil
-from datetime import datetime
 from pathlib import Path
+import shutil
 
 
 def get_today_date():
@@ -146,8 +146,8 @@ def create_new_notebook(template_path=None, notebooks_dir="notebooks"):
 def test_notebook(notebook_path):
     """Test if a notebook can be executed without errors."""
     try:
-        import nbformat
         from nbconvert.preprocessors import ExecutePreprocessor
+        import nbformat
 
         with open(notebook_path) as f:
             nb = nbformat.read(f, as_version=4)

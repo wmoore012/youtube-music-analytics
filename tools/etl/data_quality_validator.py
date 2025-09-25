@@ -198,7 +198,7 @@ class DataQualityValidator:
                         null_count = conn.execute(
                             text(
                                 f"""
-                            SELECT COUNT(*) FROM {table} 
+                            SELECT COUNT(*) FROM {table}
                             WHERE {column} IS NULL OR TRIM({column}) = ''
                         """
                             )
@@ -214,7 +214,7 @@ class DataQualityValidator:
 
                             # Get sample records
                             sample_query = f"""
-                                SELECT * FROM {table} 
+                                SELECT * FROM {table}
                                 WHERE {column} IS NULL OR TRIM({column}) = ''
                                 LIMIT 3
                             """
@@ -608,7 +608,7 @@ class DataQualityValidator:
                     try:
                         count = conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
                         stats[f"{table}_count"] = count
-                    except:
+                    except Exception:
                         stats[f"{table}_count"] = 0
 
                 # Data coverage
@@ -626,7 +626,7 @@ class DataQualityValidator:
                     ).scalar()
                     stats["unique_videos"] = unique_videos
                     stats["unique_channels"] = unique_channels
-                except:
+                except Exception:
                     pass
 
                 # Date ranges
@@ -634,11 +634,11 @@ class DataQualityValidator:
                     date_range = conn.execute(
                         text(
                             """
-                        SELECT 
+                        SELECT
                             MIN(published_at) as earliest_video,
                             MAX(published_at) as latest_video,
                             DATEDIFF(MAX(published_at), MIN(published_at)) as date_span_days
-                        FROM youtube_videos 
+                        FROM youtube_videos
                         WHERE published_at IS NOT NULL
                     """
                         )
@@ -650,7 +650,7 @@ class DataQualityValidator:
                         )
                         stats["latest_video"] = date_range.latest_video.isoformat() if date_range.latest_video else None
                         stats["date_span_days"] = date_range.date_span_days
-                except:
+                except Exception:
                     pass
 
             except Exception as e:

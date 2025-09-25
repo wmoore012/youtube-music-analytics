@@ -6,8 +6,8 @@ Evaluates multiple VADER enhancement variants against real database comments
 using proper statistical methodology to avoid overfitting.
 """
 
-import json
 from datetime import datetime
+import json
 from typing import Dict, List, Tuple
 
 import pandas as pd
@@ -21,27 +21,23 @@ from web.etl_helpers import get_engine
 def cleanup_old_evaluation_data(retention_days: int = 30) -> Dict[str, int]:
     """
     Clean up old evaluation data according to retention policy (Requirement 7.4).
-    
+
     Args:
         retention_days: Number of days to retain data
-        
+
     Returns:
         Dictionary with cleanup statistics
     """
     from datetime import datetime, timedelta, timezone
-    import os
     import glob
-    
+    import os
+
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=retention_days)
-    
+
     print(f"🧹 Cleaning up evaluation data older than {retention_days} days (before {cutoff_date.date()})")
-    
-    cleanup_stats = {
-        "experiment_logs_removed": 0,
-        "evaluation_files_removed": 0,
-        "database_records_cleaned": 0
-    }
-    
+
+    cleanup_stats = {"experiment_logs_removed": 0, "evaluation_files_removed": 0, "database_records_cleaned": 0}
+
     try:
         # Clean up experiment log files
         log_files = glob.glob("comment_fetch_experiment_*.json") + glob.glob("comment_fetch_error_*.json")
@@ -53,9 +49,13 @@ def cleanup_old_evaluation_data(retention_days: int = 30) -> Dict[str, int]:
                     cleanup_stats["experiment_logs_removed"] += 1
             except Exception as e:
                 print(f"⚠️  Could not remove {log_file}: {e}")
-        
+
         # Clean up evaluation result files
-        eval_files = glob.glob("vader_evaluation_report_*.json") + glob.glob("vader_comparison_*.csv") + glob.glob("vader_improvements_*.csv")
+        eval_files = (
+            glob.glob("vader_evaluation_report_*.json")
+            + glob.glob("vader_comparison_*.csv")
+            + glob.glob("vader_improvements_*.csv")
+        )
         for eval_file in eval_files:
             try:
                 file_time = datetime.fromtimestamp(os.path.getmtime(eval_file), tz=timezone.utc)
@@ -64,36 +64,36 @@ def cleanup_old_evaluation_data(retention_days: int = 30) -> Dict[str, int]:
                     cleanup_stats["evaluation_files_removed"] += 1
             except Exception as e:
                 print(f"⚠️  Could not remove {eval_file}: {e}")
-        
+
         # Note: Database cleanup would be done here in production
         # For safety, we don't actually delete comment data in this demo
         print(f"ℹ️  Database cleanup not performed (safety measure)")
-        
+
         print(f"✅ Cleanup completed: {cleanup_stats}")
-        
+
     except Exception as e:
         print(f"❌ Cleanup failed: {e}")
-    
+
     return cleanup_stats
 
 
 def fetch_evaluation_comments(
-    limit: int = 500, 
+    limit: int = 500,
     random_seed: int = 42,
-    experiment_id: str = None,
-    video_ids: List[str] = None,
-    artists: List[str] = None,
-    stratify_by_engagement: bool = True
+    experiment_id: Optional[str] = None,
+    video_ids: Optional[List[str]] = None,
+    artists: Optional[List[str]] = None,
+    stratify_by_engagement: bool = True,
 ) -> pd.DataFrame:
     """
     Fetch diverse real comments for evaluation with experiment tracking.
-    
+
     Enhanced version that meets requirements 7.1-7.4:
     - 7.1: Experiment reproducibility with comprehensive logging
-    - 7.2: Random seed management and deterministic sampling  
+    - 7.2: Random seed management and deterministic sampling
     - 7.3: API query parameter logging and metadata tracking
     - 7.4: Data retention compliance with configurable cleanup policies
-    
+
     Args:
         limit: Maximum number of comments to fetch
         random_seed: Random seed for reproducible sampling
@@ -101,20 +101,20 @@ def fetch_evaluation_comments(
         video_ids: Specific video IDs to sample from (optional)
         artists: Specific artists to sample from (optional)
         stratify_by_engagement: Whether to stratify by engagement levels
-    
+
     Returns:
         DataFrame with evaluation comments and experiment metadata
     """
-    import random
     from datetime import datetime, timezone
-    
+    import random
+
     # Set random seed for reproducibility (Requirement 7.2)
     random.seed(random_seed)
-    
+
     # Generate experiment ID if not provided (Requirement 7.1)
     if experiment_id is None:
         experiment_id = f"comment_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
+
     # Log experiment parameters (Requirement 7.3)
     experiment_metadata = {
         "experiment_id": experiment_id,
@@ -124,7 +124,7 @@ def fetch_evaluation_comments(
         "video_ids": video_ids,
         "artists": artists,
         "stratify_by_engagement": stratify_by_engagement,
-        "query_parameters": {}
+        "query_parameters": {},
     }
 
     try:
@@ -151,32 +151,32 @@ def fetch_evaluation_comments(
             AND c.comment_text NOT LIKE '%http%'
             AND c.comment_text NOT REGEXP '^[0-9:]+$'  -- Skip timestamps
         """
-        
+
         params = {"limit": limit, "random_seed": random_seed}
-        
+
         # Add video ID filter if specified
         if video_ids:
-            placeholders = ",".join([f":video_id_{i}" for i in range(len(video_ids))])
+            placeholders = ",".join([f":video_id_{idx}" for idx in range(len(video_ids))])
             base_query += f" AND c.video_id IN ({placeholders})"
-            for i, video_id in enumerate(video_ids):
-                params[f"video_id_{i}"] = video_id
-        
-        # Add artist filter if specified  
+            for idx, video_id in enumerate(video_ids):
+                params[f"video_id_{idx}"] = video_id
+
+        # Add artist filter if specified
         if artists:
-            placeholders = ",".join([f":artist_{i}" for i in range(len(artists))])
+            placeholders = ",".join([f":artist_{idx}" for idx in range(len(artists))])
             base_query += f" AND v.channel_title IN ({placeholders})"
-            for i, artist in enumerate(artists):
-                params[f"artist_{i}"] = artist
-        
+            for idx, artist in enumerate(artists):
+                params[f"artist_{idx}"] = artist
+
         # Add sampling strategy
         if stratify_by_engagement:
             # Get stratified sample across engagement levels
             base_query += " ORDER BY engagement_level, RAND(:random_seed)"
         else:
             base_query += " ORDER BY RAND(:random_seed)"
-            
+
         base_query += " LIMIT :limit"
-        
+
         # Log query parameters (Requirement 7.3)
         experiment_metadata["query_parameters"] = params.copy()
 
@@ -190,22 +190,22 @@ def fetch_evaluation_comments(
         comments_df["has_caps"] = comments_df["comment_text"].str.contains(r"[A-Z]{3,}", regex=True)
         comments_df["has_exclamation"] = comments_df["comment_text"].str.contains(r"!{2,}", regex=True)
         comments_df["word_count"] = comments_df["comment_text"].str.split().str.len()
-        
+
         # Add experiment tracking columns (Requirement 7.1)
         comments_df["experiment_id"] = experiment_id
         comments_df["fetched_at"] = datetime.now(timezone.utc)
         comments_df["random_seed"] = random_seed
-        
+
         # Update experiment metadata
         experiment_metadata["comments_fetched"] = len(comments_df)
         experiment_metadata["artists_found"] = comments_df["artist"].nunique()
         experiment_metadata["engagement_distribution"] = comments_df["engagement_level"].value_counts().to_dict()
-        
+
         # Save experiment log (Requirement 7.1)
         log_filename = f"comment_fetch_experiment_{experiment_id}.json"
         with open(log_filename, "w") as f:
             json.dump(experiment_metadata, f, indent=2, default=str)
-        
+
         print(f"📋 Experiment metadata saved to {log_filename}")
 
         return comments_df
@@ -215,11 +215,11 @@ def fetch_evaluation_comments(
         # Log error in experiment metadata
         experiment_metadata["error"] = str(e)
         experiment_metadata["comments_fetched"] = 0
-        
+
         error_log_filename = f"comment_fetch_error_{experiment_id}.json"
         with open(error_log_filename, "w") as f:
             json.dump(experiment_metadata, f, indent=2, default=str)
-            
+
         return pd.DataFrame()
 
 
@@ -475,7 +475,7 @@ def main():
         limit=300,  # Reasonable sample size
         random_seed=42,  # Reproducible sampling
         experiment_id=experiment_id,
-        stratify_by_engagement=True
+        stratify_by_engagement=True,
     )
 
     if len(comments_df) == 0:
@@ -538,7 +538,7 @@ def main():
 
     print(f"\n✅ Evaluation complete! Results saved with timestamp: {timestamp}")
     print(f"🎯 Next step: Implement best variant in production pipeline")
-    
+
     # Show experiment tracking summary
     print(f"\n📋 Experiment Tracking Summary:")
     print(f"   • Experiment ID: {experiment_id}")

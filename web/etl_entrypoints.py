@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Optional
+import time
+from typing import Optional, Tuple
 
 from dotenv import load_dotenv
 
@@ -95,7 +96,6 @@ def run_sentiment_scoring(
 
     Returns simple stats dict.
     """
-    import time
 
     _setup_sentiment_environment()
     start_time = time.time()

@@ -1,7 +1,7 @@
 """Integration tests for the complete scoring system."""
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 import pandas as pd
 import pytest

@@ -3,8 +3,8 @@ Auto-generated summary system for MusicScope™ analytics.
 Creates intelligent summaries based on data patterns with compassionate insights.
 """
 
-import os
 from datetime import datetime, timedelta
+import os
 from typing import Any, Dict, List, Optional
 
 import numpy as np

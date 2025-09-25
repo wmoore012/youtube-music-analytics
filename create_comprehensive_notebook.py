@@ -4,8 +4,8 @@ Create THE comprehensive storytelling notebook that combines all our work.
 This is the ONE notebook with all charts in strategic story-telling order.
 """
 
-import json
 from datetime import datetime, timedelta
+import json
 
 import numpy as np
 import pandas as pd

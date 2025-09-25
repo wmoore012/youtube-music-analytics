@@ -4,14 +4,14 @@ Complete test of the notebook archiving and datetime workflow.
 Tests the integration between NotebookArchiver and create_notebook.py
 """
 
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import shutil
 import sys
 import tempfile
 import unittest
-from datetime import datetime
-from pathlib import Path
 
 # Add current directory to path for imports
 sys.path.insert(0, ".")

@@ -5,8 +5,8 @@ This module provides music industry-specific sentiment analysis that understands
 slang, AAVE, and cultural context in music fan comments.
 """
 
-import re as regex_module
 from dataclasses import dataclass
+import re as regex_module
 from typing import Dict, List, Tuple
 
 import pandas as pd

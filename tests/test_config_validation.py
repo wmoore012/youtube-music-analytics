@@ -2,6 +2,7 @@
 Tests for configuration validation utilities.
 """
 
+import os
 from unittest.mock import mock_open, patch
 
 import pandas as pd

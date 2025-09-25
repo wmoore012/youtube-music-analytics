@@ -5,8 +5,8 @@ YouTube metrics helper functions for the iCatalog ETL pipeline.
 This module provides helper functions for working with YouTube metrics,
 including functions for upserting metrics data with daily snapshots.
 """
-import logging
 from datetime import datetime, timezone
+import logging
 from typing import Optional
 
 import pandas as pd

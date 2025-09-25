@@ -18,11 +18,11 @@ Key Features:
 
 from __future__ import annotations
 
-import re
-import unicodedata
 from dataclasses import dataclass
 from datetime import timedelta
+import re
 from typing import Optional
+import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -30,6 +30,20 @@ from pydantic import BaseModel, Field, PositiveInt, field_validator
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import text
+
+# Import unique comment integration
+try:
+    from .unique_comment_integration import enforce_real_data_only, ensure_unique_comments
+except ImportError:
+    # Fallback decorators if unique comment system not available
+    def ensure_unique_comments(func_name: str, usage_type: str = "analysis"):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def enforce_real_data_only(df: pd.DataFrame, context: str = "unknown") -> pd.DataFrame:
+        return df
 
 
 class BotDetectionConfig(BaseModel):
@@ -440,6 +454,7 @@ class BotDetector:
         return df
 
 
+@ensure_unique_comments("load_recent_comments", "bot_analysis")
 def load_recent_comments(engine, days: int = 30) -> pd.DataFrame:
     """
     Load recent comments from database for bot analysis.
@@ -471,7 +486,12 @@ def load_recent_comments(engine, days: int = 30) -> pd.DataFrame:
         ORDER BY yc.published_at DESC
     """
 
-    return pd.read_sql(text(query), engine, params={"cutoff_date": cutoff_date})
+    df = pd.read_sql(text(query), engine, params={"cutoff_date": cutoff_date})
+
+    # Ensure only real, unique comments are used for bot analysis
+    df = enforce_real_data_only(df, "load_recent_comments")
+
+    return df
 
 
 def analyze_bot_patterns(engine, config: Optional[BotDetectionConfig] = None, days: int = 30) -> pd.DataFrame:

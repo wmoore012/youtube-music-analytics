@@ -11,9 +11,9 @@ Built by Grammy-nominated producer + M.S. Data Science student.
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import Dict, List, Set
 
 

@@ -10,9 +10,9 @@ Usage:
     python 🔧_CHECK_DEPENDENCIES.py --auto-install
 """
 
-import sys
 import argparse
 from pathlib import Path
+import sys
 
 # Add parent directory to path to find our modules
 current_dir = Path(__file__).parent
@@ -20,7 +20,8 @@ project_root = current_dir.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from src.youtubeviz.auto_install import AutoInstaller, ensure, check_available
+    from src.youtubeviz.auto_install import AutoInstaller, check_available, ensure
+
     AUTO_INSTALL_AVAILABLE = True
 except ImportError:
     AUTO_INSTALL_AVAILABLE = False
@@ -35,7 +36,7 @@ def check_dependency(package_name, import_name=None, auto_install=False):
     if AUTO_INSTALL_AVAILABLE and check_available(package_name, import_name):
         print(f"✅ {package_name}")
         return True
-    
+
     # Try regular import
     try:
         __import__(import_name)
@@ -59,8 +60,7 @@ def check_dependency(package_name, import_name=None, auto_install=False):
 def main():
     """Check all required dependencies with optional auto-install."""
     parser = argparse.ArgumentParser(description="Check and install MusicScope™ dependencies")
-    parser.add_argument('--auto-install', action='store_true', 
-                       help='Automatically install missing packages')
+    parser.add_argument("--auto-install", action="store_true", help="Automatically install missing packages")
     args = parser.parse_args()
 
     print("🔧" + "=" * 60)
@@ -157,7 +157,7 @@ def main():
         print()
         print("🚀 You can now run: python 🚀_RUN_NOTEBOOK_CREATION.py")
         print()
-        
+
         if AUTO_INSTALL_AVAILABLE:
             print("💡 Pro tip: Run with --auto-install to install missing packages automatically")
             print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
@@ -167,18 +167,20 @@ def main():
         print("❌ MISSING ESSENTIAL DEPENDENCIES!")
         print("🚨" + "=" * 60)
         print()
-        
+
         if AUTO_INSTALL_AVAILABLE and not auto_install:
             print("🚀 Quick fix: Run with auto-install")
             print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
             print()
-        
+
         print("🔧 Manual installation:")
         print("   pip install pandas numpy scipy plotly matplotlib seaborn")
         print("   pip install sqlalchemy pymysql nbconvert ipywidgets tqdm")
         print()
         print("   Or install everything at once:")
-        print("   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory-profiler")
+        print(
+            "   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory-profiler"
+        )
         print()
         sys.exit(1)
 

@@ -6,11 +6,11 @@ This script provides continuous monitoring of data quality across the YouTube an
 It runs comprehensive checks and generates alerts when issues are detected.
 """
 
+from datetime import datetime, timedelta
 import json
 import logging
-import sys
-from datetime import datetime, timedelta
 from pathlib import Path
+import sys
 from typing import Any, Dict, List
 
 # Add project root to path

@@ -1,0 +1,199 @@
+{
+  "runs": [
+    {
+      "experiment_id": "comprehensive_sentiment_comparison_20250918_074244",
+      "timestamp": "2025-09-18T07:43:01.786542",
+      "experiment_name": "comprehensive_sentiment_comparison",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 8,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "interpretation_test_20250918_074626",
+      "timestamp": "2025-09-18T07:46:29.781744",
+      "experiment_name": "interpretation_test",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 3,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "comprehensive_sentiment_comparison_20250918_075328",
+      "timestamp": "2025-09-18T07:53:39.673538",
+      "experiment_name": "comprehensive_sentiment_comparison",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 8,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "practical_music_sentiment_test_20250918_080357",
+      "timestamp": "2025-09-18T08:04:07.992143",
+      "experiment_name": "practical_music_sentiment_test",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 8,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "fun_educational_test_20250918_080534",
+      "timestamp": "2025-09-18T08:05:40.641081",
+      "experiment_name": "fun_educational_test",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 5,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "debug_neutral_comments_20250918_081115",
+      "timestamp": "2025-09-18T08:11:17.397926",
+      "experiment_name": "debug_neutral_comments",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 2,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "debug_neutral_comments_20250918_081139",
+      "timestamp": "2025-09-18T08:11:41.293292",
+      "experiment_name": "debug_neutral_comments",
+      "best_f1_score": 0.5054055572075198,
+      "best_accuracy": 0.42333333333333334,
+      "models_tested": 2,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "comprehensive_sentiment_comparison_20250918_084554",
+      "timestamp": "2025-09-18T08:45:57.325262",
+      "experiment_name": "comprehensive_sentiment_comparison",
+      "best_f1_score": 1.0,
+      "best_accuracy": 1.0,
+      "models_tested": 8,
+      "dataset_size": 206
+    },
+    {
+      "experiment_id": "comprehensive_sentiment_comparison_20250918_091013",
+      "timestamp": "2025-09-18T09:10:26.671272",
+      "experiment_name": "comprehensive_sentiment_comparison",
+      "best_f1_score": 0.5781990521327014,
+      "best_accuracy": 0.4066666666666667,
+      "models_tested": 9,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "quick_sentiment_test_20250919_052655",
+      "timestamp": "2025-09-19T05:27:01.066952",
+      "experiment_name": "quick_sentiment_test",
+      "best_f1_score": 1.0,
+      "best_accuracy": 1.0,
+      "models_tested": 4,
+      "dataset_size": 1000
+    },
+    {
+      "experiment_id": "engagement_based_comparison_20250919_053106",
+      "timestamp": "2025-09-19T05:31:08.628622",
+      "experiment_name": "engagement_based_comparison",
+      "best_f1_score": 0.000546448087431694,
+      "best_accuracy": 0.016666666666666666,
+      "models_tested": 9,
+      "dataset_size": 200
+    },
+    {
+      "experiment_id": "real_classified_data_benchmark_20250919_053334",
+      "timestamp": "2025-09-19T05:33:35.553771",
+      "experiment_name": "real_classified_data_benchmark",
+      "best_f1_score": 0.5613636363636363,
+      "best_accuracy": 0.5757575757575758,
+      "models_tested": 9,
+      "dataset_size": 107
+    },
+    {
+      "experiment_id": "enhanced_ml_classifier_test_20250919_054531",
+      "timestamp": "2025-09-19T05:45:32.941126",
+      "experiment_name": "enhanced_ml_classifier_test",
+      "best_f1_score": 0.512563745256167,
+      "best_accuracy": 0.53125,
+      "models_tested": 9,
+      "dataset_size": 104
+    },
+    {
+      "experiment_id": "vader_regression_test_20250919_055406",
+      "timestamp": "2025-09-19T05:54:07.998526",
+      "experiment_name": "vader_regression_test",
+      "best_f1_score": 0.5613636363636363,
+      "best_accuracy": 0.5757575757575758,
+      "models_tested": 9,
+      "dataset_size": 107
+    },
+    {
+      "experiment_id": "final_enhanced_comparison_20250919_055441",
+      "timestamp": "2025-09-19T05:54:42.732854",
+      "experiment_name": "final_enhanced_comparison",
+      "best_f1_score": 0.5613636363636363,
+      "best_accuracy": 0.5757575757575758,
+      "models_tested": 9,
+      "dataset_size": 107
+    },
+    {
+      "experiment_id": "final_enhanced_comparison_20250919_055508",
+      "timestamp": "2025-09-19T05:55:09.253729",
+      "experiment_name": "final_enhanced_comparison",
+      "best_f1_score": 0.6655434142511287,
+      "best_accuracy": 0.6774193548387096,
+      "models_tested": 9,
+      "dataset_size": 101
+    },
+    {
+      "experiment_id": "ml_model_comparison_20250919_073515",
+      "timestamp": "2025-09-19T07:35:19.544655",
+      "experiment_name": "ml_model_comparison",
+      "best_f1_score": 0.5721921535254868,
+      "best_accuracy": 0.6342857142857142,
+      "models_tested": 9,
+      "dataset_size": 871
+    },
+    {
+      "experiment_id": "ml_model_comparison_20250919_080334",
+      "timestamp": "2025-09-19T08:03:38.492215",
+      "experiment_name": "ml_model_comparison",
+      "best_f1_score": 0.5077883631568103,
+      "best_accuracy": 0.6123595505617978,
+      "models_tested": 9,
+      "dataset_size": 889
+    },
+    {
+      "experiment_id": "ml_model_comparison_20250919_080358",
+      "timestamp": "2025-09-19T08:04:03.935277",
+      "experiment_name": "ml_model_comparison",
+      "best_f1_score": 0.45676974418530236,
+      "best_accuracy": 0.5664739884393064,
+      "models_tested": 9,
+      "dataset_size": 861
+    },
+    {
+      "experiment_id": "ml_model_comparison_20250919_082201",
+      "timestamp": "2025-09-19T08:22:06.609206",
+      "experiment_name": "ml_model_comparison",
+      "best_f1_score": 0.5233635197818326,
+      "best_accuracy": 0.6127167630057804,
+      "models_tested": 9,
+      "dataset_size": 862
+    },
+    {
+      "experiment_id": "ml_model_comparison_20250919_082303",
+      "timestamp": "2025-09-19T08:23:07.343747",
+      "experiment_name": "ml_model_comparison",
+      "best_f1_score": 0.5575742395146253,
+      "best_accuracy": 0.632183908045977,
+      "models_tested": 9,
+      "dataset_size": 870
+    }
+  ],
+  "summary": {
+    "total_runs": 21,
+    "best_f1_ever": 1.0,
+    "avg_f1_score": 0.5522128804492874,
+    "last_updated": "2025-09-19T08:23:07.353444"
+  }
+}

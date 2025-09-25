@@ -18,10 +18,10 @@ Usage:
     python tools/maintenance/youtube_tos_compliance.py --status     # Check compliance status
 """
 
-import os
-import sys
 from datetime import datetime, timedelta
+import os
 from pathlib import Path
+import sys
 from typing import Dict, List, Tuple
 
 # Add project root to Python path for imports

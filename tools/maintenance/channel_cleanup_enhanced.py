@@ -12,8 +12,8 @@ import os
 import sys
 from typing import List, Set
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import create_engine, text
 
 

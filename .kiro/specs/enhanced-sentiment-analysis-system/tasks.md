@@ -24,7 +24,7 @@
   - Ensure all variants maintain VADER's booster math consistency
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-- [-] 4. Create comprehensive evaluation framework
+- [x] 4. Create comprehensive evaluation framework
   - Implement SentimentEvaluationFramework class structure with data models
   - Add ExperimentConfig class for reproducibility tracking
   - Create ClassMetrics, McNemarResult, and SliceMetrics data structures
@@ -34,12 +34,12 @@
   - Implement bootstrap confidence interval calculation for performance deltas
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
 
-- [ ] 5. Build YouTube comment fetching system for evaluation
-  - Create YouTubeCommentFetcher class with proper API compliance
-  - Implement rate limiting and quota management for YouTube Data API
-  - Add comment fetching by video_id with pagination support
-  - Create experiment logging for API parameters and query metadata
-  - Ensure data retention compliance with configurable cleanup policies
+- [x] 5. Build comment fetching system for evaluation using existing infrastructure
+  - Leverage existing youtube_comments table and web.etl_helpers.get_engine()
+  - Implement stratified sampling by engagement level and artist
+  - Add filtering and pagination using existing database patterns
+  - Create evaluation data fetching with proper SQL parameterization
+  - Use existing data retention and compliance patterns from current ETL
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [x] 6. Implement statistical testing and multiple comparison correction
@@ -59,23 +59,23 @@
   - Add fingerprint display for build verification and CI integration
   - _Requirements: 6.1, 6.4, 7.4_
 
-- [-] 8. Build experiment reproducibility system
-  - Complete ExperimentConfig implementation with deterministic random seed management
-  - Add comprehensive logging of patch_id, code commit, and data timestamps
-  - Create experiment metadata export for result traceability
-  - Implement fold index logging for cross-validation reproducibility
-  - Store sensitive configuration in .env for privacy control
+- [x] 8. Build experiment reproducibility system using existing config infrastructure
+  - Leverage existing data_organization.configuration_manager for parameter management
+  - Create SentimentEnhancementConfig class with environment variable integration
+  - Add privacy controls for proprietary enhancement formulas in .env
+  - Implement validation using existing ValidationResult patterns
+  - Store sensitive configuration securely with professional .env practices
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 9. Integrate with existing sentiment analysis pipeline
-  - Create SentimentPipelineIntegration class for backward compatibility using existing helpers
-  - Implement compatibility wrapper for existing youtubeviz.advanced_music_sentiment
-  - Add A/B testing framework for comparing current vs enhanced models with database data
-  - Create migration utilities for existing data format compatibility
-  - Store proprietary enhancement formulas in configurable .env location for privacy
+- [x] 9. Integrate with existing sentiment analysis pipeline
+  - Create EnhancedSentimentPipeline class leveraging web.etl_helpers and youtubeviz.statistical_utils
+  - Implement evaluation against existing youtubeviz.advanced_music_sentiment
+  - Add comprehensive evaluation with confidence intervals using existing statistical utilities
+  - Create deployment recommendation system with risk assessment
+  - Integrate with existing database patterns and configuration management
   - _Requirements: 5.6, 8.5_
 
-- [ ] 10. Implement comprehensive testing suite
+- [x] 10. Implement comprehensive testing suite
   - Create unit tests for deterministic ID generation and Unicode normalization using unique database values
   - Add integration tests for VADER variant creation and scoring consistency with real data
   - Implement evaluation framework tests with database helpers, no dummy data

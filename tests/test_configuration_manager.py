@@ -5,9 +5,9 @@ This module tests the ConfigurationManager, ScoringConfig, and related
 configuration management functionality for the scoring system.
 """
 
+from datetime import datetime
 import os
 import tempfile
-from datetime import datetime
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 

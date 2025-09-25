@@ -5,14 +5,14 @@ Test-Driven Development for Blueprint Execution System
 Tests for maintaining a blueprint notebook and creating executed versions.
 """
 
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import shutil
 import sys
 import tempfile
 import unittest
-from datetime import datetime
-from pathlib import Path
 
 # Add current directory to path for imports
 sys.path.insert(0, ".")

@@ -12,8 +12,8 @@ Runs the full pipeline:
 This is equivalent to the previous 'comprehensive' runner, just named clearly.
 """
 
-import sys
 from pathlib import Path
+import sys
 
 # Ensure repo root is importable
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

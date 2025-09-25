@@ -5,10 +5,10 @@ This module tests the complete configuration management workflow including
 database schema creation, configuration loading, validation, and auditing.
 """
 
+from datetime import datetime
 import json
 import os
 import tempfile
-from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest

@@ -11,8 +11,8 @@ This ensures data consistency and prevents missing artist issues.
 
 import json
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Set
 
 

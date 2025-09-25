@@ -24,6 +24,7 @@ from sklearn.svm import SVC
 try:
     import torch
     from transformers import AutoModel, AutoTokenizer, Trainer, TrainingArguments
+
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
@@ -136,7 +137,6 @@ class MusicIndustryFeatureExtractor:
             "question_count": text.count("?"),
             "caps_ratio": sum(1 for c in text if c.isupper()) / max(len(text), 1),
             "repeated_chars": len(re.findall(r"(.)\1{2,}", text_lower)),  # "ateeeee"
-            
             # Enhanced emoji features
             "fire_emoji": text.count("🔥"),
             "heart_emoji": text.count("❤️") + text.count("💕") + text.count("💖"),
@@ -144,7 +144,6 @@ class MusicIndustryFeatureExtractor:
             "crown_emoji": text.count("👑"),
             "music_emoji": text.count("🎵") + text.count("🎶") + text.count("🎤"),
             "total_emoji": len(re.findall(r"[\U0001F300-\U0001FAFF]", text)),
-            
             # Music industry term counts (weighted by importance)
             "production_terms": sum(1 for term in self.production_terms if term in text_lower),
             "gen_z_positive": sum(1 for term in self.gen_z_positive if term in text_lower),
@@ -152,7 +151,6 @@ class MusicIndustryFeatureExtractor:
             "live_performance": sum(1 for term in self.live_performance if term in text_lower),
             "artist_support": sum(1 for term in self.artist_support if term in text_lower),
             "neutral_references": sum(1 for term in self.neutral_references if term in text_lower),
-            
             # Advanced pattern detection
             "has_ate_pattern": 1 if re.search(r"\b(ate|ateee+)\b", text_lower) else 0,
             "has_underrated": 1 if "underrated" in text_lower else 0,
@@ -164,23 +162,38 @@ class MusicIndustryFeatureExtractor:
             "has_raw": 1 if "raw" in text_lower else 0,
             "has_release_request": 1 if "release" in text_lower else 0,
             "has_video_engagement": 1 if any(word in text_lower for word in ["video", "watch", "brain"]) else 0,
-            
             # New advanced features
-            "sentiment_intensity": sum(1 for word in words if word in ["amazing", "incredible", "phenomenal", "terrible", "awful", "horrible"]),
+            "sentiment_intensity": sum(
+                1 for word in words if word in ["amazing", "incredible", "phenomenal", "terrible", "awful", "horrible"]
+            ),
             "music_specific_slang": sum(1 for word in words if word in ["slaps", "banger", "vibe", "vibes", "mood"]),
-            "superlative_count": sum(1 for word in words if word.endswith("est") or word in ["best", "worst", "most", "least"]),
-            "time_references": sum(1 for word in words if word in ["always", "never", "forever", "daily", "constantly"]),
+            "superlative_count": sum(
+                1 for word in words if word.endswith("est") or word in ["best", "worst", "most", "least"]
+            ),
+            "time_references": sum(
+                1 for word in words if word in ["always", "never", "forever", "daily", "constantly"]
+            ),
             "personal_pronouns": sum(1 for word in words if word in ["i", "me", "my", "mine", "we", "us", "our"]),
             "comparison_words": sum(1 for word in words if word in ["better", "worse", "like", "than", "compared"]),
-            
             # Contextual features
-            "has_negation": 1 if any(neg in text_lower for neg in ["not", "don't", "doesn't", "won't", "can't", "never"]) else 0,
-            "has_intensifier": 1 if any(word in text_lower for word in ["so", "very", "really", "extremely", "super", "totally"]) else 0,
-            "has_question_words": 1 if any(word in text_lower for word in ["what", "when", "where", "why", "how", "who"]) else 0,
-            
+            "has_negation": (
+                1 if any(neg in text_lower for neg in ["not", "don't", "doesn't", "won't", "can't", "never"]) else 0
+            ),
+            "has_intensifier": (
+                1
+                if any(word in text_lower for word in ["so", "very", "really", "extremely", "super", "totally"])
+                else 0
+            ),
+            "has_question_words": (
+                1 if any(word in text_lower for word in ["what", "when", "where", "why", "how", "who"]) else 0
+            ),
             # Music genre/style indicators
-            "genre_mentions": sum(1 for genre in ["rap", "hip hop", "r&b", "pop", "rock", "jazz", "country"] if genre in text_lower),
-            "technical_music_terms": sum(1 for term in ["tempo", "rhythm", "melody", "harmony", "chord", "key"] if term in text_lower),
+            "genre_mentions": sum(
+                1 for genre in ["rap", "hip hop", "r&b", "pop", "rock", "jazz", "country"] if genre in text_lower
+            ),
+            "technical_music_terms": sum(
+                1 for term in ["tempo", "rhythm", "melody", "harmony", "chord", "key"] if term in text_lower
+            ),
         }
 
         return features
@@ -218,7 +231,7 @@ class MusicMLClassifier:
     def prepare_training_data(self) -> Tuple[pd.DataFrame, Dict[str, List]]:
         """
         Prepare training data based on your actual manual classifications.
-        
+
         Uses your real manual classifications from test_ml_on_your_classifications.py
         plus additional training examples for better coverage.
         """
@@ -227,38 +240,38 @@ class MusicMLClassifier:
         try:
             # Try the comprehensive v2 dataset first (255 entries)
             from datasets.music_industry_sentiment_dataset_v2 import MusicIndustrySentimentDatasetV2
-            
+
             print("📊 Loading your comprehensive music industry sentiment dataset v2...")
             comprehensive_dataset = MusicIndustrySentimentDatasetV2()
-            
+
             # Convert comprehensive dataset entries to training format
             your_manual_classifications = []
             for entry in comprehensive_dataset.entries:
                 # Use the comprehensive slang dataset you created
                 your_manual_classifications.append((entry.phrase, entry.sentiment.value))
-            
+
             print(f"✅ Loaded {len(your_manual_classifications)} entries from comprehensive v2 dataset")
-            
+
         except Exception as e:
             print(f"⚠️  Could not load comprehensive v2 dataset: {e}")
-            
+
             # Fallback to enhanced dataset (97 entries)
             try:
                 from datasets.enhanced_sentiment_dataset import get_enhanced_music_dataset
-                
+
                 print("📊 Loading enhanced sentiment dataset as fallback...")
                 enhanced_dataset = get_enhanced_music_dataset()
-                
+
                 your_manual_classifications = []
                 for entry in enhanced_dataset.entries:
                     your_manual_classifications.append((entry.phrase, entry.sentiment.value))
-                
+
                 print(f"✅ Loaded {len(your_manual_classifications)} entries from enhanced dataset")
-                
+
             except Exception as e2:
                 print(f"⚠️  Could not load enhanced dataset either: {e2}")
                 print("📊 Using fallback manual classifications")
-            
+
             # Fallback to your specific manual classifications from benchmark analysis
             your_manual_classifications = [
                 # POSITIVE (you said these are obviously positive)
@@ -295,15 +308,17 @@ class MusicMLClassifier:
                 ("this is mid", "negative"),
                 ("artist fell off", "negative"),
             ]
-        
+
         # Convert to full training format with inferred metadata
         training_data = []
         for text, sentiment in your_manual_classifications:
             text_lower = text.lower()
-            
+
             # Infer production focus
-            production_focus = any(term in text_lower for term in ["bass", "mix", "production", "vocals", "sound", "guitar", "beat"])
-            
+            production_focus = any(
+                term in text_lower for term in ["bass", "mix", "production", "vocals", "sound", "guitar", "beat"]
+            )
+
             # Infer engagement type
             if sentiment == "positive":
                 if any(term in text_lower for term in ["underrated", "potential", "recognition", "artist"]):
@@ -320,9 +335,9 @@ class MusicMLClassifier:
                 engagement_type = "general_negative"
             else:
                 engagement_type = "neutral_reference"
-            
+
             training_data.append((text, sentiment, production_focus, engagement_type))
-        
+
         # Add some additional training examples for better coverage
         additional_examples = [
             ("this slaps", "positive", False, "general_positive"),
@@ -338,7 +353,7 @@ class MusicMLClassifier:
             ("okay song I guess", "neutral", False, "neutral_reference"),
             ("not bad", "neutral", False, "neutral_reference"),
         ]
-        
+
         training_data.extend(additional_examples)
 
         df = pd.DataFrame(training_data, columns=["text", "sentiment", "production_focus", "engagement_type"])
@@ -374,47 +389,56 @@ class MusicMLClassifier:
 
         # Get comprehensive training data
         X_base, labels = self.prepare_training_data()
-        
+
         print("📊 Using comprehensive dataset for training...")
         print(f"🎯 Training on {len(labels['sentiment'])} manually classified comments")
-        
+
         # Extract features for all data (X_base already contains the features)
         X = X_base.copy()
-        
+
         # Add ISRC feature
         if include_isrc_feature:
             X["has_isrc"] = [True if i % 3 == 0 else False for i in range(len(X))]
-        
+
         # Get texts for TF-IDF (reconstruct from the comprehensive dataset)
         all_texts = []
         # Get the training data again to extract texts
         temp_data, _ = self.prepare_training_data()
-        
+
         # We need to get the actual text data - let's extract it from the comprehensive dataset
         try:
             from datasets.music_industry_sentiment_dataset_v2 import MusicIndustrySentimentDatasetV2
+
             comprehensive_dataset = MusicIndustrySentimentDatasetV2()
             all_texts = [entry.phrase for entry in comprehensive_dataset.entries]
         except:
             # Fallback to basic texts if comprehensive dataset fails
             all_texts = [
-                "YALL ATEEEE", "this slaps", "fire track", "goated artist", "periodt",
-                "the mix is clean", "love the vocals", "beat goes hard", "this is mid",
-                "fell off", "overrated", "okay song I guess", "not bad"
+                "YALL ATEEEE",
+                "this slaps",
+                "fire track",
+                "goated artist",
+                "periodt",
+                "the mix is clean",
+                "love the vocals",
+                "beat goes hard",
+                "this is mid",
+                "fell off",
+                "overrated",
+                "okay song I guess",
+                "not bad",
             ]
-        
+
         # Get TF-IDF features
         tfidf_features = self.tfidf_vectorizer.fit_transform(all_texts).toarray()
         tfidf_df = pd.DataFrame(tfidf_features, columns=[f"tfidf_{i}" for i in range(tfidf_features.shape[1])])
-        
+
         # Combine features
         X = pd.concat([X.reset_index(drop=True), tfidf_df], axis=1)
-        
+
         # Use the labels from prepare_training_data
         combined_labels = labels
-        
 
-        
         # Store feature names for consistent prediction
         self.feature_names = list(X.columns)
 
@@ -424,25 +448,29 @@ class MusicMLClassifier:
         # Handle missing values
         print(f"🔧 Handling missing values...")
         X = X.fillna(0)  # Fill NaN with 0
-        
+
         # Enhanced sentiment classifier with better algorithms
         print("\n🎵 Training enhanced sentiment classifier...")
-        
+
         # Use more sophisticated ensemble (but simpler to avoid NaN issues)
-        from sklearn.ensemble import GradientBoostingClassifier, ExtraTreesClassifier
-        
-        self.sentiment_classifier = VotingClassifier([
-            ("rf", RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)),
-            ("svm", SVC(probability=True, random_state=42, kernel='rbf')),
-            ("lr", LogisticRegression(random_state=42, max_iter=2000, C=0.1)),
-            ("et", ExtraTreesClassifier(n_estimators=100, random_state=42)),
-        ], voting="soft")
-        
+        from sklearn.ensemble import ExtraTreesClassifier, GradientBoostingClassifier
+
+        self.sentiment_classifier = VotingClassifier(
+            [
+                ("rf", RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)),
+                ("svm", SVC(probability=True, random_state=42, kernel="rbf")),
+                ("lr", LogisticRegression(random_state=42, max_iter=2000, C=0.1)),
+                ("et", ExtraTreesClassifier(n_estimators=100, random_state=42)),
+            ],
+            voting="soft",
+        )
+
         self.sentiment_classifier.fit(X, combined_labels["sentiment"])
 
         # Cross-validation with stratification
-        cv_scores = cross_val_score(self.sentiment_classifier, X, combined_labels["sentiment"], 
-                                  cv=5, scoring='f1_macro')
+        cv_scores = cross_val_score(
+            self.sentiment_classifier, X, combined_labels["sentiment"], cv=5, scoring="f1_macro"
+        )
         print(f"   Cross-validation F1-score: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
 
         # Train other classifiers with better algorithms
@@ -472,20 +500,20 @@ class MusicMLClassifier:
 
         # Create feature DataFrame in same format as training
         feature_df = pd.DataFrame([features])
-        
+
         # Add ISRC feature
         feature_df["has_isrc"] = int(has_isrc)
-        
+
         # Add TF-IDF features
         tfidf_df = pd.DataFrame([tfidf_features], columns=[f"tfidf_{i}" for i in range(len(tfidf_features))])
-        
+
         # Combine features
         X_pred = pd.concat([feature_df.reset_index(drop=True), tfidf_df], axis=1)
-        
+
         # Ensure same columns as training (reindex to match training feature names)
-        if hasattr(self, 'feature_names'):
+        if hasattr(self, "feature_names"):
             X_pred = X_pred.reindex(columns=self.feature_names, fill_value=0)
-        
+
         # Keep as DataFrame to preserve feature names for sklearn
         X = X_pred
 
@@ -590,24 +618,25 @@ if __name__ == "__main__":
 class MusicSentimentTransformer:
     """
     Transformer-based sentiment classifier for music industry comments.
-    
+
     Supports multiple pre-trained models:
     - DistilBERT (fast inference)
     - RoBERTa (better informal text)
     - cardiffnlp/twitter-roberta-base-sentiment-latest (social media)
     - j-hartmann/emotion-english-distilroberta-base (emotion understanding)
     """
-    
+
     def __init__(self, model_name: str = "distilbert-base-uncased"):
         self.model_name = model_name
         self.tokenizer = None
         self.model = None
         self.is_trained = False
-        
+
         if TRANSFORMERS_AVAILABLE:
             # Initialize real tokenizer
             try:
                 from transformers import AutoTokenizer
+
                 self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                 print(f"✅ Loaded real tokenizer for {model_name}")
             except Exception as e:
@@ -617,18 +646,18 @@ class MusicSentimentTransformer:
             # Use simulated tokenizer for demonstration
             self.tokenizer = "simulated"
             print(f"🎭 Using simulated transformer logic for {model_name}")
-    
+
     def predict(self, text: str, has_isrc: bool = False) -> Dict[str, any]:
         """
         Predict sentiment using transformer model with enhanced music domain understanding.
-        
+
         This implementation focuses on correctly identifying positive music comments
         that are often mislabeled as neutral by engagement-based systems.
         """
-        
+
         if not self.tokenizer:
             raise ValueError("Tokenizer not initialized")
-        
+
         # Tokenize text (simulated or real)
         if self.tokenizer == "simulated":
             # Simulated tokenization for demonstration
@@ -642,41 +671,78 @@ class MusicSentimentTransformer:
                     max_length=512,
                     truncation=True,
                     padding="max_length",
-                    return_tensors="pt"
+                    return_tensors="pt",
                 )
                 token_count = len(inputs["input_ids"][0])
             except Exception as e:
                 print(f"⚠️  Tokenization failed: {e}")
                 return self._fallback_prediction(text)
-        
+
         # Enhanced music domain classification
         text_lower = text.lower()
-        
+
         # Strong positive indicators (these should NEVER be neutral)
         strong_positive_terms = [
-            "fire", "slaps", "banger", "goated", "periodt", "ate", "ateee", 
-            "phenomenal", "masterpiece", "favorite", "love", "amazing", 
-            "incredible", "perfect", "best", "awesome", "hard", "goes hard",
-            "bumpin", "bop", "can't wait", "on repeat", "addictive"
+            "fire",
+            "slaps",
+            "banger",
+            "goated",
+            "periodt",
+            "ate",
+            "ateee",
+            "phenomenal",
+            "masterpiece",
+            "favorite",
+            "love",
+            "amazing",
+            "incredible",
+            "perfect",
+            "best",
+            "awesome",
+            "hard",
+            "goes hard",
+            "bumpin",
+            "bop",
+            "can't wait",
+            "on repeat",
+            "addictive",
         ]
-        
+
         # Strong negative indicators
         strong_negative_terms = [
-            "mid", "trash", "terrible", "awful", "hate", "worst", "bad", 
-            "sucks", "boring", "overrated", "fell off"
+            "mid",
+            "trash",
+            "terrible",
+            "awful",
+            "hate",
+            "worst",
+            "bad",
+            "sucks",
+            "boring",
+            "overrated",
+            "fell off",
         ]
-        
+
         # Engagement/excitement indicators
         excitement_indicators = [
-            "🔥", "💗", "<3", "!!!", "fr fr", "no cap", "deadass", 
-            "whole", "all of it", "here for", "my boy"
+            "🔥",
+            "💗",
+            "<3",
+            "!!!",
+            "fr fr",
+            "no cap",
+            "deadass",
+            "whole",
+            "all of it",
+            "here for",
+            "my boy",
         ]
-        
+
         # Count positive indicators
         positive_score = sum(1 for term in strong_positive_terms if term in text_lower)
         negative_score = sum(1 for term in strong_negative_terms if term in text_lower)
         excitement_score = sum(1 for indicator in excitement_indicators if indicator in text_lower)
-        
+
         # Enhanced model-specific logic
         if "twitter" in self.model_name.lower():
             # Twitter RoBERTa - excellent at social media slang
@@ -684,12 +750,12 @@ class MusicSentimentTransformer:
                 sentiment = "positive"
                 confidence = min(0.95, 0.75 + (positive_score + excitement_score) * 0.1)
             elif negative_score > 0:
-                sentiment = "negative" 
+                sentiment = "negative"
                 confidence = min(0.90, 0.70 + negative_score * 0.1)
             else:
                 sentiment = "neutral"
                 confidence = 0.60
-                
+
         elif "emotion" in self.model_name.lower():
             # Emotion model - great at detecting emotional content
             if positive_score > 0 or excitement_score > 1:
@@ -701,7 +767,7 @@ class MusicSentimentTransformer:
             else:
                 sentiment = "neutral"
                 confidence = 0.65
-                
+
         elif "roberta" in self.model_name.lower():
             # RoBERTa - better at context and informal text
             if positive_score > 0 or excitement_score > 0:
@@ -713,7 +779,7 @@ class MusicSentimentTransformer:
             else:
                 sentiment = "neutral"
                 confidence = 0.55
-                
+
         else:  # DistilBERT or other
             # DistilBERT - fast but needs more explicit indicators
             if positive_score >= 1 or excitement_score >= 2:
@@ -725,21 +791,27 @@ class MusicSentimentTransformer:
             else:
                 sentiment = "neutral"
                 confidence = 0.50
-        
+
         # Special handling for obvious cases that should never be neutral
         obvious_positive_patterns = [
-            "phenomenal", "masterpiece", "favorite", "can't wait", "on repeat",
-            "goes hard", "whole masterpiece", "here for all of it"
+            "phenomenal",
+            "masterpiece",
+            "favorite",
+            "can't wait",
+            "on repeat",
+            "goes hard",
+            "whole masterpiece",
+            "here for all of it",
         ]
-        
+
         if any(pattern in text_lower for pattern in obvious_positive_patterns):
             sentiment = "positive"
             confidence = min(0.95, confidence + 0.15)
-        
+
         # Production focus detection
         production_terms = ["beat", "bass", "mix", "production", "vocals", "sound", "outfits"]
         production_focus = any(term in text_lower for term in production_terms)
-        
+
         # Engagement type classification
         if any(term in text_lower for term in ["repeat", "addictive", "times a day"]):
             engagement_type = "video_engagement"
@@ -751,7 +823,7 @@ class MusicSentimentTransformer:
             engagement_type = "general_positive"
         else:
             engagement_type = "neutral_reference"
-        
+
         return {
             "sentiment": sentiment,
             "sentiment_confidence": confidence,
@@ -765,9 +837,9 @@ class MusicSentimentTransformer:
                 "excitement_indicators": excitement_score,
                 "has_isrc": has_isrc,
             },
-            "method": f"transformer_{self.model_name.split('/')[-1]}"
+            "method": f"transformer_{self.model_name.split('/')[-1]}",
         }
-    
+
     def _fallback_prediction(self, text: str) -> Dict[str, any]:
         """Fallback prediction when transformer fails."""
         return {
@@ -776,23 +848,23 @@ class MusicSentimentTransformer:
             "production_focus": False,
             "engagement_type": "unknown",
             "features_detected": {"transformer_model": self.model_name, "fallback": True},
-            "method": "transformer_fallback"
+            "method": "transformer_fallback",
         }
 
 
 def create_transformer_models() -> Dict[str, MusicSentimentTransformer]:
     """Create multiple transformer model variants for benchmarking."""
-    
+
     models = {}
-    
+
     # Model configurations for music domain
     transformer_configs = [
         ("distilbert-base-uncased", "DistilBERT - Fast inference"),
         ("roberta-base", "RoBERTa - Better informal text"),
         ("cardiffnlp/twitter-roberta-base-sentiment-latest", "Twitter RoBERTa - Social media"),
-        ("j-hartmann/emotion-english-distilroberta-base", "Emotion DistilRoBERTa - Emotion understanding")
+        ("j-hartmann/emotion-english-distilroberta-base", "Emotion DistilRoBERTa - Emotion understanding"),
     ]
-    
+
     for model_name, description in transformer_configs:
         try:
             print(f"🤖 Initializing {description}...")
@@ -801,7 +873,7 @@ def create_transformer_models() -> Dict[str, MusicSentimentTransformer]:
             print(f"✅ {description} ready")
         except Exception as e:
             print(f"❌ Failed to initialize {model_name}: {e}")
-    
+
     return models
 
 
@@ -809,10 +881,10 @@ if __name__ == "__main__":
     # Demo transformer models
     print("🤖 TRANSFORMER MODELS DEMO")
     print("=" * 50)
-    
+
     # Test transformer creation
     transformers = create_transformer_models()
-    
+
     if transformers:
         # Test on sample music comments
         test_comments = [
@@ -820,12 +892,12 @@ if __name__ == "__main__":
             "The beat goes hard but vocals are mid",
             "PERIODT! This artist is GOATED fr",
             "Mal from descendants two",
-            "The mix is so clean and crisp"
+            "The mix is so clean and crisp",
         ]
-        
+
         for comment in test_comments:
-            print(f"\n💬 \"{comment}\"")
-            
+            print(f'\n💬 "{comment}"')
+
             for model_key, transformer in transformers.items():
                 try:
                     result = transformer.predict(comment, has_isrc=True)
@@ -834,6 +906,6 @@ if __name__ == "__main__":
                     print(f"   {model_key}: ERROR - {e}")
     else:
         print("❌ No transformer models available")
-    
+
     # Also demo the traditional ML classifier
     demo_ml_classifier()

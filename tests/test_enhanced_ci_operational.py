@@ -7,8 +7,8 @@ from datetime import date
 import pandas as pd
 import pytest
 
-import src.youtubeviz.data as data_module
 from scripts.enhanced_ci import EnhancedCI
+import src.youtubeviz.data as data_module
 
 
 @pytest.fixture

@@ -9,8 +9,8 @@ import sys
 
 sys.path.insert(0, ".")
 
-import json
 from datetime import datetime
+import json
 from pathlib import Path
 
 from notebook_archiver import NotebookArchiver

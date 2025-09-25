@@ -6,9 +6,9 @@ This script establishes baseline performance and tracks improvements
 as we implement enhanced sentiment analysis variants.
 """
 
+from datetime import datetime
 import json
 import time
-from datetime import datetime
 from typing import Dict, List, Tuple
 
 import pandas as pd

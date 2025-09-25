@@ -175,8 +175,8 @@ class ConfigurationSchemaManager:
     def backup_configuration_data(self, backup_file: str) -> bool:
         """Backup configuration data to a file."""
         try:
-            import json
             from datetime import datetime
+            import json
 
             cursor = self.database_connection.cursor()
 

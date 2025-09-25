@@ -2,102 +2,99 @@
 
 ## Introduction
 
-This consolidated feature combines critical elements from multiple specs to create a working YouTube analytics platform as quickly as possible. The focus is on getting the database populated, notebooks executing properly, and the system operational for git commit. This consolidates bulletproof ETL, database schema fixes, CI setup, and storytelling notebooks into one streamlined implementation plan.
+This feature consolidates the existing YouTube ETL and analytics system into a production-ready, clean codebase with working data pipeline and comprehensive plugin integration. The system currently has extensive functionality but needs consolidation, cleanup, and verification of end-to-end operation with fresh data.
 
 ## Requirements
 
-### Requirement 1
+### Requirement 1: Working ETL Pipeline with Fresh Data
 
-**User Story:** As a developer, I want the database tables populated with real data from the ETL pipeline, so that notebooks can execute successfully with actual results.
-
-#### Acceptance Criteria
-
-1. WHEN the ETL pipeline runs THEN it SHALL successfully populate youtube_videos, youtube_metrics, and youtube_comments tables with real data
-2. WHEN inserting data THEN the system SHALL use the correct schema from yt_proj.sql without column mismatch errors
-3. WHEN processing sentiment analysis THEN it SHALL populate comment_sentiment and youtube_sentiment_summary tables
-4. WHEN linking ISRC data THEN it SHALL use the video_recording_link table with proper foreign key relationships
-5. WHEN ETL completes THEN the database SHALL contain sufficient data for meaningful notebook analysis
-
-### Requirement 2
-
-**User Story:** As a data analyst, I want notebooks that execute successfully and produce compelling storytelling analysis, so that I can demonstrate the platform's capabilities.
+**User Story:** As a data analyst, I want a fully operational ETL pipeline that extracts fresh YouTube data and stores it in the database, so that I can perform analytics on current data.
 
 #### Acceptance Criteria
 
-1. WHEN executing notebooks THEN they SHALL load real data from the database and produce actual analysis results
-2. WHEN generating visualizations THEN they SHALL create beautiful, interactive Plotly charts with consistent artist colors
-3. WHEN presenting analysis THEN notebooks SHALL tell compelling stories about artist performance and music industry insights
-4. WHEN explaining concepts THEN they SHALL include educational content suitable for data science students
-5. WHEN notebooks complete THEN they SHALL be ready for portfolio presentation with professional quality outputs
+1. WHEN the ETL pipeline is executed THEN the system SHALL successfully extract video metadata, metrics, and comments from configured YouTube channels
+2. WHEN data is extracted THEN the system SHALL store raw data in appropriate database tables with proper normalization
+3. WHEN the pipeline completes THEN the system SHALL have fresh data (less than 24 hours old) in all core tables
+4. WHEN data quality checks are run THEN the system SHALL report data completeness and quality metrics
+5. IF the pipeline encounters errors THEN the system SHALL fail loudly with clear error messages and recovery instructions
 
-### Requirement 3
+### Requirement 2: Codebase Cleanup and Standards Compliance
 
-**User Story:** As a system operator, I want bulletproof error handling and data quality validation, so that the system runs reliably without silent failures.
-
-#### Acceptance Criteria
-
-1. WHEN any component fails THEN the system SHALL log detailed error information and fail loudly with clear messages
-2. WHEN processing data THEN the system SHALL validate data quality and integrity at each stage
-3. WHEN database operations occur THEN they SHALL use proper connection pooling, timeouts, and retry logic
-4. WHEN sentiment analysis runs THEN it SHALL handle batches efficiently with progress tracking
-5. WHEN data quality issues are detected THEN the system SHALL provide actionable recommendations for resolution
-
-### Requirement 4
-
-**User Story:** As a developer preparing for git commit, I want a working CI system that validates code quality and system functionality, so that I can confidently push to GitHub.
+**User Story:** As a developer, I want a clean, maintainable codebase that follows established standards, so that I can efficiently develop and maintain the system.
 
 #### Acceptance Criteria
 
-1. WHEN running `make ci` THEN the system SHALL execute comprehensive quality checks including formatting, linting, and type checking
-2. WHEN CI runs THEN it SHALL validate that notebooks execute without errors and produce expected outputs
-3. WHEN testing the system THEN it SHALL verify database connectivity and data integrity
-4. WHEN code quality checks run THEN they SHALL enforce 120-character line limits and coding standards
-5. WHEN CI passes THEN the system SHALL be ready for git commit with confidence
+1. WHEN code is reviewed THEN all files SHALL use lowercase_snake_case naming conventions
+2. WHEN functions are analyzed THEN each function SHALL be under 31 lines of code unless complexity requires more
+3. WHEN duplicate code is found THEN it SHALL be extracted into helper functions
+4. WHEN fake data is discovered THEN it SHALL be removed and replaced with real data access
+5. WHEN database schemas are reviewed THEN all columns SHALL use lowercase_snake_case naming
+6. WHEN boolean fields are found THEN they SHALL be replaced with descriptive string/enum values where appropriate
+7. WHEN error handling is reviewed THEN the system SHALL fail loudly with clear error messages
+8. WHEN classes are used THEN they SHALL be appropriate for the use case and follow single responsibility principle
 
-### Requirement 5
+### Requirement 3: Code Quality and Testing Standards
 
-**User Story:** As a music industry analyst, I want artist comparison and performance analysis, so that I can make informed investment and marketing decisions.
-
-#### Acceptance Criteria
-
-1. WHEN analyzing artists THEN the system SHALL provide comprehensive performance metrics across views, engagement, and sentiment
-2. WHEN comparing artists THEN it SHALL identify momentum trends and growth opportunities
-3. WHEN showing recommendations THEN it SHALL provide specific, actionable insights for budget allocation
-4. WHEN displaying results THEN visualizations SHALL be emotionally engaging and professionally presented
-5. WHEN explaining analysis THEN it SHALL connect data insights to real music business implications
-
-### Requirement 6
-
-**User Story:** As a system maintainer, I want proper database schema alignment and efficient operations, so that all components work together seamlessly.
+**User Story:** As a developer, I want comprehensive testing and code quality tools, so that I can maintain high code quality and prevent regressions.
 
 #### Acceptance Criteria
 
-1. WHEN ETL operations run THEN they SHALL use the exact column names and data types from yt_proj.sql
-2. WHEN performing upserts THEN the system SHALL use correct primary keys (video_id, metrics_date) for conflict resolution
-3. WHEN querying data THEN all SQL SHALL reference tables that actually exist in the database schema
-4. WHEN processing large datasets THEN operations SHALL use appropriate batch sizes and indexing for performance
-5. WHEN handling data retention THEN the system SHALL respect YouTube API compliance and configured retention policies
+1. WHEN code is committed THEN it SHALL pass black formatting with 120 character line length
+2. WHEN imports are checked THEN they SHALL be sorted using isort with black profile
+3. WHEN code is linted THEN it SHALL pass flake8 checks with project-specific rules
+4. WHEN type checking is run THEN it SHALL pass mypy static analysis
+5. WHEN tests are executed THEN they SHALL use pytest with TDD methodology
+6. WHEN CI/CD pipeline runs THEN it SHALL execute all quality checks and tests
+7. WHEN pre-commit hooks are installed THEN they SHALL automatically enforce code quality standards
 
-### Requirement 7
+### Requirement 4: Plugin System Integration
 
-**User Story:** As a portfolio developer, I want the repository to demonstrate professional development practices with strict code quality standards, so that it showcases senior-level engineering capabilities.
-
-#### Acceptance Criteria
-
-1. WHEN writing database modules THEN they SHALL be limited to 200 lines with functions under 25 lines 8x out of 10 each (maximum 35 LOC in any .py files, notebooks)
-2. WHEN examining database operations THEN all SQL queries SHALL be human-readable with proper formatting, line breaks, and clear variable naming
-3. WHEN reviewing any code file THEN it SHALL be extensively commented explaining complex logic, business context, and potential pitfalls
-4. WHEN running tests THEN they SHALL achieve comprehensive coverage with 10-15 unit tests per new database functionality
-5. WHEN preparing for public release THEN there SHALL be NO bulky AI-generated code that appears amateurish or unnecessarily verbose
-
-### Requirement 8
-
-**User Story:** As a user working with AI agents, I want the system to provide clear status information and validation reports, so that AI can effectively help with development and troubleshooting.
+**User Story:** As a system administrator, I want all new helper plugins integrated into the main system, so that I can leverage advanced analytics and data processing capabilities.
 
 #### Acceptance Criteria
 
-1. WHEN the system runs THEN it SHALL generate comprehensive status reports with metrics and health indicators
-2. WHEN errors occur THEN they SHALL be logged with sufficient context for AI agents to provide helpful suggestions
-3. WHEN data quality checks run THEN they SHALL produce detailed reports on data integrity and completeness
-4. WHEN notebooks execute THEN they SHALL validate outputs and provide feedback on analysis quality
-5. WHEN CI completes THEN it SHALL generate validation reports that AI agents can analyze for system health assessment
+1. WHEN the plugin system is reviewed THEN all open source plugins SHALL be integrated into the main codebase
+2. WHEN scoring plugins are accessed THEN they SHALL be available through the main plugin manager
+3. WHEN sentiment analysis plugins are used THEN they SHALL integrate with the existing sentiment pipeline
+4. WHEN data organization plugins are executed THEN they SHALL work with the current database schema
+5. WHEN notebook generation plugins are run THEN they SHALL create valid, executable notebooks
+6. WHEN configuration plugins are used THEN they SHALL integrate with the existing configuration management system
+
+### Requirement 5: Database Schema Optimization
+
+**User Story:** As a database administrator, I want an optimized database schema with proper normalization and indexing, so that queries perform efficiently and data integrity is maintained.
+
+#### Acceptance Criteria
+
+1. WHEN database schema is reviewed THEN all tables SHALL use proper normalization (3NF minimum)
+2. WHEN natural keys are available THEN they SHALL be preferred over artificial keys
+3. WHEN indexes are analyzed THEN they SHALL be optimized for common query patterns
+4. WHEN foreign key relationships exist THEN they SHALL be properly defined with constraints
+5. WHEN data types are reviewed THEN they SHALL be appropriate for the data being stored
+6. WHEN column names are checked THEN they SHALL follow lowercase_snake_case convention consistently
+
+### Requirement 6: Production Deployment Readiness
+
+**User Story:** As a system operator, I want a production-ready system with proper monitoring and deployment capabilities, so that I can operate the system reliably in production.
+
+#### Acceptance Criteria
+
+1. WHEN the system is deployed THEN it SHALL have comprehensive logging and monitoring
+2. WHEN configuration is managed THEN it SHALL use environment variables for all configurable parameters
+3. WHEN the system starts THEN it SHALL validate all required configuration and dependencies
+4. WHEN errors occur THEN they SHALL be logged with appropriate severity levels
+5. WHEN the system runs THEN it SHALL provide health check endpoints for monitoring
+6. WHEN deployment scripts are executed THEN they SHALL handle database migrations and setup automatically
+
+### Requirement 7: Data Verification and Quality Assurance
+
+**User Story:** As a data analyst, I want verified data quality and completeness checks, so that I can trust the analytics results produced by the system.
+
+#### Acceptance Criteria
+
+1. WHEN data quality checks run THEN they SHALL verify data completeness across all tables
+2. WHEN data freshness is checked THEN it SHALL confirm data is less than 24 hours old
+3. WHEN data consistency is validated THEN it SHALL check referential integrity across tables
+4. WHEN duplicate data is detected THEN it SHALL be identified and handled appropriately
+5. WHEN data anomalies are found THEN they SHALL be reported with clear descriptions
+6. WHEN data validation completes THEN it SHALL provide a comprehensive quality report

@@ -10,9 +10,9 @@ Implements multiple VADER enhancement approaches using VADER's official extensio
 Based on expert analysis of music YouTube comments and VADER's documented extension patterns.
 """
 
-import re
 from enum import Enum
 from hashlib import md5
+import re
 from typing import Dict, List, Tuple
 
 try:
@@ -183,6 +183,7 @@ class VADERVariantManager:
                 "goated": 2.9,
                 "bussin": 2.6,
                 "fire": 2.7,
+                "gas": 2.7,  # Gas = fire/good, often with ⛽️
                 "iconic": 2.1,
                 "anthem": 2.1,
                 "goes_hard": 2.6,
@@ -191,6 +192,8 @@ class VADERVariantManager:
                 "no_skips": 2.8,
                 "on_repeat": 2.5,
                 "sick": 2.3,
+                "dopest": 2.4,  # "dopest artists out"
+                "dope": 2.2,
                 # Production & performance
                 "mix_is_clean": 2.0,
                 "production_is_clean": 2.0,
@@ -212,6 +215,11 @@ class VADERVariantManager:
                 "king": 1.8,
                 "mother": 1.5,
                 "bestie": 1.2,
+                "my_son": 1.6,  # "get my son on trending"
+                "relate": 1.8,  # "I relate to this so much"
+                "balance": 1.4,  # "perfect balance"
+                "vintage_voice": 2.0,  # "vintage voice"
+                "modern_beauty": 1.8,  # "modern beauty"
                 # Negative terms
                 "mid": -1.8,
                 "flop": -2.4,
@@ -235,6 +243,8 @@ class VADERVariantManager:
                 "💀": 1.2,
                 "🥵": 1.4,
                 "😍": 2.0,
+                "⛽️": 2.7,  # Gas emoji = fire/good
+                "❤️": 1.8,  # Heart emoji for "I relate to this so much ❤️"
             }
         )
 
@@ -286,6 +296,16 @@ class VADERVariantManager:
                 "this_aint_it": -2.4,
                 "fell_off": -2.0,
                 "mix_is_muddy": -1.8,
+                # New phrases based on your feedback
+                "get_my_son_on_trending": 2.4,  # Playful support
+                "i_relate_to_this": 2.2,  # Personal connection
+                "dopest_artists_out": 2.6,  # High praise
+                "modern_beauty": 2.0,  # Sophisticated praise
+                "vintage_voice": 2.2,  # Vocal appreciation
+                "perfect_balance": 2.0,  # Artistic appreciation
+                "why_not_on_spotify": 1.8,  # Desire for access (positive)
+                "where_can_i_listen": 1.8,  # Seeking behavior (positive)
+                "the_outfits": 1.6,  # Visual appreciation
             }
         )
 
@@ -392,6 +412,16 @@ class MusicVADERNormalizer:
             (re.compile(r"\bthis\s+ain'?t\s+it\b", re.I), "this_aint_it"),
             (re.compile(r"\bfell\s+off\b", re.I), "fell_off"),
             (re.compile(r"\bmix\s+is\s+muddy\b", re.I), "mix_is_muddy"),
+            # New patterns based on your feedback
+            (re.compile(r"\bget\s+(my\s+)?son\s+on\s+trending\b", re.I), "get_my_son_on_trending"),
+            (re.compile(r"\bi\s+relate\s+to\s+this\b", re.I), "i_relate_to_this"),
+            (re.compile(r"\bdopest\s+artists?\s+out\b", re.I), "dopest_artists_out"),
+            (re.compile(r"\bmodern\s+beauty\b", re.I), "modern_beauty"),
+            (re.compile(r"\bvintage\s+voice\b", re.I), "vintage_voice"),
+            (re.compile(r"\bperfect\s+balance\b", re.I), "perfect_balance"),
+            (re.compile(r"\bwhy\s+.*not\s+on\s+spotify\b", re.I), "why_not_on_spotify"),
+            (re.compile(r"\bwhere\s+can\s+i\s+listen\b", re.I), "where_can_i_listen"),
+            (re.compile(r"\bthe\s+outfits?\b", re.I), "the_outfits"),
         ]
 
     def normalize_for_vader(self, text: str) -> str:

@@ -122,10 +122,10 @@ def process_comment(comment_data):
     missing = validate_required_fields(comment_data, ["comment_id", "comment_text"])
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
-    
+
     # Clean text
     clean_text = clean_text_field(comment_data["comment_text"], max_length=1000)
-    
+
     return {
         "comment_id": comment_data["comment_id"],
         "clean_text": clean_text,
@@ -147,12 +147,12 @@ def process_comment_bad(comment_data):
         raise ValueError("Missing comment_id")
     if "comment_text" not in comment_data or not comment_data["comment_text"]:
         raise ValueError("Missing comment_text")
-    
+
     # Duplicated text cleaning logic
     text = comment_data["comment_text"].strip()
     if len(text) > 1000:
         text = text[:1000]
-    
+
     # Duplicated number formatting
     likes = comment_data.get("like_count", 0)
     if likes >= 1000000:
@@ -241,13 +241,13 @@ def process_video_data(video_id):
     except requests.Timeout as e:
         logging.error(f"Timeout fetching video {video_id}: {e}")
         raise TimeoutError(f"API timeout for video {video_id}") from e
-    
+
     try:
         processed_data = transform_video_data(video_data)
     except ValueError as e:
         logging.error(f"Invalid video data for {video_id}: {e}")
         raise DataValidationError(f"Video {video_id} has invalid data: {e}") from e
-    
+
     return processed_data
 
 # ❌ INCORRECT - Silent failures
@@ -334,7 +334,7 @@ Always use real data from the database or API, not fake/mock data:
 def get_channel_analytics(channel_id):
     with get_connection() as conn:
         query = """
-            SELECT 
+            SELECT
                 COUNT(*) as video_count,
                 SUM(view_count) as total_views,
                 AVG(sentiment_score) as avg_sentiment
@@ -371,15 +371,15 @@ def get_channel_analytics_fake(channel_id):
 def calculate_engagement_rate(video_data: Dict[str, Any]) -> float:
     """
     Calculate engagement rate for a YouTube video.
-    
+
     Engagement rate = (likes + comments) / views * 100
-    
+
     Args:
         video_data: Dictionary containing video metrics
-        
+
     Returns:
         Engagement rate as percentage (0-100)
-        
+
     Raises:
         ValueError: If required metrics are missing or invalid
     """
@@ -387,14 +387,14 @@ def calculate_engagement_rate(video_data: Dict[str, Any]) -> float:
     missing = validate_required_fields(video_data, required_fields)
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
-    
+
     views = video_data["view_count"]
     likes = video_data["like_count"]
     comments = video_data["comment_count"]
-    
+
     if views == 0:
         return 0.0
-    
+
     engagement = (likes + comments) / views * 100
     return round(engagement, 2)
 
@@ -420,7 +420,7 @@ for video_metadata in channel_video_list:
     video_id = video_metadata["id"]
     video_title = video_metadata["snippet"]["title"]
     published_date = parse_youtube_timestamp(video_metadata["snippet"]["publishedAt"])
-    
+
     # Process each video...
 
 # ❌ INCORRECT - Unclear names
@@ -446,24 +446,24 @@ for item in data:
 def process_video_comments(video_id: str, max_comments: int = 100) -> Dict[str, Any]:
     """
     Process comments for a YouTube video and calculate sentiment metrics.
-    
+
     This function fetches comments from the database, analyzes sentiment,
     and returns aggregated metrics for the video.
-    
+
     Args:
         video_id: YouTube video ID (11 characters)
         max_comments: Maximum number of comments to process
-        
+
     Returns:
         Dictionary containing:
         - comment_count: Total comments processed
         - avg_sentiment: Average sentiment score (-1 to 1)
         - sentiment_distribution: Count by sentiment category
-        
+
     Raises:
         ValueError: If video_id is invalid
         DatabaseError: If database query fails
-        
+
     Example:
         >>> metrics = process_video_comments("dQw4w9WgXcQ", max_comments=50)
         >>> print(metrics["avg_sentiment"])
@@ -472,36 +472,36 @@ def process_video_comments(video_id: str, max_comments: int = 100) -> Dict[str, 
     # Validate input
     if not validate_youtube_id(video_id, "video"):
         raise ValueError(f"Invalid YouTube video ID: {video_id}")
-    
+
     # Fetch comments from database
     try:
         with get_connection() as conn:
             query = """
-                SELECT comment_text, sentiment_score 
-                FROM youtube_comments 
-                WHERE video_id = %s 
-                ORDER BY published_at DESC 
+                SELECT comment_text, sentiment_score
+                FROM youtube_comments
+                WHERE video_id = %s
+                ORDER BY published_at DESC
                 LIMIT %s
             """
             cursor = conn.cursor(dictionary=True)
             cursor.execute(query, (video_id, max_comments))
             comments = cursor.fetchall()
-            
+
     except Exception as e:
         log_error_with_context(e, {"video_id": video_id, "operation": "fetch_comments"})
         raise DatabaseError(f"Failed to fetch comments for video {video_id}") from e
-    
+
     if not comments:
         return {
             "comment_count": 0,
             "avg_sentiment": 0.0,
             "sentiment_distribution": {"positive": 0, "neutral": 0, "negative": 0}
         }
-    
+
     # Calculate metrics
     sentiment_scores = [c["sentiment_score"] for c in comments if c["sentiment_score"] is not None]
     avg_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0.0
-    
+
     # Categorize sentiments
     distribution = {"positive": 0, "neutral": 0, "negative": 0}
     for score in sentiment_scores:
@@ -511,7 +511,7 @@ def process_video_comments(video_id: str, max_comments: int = 100) -> Dict[str, 
             distribution["negative"] += 1
         else:
             distribution["neutral"] += 1
-    
+
     return {
         "comment_count": len(comments),
         "avg_sentiment": round(avg_sentiment, 3),
@@ -525,14 +525,14 @@ def process_video_comments(video_id: str, max_comments: int = 100) -> Dict[str, 
 def update_video_metrics(video_id: str, metrics: Dict[str, Any]) -> bool:
     """
     Update video metrics in the database.
-    
+
     Args:
         video_id: YouTube video ID
         metrics: Dictionary of metrics to update
-        
+
     Returns:
         True if update successful, False otherwise
-        
+
     Raises:
         ValueError: If video_id or metrics are invalid
         DatabaseError: If database update fails
@@ -540,36 +540,36 @@ def update_video_metrics(video_id: str, metrics: Dict[str, Any]) -> bool:
     # Validate inputs
     if not validate_youtube_id(video_id, "video"):
         raise ValueError(f"Invalid video ID: {video_id}")
-    
+
     required_metrics = ["view_count", "like_count", "comment_count"]
     missing = validate_required_fields(metrics, required_metrics)
     if missing:
         raise ValueError(f"Missing required metrics: {missing}")
-    
+
     # Prepare update query
     update_fields = []
     params = {"video_id": video_id}
-    
+
     for field in required_metrics:
         if field in metrics:
             update_fields.append(f"{field} = :{field}")
             params[field] = metrics[field]
-    
+
     if not update_fields:
         return False
-    
+
     query = f"""
-        UPDATE youtube_videos 
+        UPDATE youtube_videos
         SET {', '.join(update_fields)}, fetched_at = NOW()
         WHERE video_id = :video_id
     """
-    
+
     # Execute update
     try:
         with get_connection() as conn:
             result = execute_query_safely(conn, query, params)
             return result.rowcount > 0
-            
+
     except Exception as e:
         log_error_with_context(e, {"video_id": video_id, "metrics": metrics})
         raise DatabaseError(f"Failed to update metrics for video {video_id}") from e

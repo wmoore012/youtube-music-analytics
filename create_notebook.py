@@ -7,12 +7,12 @@ Beautiful, interactive charts using bulletproof database schema
 FAILS LOUDLY when there are issues - we fix problems, we don't hide them
 """
 
+from datetime import datetime
 import json
 import logging
 import os
-import shutil
-from datetime import datetime
 from pathlib import Path
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

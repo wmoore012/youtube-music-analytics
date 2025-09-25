@@ -88,8 +88,8 @@ def check_table_exists(conn: Connection, table_name: str) -> bool:
     """
     try:
         query = """
-            SELECT COUNT(*) 
-            FROM information_schema.tables 
+            SELECT COUNT(*)
+            FROM information_schema.tables
             WHERE table_name = %s AND table_schema = DATABASE()
         """
         result = execute_query_safely(conn, query, {"table_name": table_name})

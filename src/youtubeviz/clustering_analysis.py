@@ -3,9 +3,9 @@ UMAP clustering analysis for tour compatibility and artist similarity.
 Bulletproof implementation with proper error handling and validation.
 """
 
-import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -75,10 +75,10 @@ class UMAPClusteringAnalyzer:
     def _validate_dependencies(self) -> None:
         """Validate that required dependencies are available."""
         try:
-            import umap
             from sklearn.cluster import KMeans
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.metrics import silhouette_score
+            import umap
         except ImportError as e:
             raise UMAPNotAvailableError(
                 f"Required dependencies not available: {e}. " "Install with: pip install umap-learn scikit-learn"

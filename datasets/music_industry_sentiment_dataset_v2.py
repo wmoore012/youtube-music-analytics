@@ -29,9 +29,9 @@ Schema Version: 2.0
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from enum import Enum
+import re
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 

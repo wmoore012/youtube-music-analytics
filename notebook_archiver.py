@@ -6,11 +6,11 @@ Organizes notebooks with datetime stamps and archives old versions.
 Follows TDD principles with comprehensive error handling.
 """
 
+from datetime import datetime
 import json
 import logging
-import shutil
-from datetime import datetime
 from pathlib import Path
+import shutil
 from typing import Any, Dict, Optional
 
 # Set up logging

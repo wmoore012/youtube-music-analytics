@@ -16,12 +16,12 @@ Design Principles:
 - Never silently ignore errors
 """
 
+from datetime import datetime
+from enum import Enum
 import functools
 import logging
 import time
 import traceback
-from datetime import datetime
-from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel, Field, validator
@@ -377,3 +377,96 @@ def setup_error_logging(log_level: str = "INFO") -> logging.Logger:
     logger.addHandler(console_handler)
 
     return logger
+
+
+class PerformanceLogger:
+    """Logger for performance metrics and system monitoring."""
+
+    def __init__(self, logger_name: str = "etl_performance"):
+        self.logger = logging.getLogger(logger_name)
+        self.metrics: Dict[str, List[float]] = {}
+
+    def log_operation_time(self, operation: str, duration_seconds: float, context: Optional[Dict[str, Any]] = None):
+        """Log operation timing with context."""
+        if operation not in self.metrics:
+            self.metrics[operation] = []
+        self.metrics[operation].append(duration_seconds)
+
+        context_str = f" | Context: {context}" if context else ""
+        self.logger.info(f"⏱️ {operation}: {duration_seconds:.3f}s{context_str}")
+
+    def log_memory_usage(self, operation: str, memory_mb: float):
+        """Log memory usage for operations."""
+        self.logger.info(f"🧠 {operation}: {memory_mb:.1f} MB")
+
+    def log_throughput(self, operation: str, items_processed: int, duration_seconds: float):
+        """Log throughput metrics."""
+        rate = items_processed / duration_seconds if duration_seconds > 0 else 0
+        self.logger.info(f"📊 {operation}: {items_processed:,} items in {duration_seconds:.1f}s ({rate:.1f} items/sec)")
+
+    def get_performance_summary(self) -> Dict[str, Dict[str, float]]:
+        """Get performance summary statistics."""
+        summary = {}
+        for operation, times in self.metrics.items():
+            if times:
+                summary[operation] = {
+                    "count": len(times),
+                    "total_time": sum(times),
+                    "avg_time": sum(times) / len(times),
+                    "min_time": min(times),
+                    "max_time": max(times),
+                }
+        return summary
+
+
+class StructuredLogger:
+    """Enhanced structured logging with JSON output and context tracking."""
+
+    def __init__(self, component: str, enable_json: bool = False):
+        self.component = component
+        self.logger = logging.getLogger(f"etl.{component}")
+        self.enable_json = enable_json
+
+    def log_with_context(
+        self,
+        level: str,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        performance_data: Optional[Dict[str, Any]] = None,
+    ):
+        """Log message with structured context and performance data."""
+        log_data = {"component": self.component, "timestamp": datetime.utcnow().isoformat(), "message": message}
+
+        if context:
+            log_data["context"] = context
+
+        if performance_data:
+            log_data["performance"] = performance_data
+
+        if self.enable_json:
+            import json
+
+            log_message = json.dumps(log_data)
+        else:
+            # Human-readable format
+            context_str = f" | Context: {context}" if context else ""
+            perf_str = f" | Performance: {performance_data}" if performance_data else ""
+            log_message = f"[{self.component}] {message}{context_str}{perf_str}"
+
+        getattr(self.logger, level.lower())(log_message)
+
+    def info(self, message: str, **kwargs):
+        """Log info message with context."""
+        self.log_with_context("INFO", message, **kwargs)
+
+    def warning(self, message: str, **kwargs):
+        """Log warning message with context."""
+        self.log_with_context("WARNING", message, **kwargs)
+
+    def error(self, message: str, **kwargs):
+        """Log error message with context."""
+        self.log_with_context("ERROR", message, **kwargs)
+
+    def debug(self, message: str, **kwargs):
+        """Log debug message with context."""
+        self.log_with_context("DEBUG", message, **kwargs)

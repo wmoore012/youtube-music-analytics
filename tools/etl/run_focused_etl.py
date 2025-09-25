@@ -10,18 +10,19 @@ This script runs essential data processing tasks:
 Designed to be robust, fast, and fail-safe.
 """
 
-import sys
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from datetime import datetime, timedelta
 
 # Preflight utilities
 import os
 import subprocess
-from datetime import datetime, timedelta
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import text
 
 from tools.etl.sentiment_analysis import process_sentiment_analysis
@@ -91,7 +92,7 @@ def validate_data_quality(engine) -> dict:
             ),
             (
                 "Comments without text",
-                "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text = ''",
+                "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text_item = ''",
             ),
             (
                 "Comments without authors",
@@ -377,7 +378,7 @@ def main():
 
         # Step 3: Run analysis notebooks (organized under notebooks/analysis and notebooks/quality)
         notebooks_to_run = [
-            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks/MusicScope™_Professional_Dashboard.ipynb",
         ]
         notebook_results = run_notebooks(notebooks_to_run)
 

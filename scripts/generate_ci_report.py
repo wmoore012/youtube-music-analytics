@@ -5,12 +5,12 @@ Generate comprehensive CI validation report.
 This script creates a summary report of all CI checks and system health.
 """
 
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List
 
 
@@ -38,7 +38,7 @@ class CIReportGenerator:
                 git_branch = subprocess.check_output(["git", "branch", "--show-current"], text=True).strip()
                 git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()[:8]
                 git_info = {"branch": git_branch, "commit": git_commit}
-            except:
+            except Exception:
                 git_info = {"branch": "unknown", "commit": "unknown"}
 
             return {

@@ -9,11 +9,11 @@ Following TDD principles with test-first development.
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 sys.path.append("scripts")

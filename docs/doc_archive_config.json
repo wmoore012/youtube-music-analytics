@@ -1,0 +1,19 @@
+{
+  "core_docs": [
+    "README.md",
+    "AGENT.md",
+    "docs/getting-started.md",
+    "docs/etl-pipeline.md"
+  ],
+  "retention_days": 7,
+  "archive_root": "docs/archive",
+  "keep_recent_count_per_category": 50,
+  "category_patterns": {
+    "specs": ["spec", "blueprint", "design", "requirement"],
+    "reports": ["report", "summary", "benchmark", "evaluation", "quality", "validation"],
+    "tasks": ["task", "execution", "runbook", "workflow"],
+    "experiments": ["demo_", "experiment", "prototype", "benchmark_"],
+    "notebooks": ["notebook", "NOTEBOOK_"],
+    "generated": ["ci_report", "coverage", "data_quality", "success"]
+  }
+}

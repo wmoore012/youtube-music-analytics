@@ -12,9 +12,9 @@ Implements the professional approach:
 Based on expert feedback for production-grade sentiment analysis.
 """
 
-import re
 from dataclasses import dataclass
 from enum import Enum
+import re
 from typing import Dict, List, Optional, Set, Tuple
 
 import joblib

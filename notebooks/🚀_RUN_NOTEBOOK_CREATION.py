@@ -22,8 +22,8 @@ Old executed versions are archived to: archive/YYYYMMDD_HHMMSS/
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 
 # Add parent directory to path to find our modules
 current_dir = Path(__file__).parent
@@ -33,6 +33,7 @@ sys.path.insert(0, str(project_root))
 try:
     # Try to import the blueprint system
     from blueprint_execution_system import BlueprintExecutionManager
+
     print("✅ Blueprint execution system imported successfully")
     BLUEPRINT_AVAILABLE = True
 except ImportError as e:
@@ -41,7 +42,8 @@ except ImportError as e:
 
 # Try to import auto-installer for dependency checking
 try:
-    from src.youtubeviz.auto_install import ensure_packages, ANALYTICS_ESSENTIALS, JUPYTER_ESSENTIALS
+    from src.youtubeviz.auto_install import ANALYTICS_ESSENTIALS, JUPYTER_ESSENTIALS, ensure_packages
+
     AUTO_INSTALL_AVAILABLE = True
 except ImportError:
     AUTO_INSTALL_AVAILABLE = False
@@ -52,22 +54,22 @@ def check_and_install_dependencies():
     if not AUTO_INSTALL_AVAILABLE:
         print("⚠️  Auto-installer not available - skipping dependency check")
         return True
-    
+
     print("📦 Checking essential dependencies...")
-    
+
     # Check essential packages
     essential_packages = {
-        'pandas': 'pandas',
-        'numpy': 'numpy', 
-        'plotly': 'plotly',
-        'nbconvert': 'nbconvert',
-        'pydantic': 'pydantic'
+        "pandas": "pandas",
+        "numpy": "numpy",
+        "plotly": "plotly",
+        "nbconvert": "nbconvert",
+        "pydantic": "pydantic",
     }
-    
-    results = ensure_packages('pandas', 'numpy', 'plotly', 'nbconvert')
-    
+
+    results = ensure_packages("pandas", "numpy", "plotly", "nbconvert")
+
     missing = [pkg for pkg, module in results.items() if module is None]
-    
+
     if missing:
         print(f"❌ Missing essential packages: {', '.join(missing)}")
         return False
@@ -79,7 +81,7 @@ def check_and_install_dependencies():
 def create_simple_notebook():
     """Create a simple notebook if blueprint system is not available."""
     print("📝 Creating simple analytics notebook...")
-    
+
     notebook_content = {
         "cells": [
             {
@@ -90,8 +92,8 @@ def create_simple_notebook():
                     "\n",
                     "Simple analytics dashboard for YouTube music data.\n",
                     "\n",
-                    "## 📊 Quick Analytics\n"
-                ]
+                    "## 📊 Quick Analytics\n",
+                ],
             },
             {
                 "cell_type": "code",
@@ -107,8 +109,8 @@ def create_simple_notebook():
                     "from datetime import datetime, timedelta\n",
                     "\n",
                     "print('📊 Analytics packages loaded successfully!')\n",
-                    "print(f'🕐 Generated at: {datetime.now()}')"
-                ]
+                    "print(f'🕐 Generated at: {datetime.now()}')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -124,8 +126,8 @@ def create_simple_notebook():
                     "})\n",
                     "\n",
                     "print(f'📈 Generated {len(sample_data)} days of sample data')\n",
-                    "sample_data.head()"
-                ]
+                    "sample_data.head()",
+                ],
             },
             {
                 "cell_type": "code",
@@ -144,33 +146,27 @@ def create_simple_notebook():
                     ")\n",
                     "\n",
                     "fig.show()\n",
-                    "print('✅ Chart created successfully!')"
-                ]
-            }
+                    "print('✅ Chart created successfully!')",
+                ],
+            },
         ],
         "metadata": {
-            "kernelspec": {
-                "display_name": "Python 3",
-                "language": "python",
-                "name": "python3"
-            },
-            "language_info": {
-                "name": "python",
-                "version": "3.8.0"
-            }
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.8.0"},
         },
         "nbformat": 4,
-        "nbformat_minor": 4
+        "nbformat_minor": 4,
     }
-    
+
     # Save the notebook
     notebooks_dir = Path(__file__).parent
     notebook_path = notebooks_dir / "MusicScope™_Simple_Dashboard.ipynb"
-    
+
     import json
-    with open(notebook_path, 'w') as f:
+
+    with open(notebook_path, "w") as f:
         json.dump(notebook_content, f, indent=2)
-    
+
     print(f"✅ Simple notebook created: {notebook_path.name}")
     return notebook_path
 
@@ -228,7 +224,7 @@ def main():
             print("   • Verify your .env file has the correct settings")
             print("   • Run from the notebooks directory")
             print()
-            
+
             # Fallback to simple notebook
             print("🔄 Falling back to simple notebook creation...")
             try:

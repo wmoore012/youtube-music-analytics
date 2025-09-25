@@ -3,8 +3,8 @@ Data-science grade chart implementations with statistical rigor and cognitive de
 Implements the 15 chart specifications with Wilson intervals, Bayesian shrinkage, and interactive features.
 """
 
-import warnings
 from typing import Any, Dict, List, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -2714,7 +2714,7 @@ def create_standout_videos_scatter(
                     hoverinfo="skip",
                 )
             )
-        except:
+        except Exception:
             pass  # Skip trend line if calculation fails
 
     fig.update_layout(

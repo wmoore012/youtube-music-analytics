@@ -32,8 +32,8 @@ and correctly identifies the artist name in these cases.
 import csv
 import io
 import re
-import unicodedata
 from typing import Dict, List, Optional, Set, Tuple
+import unicodedata
 
 try:
     import unidecode

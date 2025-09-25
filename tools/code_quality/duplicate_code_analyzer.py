@@ -310,10 +310,10 @@ class DuplicateCodeAnalyzer:
         helper_code = f'''def {group.suggested_helper}():
     """
     Extracted helper function to reduce code duplication.
-    
+
     Original locations:
 {chr(10).join(f"    - {block.file_path}:{block.start_line}" for block in group.blocks)}
-    
+
     Lines saved: {group.lines_saved}
     """
     # TODO: Implement extracted logic

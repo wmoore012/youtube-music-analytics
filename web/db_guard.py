@@ -1,9 +1,9 @@
 # web/db_guard.py
 from __future__ import annotations
 
+from functools import wraps
 import logging
 import os
-from functools import wraps
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Callable

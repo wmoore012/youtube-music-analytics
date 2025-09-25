@@ -5,13 +5,13 @@ Test-Driven Development for Notebook Archiver System
 Tests for organizing notebooks with datetime stamps and archiving old versions.
 """
 
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import shutil
 import tempfile
 import unittest
-from datetime import datetime
-from pathlib import Path
 
 
 class TestNotebookArchiver(unittest.TestCase):

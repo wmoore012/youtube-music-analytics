@@ -9,9 +9,9 @@ This is the definitive validation that catches any missing artist issues.
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
 import pandas as pd
 

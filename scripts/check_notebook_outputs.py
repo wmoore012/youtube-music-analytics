@@ -7,8 +7,8 @@ which keeps the repository clean and prevents merge conflicts.
 """
 
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import List
 
 

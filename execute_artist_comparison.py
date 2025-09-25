@@ -3,8 +3,8 @@
 Execute artist comparison analysis directly
 """
 import os
-import sys
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 

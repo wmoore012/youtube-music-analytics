@@ -1,14 +1,28 @@
 from __future__ import annotations
 
-import json
-import os
 from dataclasses import dataclass
 from datetime import date, timedelta
+import json
+import os
 from time import perf_counter
 from typing import Iterable, Optional
 
 import pandas as pd
 from sqlalchemy import bindparam, inspect, select, text
+
+# Import unique comment integration
+try:
+    from .unique_comment_integration import enforce_real_data_only, ensure_unique_comments
+except ImportError:
+    # Fallback decorators if unique comment system not available
+    def ensure_unique_comments(func_name: str, usage_type: str = "analysis"):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def enforce_real_data_only(df: pd.DataFrame, context: str = "unknown") -> pd.DataFrame:
+        return df
 
 
 @dataclass(frozen=True)
@@ -108,26 +122,26 @@ def load_artist_daily_metrics(
 
     Notes:
     - The ETL uses channel URLs from your `.env` (e.g. YT_CHANNEL_1=...) to control ingestion. This function does not
-      alter those inputs; the `artists` parameter is a read-time filter only (uses `songs.artist` or
+      alter those inputs; the `artists` parameter is a read-time filter only (uses `isrc_recordings.artist_primary` or
       `youtube_videos.channel_title`).
     """
     eng = _get_engine(engine)
 
-    # Detect whether optional 'songs' table exists once
+    # Detect whether ISRC schema exists (isrc_recordings + video_recording_link)
     try:
-        has_songs = inspect(eng).has_table("songs")
+        has_isrc_schema = inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link")
     except Exception:
-        has_songs = False
+        has_isrc_schema = False
 
     conds = []
     params: dict[str, object] = {}
     names: list[str] = []
     if artists:
         names = list(artists)
-        if has_songs:
-            conds.append("s.artist IN :names")
+        if has_isrc_schema:
+            conds.append("ir.artist_primary IN :names")
         else:
-            # Fallback: filter by channel when songs table is absent
+            # Fallback: filter by channel when ISRC schema is absent
             conds.append("v.channel_title IN :names")
     if start:
         conds.append("m.metrics_date >= :d0")
@@ -138,8 +152,15 @@ def load_artist_daily_metrics(
 
     where = f"WHERE {' AND '.join(conds)}" if conds else ""
 
-    artist_sel = "COALESCE(s.artist, v.channel_title)" if has_songs else "v.channel_title"
-    join_songs = "LEFT JOIN songs s ON v.isrc = s.isrc" if has_songs else ""
+    artist_sel = "COALESCE(ir.artist_primary, v.channel_title)" if has_isrc_schema else "v.channel_title"
+    join_isrc = (
+        """
+        LEFT JOIN video_recording_link vrl ON v.video_id = vrl.video_id
+        LEFT JOIN isrc_recordings ir ON vrl.isrc = ir.isrc
+    """
+        if has_isrc_schema
+        else ""
+    )
 
     sql = f"""
         SELECT
@@ -155,7 +176,7 @@ def load_artist_daily_metrics(
             v.published_at
         FROM youtube_metrics m
         JOIN youtube_videos v ON v.video_id = m.video_id
-        {join_songs}
+        {join_isrc}
         {where}
     """
 
@@ -428,6 +449,7 @@ def benchmark_run_artist_metrics_pipeline(
     return {"iterations": runs, "rows": rows, "duration_sec": avg_duration, "last_result": last_result}
 
 
+@ensure_unique_comments("load_comment_examples", "analysis")
 def load_comment_examples(
     artists: Iterable[str] | None = None,
     per_artist: int = 3,
@@ -441,9 +463,9 @@ def load_comment_examples(
     """
     eng = _get_engine(engine)
     try:
-        has_songs = inspect(eng).has_table("songs")
+        has_isrc_schema = inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link")
     except Exception:
-        has_songs = False
+        has_isrc_schema = False
 
     # Determine available timestamp column on youtube_comments
     try:
@@ -460,14 +482,21 @@ def load_comment_examples(
     names: list[str] = []
     if artists:
         names = list(artists)
-        if has_songs:
-            conds.append("sg.artist IN :names")
+        if has_isrc_schema:
+            conds.append("ir.artist_primary IN :names")
         else:
             conds.append("v.channel_title IN :names")
     where = f"WHERE {' AND '.join(conds)}" if conds else ""
 
-    artist_sel = "COALESCE(sg.artist, v.channel_title)" if has_songs else "v.channel_title"
-    join_songs = "LEFT JOIN songs sg ON v.isrc = sg.isrc" if has_songs else ""
+    artist_sel = "COALESCE(ir.artist_primary, v.channel_title)" if has_isrc_schema else "v.channel_title"
+    join_isrc = (
+        """
+        LEFT JOIN video_recording_link vrl ON v.video_id = vrl.video_id
+        LEFT JOIN isrc_recordings ir ON vrl.isrc = ir.isrc
+    """
+        if has_isrc_schema
+        else ""
+    )
 
     # Use window functions if available; fallback to simple LIMIT per group via variables isn't portable.
     # We'll select all and do per-group head in pandas.
@@ -481,7 +510,7 @@ def load_comment_examples(
                c.comment_text{time_sel}
         FROM youtube_comments c
         JOIN youtube_videos v ON v.video_id = c.video_id
-        {join_songs}
+        {join_isrc}
         {where}
     """
     stmt = text(sql)
@@ -503,40 +532,65 @@ def load_comment_examples(
         if kind in ("negative", "both"):
             dfs.append(sub.sort_values("sentiment_score", ascending=True).head(per_artist))
     out = pd.concat(dfs, ignore_index=True) if dfs else df.iloc[0:0]
+
+    # Ensure only real, unique comments are returned
+    out = enforce_real_data_only(out, "load_comment_examples")
+
     return out
 
 
 def compute_coengagement_matrix(artists: Iterable[str] | None = None, engine=None) -> pd.DataFrame:
     """Compute commenter overlap (Jaccard) across artists.
 
-    Requires youtube_comments.author_channel_id to be present; returns empty if not.
+    Requires youtube_comments.author_channel_id or author_name to be present; returns empty if not.
     Columns: artist_a, artist_b, commenters_a, commenters_b, overlap, jaccard
     """
     eng = _get_engine(engine)
+
+    # Check if author_channel_id column exists, fallback to author_name
     try:
-        has_songs = inspect(eng).has_table("songs")
+        cols = {c["name"] for c in inspect(eng).get_columns("youtube_comments")}
+        if "author_channel_id" in cols:
+            author_col = "author_channel_id"
+        elif "author_name" in cols:
+            author_col = "author_name"
+        else:
+            # No suitable author column found
+            return pd.DataFrame(columns=["artist_a", "artist_b", "commenters_a", "commenters_b", "overlap", "jaccard"])
     except Exception:
-        has_songs = False
+        return pd.DataFrame(columns=["artist_a", "artist_b", "commenters_a", "commenters_b", "overlap", "jaccard"])
+
+    try:
+        has_isrc_schema = inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link")
+    except Exception:
+        has_isrc_schema = False
     names: list[str] = list(artists) if artists else []
     where = ""
-    conds = ["c.author_channel_id IS NOT NULL"]
+    conds = [f"c.{author_col} IS NOT NULL"]
     if artists:
-        if has_songs:
-            conds.append("sg.artist IN :names")
+        if has_isrc_schema:
+            conds.append("ir.artist_primary IN :names")
         else:
             conds.append("v.channel_title IN :names")
         where = f"WHERE {' AND '.join(conds)}"
     else:
         where = f"WHERE {' AND '.join(conds)}"
 
-    artist_sel = "COALESCE(sg.artist, v.channel_title)" if has_songs else "v.channel_title"
-    join_songs = "LEFT JOIN songs sg ON v.isrc = sg.isrc" if has_songs else ""
+    artist_sel = "COALESCE(ir.artist_primary, v.channel_title)" if has_isrc_schema else "v.channel_title"
+    join_isrc = (
+        """
+        LEFT JOIN video_recording_link vrl ON v.video_id = vrl.video_id
+        LEFT JOIN isrc_recordings ir ON vrl.isrc = ir.isrc
+    """
+        if has_isrc_schema
+        else ""
+    )
     sql = f"""
         SELECT {artist_sel} AS artist_name,
-               c.author_channel_id
+               c.{author_col} AS author_identifier
         FROM youtube_comments c
         JOIN youtube_videos v ON v.video_id = c.video_id
-        {join_songs}
+        {join_isrc}
         {where}
     """
     stmt = text(sql)
@@ -545,10 +599,10 @@ def compute_coengagement_matrix(artists: Iterable[str] | None = None, engine=Non
     with eng.connect() as conn:
         _params = {"names": names} if names else {}
         df = pd.read_sql(stmt, conn, params=_params)
-    if df.empty or "author_channel_id" not in df.columns:
+    if df.empty or "author_identifier" not in df.columns:
         return df.iloc[0:0]
     # Build sets per artist
-    sets = {a: set(s["author_channel_id"].dropna().astype(str)) for a, s in df.groupby("artist_name")}
+    sets = {a: set(s["author_identifier"].dropna().astype(str)) for a, s in df.groupby("artist_name")}
     rows: list[dict[str, object]] = []
     arts = sorted(sets.keys())
     for i, a in enumerate(arts):
@@ -630,44 +684,47 @@ def load_sentiment_summary(
     """
     eng = _get_engine(engine)
 
-    # Check if we have songs table with data AND videos with ISRCs
-    has_songs_with_isrcs = False
+    # Check if we have ISRC schema with data AND videos with recording links
+    has_isrc_with_data = False
     try:
-        if inspect(eng).has_table("songs"):
+        if inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link"):
             with eng.connect() as conn:
-                # Check if we have songs data AND videos with ISRCs
+                # Check if we have ISRC data AND videos with recording links
                 result = conn.execute(
                     text(
                         """
-                    SELECT COUNT(*) FROM songs sg
-                    JOIN youtube_videos v ON v.isrc = sg.isrc
-                    WHERE v.isrc IS NOT NULL
+                    SELECT COUNT(*) FROM isrc_recordings ir
+                    JOIN video_recording_link vrl ON ir.isrc = vrl.isrc
+                    JOIN youtube_videos v ON vrl.video_id = v.video_id
                 """
                     )
                 )
-                has_songs_with_isrcs = result.fetchone()[0] > 0
+                has_isrc_with_data = result.fetchone()[0] > 0
     except Exception:
-        has_songs_with_isrcs = False
+        has_isrc_with_data = False
 
     conds = []
     names: list[str] = []
     if artists:
         names = list(artists)
-        if has_songs_with_isrcs:
-            # Use both song artist names and channel titles for filtering
-            conds.append("(sg.artist IN :names OR v.channel_title IN :names)")
+        if has_isrc_with_data:
+            # Use both ISRC artist names and channel titles for filtering
+            conds.append("(ir.artist_primary IN :names OR v.channel_title IN :names)")
         else:
             # Only use channel titles
             conds.append("v.channel_title IN :names")
     where = f"WHERE {' AND '.join(conds)}" if conds else ""
 
-    # Smart artist selection: prefer song artist name if available, fallback to channel title
-    if has_songs_with_isrcs:
-        artist_sel = "COALESCE(sg.artist, v.channel_title)"
-        join_songs = "LEFT JOIN songs sg ON v.isrc = sg.isrc AND v.isrc IS NOT NULL"
+    # Smart artist selection: prefer ISRC artist name if available, fallback to channel title
+    if has_isrc_with_data:
+        artist_sel = "COALESCE(ir.artist_primary, v.channel_title)"
+        join_isrc = """
+            LEFT JOIN video_recording_link vrl ON v.video_id = vrl.video_id
+            LEFT JOIN isrc_recordings ir ON vrl.isrc = ir.isrc
+        """
     else:
         artist_sel = "v.channel_title"
-        join_songs = ""
+        join_isrc = ""
 
     sql = f"""
         SELECT
@@ -679,7 +736,7 @@ def load_sentiment_summary(
             SUM(CASE WHEN cs.sentiment_score < -0.1 THEN 1 ELSE 0 END) AS negative_comments
         FROM comment_sentiment cs
         JOIN youtube_videos v ON v.video_id = cs.video_id
-        {join_songs}
+        {join_isrc}
         {where}
         GROUP BY {artist_sel}
     """
@@ -701,31 +758,31 @@ def load_sentiment_daily(
     engine=None,
     normalize_aliases: bool = True,
 ) -> pd.DataFrame:
-    """Aggregate daily sentiment from youtube_comments joined to videos (+songs if ISRC present).
+    """Aggregate daily sentiment from youtube_comments joined to videos (+ISRC if present).
 
     Returns columns:
     - date, artist_name, avg_sentiment, comments
     """
     eng = _get_engine(engine)
 
-    # Check if we have songs table with data AND videos with ISRCs
-    has_songs_with_isrcs = False
+    # Check if we have ISRC schema with data AND videos with recording links
+    has_isrc_with_data = False
     try:
-        if inspect(eng).has_table("songs"):
+        if inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link"):
             with eng.connect() as conn:
-                # Check if we have songs data AND videos with ISRCs
+                # Check if we have ISRC data AND videos with recording links
                 result = conn.execute(
                     text(
                         """
-                    SELECT COUNT(*) FROM songs sg
-                    JOIN youtube_videos v ON v.isrc = sg.isrc
-                    WHERE v.isrc IS NOT NULL
+                    SELECT COUNT(*) FROM isrc_recordings ir
+                    JOIN video_recording_link vrl ON ir.isrc = vrl.isrc
+                    JOIN youtube_videos v ON vrl.video_id = v.video_id
                 """
                     )
                 )
-                has_songs_with_isrcs = result.fetchone()[0] > 0
+                has_isrc_with_data = result.fetchone()[0] > 0
     except Exception:
-        has_songs_with_isrcs = False
+        has_isrc_with_data = False
 
     conds = []
     params: dict[str, object] = {}
@@ -739,9 +796,9 @@ def load_sentiment_daily(
     date_expr = f"DATE(c.{ts_col})" if ts_col else "DATE(NOW())"  # fallback shouldn't be hit if schema is sane
     if artists:
         names = list(artists)
-        if has_songs_with_isrcs:
-            # Use both song artist names and channel titles for filtering
-            conds.append("(sg.artist IN :names OR v.channel_title IN :names)")
+        if has_isrc_with_data:
+            # Use both ISRC artist names and channel titles for filtering
+            conds.append("(ir.artist_primary IN :names OR v.channel_title IN :names)")
         else:
             # Only use channel titles
             conds.append("v.channel_title IN :names")
@@ -754,13 +811,16 @@ def load_sentiment_daily(
         params["d1"] = end
     where = f"WHERE {' AND '.join(conds)}" if conds else ""
 
-    # Smart artist selection: prefer song artist name if available, fallback to channel title
-    if has_songs_with_isrcs:
-        artist_sel = "COALESCE(sg.artist, v.channel_title)"
-        join_songs = "LEFT JOIN songs sg ON v.isrc = sg.isrc AND v.isrc IS NOT NULL"
+    # Smart artist selection: prefer ISRC artist name if available, fallback to channel title
+    if has_isrc_with_data:
+        artist_sel = "COALESCE(ir.artist_primary, v.channel_title)"
+        join_isrc = """
+            LEFT JOIN video_recording_link vrl ON v.video_id = vrl.video_id
+            LEFT JOIN isrc_recordings ir ON vrl.isrc = ir.isrc
+        """
     else:
         artist_sel = "v.channel_title"
-        join_songs = ""
+        join_isrc = ""
 
     sql = f"""
         SELECT
@@ -771,7 +831,7 @@ def load_sentiment_daily(
         FROM youtube_comments c
         JOIN youtube_videos v ON v.video_id = c.video_id
         JOIN comment_sentiment cs ON c.comment_id = cs.comment_id
-        {join_songs}
+        {join_isrc}
         {where}
         GROUP BY {date_expr}, {artist_sel}
         ORDER BY `date` ASC

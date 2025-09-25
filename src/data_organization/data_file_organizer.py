@@ -9,14 +9,14 @@ music_analysis_tables/, and other directories.
 
 from __future__ import annotations
 
-import hashlib
-import json
-import shutil
-import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import hashlib
+import json
 from pathlib import Path
+import shutil
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd

@@ -98,8 +98,8 @@ rankings = storage.get_entity_rankings(algorithm_name="momentum_scorer")
 ```python
 # Execute with automatic storage
 result = engine.execute_scoring(
-    "momentum_scorer", 
-    data, 
+    "momentum_scorer",
+    data,
     store_results=True,
     entity_type="artist"
 )
@@ -190,7 +190,7 @@ storage = ScoringStorage()
 # Get scoring trends over time
 history = storage.get_scoring_history(
     entity_id="Artist Name",
-    entity_type="artist", 
+    entity_type="artist",
     algorithm_name="momentum_scorer",
     days_back=30
 )

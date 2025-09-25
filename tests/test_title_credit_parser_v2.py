@@ -1,6 +1,7 @@
 # tests/icatalog_public/oss/test_title_credit_parser_v2.py
 
 import pytest
+
 from src.icatalog_public.oss.title_credit_parser_v2 import (  # helper that splits "A & B - Title"
     parse_title_and_credits,
     split_artists_from_title,

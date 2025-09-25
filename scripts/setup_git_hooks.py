@@ -7,9 +7,9 @@ Sets up git hooks for automatic quality validation.
 """
 
 import os
+from pathlib import Path
 import stat
 import sys
-from pathlib import Path
 
 
 def setup_pre_commit_hook():

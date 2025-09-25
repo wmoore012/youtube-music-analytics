@@ -115,7 +115,7 @@ Automatically detects:
 ### **🔒 Built-in Security Controls**
 ```python
 from notebook_guardian.security import (
-    enable_safe_mode, 
+    enable_safe_mode,
     create_security_report,
     SecurityConfig
 )
@@ -347,7 +347,7 @@ export NOTEBOOK_GUARDIAN_NO_WARNINGS=true
 Based on comprehensive benchmarking with real data science workflows:
 
 - **Small Files** (<1KB): 0.001ms average detection time
-- **Medium Files** (1-10KB): <5ms average validation time  
+- **Medium Files** (1-10KB): <5ms average validation time
 - **Large Files** (10KB+): <50ms average processing time
 - **Notebooks** (100+ cells): <300ms average validation time
 - **DataFrames** (50k+ rows): <200ms average validation time

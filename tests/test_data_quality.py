@@ -4,9 +4,9 @@ Comprehensive data quality tests for the YouTube analytics system.
 Tests for duplicates, data consistency, and notebook data integrity.
 """
 
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+import sys
 
 import pandas as pd
 import pytest

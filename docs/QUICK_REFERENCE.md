@@ -8,7 +8,7 @@
 user_count = 100
 def get_video_data():
 
-# Classes: PascalCase  
+# Classes: PascalCase
 class VideoProcessor:
 
 # Constants: UPPER_CASE
@@ -20,16 +20,16 @@ MAX_RETRIES = 3
 from src.youtubeviz.common_helpers import (
     # Database
     execute_query_safely, get_table_row_count,
-    
+
     # Validation
     validate_required_fields, validate_youtube_id, clean_text_field,
-    
+
     # Error Handling
     retry_operation, safe_divide, log_error_with_context,
-    
+
     # Formatting
     format_number, format_duration, format_percentage,
-    
+
     # Files
     read_json_file, write_json_file, ensure_directory_exists
 )
@@ -40,23 +40,23 @@ from src.youtubeviz.common_helpers import (
 def function_name(param: type) -> return_type:
     """
     Brief description of what the function does.
-    
+
     Args:
         param: Description of parameter
-        
+
     Returns:
         Description of return value
-        
+
     Raises:
         ExceptionType: When this exception occurs
     """
     # Validate inputs
     if not param:
         raise ValueError("param cannot be empty")
-    
+
     # Main logic here
     result = process_data(param)
-    
+
     return result
 ```
 
@@ -73,7 +73,7 @@ except SpecificException as e:
 ```python
 def get_data(video_id: str) -> Optional[Dict]:
     query = "SELECT * FROM table WHERE id = :id"
-    
+
     try:
         with get_connection() as conn:
             result = execute_query_safely(conn, query, {"id": video_id})
@@ -118,7 +118,7 @@ clean_text = clean_text_field(raw_text, max_length=500)
 # Format large numbers
 views_formatted = format_number(1234567)  # "1.2M"
 
-# Format duration  
+# Format duration
 duration_text = format_duration(3661)  # "1h 1m 1s"
 
 # Format percentage
@@ -206,7 +206,7 @@ python tools/code_quality/verify_helper_functions.py
 ## 📋 Pre-Commit Checklist
 
 - [ ] Function names are snake_case
-- [ ] Class names are PascalCase  
+- [ ] Class names are PascalCase
 - [ ] Used helper functions instead of duplicating code
 - [ ] Added comprehensive docstring
 - [ ] Validated inputs properly
@@ -227,6 +227,6 @@ python tools/code_quality/verify_helper_functions.py
 ## 📞 Need Help?
 
 - **Standards**: `docs/DEVELOPMENT_STANDARDS.md`
-- **Workshop**: `docs/ONBOARDING_WORKSHOP.md`  
+- **Workshop**: `docs/ONBOARDING_WORKSHOP.md`
 - **Error Handling**: `docs/error_handling_guidelines.md`
 - **Helper Functions**: `src/youtubeviz/common_helpers.py`

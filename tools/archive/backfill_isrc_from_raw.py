@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import os
-import re
 from pathlib import Path
+import re
 from typing import Optional
 
-import pymysql
 from dotenv import load_dotenv
+import pymysql
 
 ISRC_RE = re.compile(r"ISRC:?\s*([A-Z]{2}[A-Z0-9]{10})", re.IGNORECASE)
 

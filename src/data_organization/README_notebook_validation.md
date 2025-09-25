@@ -183,15 +183,15 @@ def notebook_cell_validation_decorator(expected_schema):
     def decorator(func):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            
+
             validator = NotebookValidator()
             validation_result = validator.validate_cell_output(result, expected_schema)
-            
+
             if not validation_result.is_valid:
                 print("⚠️  Cell output validation failed:")
                 for error in validation_result.errors:
                     print(f"   - {error}")
-            
+
             return result
         return wrapper
     return decorator
@@ -213,7 +213,7 @@ def validate_analytics_output(data):
     """Comprehensive validation for analytics data."""
     validator = OutputValidator()
     results = []
-    
+
     # Data type validation
     expected_types = {
         'artist_name': 'object',
@@ -221,20 +221,20 @@ def validate_analytics_output(data):
         'engagement_rate': 'float64'
     }
     results.append(validator.validate_data_types(data, expected_types))
-    
+
     # Score range validations
     results.append(validator.validate_score_range(data['momentum_score'], 0.0, 1.0))
     results.append(validator.validate_score_range(data['engagement_rate'], 0.0, 0.2))
-    
+
     # Missing values check
     required_columns = ['artist_name', 'momentum_score']
     results.append(validator.check_missing_values(data, required_columns))
-    
+
     # Merge all results
     final_result = results[0]
     for result in results[1:]:
         final_result = final_result.merge(result)
-    
+
     return final_result
 ```
 
@@ -245,23 +245,23 @@ def create_validated_chart(data, chart_type='scatter'):
     """Create chart with validated data and explanations."""
     validator = OutputValidator()
     explainer = MetricExplainer()
-    
+
     # Validate chart data
     chart_result = validator.validate_chart_requirements(data, chart_type)
     if not chart_result.is_valid:
         raise ValueError(f"Data not suitable for {chart_type} chart")
-    
+
     # Generate tooltips
     tooltips = {}
     for _, row in data.iterrows():
         artist = row['artist_name']
         tooltip = explainer.generate_tooltip_text('momentum_score', row['momentum_score'])
         tooltips[artist] = tooltip
-    
+
     # Generate legends
     metrics = ['momentum_score', 'engagement_rate']
     legends = explainer.create_legend_definitions(metrics)
-    
+
     return {
         'data': data,
         'tooltips': tooltips,
@@ -285,7 +285,7 @@ class ValidationResult:
     checked_items: int
     passed_items: int
     metadata: Dict[str, Any]
-    
+
     def add_error(self, error: str) -> None
     def add_warning(self, warning: str) -> None
     def merge(self, other: 'ValidationResult') -> 'ValidationResult'

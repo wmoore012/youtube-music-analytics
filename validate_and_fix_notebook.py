@@ -7,15 +7,16 @@ by validating the existing notebook and creating a working version.
 """
 
 import json
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+
 from src.data_organization.notebook_validator import (
-    NotebookValidator,
     MetricExplainer,
+    NotebookValidator,
     OutputValidator,
-    ValidationResult
+    ValidationResult,
 )
 
 
@@ -23,22 +24,22 @@ def validate_existing_notebook():
     """Validate the existing professional dashboard notebook."""
     print("🔍 VALIDATING EXISTING NOTEBOOK WITH NEW VALIDATION SYSTEM")
     print("=" * 70)
-    
+
     notebook_path = Path("notebooks/MusicScope™_Professional_Dashboard.ipynb")
-    
+
     if not notebook_path.exists():
         print(f"❌ Notebook not found: {notebook_path}")
         return False
-    
+
     # Initialize validator
     validator = NotebookValidator()
-    
+
     # Validate notebook structure
     print("\n1. Validating Notebook Structure")
     print("-" * 40)
-    
+
     result = validator.create_validation_report(str(notebook_path))
-    
+
     if result.is_valid:
         print("✅ Notebook structure is valid")
         print(f"   - Total cells: {result.metadata.get('total_cells', 0)}")
@@ -47,12 +48,12 @@ def validate_existing_notebook():
         print("❌ Notebook structure validation failed:")
         for error in result.errors:
             print(f"   - {error}")
-    
+
     if result.warnings:
         print("⚠️  Warnings:")
         for warning in result.warnings:
             print(f"   - {warning}")
-    
+
     return result.is_valid
 
 
@@ -60,43 +61,41 @@ def create_simple_validated_notebook():
     """Create a simple notebook that uses the validation system."""
     print("\n2. Creating Simple Validated Notebook")
     print("-" * 40)
-    
+
     # Create sample analytics data (no fake artist names)
-    sample_data = pd.DataFrame({
-        'metric_name': ['momentum_score', 'engagement_rate', 'growth_potential'],
-        'value': [0.75, 0.042, 0.68],
-        'category': ['performance', 'engagement', 'potential']
-    })
-    
+    sample_data = pd.DataFrame(
+        {
+            "metric_name": ["momentum_score", "engagement_rate", "growth_potential"],
+            "value": [0.75, 0.042, 0.68],
+            "category": ["performance", "engagement", "potential"],
+        }
+    )
+
     # Validate the data using our new system
     validator = OutputValidator()
     explainer = MetricExplainer()
-    
+
     # Validate data types
-    expected_types = {
-        'metric_name': 'object',
-        'value': 'float64',
-        'category': 'object'
-    }
-    
+    expected_types = {"metric_name": "object", "value": "float64", "category": "object"}
+
     type_result = validator.validate_data_types(sample_data, expected_types)
     print(f"Data type validation: {'PASS' if type_result.is_valid else 'FAIL'}")
-    
+
     # Validate score ranges
-    range_result = validator.validate_score_range(sample_data['value'], 0.0, 1.0)
+    range_result = validator.validate_score_range(sample_data["value"], 0.0, 1.0)
     print(f"Score range validation: {'PASS' if range_result.is_valid else 'FAIL'}")
-    
+
     # Generate explanations
     explanations = {}
     for _, row in sample_data.iterrows():
-        metric = row['metric_name']
-        value = row['value']
+        metric = row["metric_name"]
+        value = row["value"]
         explanations[metric] = explainer.generate_tooltip_text(metric, value)
-    
+
     print("Generated explanations:")
     for metric, explanation in explanations.items():
         print(f"  {metric}: {explanation}")
-    
+
     # Create notebook content
     notebook_content = {
         "cells": [
@@ -115,8 +114,8 @@ def create_simple_validated_notebook():
                     "- **Metric Explanations**: Provides clear explanations for all scores\n",
                     "- **Chart Data Validation**: Ensures data is ready for visualization\n",
                     "\n",
-                    "**No fake data is used - only validation examples.**"
-                ]
+                    "**No fake data is used - only validation examples.**",
+                ],
             },
             {
                 "cell_type": "code",
@@ -139,8 +138,8 @@ def create_simple_validated_notebook():
                     "print('✅ Notebook Validation System loaded successfully!')\n",
                     "print(f'🕐 Validation performed at: {datetime.now()}')\n",
                     "print('🛡️ Data quality protection active')\n",
-                    "print('📊 Metric explanations ready')"
-                ]
+                    "print('📊 Metric explanations ready')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -161,8 +160,8 @@ def create_simple_validated_notebook():
                     "\n",
                     "print('📊 Sample Metrics Data:')\n",
                     "print(metrics_data.to_string(index=False))\n",
-                    "print(f'\\n📈 Data shape: {metrics_data.shape}')"
-                ]
+                    "print(f'\\n📈 Data shape: {metrics_data.shape}')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -182,23 +181,23 @@ def create_simple_validated_notebook():
                     "}\n",
                     "\n",
                     "type_result = validator.validate_data_types(metrics_data, expected_types)\n",
-                    "print(f'Data Types: {\"✅ PASS\" if type_result.is_valid else \"❌ FAIL\"}')\n",
+                    'print(f\'Data Types: {"✅ PASS" if type_result.is_valid else "❌ FAIL"}\')\n',
                     "\n",
                     "# 2. Score range validation\n",
                     "range_result = validator.validate_score_range(metrics_data['value'], 0.0, 1.0)\n",
-                    "print(f'Score Ranges: {\"✅ PASS\" if range_result.is_valid else \"❌ FAIL\"}')\n",
+                    'print(f\'Score Ranges: {"✅ PASS" if range_result.is_valid else "❌ FAIL"}\')\n',
                     "\n",
                     "# 3. Missing values check\n",
                     "missing_result = validator.check_missing_values(metrics_data, ['metric_name', 'value'])\n",
-                    "print(f'Missing Values: {\"✅ PASS\" if missing_result.is_valid else \"❌ FAIL\"}')\n",
+                    'print(f\'Missing Values: {"✅ PASS" if missing_result.is_valid else "❌ FAIL"}\')\n',
                     "\n",
                     "# 4. Chart requirements\n",
                     "chart_result = validator.validate_chart_requirements(metrics_data, 'bar')\n",
-                    "print(f'Chart Ready: {\"✅ PASS\" if chart_result.is_valid else \"❌ FAIL\"}')\n",
+                    'print(f\'Chart Ready: {"✅ PASS" if chart_result.is_valid else "❌ FAIL"}\')\n',
                     "\n",
                     "overall_valid = all([type_result.is_valid, range_result.is_valid, missing_result.is_valid, chart_result.is_valid])\n",
-                    "print(f'\\n🎯 Overall Validation: {\"✅ ALL PASSED\" if overall_valid else \"❌ FAILED\"}')"
-                ]
+                    'print(f\'\\n🎯 Overall Validation: {"✅ ALL PASSED" if overall_valid else "❌ FAILED"}\')',
+                ],
             },
             {
                 "cell_type": "code",
@@ -224,8 +223,8 @@ def create_simple_validated_notebook():
                     "        explanation = f'{metric}: {value:.3f}'\n",
                     "    \n",
                     "    print(f'\\n{metric.upper()}:')\n",
-                    "    print(f'  {explanation}')"
-                ]
+                    "    print(f'  {explanation}')",
+                ],
             },
             {
                 "cell_type": "code",
@@ -251,8 +250,8 @@ def create_simple_validated_notebook():
                     "legends = explainer.create_legend_definitions(metrics)\n",
                     "\n",
                     "for metric, definition in legends.items():\n",
-                    "    print(f'  {metric}: {definition}')"
-                ]
+                    "    print(f'  {metric}: {definition}')",
+                ],
             },
             {
                 "cell_type": "markdown",
@@ -280,31 +279,24 @@ def create_simple_validated_notebook():
                     "- Schema enforcement for consistency\n",
                     "- Integration-ready components\n",
                     "\n",
-                    "**The validation system is now ready for production use!**"
-                ]
-            }
+                    "**The validation system is now ready for production use!**",
+                ],
+            },
         ],
         "metadata": {
-            "kernelspec": {
-                "display_name": "Python 3",
-                "language": "python",
-                "name": "python3"
-            },
-            "language_info": {
-                "name": "python",
-                "version": "3.8.0"
-            }
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.8.0"},
         },
         "nbformat": 4,
-        "nbformat_minor": 4
+        "nbformat_minor": 4,
     }
-    
+
     # Save the validated notebook
     notebook_path = Path("notebooks/Validated_Analytics_Dashboard.ipynb")
-    
-    with open(notebook_path, 'w') as f:
+
+    with open(notebook_path, "w") as f:
         json.dump(notebook_content, f, indent=2)
-    
+
     print(f"\n✅ Validated notebook created: {notebook_path.name}")
     return notebook_path
 
@@ -313,24 +305,35 @@ def execute_and_validate_notebook(notebook_path):
     """Execute the notebook and validate its outputs."""
     print(f"\n3. Executing and Validating: {notebook_path.name}")
     print("-" * 40)
-    
+
     try:
         # Execute the notebook
         import subprocess
-        result = subprocess.run([
-            'jupyter', 'nbconvert', '--to', 'notebook', '--execute',
-            '--output', f'{notebook_path.stem}_executed.ipynb',
-            str(notebook_path)
-        ], capture_output=True, text=True, cwd=notebook_path.parent)
-        
+
+        result = subprocess.run(
+            [
+                "jupyter",
+                "nbconvert",
+                "--to",
+                "notebook",
+                "--execute",
+                "--output",
+                f"{notebook_path.stem}_executed.ipynb",
+                str(notebook_path),
+            ],
+            capture_output=True,
+            text=True,
+            cwd=notebook_path.parent,
+        )
+
         if result.returncode == 0:
-            executed_path = notebook_path.parent / f'{notebook_path.stem}_executed.ipynb'
+            executed_path = notebook_path.parent / f"{notebook_path.stem}_executed.ipynb"
             print(f"✅ Notebook executed successfully: {executed_path.name}")
-            
+
             # Validate the executed notebook
             validator = NotebookValidator()
             validation_result = validator.create_validation_report(str(executed_path))
-            
+
             if validation_result.is_valid:
                 print("✅ Executed notebook validation passed")
                 return executed_path
@@ -342,7 +345,7 @@ def execute_and_validate_notebook(notebook_path):
         else:
             print(f"❌ Notebook execution failed: {result.stderr}")
             return None
-            
+
     except Exception as e:
         print(f"❌ Error executing notebook: {str(e)}")
         return None
@@ -355,17 +358,17 @@ def main():
     print("This demonstrates the notebook validation system I just built")
     print("for Task 7 of the data organization and scoring system spec.")
     print()
-    
+
     # Step 1: Validate existing notebook
     existing_valid = validate_existing_notebook()
-    
+
     # Step 2: Create a simple validated notebook
     validated_notebook = create_simple_validated_notebook()
-    
+
     # Step 3: Execute and validate the new notebook
     if validated_notebook:
         executed_notebook = execute_and_validate_notebook(validated_notebook)
-        
+
         if executed_notebook:
             print(f"\n🎉 SUCCESS! Validated notebook created and executed:")
             print(f"   📄 Original: {validated_notebook.name}")
@@ -373,11 +376,11 @@ def main():
             print(f"\n✅ The notebook validation system is working correctly!")
         else:
             print(f"\n⚠️  Notebook created but execution failed")
-    
+
     print("\n" + "=" * 70)
     print("📊 VALIDATION SYSTEM FEATURES DEMONSTRATED:")
     print("✅ Notebook structure validation")
-    print("✅ Data type validation") 
+    print("✅ Data type validation")
     print("✅ Score range validation")
     print("✅ Missing value detection")
     print("✅ Chart requirements validation")

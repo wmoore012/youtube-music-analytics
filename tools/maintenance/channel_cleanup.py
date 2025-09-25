@@ -10,12 +10,12 @@ Use with extreme caution and always backup first.
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Dict, List, Set
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import text
 
 # Add project root to path

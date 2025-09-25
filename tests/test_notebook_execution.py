@@ -7,10 +7,10 @@ Tests that all notebooks execute successfully and contain the expected data.
 This is the definitive test that ensures all notebooks work in CI/CD.
 """
 
+from pathlib import Path
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 

@@ -13,17 +13,17 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 import re
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
-import typer
 from dotenv import load_dotenv
 from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
+import typer
 
 # Optional niceties (only used when --interactive)
 try:  # pragma: no cover

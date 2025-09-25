@@ -6,7 +6,10 @@ This module tests the bulletproof YouTube data processing functions.
 Following the TDD pattern established by title_credit_parser_v2.
 """
 
+import os
+
 import pytest
+
 from src.icatalog_public.oss.youtube_helpers_v2 import (
     classify_video_version,
     clean_video_title,

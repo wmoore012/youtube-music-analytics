@@ -13,16 +13,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import traceback
 from datetime import datetime
+import traceback
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
 import src.youtubeviz.advanced_charts as ac
-import src.youtubeviz.charts as charts
 from src.youtubeviz.bulletproof import bulletproof_chart
+import src.youtubeviz.charts as charts
 from src.youtubeviz.data_discovery import DatabaseDiscovery, load_dynamic_data
 
 

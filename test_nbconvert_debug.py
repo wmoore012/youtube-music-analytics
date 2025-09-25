@@ -5,10 +5,10 @@ Debug nbconvert execution environment
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
 
 # Create a simple debug notebook
 debug_notebook = {

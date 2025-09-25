@@ -10,8 +10,8 @@ This script:
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -120,7 +120,7 @@ def analyze_sentiment(text: str, method: str = "auto") -> tuple:
         return 0.0, 0.0
 
     # Clean text
-    text = text.strip()[:1000]  # Limit length
+    text_item = text.strip()[:1000]  # Limit length
 
     if method == "textblob" and TEXTBLOB_AVAILABLE:
         blob = TextBlob(text)

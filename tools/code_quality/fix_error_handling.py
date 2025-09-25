@@ -40,16 +40,16 @@ def fix_bare_except_clauses():
 
             original_content = content
 
-            # Fix bare except: pass
+            # Fix bare except Exception: pass
             content = re.sub(
-                r"except:\s*\n\s*pass",
+                r"except Exception:\s*\n\s*pass",
                 'except Exception as e:\n                logging.warning(f"Operation failed: {e}")\n                pass',
                 content,
             )
 
-            # Fix bare except: with other simple statements
+            # Fix bare except Exception: with other simple statements
             content = re.sub(
-                r"except:\s*\n(\s+)([^#\n]+)",
+                r"except Exception:\s*\n(\s+)([^#\n]+)",
                 r'except Exception as e:\n\1logging.warning(f"Operation failed: {e}")\n\1\2',
                 content,
             )
@@ -137,7 +137,7 @@ except ConnectionError as e:
 ```python
 try:
     result = risky_operation()
-except:
+except Exception:
     pass  # Silent failure - never do this!
 ```
 

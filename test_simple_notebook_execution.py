@@ -4,9 +4,9 @@ Test simple notebook execution without src module dependencies
 """
 
 import json
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
 
 from blueprint_execution_system import BlueprintExecutionManager
 

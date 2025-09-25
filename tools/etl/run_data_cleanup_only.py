@@ -10,10 +10,10 @@ Usage:
     python tools/etl/run_data_cleanup_only.py
 """
 
-import logging
-import sys
 from datetime import datetime
+import logging
 from pathlib import Path
+import sys
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent

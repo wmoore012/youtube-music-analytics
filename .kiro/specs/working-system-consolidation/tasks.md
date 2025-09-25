@@ -48,56 +48,56 @@
   - Replace boolean database fields with descriptive string/enum values where appropriate
   - _Requirements: 2.4, 2.6, 2.7_
 
-- [-] 3. Implement Code Quality Tools and CI/CD
+- [x] 3. Implement Code Quality Tools and CI/CD
   - Set up black formatting with 120 character line length across entire codebase
   - Configure isort with black profile for consistent import sorting
   - Implement flake8 linting with project-specific rules and mypy type checking
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [-] 3.1 Configure Code Formatting Tools
+- [x] 3.1 Configure Code Formatting Tools
   - Set up black configuration in pyproject.toml with 120 character line length
   - Configure isort with black profile and proper import grouping
   - Run formatting tools across entire codebase and fix any issues
   - _Requirements: 3.1, 3.2_
 
-- [ ] 3.2 Implement Linting and Type Checking
+- [x] 3.2 Implement Linting and Type Checking
   - Configure flake8 with appropriate rules for the project
   - Set up mypy configuration and add type hints to public APIs
   - Fix all linting and type checking errors across the codebase
   - _Requirements: 3.3, 3.4_
 
-- [ ] 3.3 Set Up Pre-commit Hooks and CI/CD
+- [x] 3.3 Set Up Pre-commit Hooks and CI/CD
   - Install and configure pre-commit hooks for automatic code quality enforcement
   - Create GitHub Actions workflow for continuous integration
   - Implement automated testing pipeline with pytest and coverage reporting
   - _Requirements: 3.6, 3.7_
 
 - [ ] 4. Integrate Plugin System into Main Codebase
-  - Move all open source plugins from src/data_organization/ into main plugin system
+  - Move all open source plugins from src/data_organization/ into main plugin system (files don't need to be moved per-se just intigrated)
   - Integrate scoring engine with existing ETL pipeline and sentiment analysis
   - Implement plugin discovery and loading mechanisms for all helper plugins
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 4.1 Consolidate Plugin Architecture
-  - Review all plugin-related code in src/data_organization/ and integrate into main system
+- [x] 4.1 Consolidate Plugin Architecture
+  - Review all plugin-related code in src/data_organization/ and integrate into main system (files don't need to be moved per-se just intigrated)
   - Ensure plugin manager works with existing database schema and ETL pipeline
   - Test plugin loading and execution with real data from the database
   - _Requirements: 4.1, 4.2_
 
-- [ ] 4.2 Integrate Sentiment Analysis Plugins
+- [x] 4.2 Integrate Sentiment Analysis Plugins
   - Connect sentiment analysis plugins with existing sentiment_job.py pipeline
   - Ensure all sentiment plugins work with current comment processing workflow
   - Add plugin-based sentiment scoring to the main ETL execution flow
   - _Requirements: 4.3, 4.2_
 
-- [ ] 4.3 Implement Notebook Generation Plugin Integration
+- [x] 4.3 Implement Notebook Generation Plugin Integration
   - Integrate notebook generation plugins with existing notebook creation system
   - Ensure generated notebooks work with current youtubeviz package structure
   - Test notebook generation with real database data and plugin-generated content
   - _Requirements: 4.5, 4.6_
 
 - [ ] 5. Optimize Database Schema and Performance
-  - Review database schema for proper normalization (3NF minimum) and fix any violations
+  - Review database schema for proper normalization (3NF minimum) and fix any violations (thoroughly check to see what we already have. don't just stop at a basic search really look for related things. don't make new files unless it's REALLY necesary. clean code! don't break anything TDD)
   - Implement natural keys where appropriate and add proper foreign key constraints
   - Create optimized indexes for common query patterns used by analytics and plugins
   - _Requirements: 5.1, 5.2, 5.3, 5.4_

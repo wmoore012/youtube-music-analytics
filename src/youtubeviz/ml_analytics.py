@@ -8,9 +8,10 @@ Includes momentum prediction, content optimization, market positioning, and ROI 
 
 from __future__ import annotations
 
-import warnings
 from datetime import datetime, timedelta
+import os
 from typing import Any, Dict, List, Optional, Tuple, Union
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -2060,7 +2061,7 @@ def _calculate_feature_importance_clustering(
 
             importance_dict = {feature_names[i]: clf.feature_importances_[i] for i in range(len(feature_names))}
             return importance_dict
-    except:
+    except Exception:
         pass
 
     # Fallback: equal importance

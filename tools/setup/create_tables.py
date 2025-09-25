@@ -8,12 +8,17 @@ based on the schema provided in the issue description.
 
 import logging
 import os
+from pathlib import Path
+import sys
 
-import pymysql
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from dotenv import load_dotenv
+import pymysql
 from sqlalchemy import text
 
-from web.db_guard import get_engine
+from web.etl_helpers import get_engine
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

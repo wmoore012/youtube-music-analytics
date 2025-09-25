@@ -18,8 +18,8 @@ import sys
 from typing import Any, List, Tuple, TypedDict
 from urllib.parse import urlparse
 
-import pymysql
 from dotenv import load_dotenv
+import pymysql
 
 DEFAULT_IDS = ["vid1", "vid2", "vid3", "vidX"]
 

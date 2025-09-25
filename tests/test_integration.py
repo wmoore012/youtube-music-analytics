@@ -10,6 +10,7 @@ This module provides integration tests that verify:
 """
 
 from datetime import datetime, timedelta
+import os
 from unittest.mock import Mock, patch
 
 import pytest

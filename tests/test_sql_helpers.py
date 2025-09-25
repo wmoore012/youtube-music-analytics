@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
+
 from src.icatalog_public.etl.sql_helpers import read_sql_safe
 
 

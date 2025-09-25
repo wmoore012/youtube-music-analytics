@@ -5,9 +5,9 @@ This module generates notebooks with bulletproof CI/CD validation and ensures
 all charts are properly counted and validated with real data only.
 """
 
+from datetime import datetime
 import json
 import os
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import pandas as pd

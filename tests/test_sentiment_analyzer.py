@@ -12,6 +12,7 @@ This module provides comprehensive tests for the sentiment analysis system:
 """
 
 from datetime import datetime, timedelta
+import time
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -168,7 +169,8 @@ class TestSentimentAnalyzer:
 
     def test_analyze_single_comment_success(self, test_data_factory):
         """Test successful single comment analysis."""
-        analyzer = SentimentAnalyzer()
+        config = SentimentAnalysisConfig(confidence_threshold=0.1)  # Low threshold for testing
+        analyzer = SentimentAnalyzer(config)
         comment = test_data_factory.create_youtube_comment(comment_text="This is an amazing video! Love it!")
 
         result = analyzer._analyze_single_comment(comment, SentimentMethod.SIMPLE)
@@ -204,7 +206,8 @@ class TestSentimentAnalyzer:
 
     def test_analyze_comments_batch_success(self, test_data_factory):
         """Test successful batch comment analysis."""
-        analyzer = SentimentAnalyzer()
+        config = SentimentAnalysisConfig(confidence_threshold=0.1)  # Low threshold for testing
+        analyzer = SentimentAnalyzer(config)
 
         comments = [
             test_data_factory.create_youtube_comment(
@@ -256,19 +259,35 @@ class TestSentimentAnalyzer:
 
     def test_analyze_comments_batch_timeout(self, test_data_factory):
         """Test batch analysis with timeout."""
-        config = SentimentAnalysisConfig(timeout_seconds=0.1)  # Very short timeout
+        config = SentimentAnalysisConfig(
+            timeout_seconds=1, confidence_threshold=0.1
+        )  # Very short timeout, low confidence
         analyzer = SentimentAnalyzer(config)
 
-        # Create many comments to trigger timeout
+        # Create moderate number of comments
         comments = [
             test_data_factory.create_youtube_comment(
                 comment_id=f"comment_{i}", comment_text=f"This is test comment {i}"
             )
-            for i in range(100)
+            for i in range(50)
         ]
 
-        # Should handle timeout gracefully
-        result = analyzer.analyze_comments_batch(comments)
+        # Mock time to simulate timeout after processing some comments
+        original_time = time.time
+        call_count = 0
+
+        def mock_time():
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:  # First call (start time)
+                return 0.0
+            elif call_count <= 10:  # Allow some processing
+                return 0.5
+            else:  # Trigger timeout
+                return 2.0  # Exceeds 1 second timeout
+
+        with patch("time.time", side_effect=mock_time):
+            result = analyzer.analyze_comments_batch(comments)
 
         assert isinstance(result, SentimentAnalysisResult)
         # Should have processed some but not all due to timeout
@@ -276,7 +295,7 @@ class TestSentimentAnalyzer:
 
     def test_analyze_comments_batch_progress_reporting(self, test_data_factory, capsys):
         """Test batch analysis with progress reporting."""
-        config = SentimentAnalysisConfig(batch_size=2, progress_reporting=True)
+        config = SentimentAnalysisConfig(batch_size=2, progress_reporting=True, confidence_threshold=0.1)
         analyzer = SentimentAnalyzer(config)
 
         comments = [

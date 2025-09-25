@@ -16,8 +16,8 @@ Features:
 - Data validation at each step
 """
 
-import sys
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -196,46 +196,14 @@ def run_bot_detection(engine) -> dict:
 
 
 def validate_data_quality(engine) -> dict:
-    """Run comprehensive data quality checks."""
-    print("\n🔍 Running data quality validation...")
+    """Run enhanced data quality validation and cleanup."""
+    from youtubeviz.enhanced_data_quality import run_enhanced_data_quality_check
 
-    quality_issues = []
+    # Run the professional data quality analysis
+    report = run_enhanced_data_quality_check(engine)
 
+    # Get updated statistics after cleanup
     with engine.connect() as conn:
-        # Check for missing critical data
-        checks = [
-            ("Missing video titles", "SELECT COUNT(*) FROM youtube_videos WHERE title IS NULL OR title = ''"),
-            (
-                "Missing artist names",
-                "SELECT COUNT(*) FROM youtube_videos WHERE channel_title IS NULL OR channel_title = ''",
-            ),
-            (
-                "Comments without text",
-                "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text = ''",
-            ),
-            (
-                "Comments without authors",
-                "SELECT COUNT(*) FROM youtube_comments WHERE author_name IS NULL OR author_name = ''",
-            ),
-            ("Sentiment without confidence", "SELECT COUNT(*) FROM comment_sentiment WHERE confidence_score IS NULL"),
-            ("Future published dates", "SELECT COUNT(*) FROM youtube_videos WHERE published_at > NOW()"),
-            (
-                "Negative metrics",
-                "SELECT COUNT(*) FROM youtube_metrics WHERE view_count < 0 OR like_count < 0 OR comment_count < 0",
-            ),
-        ]
-
-        for check_name, query in checks:
-            result = conn.execute(text(query))
-            count = result.fetchone()[0]
-
-            if count > 0:
-                quality_issues.append(f"{check_name}: {count:,} records")
-                print(f"⚠️ {check_name}: {count:,} records")
-            else:
-                print(f"✅ {check_name}: OK")
-
-        # Overall data statistics
         result = conn.execute(
             text(
                 """
@@ -247,26 +215,17 @@ def validate_data_quality(engine) -> dict:
         """
             )
         )
-
         stats = result.fetchone()
-
-        print(f"\n📊 Data Overview:")
-        print(f"   Videos: {stats.total_videos:,}")
-        print(f"   Comments: {stats.total_comments:,}")
-        print(f"   Sentiment records: {stats.total_sentiment:,}")
-        print(f"   Artists: {stats.total_artists:,}")
 
         # Calculate sentiment coverage
         sentiment_coverage = (stats.total_sentiment / stats.total_comments * 100) if stats.total_comments > 0 else 0
-        print(f"   Sentiment coverage: {sentiment_coverage:.1f}%")
-
-    quality_score = max(0, 100 - len(quality_issues) * 5)  # Deduct 5% per issue
-
-    print(f"\n🏆 Overall Data Quality Score: {quality_score:.1f}%")
 
     return {
-        "quality_score": quality_score,
-        "issues": quality_issues,
+        "quality_score": report.quality_score,
+        "issues": [f"{issue.description}: {issue.count:,} records" for issue in report.issues_detected],
+        "cleanup_operations": len(report.cleanup_operations),
+        "records_cleaned": report.total_records_cleaned,
+        "bot_analysis": report.bot_analysis_summary,
         "stats": {
             "videos": stats.total_videos,
             "comments": stats.total_comments,
@@ -410,7 +369,7 @@ def main():
 
         # Step 6: Run analysis notebooks (organized under notebooks/analysis and notebooks/quality)
         notebooks_to_run = [
-            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks/MusicScope™_Professional_Dashboard.ipynb",
         ]
         notebook_results = run_notebooks(notebooks_to_run)
 
@@ -432,6 +391,8 @@ def main():
         print(f"🔍 Data Quality:")
         print(f"   Quality Score: {quality_results['quality_score']:.1f}%")
         print(f"   Issues Found: {len(quality_results['issues'])}")
+        print(f"   Records Cleaned: {quality_results.get('records_cleaned', 0):,}")
+        print(f"   Cleanup Operations: {quality_results.get('cleanup_operations', 0)}")
 
         print(f"📈 Performance Metrics:")
         print(f"   Artists Updated: {performance_results.get('updated_artists', 0)}")

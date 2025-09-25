@@ -5,11 +5,11 @@ This module provides bulletproof error handling, data validation warnings,
 fallback chart options, and performance monitoring for chart generation.
 """
 
+from datetime import datetime
+from functools import wraps
 import logging
 import time
 import traceback
-from datetime import datetime
-from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd

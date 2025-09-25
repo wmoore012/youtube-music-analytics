@@ -10,6 +10,7 @@ This module provides unit tests for all major ETL components to ensure:
 """
 
 from datetime import datetime, timedelta
+import os
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest

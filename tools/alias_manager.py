@@ -8,8 +8,9 @@ behaviour for counts, ordering, and case handling.
 
 from __future__ import annotations
 
-import json
 from collections import Counter
+import json
+import os
 from pathlib import Path
 from typing import Sequence
 

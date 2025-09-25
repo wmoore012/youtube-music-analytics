@@ -10,8 +10,8 @@ This script enforces:
 
 import ast
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Tuple
 
 

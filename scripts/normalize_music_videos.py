@@ -10,6 +10,7 @@ This avoids running the full ETL and reduces nulls by applying aliases and simpl
 from __future__ import annotations
 
 import argparse
+import os
 
 from dotenv import load_dotenv
 

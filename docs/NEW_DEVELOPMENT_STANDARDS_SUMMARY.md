@@ -222,10 +222,10 @@ def process_video_data(video_data: Dict[str, Any]) -> Dict[str, Any]:
     missing = validate_required_fields(video_data, ["video_id", "view_count"])
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
-    
+
     # Process and format
     formatted_views = format_number(video_data["view_count"])
-    
+
     return {"formatted_views": formatted_views}
 ```
 

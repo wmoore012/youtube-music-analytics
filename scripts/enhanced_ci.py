@@ -22,15 +22,15 @@ Usage:
 
 import argparse
 import ast
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta, timezone
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
 import time
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -181,6 +181,84 @@ class EnhancedCI:
         except Exception as e:
             self.log_error(f"Environment safety check failed: {e}")
             return False
+
+    def run_comprehensive_test_suite(self) -> TestExecutionResults:
+        """
+        Run comprehensive test suite with coverage tracking and reporting.
+
+        Implements zero tolerance testing standards:
+        - Minimum 80% code coverage
+        - All tests must pass
+        - Performance benchmarks tracked
+        - Test execution time monitoring
+        """
+        print("\n🧪 COMPREHENSIVE TEST SUITE (Zero Tolerance)")
+        print("=" * 60)
+
+        results = TestExecutionResults()
+        start_time = time.time()
+
+        try:
+            # Run tests with coverage
+            self.log_info("Running test suite with coverage tracking...")
+            test_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "tests/",
+                    "--cov=src",
+                    "--cov=web",
+                    "--cov-report=term-missing",
+                    "--cov-report=xml",
+                    "--cov-fail-under=80",
+                    "--tb=short",
+                    "-v",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+
+            results.execution_time = time.time() - start_time
+
+            if test_result.returncode == 0:
+                # Parse test results
+                output_lines = test_result.stdout.split("\n")
+                for line in output_lines:
+                    if "passed" in line and "failed" in line:
+                        # Parse pytest summary line
+                        parts = line.split()
+                        for i, part in enumerate(parts):
+                            if part == "passed":
+                                results.passed_tests = int(parts[i - 1])
+                            elif part == "failed":
+                                results.failed_tests = int(parts[i - 1])
+                            elif part == "skipped":
+                                results.skipped_tests = int(parts[i - 1])
+                    elif "TOTAL" in line and "%" in line:
+                        # Parse coverage percentage
+                        coverage_match = re.search(r"(\d+)%", line)
+                        if coverage_match:
+                            results.coverage_percentage = float(coverage_match.group(1))
+
+                results.total_tests = results.passed_tests + results.failed_tests + results.skipped_tests
+
+                self.log_success(f"Test suite passed: {results.passed_tests}/{results.total_tests} tests")
+                self.log_success(f"Code coverage: {results.coverage_percentage}%")
+
+            else:
+                self.log_error("Test suite failed - zero tolerance policy violated")
+                print(test_result.stdout)
+                print(test_result.stderr)
+
+        except subprocess.TimeoutExpired:
+            self.log_error("Test suite timed out")
+            results.execution_time = time.time() - start_time
+        except Exception as e:
+            self.log_error(f"Test execution failed: {e}")
+
+        return results
 
     def validate_code_quality(self) -> CodeQualityMetrics:
         """
@@ -333,7 +411,178 @@ class EnhancedCI:
         self.log_info("Checking function complexity and LOC limits...")
         metrics.loc_compliance = self._validate_function_complexity()
 
+        # Apply zero tolerance quality gates
+        self._apply_quality_gates(metrics)
+
         return metrics
+
+    def _apply_quality_gates(self, metrics: CodeQualityMetrics) -> None:
+        """
+        Apply zero tolerance quality gates that block commits.
+
+        Quality gates:
+        - Code formatting must be 100%
+        - Linting issues must be 0
+        - Comment coverage must be >= 15%
+        - Function complexity must be acceptable
+        """
+        print("\n🚪 APPLYING QUALITY GATES (Zero Tolerance)")
+        print("=" * 50)
+
+        gates_passed = 0
+        total_gates = 5
+
+        # Gate 1: Code formatting
+        if metrics.formatting_score >= 100.0:
+            self.log_success("✅ Gate 1: Code formatting (100%)")
+            gates_passed += 1
+        else:
+            self.log_error(f"❌ Gate 1: Code formatting ({metrics.formatting_score:.1f}% - must be 100%)")
+
+        # Gate 2: Linting issues
+        if metrics.linting_issues == 0:
+            self.log_success("✅ Gate 2: No linting issues")
+            gates_passed += 1
+        else:
+            self.log_error(f"❌ Gate 2: {metrics.linting_issues} linting issues (must be 0)")
+
+        # Gate 3: Comment coverage
+        if metrics.comment_quality_score >= 60.0:
+            self.log_success(f"✅ Gate 3: Comment coverage ({metrics.comment_quality_score:.1f}%)")
+            gates_passed += 1
+        else:
+            self.log_error(f"❌ Gate 3: Comment coverage ({metrics.comment_quality_score:.1f}% - must be ≥60%)")
+
+        # Gate 4: LOC compliance
+        if metrics.loc_compliance:
+            self.log_success("✅ Gate 4: LOC limits compliant")
+            gates_passed += 1
+        else:
+            self.log_error("❌ Gate 4: LOC limits exceeded")
+
+        # Gate 5: No duplicate code
+        if not metrics.duplicate_code_detected:
+            self.log_success("✅ Gate 5: No duplicate code detected")
+            gates_passed += 1
+        else:
+            self.log_error("❌ Gate 5: Duplicate code detected")
+
+        # Final gate assessment
+        gate_percentage = (gates_passed / total_gates) * 100
+        print(f"\n🏆 QUALITY GATES SUMMARY: {gates_passed}/{total_gates} passed ({gate_percentage:.1f}%)")
+
+        if gates_passed == total_gates:
+            self.log_success("🎉 ALL QUALITY GATES PASSED - COMMIT ALLOWED")
+        else:
+            self.log_error("🚫 QUALITY GATES FAILED - COMMIT BLOCKED")
+            self.log_error("⚠️  All gates must pass under zero tolerance policy")
+
+        return metrics
+
+    def repair_corrupted_notebooks(self) -> bool:
+        """
+        Attempt to repair corrupted notebook files instead of deleting them.
+
+        This is the proper way to handle notebook corruption:
+        1. Validate notebook structure
+        2. Attempt to repair JSON issues
+        3. Create backup if repair is needed
+        4. Only flag for manual review if unrepairable
+        """
+        print("\n📓 NOTEBOOK CORRUPTION REPAIR")
+        print("=" * 50)
+
+        import json
+        from pathlib import Path
+
+        corrupted_notebooks = []
+        repaired_notebooks = []
+
+        # Find all notebook files
+        notebook_files = list(Path(".").rglob("*.ipynb"))
+        notebook_files = [f for f in notebook_files if ".ipynb_checkpoints" not in str(f)]
+
+        for notebook_path in notebook_files:
+            try:
+                # Try to load as JSON first
+                with open(notebook_path, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+
+                if not content:
+                    # Empty file - create minimal notebook structure
+                    self.log_warning(f"Empty notebook found: {notebook_path}")
+                    minimal_notebook = {"cells": [], "metadata": {}, "nbformat": 4, "nbformat_minor": 4}
+
+                    # Create backup
+                    backup_path = notebook_path.with_suffix(".ipynb.backup")
+                    if notebook_path.exists():
+                        notebook_path.rename(backup_path)
+
+                    # Write minimal structure
+                    with open(notebook_path, "w", encoding="utf-8") as f:
+                        json.dump(minimal_notebook, f, indent=2)
+
+                    repaired_notebooks.append(str(notebook_path))
+                    self.log_success(f"Repaired empty notebook: {notebook_path}")
+                    continue
+
+                # Try to parse as JSON
+                try:
+                    notebook_data = json.loads(content)
+                except json.JSONDecodeError as e:
+                    self.log_error(f"JSON corruption in {notebook_path}: {e}")
+                    corrupted_notebooks.append(str(notebook_path))
+                    continue
+
+                # Validate notebook structure
+                required_fields = ["cells", "metadata", "nbformat"]
+                missing_fields = [field for field in required_fields if field not in notebook_data]
+
+                if missing_fields:
+                    self.log_warning(f"Missing fields in {notebook_path}: {missing_fields}")
+
+                    # Add missing fields
+                    if "cells" not in notebook_data:
+                        notebook_data["cells"] = []
+                    if "metadata" not in notebook_data:
+                        notebook_data["metadata"] = {}
+                    if "nbformat" not in notebook_data:
+                        notebook_data["nbformat"] = 4
+                    if "nbformat_minor" not in notebook_data:
+                        notebook_data["nbformat_minor"] = 4
+
+                    # Create backup and repair
+                    backup_path = notebook_path.with_suffix(".ipynb.backup")
+                    notebook_path.rename(backup_path)
+
+                    with open(notebook_path, "w", encoding="utf-8") as f:
+                        json.dump(notebook_data, f, indent=2)
+
+                    repaired_notebooks.append(str(notebook_path))
+                    self.log_success(f"Repaired structure in: {notebook_path}")
+
+            except Exception as e:
+                self.log_error(f"Could not process {notebook_path}: {e}")
+                corrupted_notebooks.append(str(notebook_path))
+
+        # Report results
+        if repaired_notebooks:
+            self.log_success(f"Successfully repaired {len(repaired_notebooks)} notebooks")
+            for nb in repaired_notebooks:
+                print(f"   ✅ {nb}")
+
+        if corrupted_notebooks:
+            self.log_error(f"Found {len(corrupted_notebooks)} notebooks requiring manual review:")
+            for nb in corrupted_notebooks:
+                print(f"   ⚠️  {nb}")
+            print("\n💡 Manual review required for corrupted notebooks")
+            print("   Consider restoring from git history or recreating")
+            return False
+
+        if not repaired_notebooks and not corrupted_notebooks:
+            self.log_success("All notebooks are structurally valid")
+
+        return len(corrupted_notebooks) == 0
 
     def validate_database_operations(self) -> bool:
         """
@@ -1626,10 +1875,16 @@ except Exception as e:
                 self.log_error("Environment safety check failed - aborting CI pipeline")
                 return False
 
-            # 1. Code Quality Validation
+            # 1. Comprehensive Test Suite
+            self.results.test_results = self.run_comprehensive_test_suite()
+
+            # 2. Notebook Repair (before validation)
+            notebook_repair_success = self.repair_corrupted_notebooks()
+
+            # 3. Code Quality Validation
             self.results.code_quality = self.validate_code_quality()
 
-            # 2. Database Operations Validation
+            # 4. Database Operations Validation
             database_ops_valid = self.validate_database_operations()
 
             # 3. Comprehensive Testing

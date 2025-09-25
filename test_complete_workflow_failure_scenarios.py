@@ -7,11 +7,11 @@ Tests that the system FAILS LOUDLY when notebooks have issues.
 
 import json
 import os
+from pathlib import Path
 import shutil
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 
 # Add current directory to path for imports
 sys.path.insert(0, ".")

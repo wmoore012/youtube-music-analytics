@@ -106,9 +106,14 @@ test-notebook-execution: ## Run comprehensive notebook execution tests
 
 test-enterprise: ## Run enterprise test suite with coverage and benchmarks
 	@echo "🏢 Running enterprise test suite..."
-	python -m pytest tests/ -v --tb=short --cov=src --cov=web --cov-report=xml --cov-report=html
+	python -m pytest tests/ -v --tb=short --cov=src --cov=web --cov-report=xml --cov-report=html --cov-fail-under=80
 	python -m pytest tests/ -k "benchmark" --benchmark-json=performance_benchmarks.json || echo "No benchmark tests found"
 	@echo "✅ Enterprise testing complete"
+
+test-zero-tolerance: ## Run zero tolerance test suite (all must pass)
+	@echo "🧪 Running zero tolerance test suite..."
+	python -m pytest tests/ -x --cov=src --cov=web --cov-fail-under=80 --tb=short
+	@echo "✅ Zero tolerance testing complete"
 
 performance-test: ## Run performance benchmarking
 	@echo "⚡ Running performance benchmarks..."
@@ -370,6 +375,16 @@ ci-local: ## Run local CI/CD pipeline (quick validation)
 	python scripts/test_schema_alignment.py
 	python scripts/generate_ci_report.py
 	@echo "✅ Local CI/CD complete"
+
+pre-commit-validate: ## Run enhanced pre-commit validation with zero tolerance
+	@echo "🔒 Running enhanced pre-commit validation..."
+	python scripts/pre_commit_hook.py
+	@echo "✅ Pre-commit validation complete"
+
+quality-gates: ## Run zero tolerance quality gates
+	@echo "🚪 Running quality gates..."
+	python scripts/enhanced_ci.py --report-only
+	@echo "✅ Quality gates complete"
 
 ci-comprehensive: ## Run comprehensive artist validation
 	@echo "🎤 Running comprehensive artist validation..."

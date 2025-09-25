@@ -14,13 +14,13 @@ References:
 - YouTube Data API Policy: https://developers.google.com/youtube/terms/developer-policies
 """
 
+from datetime import datetime, timedelta
 import logging
 import os
-from datetime import datetime, timedelta
 from typing import Optional
 
-import pymysql
 from dotenv import load_dotenv
+import pymysql
 
 load_dotenv()
 

@@ -150,7 +150,7 @@ def test_enhanced_dataset_with_models():
                 for p in phrases[:3]:  # Show top 3 per category
                     print(f"  • '{p['phrase']}' → {p['predicted']} (should be {p['expected']})")
 
-        except:
+        except Exception:
             pass
 
     print(f"\n✅ Enhanced dataset testing complete!")

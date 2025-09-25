@@ -7,8 +7,8 @@ import os
 import re
 from typing import Dict, List, Tuple
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 
 
 def get_artists_from_env() -> Tuple[List[str], int]:

@@ -10,9 +10,9 @@ This module provides comprehensive test coverage analysis for the ETL system:
 """
 
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import Dict, List, Tuple
 
 import pytest

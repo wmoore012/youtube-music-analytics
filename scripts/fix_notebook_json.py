@@ -5,8 +5,8 @@ Fix JSON escape issues in notebooks.
 
 import json
 import os
-import re
 from pathlib import Path
+import re
 
 
 def fix_json_escapes(content):

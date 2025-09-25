@@ -12,11 +12,11 @@ This is the FINAL TEST that proves everything works together.
 """
 
 import os
+from pathlib import Path
 import shutil
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 
 # Add current directory to path for imports
 sys.path.insert(0, ".")

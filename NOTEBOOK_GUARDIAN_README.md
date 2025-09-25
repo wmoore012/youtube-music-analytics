@@ -178,7 +178,7 @@ result = validate_python_file('data_analysis.py')
 print(f"Functions found: {result.functions_found}")
 print(f"Data science patterns: {result.patterns_detected}")
 
-# Validate Jupyter notebooks  
+# Validate Jupyter notebooks
 result = validate_notebook('analysis.ipynb')
 print(f"Notebook valid: {result.is_valid}")
 ```
@@ -199,7 +199,7 @@ from notebook_guardian import create_tooltips
 
 metrics = {
     'accuracy': 0.95,
-    'precision': 0.87, 
+    'precision': 0.87,
     'recall': 0.92
 }
 
@@ -218,7 +218,7 @@ Notebook Guardian has been tested against **every major data science workflow**:
 - ✅ Hyperparameter tuning
 - ✅ Cross-validation workflows
 
-### **Deep Learning**  
+### **Deep Learning**
 - ✅ TensorFlow/Keras models
 - ✅ PyTorch workflows
 - ✅ Training history validation
@@ -294,7 +294,7 @@ installer = SmartInstaller(auto_install=True, max_workers=4)
 # Process entire project
 results = installer.process_multiple_files([
     'data_loader.py',
-    'model_trainer.py', 
+    'model_trainer.py',
     'evaluator.py'
 ])
 
@@ -333,13 +333,13 @@ from notebook_guardian import validate_notebook, auto_install_file
 def validate_research_notebook(notebook_path):
     # Auto-install dependencies
     install_result = auto_install_file(notebook_path)
-    
+
     # Validate notebook
     validation_result = validate_notebook(notebook_path)
-    
+
     if not validation_result.is_valid:
         raise ValueError(f"Notebook validation failed: {validation_result.errors}")
-    
+
     return True
 ```
 

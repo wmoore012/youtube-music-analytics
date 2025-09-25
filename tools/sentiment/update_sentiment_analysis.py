@@ -10,8 +10,8 @@ import os
 import sys
 from typing import Dict, List
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import create_engine, text
 
 # Add src to path for imports

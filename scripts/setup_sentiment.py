@@ -5,8 +5,8 @@ This creates a basic VADER-based sentiment analyzer for benchmarking.
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 
 
 def create_basic_sentiment_analyzer():

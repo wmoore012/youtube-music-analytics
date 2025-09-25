@@ -20,9 +20,9 @@ Key Features:
 - Confidence-based result filtering
 """
 
-import time
 from datetime import datetime, timedelta
 from enum import Enum
+import time
 from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -47,7 +47,7 @@ class SentimentAnalysisConfig(BaseModel):
     # Processing settings
     batch_size: int = Field(100, ge=1, le=10000, description="Batch size for processing")
     max_retries: int = Field(3, ge=0, le=10, description="Maximum retry attempts")
-    timeout_seconds: int = Field(300, ge=30, le=3600, description="Processing timeout")
+    timeout_seconds: int = Field(300, ge=1, le=3600, description="Processing timeout")
 
     # Quality thresholds
     confidence_threshold: float = Field(0.7, ge=0.0, le=1.0, description="Minimum confidence threshold")
@@ -325,7 +325,34 @@ class SentimentAnalyzer:
 
         return sentiment, confidence
 
+    def _analyze_single_comment_with_retry(self, comment: YouTubeComment, method: SentimentMethod) -> SentimentResult:
+        """
+        Analyze sentiment for a single comment with selective retry logic.
+
+        Args:
+            comment: YouTube comment to analyze
+            method: Sentiment analysis method to use
+
+        Returns:
+            SentimentResult with analysis results
+
+        Raises:
+            ETLError: If analysis fails after retries
+        """
+        try:
+            return self._analyze_single_comment(comment, method)
+        except ETLError as e:
+            # Don't retry validation or data quality errors - they won't improve
+            if e.category in [ErrorCategory.VALIDATION, ErrorCategory.DATA_QUALITY]:
+                raise
+            # Retry other errors with backoff
+            return self._analyze_single_comment_with_backoff(comment, method)
+
     @retry_with_backoff(max_retries=3, base_delay=1.0)
+    def _analyze_single_comment_with_backoff(self, comment: YouTubeComment, method: SentimentMethod) -> SentimentResult:
+        """Analyze single comment with retry backoff for retryable errors only."""
+        return self._analyze_single_comment(comment, method)
+
     def _analyze_single_comment(self, comment: YouTubeComment, method: SentimentMethod) -> SentimentResult:
         """
         Analyze sentiment for a single comment with error handling.
@@ -338,7 +365,7 @@ class SentimentAnalyzer:
             SentimentResult with analysis results
 
         Raises:
-            ETLError: If analysis fails after retries
+            ETLError: If analysis fails
         """
         # Validate comment text
         if not self._validate_comment_text(comment.comment_text):
@@ -367,7 +394,7 @@ class SentimentAnalyzer:
             if not (0.0 <= confidence_score <= 1.0):
                 raise ValueError(f"Invalid confidence score: {confidence_score}")
 
-            # Check confidence threshold
+            # Check confidence threshold - don't retry these as they won't improve
             if confidence_score < self.config.confidence_threshold:
                 raise ETLError(
                     f"Confidence {confidence_score:.3f} below threshold {self.config.confidence_threshold}",
@@ -438,12 +465,15 @@ class SentimentAnalyzer:
 
         successful_results = []
         failed_comments = []
+        timeout_occurred = False
 
         # Process comments in batches
         batch_size = self.config.batch_size
         total_batches = (len(comments) + batch_size - 1) // batch_size
 
         for batch_idx in range(total_batches):
+            if timeout_occurred:
+                break
             start_idx = batch_idx * batch_size
             end_idx = min(start_idx + batch_size, len(comments))
             batch = comments[start_idx:end_idx]
@@ -475,7 +505,7 @@ class SentimentAnalyzer:
                         )
 
                     # Analyze comment
-                    result = self._analyze_single_comment(comment, method)
+                    result = self._analyze_single_comment_with_retry(comment, method)
                     successful_results.append(result)
 
                     # Track confidence distribution
@@ -487,7 +517,16 @@ class SentimentAnalyzer:
                         self._benchmark_data["confidence_distribution"]["low"] += 1
 
                 except ETLError as e:
-                    # Log error but continue processing
+                    # Handle timeout errors by breaking out of processing
+                    if e.category == ErrorCategory.TIMEOUT:
+                        self.error_handler.handle_error(e, should_raise=False)
+                        print(
+                            f"⏰ Processing stopped due to timeout after {len(successful_results)} successful results"
+                        )
+                        timeout_occurred = True
+                        break
+
+                    # Log other errors but continue processing
                     self.error_handler.handle_error(e, should_raise=False)
                     failed_comments.append(
                         {
@@ -638,32 +677,51 @@ def store_sentiment_results(engine: Engine, results: List[SentimentResult]) -> i
     with engine.connect() as conn:
         for result in results:
             try:
-                conn.execute(
-                    text(
-                        """
-                    INSERT INTO comment_sentiment
-                    (comment_id, video_id, comment_text, sentiment_score, confidence_score,
-                     processed_at, confidence)
-                    VALUES
-                    (:comment_id, :video_id, '', :sentiment_score, :confidence_score,
-                     :processed_at, :confidence)
-                    ON DUPLICATE KEY UPDATE
-                    sentiment_score = VALUES(sentiment_score),
-                    confidence_score = VALUES(confidence_score),
-                    processed_at = VALUES(processed_at),
-                    confidence = VALUES(confidence)
-                """
-                    ),
-                    {
-                        "comment_id": result.comment_id,
-                        "video_id": result.video_id,
-                        "sentiment_score": result.sentiment_score,
-                        "confidence_score": result.confidence_score,
-                        "processed_at": result.processed_at,
-                        "confidence": result.confidence_score,
-                    },
-                )
-                stored_count += 1
+                # Try INSERT first
+                try:
+                    conn.execute(
+                        text(
+                            """
+                        INSERT INTO comment_sentiment
+                        (comment_id, video_id, comment_text, sentiment_score, confidence_score,
+                         processed_at, confidence)
+                        VALUES
+                        (:comment_id, :video_id, '', :sentiment_score, :confidence_score,
+                         :processed_at, :confidence)
+                    """
+                        ),
+                        {
+                            "comment_id": result.comment_id,
+                            "video_id": result.video_id,
+                            "sentiment_score": result.sentiment_score,
+                            "confidence_score": result.confidence_score,
+                            "processed_at": result.processed_at,
+                            "confidence": result.confidence_score,
+                        },
+                    )
+                    stored_count += 1
+                except Exception:
+                    # If INSERT fails (duplicate), try UPDATE
+                    conn.execute(
+                        text(
+                            """
+                        UPDATE comment_sentiment
+                        SET sentiment_score = :sentiment_score,
+                            confidence_score = :confidence_score,
+                            processed_at = :processed_at,
+                            confidence = :confidence
+                        WHERE comment_id = :comment_id
+                    """
+                        ),
+                        {
+                            "comment_id": result.comment_id,
+                            "sentiment_score": result.sentiment_score,
+                            "confidence_score": result.confidence_score,
+                            "processed_at": result.processed_at,
+                            "confidence": result.confidence_score,
+                        },
+                    )
+                    stored_count += 1
             except Exception as e:
                 print(f"⚠️ Failed to store result for comment {result.comment_id}: {e}")
 

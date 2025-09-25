@@ -7,15 +7,15 @@ and provides options to remove their data.
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 
 from web.etl_helpers import get_engine
 
@@ -192,7 +192,7 @@ def main():
     # Get database engine
     try:
         engine = get_engine()
-    except:
+    except Exception:
         from sqlalchemy import create_engine
 
         url = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST', '127.0.0.1')}:{os.getenv('DB_PORT', '3306')}/{os.getenv('DB_NAME', 'yt_proj')}?charset=utf8mb4"

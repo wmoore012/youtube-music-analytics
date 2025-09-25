@@ -22,7 +22,7 @@ def fetch_evaluation_comments(limit: int = 500) -> pd.DataFrame:
 ### Enhanced Version
 ```python
 def fetch_evaluation_comments(
-    limit: int = 500, 
+    limit: int = 500,
     random_seed: int = 42,
     experiment_id: str = None,
     video_ids: List[str] = None,
@@ -40,7 +40,7 @@ def fetch_evaluation_comments(
 - **Added**: Query parameter logging for full reproducibility
 - **Kept**: Simple, effective database queries
 
-### ✅ 7.2: Random Seed Management  
+### ✅ 7.2: Random Seed Management
 - **Added**: `random_seed` parameter with proper seeding
 - **Added**: Deterministic sampling using `ORDER BY RAND(:random_seed)`
 - **Added**: Seed tracking in experiment metadata
@@ -125,7 +125,7 @@ enhanced_aggressive  | Positive: 72.3% | Avg Score: +0.470
 - **Contains**: Complete experiment metadata, query parameters, results summary
 - **Purpose**: Full reproducibility and audit trail
 
-### Evaluation Results  
+### Evaluation Results
 - **Format**: `vader_evaluation_report_{timestamp}.json`
 - **Contains**: Model comparison results, performance metrics, recommendations
 - **Purpose**: Analysis results with experiment traceability

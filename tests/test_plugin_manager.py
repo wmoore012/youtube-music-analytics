@@ -1,8 +1,8 @@
 """Tests for plugin discovery and loading mechanisms."""
 
 import os
-import tempfile
 from pathlib import Path
+import tempfile
 from unittest.mock import MagicMock, patch
 
 import pandas as pd

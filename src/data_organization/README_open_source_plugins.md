@@ -24,10 +24,10 @@ from src.data_organization.open_source_plugin_framework import (
 class MyMusicPlugin(OpenSourceScoringPlugin):
     def get_name(self) -> str:
         return "my_music_algorithm"
-    
+
     def get_version(self) -> str:
         return "1.0.0"
-    
+
     def get_metadata(self) -> PluginMetadata:
         return PluginMetadata(
             name="my_music_algorithm",
@@ -39,31 +39,31 @@ class MyMusicPlugin(OpenSourceScoringPlugin):
             output_schema={"score": "float64"},
             tags=["music", "engagement", "custom"]
         )
-    
+
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
         # Validate your input requirements
         result = ValidationResult(is_valid=True, errors=[], warnings=[], checked_items=0, passed_items=0)
-        
+
         for col in ["view_count", "like_count"]:
             result.checked_items += 1
             if col not in data.columns:
                 result.add_error(f"Required column '{col}' missing")
             else:
                 result.passed_items += 1
-        
+
         return result
-    
+
     def calculate_scores(self, data: pd.DataFrame) -> pd.DataFrame:
         # Your music analytics algorithm here
         threshold = self.config.get('threshold', 0.5)
-        
+
         # Example: Simple engagement score
         engagement_score = (data['like_count'] / data['view_count']) * threshold
-        
+
         return data.assign(
             engagement_score=engagement_score,
-            score_category=pd.cut(engagement_score, 
-                                bins=[0, 0.02, 0.05, 1.0], 
+            score_category=pd.cut(engagement_score,
+                                bins=[0, 0.02, 0.05, 1.0],
                                 labels=['low', 'medium', 'high'])
         )
 ```
@@ -80,7 +80,7 @@ result = registry.register_plugin(plugin)
 
 if result.is_valid:
     print("Plugin registered successfully!")
-    
+
     # Use the plugin
     plugin.load_configuration({"threshold": 0.75})
     scores = plugin.calculate_scores(your_youtube_data)
@@ -349,7 +349,7 @@ Plugins work seamlessly with existing YouTube analytics tables:
 # Example: Loading data for plugin
 query = """
 SELECT video_id, view_count, like_count, comment_count, published_date
-FROM youtube_videos 
+FROM youtube_videos
 WHERE published_date >= %s
 """
 data = pd.read_sql(query, engine, params=[start_date])
