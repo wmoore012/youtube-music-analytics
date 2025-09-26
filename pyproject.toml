@@ -77,6 +77,8 @@ extend-exclude = '''
   | \.venv
   | migrations
   | __pycache__
+  | archive
+  | \.cleanup_backups
 )/
 '''
 
@@ -105,7 +107,9 @@ skip_glob = [
     "*/venv/*",
     "*/.venv/*",
     "*/build/*",
-    "*/dist/*"
+    "*/dist/*",
+    "*/archive/*",
+    "*/.cleanup_backups/*"
 ]
 
 # =============================================================================
@@ -131,6 +135,8 @@ exclude = [
     "venv",
     "migrations",
     "node_modules",
+    "archive",
+    ".cleanup_backups",
 ]
 per-file-ignores = [
     "__init__.py:F401",  # Allow unused imports in __init__.py
@@ -164,6 +170,8 @@ exclude = [
     ".venv/",
     "migrations/",
     "__pycache__/",
+    "archive/",
+    ".cleanup_backups/",
 ]
 
 # Per-module options

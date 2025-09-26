@@ -48,26 +48,26 @@ graph TB
     DB --> UC
     UC --> TD
     UC --> ED
-    
+
     TD --> DL
     DL --> TP
     BM --> FT
     FT --> MM
     TP --> HP
     HP --> CV
-    
+
     MM --> BE
     ED --> BE
     BE --> CM
     CM --> VI
     VI --> PR
-    
+
     MM --> API
     MM --> BP
     API --> MON
     BP --> MON
     MON --> RB
-    
+
     MM --> MV
     RB --> MV
 ```
@@ -91,7 +91,7 @@ The new system integrates seamlessly with current infrastructure:
 ```python
 class MusicCommentDataCollector:
     """Collect and filter music-related comments for training"""
-    
+
     def __init__(self, unique_comment_manager: UniqueCommentManager)
     def fetch_music_comments(self, min_engagement: int = 5) -> pd.DataFrame
     def filter_by_music_channels(self, comments: pd.DataFrame) -> pd.DataFrame
@@ -100,7 +100,7 @@ class MusicCommentDataCollector:
 
 class CommentPreprocessor:
     """Clean and normalize comments for model training"""
-    
+
     def normalize_text(self, text: str) -> str
     def handle_music_slang(self, text: str) -> str
     def preserve_emoji_context(self, text: str) -> str
@@ -128,7 +128,7 @@ class CommentPreprocessor:
 ```python
 class MusicSentimentModel:
     """Transformer-based sentiment model for music domain"""
-    
+
     def __init__(self, base_model: str = "distilbert-base-uncased")
     def fine_tune(self, train_data: pd.DataFrame, val_data: pd.DataFrame) -> None
     def predict(self, texts: List[str]) -> List[Dict[str, float]]
@@ -138,7 +138,7 @@ class MusicSentimentModel:
 
 class ModelTrainer:
     """Handle model training pipeline with best practices"""
-    
+
     def setup_training(self, config: TrainingConfig) -> None
     def train_with_validation(self, model: MusicSentimentModel, data: TrainingData) -> TrainingResults
     def hyperparameter_search(self, search_space: Dict[str, Any]) -> Dict[str, Any]
@@ -146,7 +146,7 @@ class ModelTrainer:
 
 class TrainingConfig:
     """Configuration for model training"""
-    
+
     learning_rate: float = 2e-5
     batch_size: int = 16
     num_epochs: int = 3
@@ -164,7 +164,7 @@ class TrainingConfig:
 ```python
 class SentimentBenchmark:
     """Compare multiple sentiment models on music comments"""
-    
+
     def __init__(self, unique_comment_manager: UniqueCommentManager)
     def add_model(self, name: str, model: Any) -> None
     def run_evaluation(self, test_data: pd.DataFrame) -> BenchmarkResults
@@ -173,7 +173,7 @@ class SentimentBenchmark:
 
 class ModelComparator:
     """Detailed comparison between models"""
-    
+
     def compare_on_slang_terms(self, models: Dict[str, Any], slang_examples: List[str]) -> SlangResults
     def compare_on_emoji_heavy(self, models: Dict[str, Any], emoji_comments: List[str]) -> EmojiResults
     def analyze_error_patterns(self, predictions: Dict[str, List], ground_truth: List) -> ErrorAnalysis
@@ -181,7 +181,7 @@ class ModelComparator:
 
 class PerformanceMetrics:
     """Calculate comprehensive performance metrics"""
-    
+
     def calculate_classification_metrics(self, y_true: List, y_pred: List) -> ClassificationMetrics
     def calculate_confidence_intervals(self, scores: List[float], confidence: float = 0.95) -> Tuple[float, float]
     def mcnemar_test(self, model_a_correct: List[bool], model_b_correct: List[bool]) -> McNemarResult
@@ -196,7 +196,7 @@ class PerformanceMetrics:
 ```python
 class ProductionSentimentAPI:
     """Production-ready API maintaining backward compatibility"""
-    
+
     def __init__(self, model_path: str)
     def analyze_sentiment(self, text: str) -> Dict[str, float]  # Compatible with existing API
     def analyze_batch(self, texts: List[str]) -> List[Dict[str, float]]
@@ -205,7 +205,7 @@ class ProductionSentimentAPI:
 
 class ModelDeployment:
     """Handle model deployment and versioning"""
-    
+
     def deploy_model(self, model_path: str, version: str) -> None
     def rollback_to_version(self, version: str) -> None
     def a_b_test_models(self, model_a: str, model_b: str, traffic_split: float) -> None
@@ -213,7 +213,7 @@ class ModelDeployment:
 
 class BackwardCompatibilityWrapper:
     """Ensure existing code continues to work"""
-    
+
     def wrap_for_youtubeviz(self, ml_model: MusicSentimentModel) -> Any
     def migrate_existing_calls(self, old_function: str, new_function: str) -> None
     def validate_api_consistency(self) -> bool
@@ -227,7 +227,7 @@ class BackwardCompatibilityWrapper:
 @dataclass
 class LabeledComment:
     """Individual labeled comment for training"""
-    
+
     comment_id: str
     text: str
     normalized_text: str
@@ -235,14 +235,14 @@ class LabeledComment:
     confidence: float
     labeler_id: str
     timestamp: datetime
-    
+
     # Music-specific metadata
     artist_channel: Optional[str]
     video_id: Optional[str]
     contains_slang: bool
     slang_terms: List[str]
     emoji_count: int
-    
+
     # Quality assurance
     validation_status: ValidationStatus
     inter_annotator_agreement: Optional[float]
@@ -250,18 +250,18 @@ class LabeledComment:
 @dataclass
 class TrainingDataset:
     """Complete training dataset with metadata"""
-    
+
     comments: List[LabeledComment]
     schema_version: str
     creation_timestamp: datetime
     train_test_split_seed: int
-    
+
     # Statistics
     total_comments: int
     unique_comments: int
     sentiment_distribution: Dict[str, int]
     artist_distribution: Dict[str, int]
-    
+
     # Quality metrics
     inter_annotator_agreement: float
     label_consistency_score: float
@@ -273,29 +273,29 @@ class TrainingDataset:
 @dataclass
 class ModelPerformance:
     """Comprehensive model performance metrics"""
-    
+
     model_name: str
     model_version: str
     evaluation_timestamp: datetime
-    
+
     # Overall metrics
     accuracy: float
     precision: float
     recall: float
     f1_score: float
     macro_f1: float
-    
+
     # Per-class metrics
     class_metrics: Dict[str, ClassificationMetrics]
-    
+
     # Confidence intervals
     confidence_intervals: Dict[str, Tuple[float, float]]
-    
+
     # Music-specific performance
     slang_accuracy: float
     emoji_accuracy: float
     cultural_expression_accuracy: float
-    
+
     # Comparison with baselines
     improvement_over_vader: float
     improvement_over_textblob: float
@@ -304,7 +304,7 @@ class ModelPerformance:
 @dataclass
 class BenchmarkResults:
     """Results from comparing multiple models"""
-    
+
     models: Dict[str, ModelPerformance]
     best_model: str
     statistical_tests: Dict[str, StatTestResults]
@@ -319,7 +319,7 @@ class BenchmarkResults:
 @dataclass
 class MusicSlangTerm:
     """Music slang term with sentiment information"""
-    
+
     term: str
     variants: List[str]  # Different spellings/forms
     sentiment_polarity: float  # -1 to 1
@@ -331,13 +331,13 @@ class MusicSlangTerm:
 @dataclass
 class MusicDomainKnowledge:
     """Curated knowledge about music domain language"""
-    
+
     slang_terms: List[MusicSlangTerm]
     emoji_mappings: Dict[str, float]
     cultural_expressions: Dict[str, str]
     intensifiers: List[str]
     negation_patterns: List[str]
-    
+
     # Context-dependent terms
     genre_specific_terms: Dict[str, List[MusicSlangTerm]]
     generational_terms: Dict[str, List[MusicSlangTerm]]

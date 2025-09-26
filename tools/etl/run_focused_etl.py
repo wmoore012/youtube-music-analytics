@@ -92,7 +92,7 @@ def validate_data_quality(engine) -> dict:
             ),
             (
                 "Comments without text",
-                "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text_item = ''",
+                "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text = ''",
             ),
             (
                 "Comments without authors",
@@ -215,10 +215,10 @@ def run_bot_detection(engine) -> dict:
         )
 
         # Check if bot detection is enabled
-        bot_detection_enabled = os.getenv("BOT_DETECTION_ENABLED", "true").lower() == "true"
+        bot_detection_enabled = os.getenv("BOT_DETECTION_ENABLED", "false").lower() == "true"
 
         if not bot_detection_enabled:
-            print("⚠️ Bot detection is disabled in .env configuration")
+            print("⚠️ Bot detection is disabled - focusing on core analytics")
             return {"processed": 0, "status": "disabled"}
 
         # Configure bot detection

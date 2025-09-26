@@ -25,7 +25,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -239,7 +239,7 @@ class SafeScriptDeletionSystem:
             print(f"❌ Error extracting functions: {e}")
             return []
 
-    def _is_extractable_function(self, node: ast.FunctionDef, content: str) -> bool:
+    def _is_extractable_function(self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef], content: str) -> bool:
         """Check if a function is a good candidate for extraction."""
         # Skip private functions
         if node.name.startswith("_"):
@@ -293,7 +293,7 @@ Original source: {source_file}
 Extraction date: {subprocess.run(['date'], capture_output=True, text=True).stdout.strip()}
 """
 
-{chr(10).join(set(imports)) if imports else ""}
+{chr(10).join(set(imp for imp in imports if imp is not None)) if imports else ""}
 
 {chr(10).join(extracted_functions)}
 '''
@@ -618,8 +618,8 @@ def main():
 
     # Consolidate scripts
     if args.consolidate:
-        plan = system.create_consolidation_plan(args.consolidate)
-        if system.execute_consolidation(plan):
+        consolidation_plan = system.create_consolidation_plan(args.consolidate)
+        if system.execute_consolidation(consolidation_plan):
             # Validate after consolidation
             validation = system.validate_after_changes()
             if validation.rollback_required:

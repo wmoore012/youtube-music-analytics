@@ -92,13 +92,13 @@ def quick_health_check(engine, days):
 
     try:
         # Database connectivity
+        from sqlalchemy import text
+
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         print("✅ Database: Connected")
 
         # Basic data counts
-        from sqlalchemy import text
-
         with engine.connect() as conn:
             tables = {"Videos": "youtube_videos", "Comments": "youtube_comments", "Metrics": "youtube_metrics"}
 
