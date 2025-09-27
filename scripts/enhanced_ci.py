@@ -644,7 +644,7 @@ class EnhancedCI:
                     ):
                         if '"""' in line or "'''" in line or "text(" in line:
                             in_sql = True
-                            _sql_start_line = i + 1
+                            __sql_start_line = i + 1
 
                     # Check SQL formatting issues
                     if in_sql:
@@ -1869,13 +1869,13 @@ except Exception as e:
             self.results.test_results = self.run_comprehensive_test_suite()
 
             # 2. Notebook Repair (before validation)
-            _notebook_repair_success = self.repair_corrupted_notebooks()
+            __notebook_repair_success = self.repair_corrupted_notebooks()
 
             # 3. Code Quality Validation
             self.results.code_quality = self.validate_code_quality()
 
             # 4. Database Operations Validation
-            _database_ops_valid = self.validate_database_operations()
+            __database_ops_valid = self.validate_database_operations()
 
             # 3. Comprehensive Testing
             self.results.test_results = self.run_comprehensive_tests()

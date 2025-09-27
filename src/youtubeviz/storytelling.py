@@ -135,11 +135,11 @@ def narrative_intro(
     elif analysis_type == "sentiment_analysis":
         return "💬 **Reading Between the Lines** 📊\n\nComments sections are"
         " the modern equivalent of fan mail, and they're goldmines of"
-        " insight. We're using sentiment analysis to understand how audiences really feel about content, beyond just likes and views.\n\n * Every comment tells a story. Let's listen to what the data is saying.*"
+        " insight. We're using sentiment analysis to understand how audiences really feel about content, beyond just likes and views.\n\n * Every comment tells a story. Let's listen to what the data is saying.*"  # noqa: E501
 
     else:
         return f"📊 **Data - Driven Music Insights** 🎶\n\nWelcome to an exploration of {
-            analysis_type}! We're combining the art of music with the science of data to uncover insights that can shape careers and inform decisions.\n\n * Let's turn numbers into narratives and metrics into music industry magic.*"
+            analysis_type}! We're combining the art of music with the science of data to uncover insights that can shape careers and inform decisions.\n\n * Let's turn numbers into narratives and metrics into music industry magic.*"  # noqa: E501
 
 
 def educational_sidebar(
@@ -163,26 +163,26 @@ def educational_sidebar(
             "beginner": "📚 **What's Engagement Rate?**\n\nEngagement rate"
             " measures how actively fans interact with content beyond"
             " just watching. It includes likes, comments, shares, and"
-                        " saves divided by total views.\n\n * Think of it like applause at a concert - views are attendance, but engagement shows how much the audience loved the show!*",
-            "intermediate": "📊 **Deep Dive: Engagement Metrics**\n\nEngagement rate = (Likes + Comments + Shares) / Views × 100\n\nHigh engagement (>3%) suggests strong fan loyalty and algorithmic favor. Low engagement might indicate passive consumption or content - audience mismatch.\n\n * Industry benchmark: 2 - 4% is solid, 5%+ is exceptional for established artists.*",
+                        " saves divided by total views.\n\n * Think of it like applause at a concert - views are attendance, but engagement shows how much the audience loved the show!*",  # noqa: E501
+            "intermediate": "📊 **Deep Dive: Engagement Metrics**\n\nEngagement rate = (Likes + Comments + Shares) / Views × 100\n\nHigh engagement (>3%) suggests strong fan loyalty and algorithmic favor. Low engagement might indicate passive consumption or content - audience mismatch.\n\n * Industry benchmark: 2 - 4% is solid, 5%+ is exceptional for established artists.*",  # noqa: E501
             "advanced": "🔬 **Engagement Rate Analytics**\n\nEngagement"
             " velocity (rate of engagement over time) often predicts"
             " viral potential better than absolute numbers. Consider"
-                        " engagement quality (comment sentiment, share context) alongside quantity.\n\n * Advanced tip: Engagement patterns in first 24 hours strongly correlate with long - term performance and algorithmic promotion.*",
+                        " engagement quality (comment sentiment, share context) alongside quantity.\n\n * Advanced tip: Engagement patterns in first 24 hours strongly correlate with long - term performance and algorithmic promotion.*",  # noqa: E501
         },
         "momentum": {
             "beginner": "🚀 **Understanding Momentum**\n\nMomentum tracks"
             " how fast an artist's metrics are changing. Positive"
             " momentum means growing views, subscribers, or engagement."
-                        " It's like measuring if a song is climbing or falling on the charts.\n\n * Momentum matters more than absolute numbers for investment decisions!*",
-            "intermediate": "📈 **Momentum Calculations**\n\nWe calculate momentum using percentage change over rolling time windows (7 - day, 30 - day). Sustained positive momentum across multiple metrics indicates genuine growth vs. one - hit wonders.\n\n * Key insight: Consistent 10% monthly growth often outperforms sporadic viral spikes.*",
+                        " It's like measuring if a song is climbing or falling on the charts.\n\n * Momentum matters more than absolute numbers for investment decisions!*",  # noqa: E501
+            "intermediate": "📈 **Momentum Calculations**\n\nWe calculate momentum using percentage change over rolling time windows (7 - day, 30 - day). Sustained positive momentum across multiple metrics indicates genuine growth vs. one - hit wonders.\n\n * Key insight: Consistent 10% monthly growth often outperforms sporadic viral spikes.*",  # noqa: E501
             "advanced": "⚡ **Advanced Momentum Analysis**\n\nMomentum"
-            " analysis includes trend decomposition, seasonality adjustment, and cross - metric correlation. Leading indicators (comment sentiment, subscriber velocity) often predict view momentum.\n\n * Pro tip: Momentum inflection points often coincide with strategic content pivots or external events.*",
+            " analysis includes trend decomposition, seasonality adjustment, and cross - metric correlation. Leading indicators (comment sentiment, subscriber velocity) often predict view momentum.\n\n * Pro tip: Momentum inflection points often coincide with strategic content pivots or external events.*",  # noqa: E501
         },
         "youtube_algorithm": {
-            "beginner": "🤖 **The YouTube Algorithm Explained**\n\nYouTube's algorithm decides which videos get recommended to viewers. It considers watch time, engagement, click - through rates, and viewer behavior patterns.\n\n * Think of it as a digital DJ that learns what each listener likes and creates personalized playlists!*",
+            "beginner": "🤖 **The YouTube Algorithm Explained**\n\nYouTube's algorithm decides which videos get recommended to viewers. It considers watch time, engagement, click - through rates, and viewer behavior patterns.\n\n * Think of it as a digital DJ that learns what each listener likes and creates personalized playlists!*",  # noqa: E501
             "intermediate": "🎯 **Algorithm Optimization"
-            " Strategies**\n\nKey factors: Session duration, audience retention curves, engagement velocity, and topic authority. The algorithm rewards creators who keep viewers on the platform longer.\n\n * Strategy: Focus on series content and playlists to increase session watch time.*",
+            " Strategies**\n\nKey factors: Session duration, audience retention curves, engagement velocity, and topic authority. The algorithm rewards creators who keep viewers on the platform longer.\n\n * Strategy: Focus on series content and playlists to increase session watch time.*",  # noqa: E501
             "advanced": "🧠 **Algorithmic Ranking Factors**\n\nMulti - objective optimization balancing user satisfaction, advertiser value, and creator ecosystem health. Recent updates emphasize authentic engagement over vanity metrics.\n\n * Advanced insight: Cross - video engagement patterns and subscriber notification rates heavily influence reach.*",
         },
     }

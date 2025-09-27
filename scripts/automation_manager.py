@@ -127,7 +127,7 @@ class AutomationManager:
         cron_lines.append("")
 
         for process in processes:
-            _name = process["name"]
+            __name = process["name"]
             command = process["command"]
             schedule_time = process["schedule"]
             description = process.get("description", "No description")

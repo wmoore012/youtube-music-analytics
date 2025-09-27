@@ -32,30 +32,30 @@ class EducationalContentGenerator:
                     " understand how content performs:\n\n• **Views**: How many"
                     " times people watched the video\n• **Likes**: Positive"
                     " reactions from viewers\n• **Comments**: Direct engagement"
-                    " and feedback\n• **Shares**: How often people share the content\n• **Watch Time**: Total minutes people spent watching\n\n * Think of these like applause, cheers, and conversations at a live concert!*",
-                    "business_context": "For music labels, these metrics help decide which artists to invest in and which songs to promote.",
+                    " and feedback\n• **Shares**: How often people share the content\n• **Watch Time**: Total minutes people spent watching\n\n * Think of these like applause, cheers, and conversations at a live concert!*",  # noqa: E501
+                    "business_context": "For music labels, these metrics help decide which artists to invest in and which songs to promote.",  # noqa: E501
                 },
                 "intermediate": {
                     "title": "📈 Advanced YouTube Analytics",
-                    "content": "YouTube metrics work together to tell a complete story:\n\n• **Engagement Rate**: (Likes + Comments + Shares) / Views × 100\n• **Retention Rate**: How much of each video people actually watch\n• **Click - Through Rate**: How often people click when they see a thumbnail\n• **Subscriber Conversion**: How many viewers become subscribers\n\n * Industry benchmark: 2 - 4% engagement is solid, 5%+ is exceptional.*",
-                    "business_context": "Labels use these metrics to identify breakout potential and optimize marketing spend across different artists.",
+                    "content": "YouTube metrics work together to tell a complete story:\n\n• **Engagement Rate**: (Likes + Comments + Shares) / Views × 100\n• **Retention Rate**: How much of each video people actually watch\n• **Click - Through Rate**: How often people click when they see a thumbnail\n• **Subscriber Conversion**: How many viewers become subscribers\n\n * Industry benchmark: 2 - 4% engagement is solid, 5%+ is exceptional.*",  # noqa: E501
+                    "business_context": "Labels use these metrics to identify breakout potential and optimize marketing spend across different artists.",  # noqa: E501
                 },
                 "advanced": {
                     "title": "🔬 YouTube Algorithm & Performance Science",
-                    "content": "YouTube's recommendation algorithm considers multiple signals:\n\n• **Session Duration**: How long users stay on YouTube after watching\n• **Velocity Metrics**: Rate of engagement in first 24 - 48 hours\n• **Cross - Video Performance**: How well an artist's catalog performs together\n• **Audience Retention Curves**: Exact moments where viewers drop off\n\n * Advanced insight: Algorithm changes can dramatically impact reach overnight.*",
-                    "business_context": "Understanding algorithmic factors helps labels time releases, optimize content strategy, and predict viral potential.",
+                    "content": "YouTube's recommendation algorithm considers multiple signals:\n\n• **Session Duration**: How long users stay on YouTube after watching\n• **Velocity Metrics**: Rate of engagement in first 24 - 48 hours\n• **Cross - Video Performance**: How well an artist's catalog performs together\n• **Audience Retention Curves**: Exact moments where viewers drop off\n\n * Advanced insight: Algorithm changes can dramatically impact reach overnight.*",  # noqa: E501
+                    "business_context": "Understanding algorithmic factors helps labels time releases, optimize content strategy, and predict viral potential.",  # noqa: E501
                 },
             },
             "music_industry_economics": {
                 "beginner": {
                     "title": "💰 How the Music Business Works",
-                    "content": "The modern music industry has several revenue streams:\n\n• **Streaming Revenue**: Payments from Spotify, Apple Music, etc.\n• **YouTube Ad Revenue**: Money from ads on music videos\n• **Live Performances**: Concerts, festivals, and tours\n• **Merchandise**: T - shirts, vinyl, and other branded items\n• **Sync Licensing**: Music in movies, TV shows, and commercials\n\n * YouTube often serves as the discovery engine that drives all other revenue!*",
-                    "business_context": "Labels invest in artists based on their potential across all these revenue streams, not just streaming numbers.",
+                    "content": "The modern music industry has several revenue streams:\n\n• **Streaming Revenue**: Payments from Spotify, Apple Music, etc.\n• **YouTube Ad Revenue**: Money from ads on music videos\n• **Live Performances**: Concerts, festivals, and tours\n• **Merchandise**: T - shirts, vinyl, and other branded items\n• **Sync Licensing**: Music in movies, TV shows, and commercials\n\n * YouTube often serves as the discovery engine that drives all other revenue!*",  # noqa: E501
+                    "business_context": "Labels invest in artists based on their potential across all these revenue streams, not just streaming numbers.",  # noqa: E501
                 },
                 "intermediate": {
                     "title": "📊 Music Industry Investment Decisions",
-                    "content": "Record labels evaluate artists using data - driven approaches:\n\n• **Growth Trajectory**: Is the fanbase expanding consistently?\n• **Engagement Quality**: Are fans actively participating, not just consuming?\n• **Market Positioning**: How does the artist fit in current trends?\n• **Cross - Platform Performance**: Success across multiple platforms\n• **Demographic Analysis**: Who are the fans and where are they?\n\n * Key insight: Consistent 10% monthly growth often beats viral spikes.*",
-                    "business_context": "Investment decisions involve balancing current performance with growth potential and market timing.",
+                    "content": "Record labels evaluate artists using data - driven approaches:\n\n• **Growth Trajectory**: Is the fanbase expanding consistently?\n• **Engagement Quality**: Are fans actively participating, not just consuming?\n• **Market Positioning**: How does the artist fit in current trends?\n• **Cross - Platform Performance**: Success across multiple platforms\n• **Demographic Analysis**: Who are the fans and where are they?\n\n * Key insight: Consistent 10% monthly growth often beats viral spikes.*",  # noqa: E501
+                    "business_context": "Investment decisions involve balancing current performance with growth potential and market timing.",  # noqa: E501
                 },
                 "advanced": {
                     "title": "🎯 Advanced A&R and Market Analysis",

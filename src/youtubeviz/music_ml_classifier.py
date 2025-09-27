@@ -283,12 +283,12 @@ class MusicMLClassifier:
                 ),
                 (
                     "The amount of potential that has been expressed from your"
-                    " recent and old music videos is unreal. Another artist that doesn't deserve to be gatekept, but in opposition, deserves the recognition.",
+                    " recent and old music videos is unreal. Another artist that doesn't deserve to be gatekept, but in opposition, deserves the recognition.",  # noqa: E501
                     "positive",
                 ),
                 ("Omg she ATEEEEE", "positive"),
                 (
-                    "You are one hell of a lyric writer. You are SERIOUSLY going to end up one of the most prominent and influential songwriters of your generation. Seriously. 😀",
+                    "You are one hell of a lyric writer. You are SERIOUSLY going to end up one of the most prominent and influential songwriters of your generation. Seriously. 😀",  # noqa: E501
                     "positive",
                 ),
                 ("The bass in this song is SUPERNATURAL!", "positive"),

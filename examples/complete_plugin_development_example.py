@@ -365,7 +365,7 @@ def demonstrate_complete_workflow():
 
     plugin = MusicViralityPlugin()
     validator = PluginValidator()
-    _security_checker = AdvancedSecurityChecker()
+    __security_checker = AdvancedSecurityChecker()
 
     # Validate plugin structure
     structure_result = validator.validate_plugin_structure(plugin)

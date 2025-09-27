@@ -146,7 +146,7 @@ def main():
 
     # Overall status
     essential_ok = core_ok and data_ok and viz_ok and db_ok and nb_ok
-    _all_ok = essential_ok and optional_ok
+    __all_ok = essential_ok and optional_ok
 
     if essential_ok:
         print("🎉" + "=" * 60)

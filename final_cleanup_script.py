@@ -36,7 +36,7 @@ def fix_syntax_errors():
         ],
         "src/youtubeviz/charts.py": [
             (r'^(\s+)artist_col:',
-             r'def create_content_distribution_pie_chart(\n\1df: pd.DataFrame,\n\1category_cols: Optional[List[str]] = None,\n\1artist_col:')
+             r'def create_content_distribution_pie_chart(\n\1df: pd.DataFrame,\n\1category_cols: Optional[List[str]] = None,\n\1artist_col:')  # noqa: E501
         ],
         "src/youtubeviz/model_benchmark_system.py": [
             (r'f"([^"]*\{[^}]*)"([^}]*)', r'f"\1\2}"')

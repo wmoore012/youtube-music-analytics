@@ -41,7 +41,7 @@ def main():
         ],
         "src/youtubeviz/charts.py": [
             (r'def create_content_distribution_pie_chart\(\n\s+df: pd\.DataFrame,.*?\):',
-             'def create_content_distribution_pie_chart(\n    df: pd.DataFrame,\n    category_cols: Optional[List[str]] = None,\n    artist_col: Optional[str] = None,\n    content_type_col: str = "content_type",\n):')
+             'def create_content_distribution_pie_chart(\n    df: pd.DataFrame,\n    category_cols: Optional[List[str]] = None,\n    artist_col: Optional[str] = None,\n    content_type_col: str = "content_type",\n):')  # noqa: E501
         ],
         "src/youtubeviz/model_benchmark_system.py": [
             (r'f"([^"]*\{[^}]*)"([^}]*)', r'f"\1\2}"')
