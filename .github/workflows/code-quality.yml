@@ -121,14 +121,14 @@ jobs:
         echo "📊 Error breakdown:"
         flake8 --max-line-length=120 --statistics 2>/dev/null || true
         
-        # Fail if more than 200 total errors (gradual improvement target)
-        if [ "$ERROR_COUNT" -gt 200 ]; then
-          echo "❌ Too many linting errors ($ERROR_COUNT > 200). Please fix issues."
+        # Fail if more than 161 total errors (current baseline - gradual improvement target)
+        if [ "$ERROR_COUNT" -gt 161 ]; then
+          echo "❌ Too many linting errors ($ERROR_COUNT > 161). Please fix issues."
           echo "Focus on critical errors first: E999, F821, F811"
           exit 1
         fi
         
-        echo "✅ Linting error count acceptable ($ERROR_COUNT ≤ 200)"
+        echo "✅ Linting error count acceptable ($ERROR_COUNT ≤ 161)"
     
     - name: 🔬 Type Checking
       run: |
