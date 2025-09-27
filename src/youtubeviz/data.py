@@ -927,7 +927,7 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
         if consistent:
             if sentiment_count == 0:
                 _explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {  # noqa: E501
-                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501
+                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501  # noqa: E126
             else:
                 _explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
         else:

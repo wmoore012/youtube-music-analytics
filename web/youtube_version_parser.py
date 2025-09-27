@@ -43,7 +43,12 @@ RAPIDFUZZ_AVAILABLE = False
 
 # Common version types that might appear in YouTube titles
 VERSION_TYPES = ["Official Video", "Official Music Video", "Official Audio", "Audio", "Lyric Video", "Lyrics", "Visualizer", "Official Visualizer", "Live", "Live Performance", "Acoustic", "Acoustic Version", "Remix", "Extended", "Extended Mix", "Radio Edit", "Clean", "Explicit", "Instrumental", "Karaoke", "Cover", "Demo", "Remastered", "Remaster", "HQ", "HD", "4K", "8K", "360°", "Slowed", "Reverb", "Slowed + Reverb", "Sped Up", "Nightcore", "Mashup", "Medley", "Snippet", "Preview", "Teaser", "Trailer", "Behind The Scenes", "Making Of", "Interview", "Q&A", "Commentary", "Reaction", "Review", "Analysis", "Breakdown", "Explained", "Tutorial", "How To", "Guide", "Walkthrough", "Playthrough", "Gameplay", "Speedrun", "Montage", "Compilation", "Best Of", "Highlights", "Top 10", "Top 5", "Countdown", "Ranking", "Tier List", "Tier Ranking", "Tier Maker", "Tier Builder", "Tier Creator", "Tier Designer", "Tier Crafter", "Tier Forge",
-                  # Additional performance types "On The Radar Performance", "COLORS Performance", "VEVO DSCVR", "NPR Tiny Desk Concert", "BBC Radio 1 Live Lounge", "A COLORS SHOW", "Genius Verified", "Vevo Ctrl", "Vevo LIFT", "Vevo X", "VEVO Live Performance", "Live Session", "Studio Performance", "Acoustic Session", "Unplugged", "In Studio", "In Session", "Live at", "Recorded Live", "Live from", "Performance Video",
+                  # Additional performance types "On The Radar Performance", "COLORS
+                  # Performance", "VEVO DSCVR", "NPR Tiny Desk Concert", "BBC Radio 1 Live
+                  # Lounge", "A COLORS SHOW", "Genius Verified", "Vevo Ctrl", "Vevo LIFT",
+                  # "Vevo X", "VEVO Live Performance", "Live Session", "Studio Performance",
+                  # "Acoustic Session", "Unplugged", "In Studio", "In Session", "Live at",
+                  # "Recorded Live", "Live from", "Performance Video",
                   ]
 
 # Patterns to detect and remove meaningless descriptors
@@ -53,7 +58,11 @@ MEANINGLESS_DESCRIPTORS = [r"\(ASOHH Standout Track\)", r"\(ASOHH\s+[^)]*\)", r"
 # Known ripper / unofficial channel patterns - UPDATED with validation results + broadcaster detection
 RIPPER_CHANNEL_PATTERNS = [r".*[Ll]yrics?.*", r"Cardinal Music",  # Confirmed ripper (user's Side B example) r"Old For This",  # Confirmed ripper (user's Side A Freestyle example) r"Bleakk TV",  # Validated as ripper r"MaxxMusic",  # Validated as ripper r"FUSION MUSIC",  # Validated as ripper r"ALPHA MUSIC",  # Validated as ripper r"Joann Media",  # Validated as ripper r"Baby Demon Lyrics.*",  # Validated as ripper r"DepthofSoundTV",  # Validated as ripper
                             # Broadcaster patterns (radio stations, media companies) r"SiriusXM", r"iHeartRadio", r"BBC Radio.*", r"NPR.*", r"Hot 97", r"Power 105", r".*Radio.*Station.*", r".*FM$", r".*AM$", r".*Broadcasting.*",
-                            # Generic patterns r".*TV$", r".*Beats$", r".*Sounds$", r".*Audio$", r".*Media$", r".*Entertainment$", r".*[Rr]ecords?$", r".*[Cc]hannel$", r".*[Vv]ideo[sz]?$", r".*[Pp]roductions?$", r".*[Ss]tudio[sz]?$", r".*[Ll]abel[sz]?$", r".*[Dd]istribution?$", r".*[Pp]ublishing$", r".*[Hh]ub$", r".*[Nn]etwork$", r".*[Cc]ontent$",
+                            # Generic patterns r".*TV$", r".*Beats$", r".*Sounds$", r".*Audio$",
+                            # r".*Media$", r".*Entertainment$", r".*[Rr]ecords?$", r".*[Cc]hannel$",
+                            # r".*[Vv]ideo[sz]?$", r".*[Pp]roductions?$", r".*[Ss]tudio[sz]?$",
+                            # r".*[Ll]abel[sz]?$", r".*[Dd]istribution?$", r".*[Pp]ublishing$",
+                            # r".*[Hh]ub$", r".*[Nn]etwork$", r".*[Cc]ontent$",
                             ]
 
 # Legitimate artist channels that should NOT be flagged as rippers
@@ -62,7 +71,9 @@ LEGITIMATE_ARTIST_CHANNELS = [r"Emanny Music",  # Validated as Emanny's official
 
 # Common featuring artist indicators FEATURING_INDICATORS = ["feat", "feat.", "featuring", "ft", "ft.", "w/", "x", "&"]
 
-# Words that might be confused with featuring indicators but are actually part of titles TITLE_WORDS = ["with", "the", "and", "by", "in", "on", "at", "of", "for"]
+# Words that might be confused with featuring indicators but are actually
+# part of titles TITLE_WORDS = ["with", "the", "and", "by", "in", "on",
+# "at", "of", "for"]
 
 # Common separators in titles SEPARATORS = ["-", "–", "—", "|", ":", "//", "///"]
 
@@ -79,6 +90,8 @@ Args:
 Returns:
         str: The normalized text
 """
+
+
 if not s:
         return ""
 s = unicodedata.normalize("NFKC", s)
@@ -98,12 +111,17 @@ Args:
 
 Returns:
         str: The cleaned text """
+
+
 if not text: return ""
 
 # Normalize the text first
 text = _norm(text)
 
-# Remove common YouTube - specific suffixes text = re.sub(r"\s*\(\s * Official\s + Video\s*\)\s*$", "", text, flags=re.IGNORECASE) text = re.sub(r"\s*\[\s * Official\s + Video\s*\]\s*$", "", text, flags=re.IGNORECASE)
+# Remove common YouTube - specific suffixes text = re.sub(r"\s*\(\s *
+# Official\s + Video\s*\)\s*$", "", text, flags=re.IGNORECASE) text =
+# re.sub(r"\s*\[\s * Official\s + Video\s*\]\s*$", "", text,
+# flags=re.IGNORECASE)
 
 return text
 
@@ -117,6 +135,8 @@ Args:
 
 Returns:
         Tuple[str, Optional[str]]: The cleaned title and the version type (if found) """
+
+
 if not title: return "", None
 
 # Clean the title
@@ -152,11 +172,13 @@ return title, version_type
 
 
 def extract_artists_from_title(title: str, channel_name: str = None) -> Tuple[List[str], str]:  # noqa: C901 """
+
+
 Extract artist names from a YouTube title and channel name.
 
 Args:
-        title (str): The YouTube video title
-        channel_name (str, optional): The YouTube channel name
+        title(str): The YouTube video title
+        channel_name(str, optional): The YouTube channel name
 
 Returns:
         Tuple[List[str], str]: A list of artist names and the cleaned title """
@@ -164,10 +186,12 @@ if not title: return [], ""
 
 # Clean the title
 title = clean_text(title)
- # Special case for "On The Radar Performance" and similar formats radar_match = re.search(r"([^|]+)\s*\|\s * On The Radar Performance", title, re.IGNORECASE)
+ # Special case for "On The Radar Performance" and similar formats
+ # radar_match = re.search(r"([^|]+)\\s*\\|\\s * On The Radar Performance",
+ # title, re.IGNORECASE)
 if radar_match:
         artist_and_title = radar_match.group(1).strip()
-        # Check if the title is in quotes quote_match = re.search(r'([^"\']+)\s*["\']([^"\']+)["\']', artist_and_title)
+        # Check if the title is in quotes quote_match = re.search(r'([^"\']+)\\s*["\']([^"\']+)["\']', artist_and_title)
         if quote_match:
             artist = quote_match.group(1).strip()
             song_title = quote_match.group(2).strip()
@@ -181,13 +205,15 @@ if radar_match:
                         artist = parts[0].strip()
                         song_title = parts[1].strip()
                         return [artist], song_title
-            # If no separator found, assume the whole thing is the artist return [artist_and_title], "On The Radar Performance"
+            # If no separator found, assume the whole thing is the artist return
+            # [artist_and_title], "On The Radar Performance"
 
-# Special case for other performance formats performance_match = re.search(r"([^|]+)\s*\|\s*(.+?Performance)", title, re.IGNORECASE)
+# Special case for other performance formats performance_match =
+# re.search(r"([^|]+)\\s*\\|\\s*(.+?Performance)", title, re.IGNORECASE)
 if performance_match:
         artist_and_title = performance_match.group(1).strip()
         performance_type = performance_match.group(2).strip()
-        # Check if the title is in quotes quote_match = re.search(r'([^"\']+)\s*["\']([^"\']+)["\']', artist_and_title)
+        # Check if the title is in quotes quote_match = re.search(r'([^"\']+)\\s*["\']([^"\']+)["\']', artist_and_title)
         if quote_match:
             artist = quote_match.group(1).strip()
             song_title = quote_match.group(2).strip()
@@ -211,14 +237,14 @@ title, _ = extract_version_from_title(title, channel_name)
 artists = []
 
 # Check for featuring artists using a more robust pattern
-FEAT_RE = re.compile( r"(?P<prefix>.*?)(?:\(|\[)?\b(?:feat\.?|ft\.?|featuring)\b\s+(?P<rest>[^)\]]+)",
+FEAT_RE = re.compile( r"(?P<prefix>.*?)(?:\\(|\\[)?\b(?:feat\\.?|ft\\.?|featuring)\b\\s+(?P<rest>[^)\\]]+)",
         re.I,
 )
 
 def split_feat(title_text: str) -> tuple[str, list[str]]: """Split a title into main part and featured artists."""
         m = FEAT_RE.search(title_text)
         if not m:
-            return title_text, [] main, rest = m.group("prefix"), m.group("rest") featured = re.split(r",\s*|\s+&\s+|\s + and\s+", rest) return main.strip(" -"), [a.strip() for a in featured if a.strip()]
+            return title_text, [] main, rest = m.group("prefix"), m.group("rest") featured = re.split(r",\\s*|\\s+&\\s+|\\s + and\\s+", rest) return main.strip(" -"), [a.strip() for a in featured if a.strip()]
 
 # Apply the feat splitting
 main_part, featured_artists = split_feat(title)
@@ -255,7 +281,7 @@ return artists, title
 
 
 def split_if_csv(text: str) -> tuple[str | None, str | None, str]: """
-Split a text string if it's in CSV format, handling embedded commas properly.
+Split a text string if it's in CSV format, handling embedded commas properly.  # noqa: E999
 
 Args:
         text (str): The text to check and potentially split

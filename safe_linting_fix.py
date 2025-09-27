@@ -176,8 +176,8 @@ class SafeLintingFixer:
                     # Find a good comma to break at
                     comma_pos = original_line.find(',', 60)  # Look for comma after position 60
                     if comma_pos > 0 and comma_pos < len(original_line) - 20:
-                        new_line = (original_line[:comma_pos + 1] + '\n' +  # noqa: W504
-                                   base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
+                        new_line = (original_line[:comma_pos + 1] + '\n'  # noqa: W504
+                                   + base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
 
                         # Only apply if both lines are reasonable length
                         new_lines = new_line.split('\n')

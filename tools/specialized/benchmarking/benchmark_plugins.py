@@ -93,8 +93,8 @@ def benchmark_momentum_scoring():
                 bottom_artists = scores.nsmallest(min(3, len(scores)), "score_value")
                 for i, (_, row) in enumerate(bottom_artists.iterrows(), 1):
                     print(
-                        f"   #{len(scores) - len(bottom_artists) + \
-                               i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
+                        f"   #{len(scores) - len(bottom_artists)
+                               + i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
                     )
         else:
             print(f"\n📊 All Artists (identical scores - algorithm needs tuning):")
@@ -350,8 +350,8 @@ def save_benchmark_results(results, total_records, total_time):
         f.write("## Executive Summary\n\n")
         f.write(f"- **Total Records Processed:** {total_records:,}\n")
         f.write(f"- **Total Execution Time:** {total_time:.3f} seconds\n")
-        f.write(f"- **Overall Throughput:** {total_records / \
-                total_time if total_time > 0 else 0:.0f} records / second\n")
+        f.write(f"- **Overall Throughput:** {total_records
+                / total_time if total_time > 0 else 0:.0f} records / second\n")
         f.write("- **Data Source:** Real YouTube Analytics Database\n")
         f.write("- **Validation:** No dummy data used\n\n")
 

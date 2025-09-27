@@ -27,12 +27,15 @@ validate_input_types,
 
 @pytest.fixture
 def mock_engine(): """Create a mock SQLAlchemy engine for testing."""
+
+
 engine = Mock(spec=Engine)
 return engine
 
 
 @pytest.fixture
-def test_engine(): """Create a real SQLite engine for integration testing.""" engine = create_engine("sqlite:///:memory:")
+def test_engine(): """Create a real SQLite engine for integration testing.""" engine = create_engine("sqlite:///:memory:")  # noqa: E999
+
 
 # Create test tables
 with engine.connect() as conn:
@@ -90,31 +93,43 @@ return engine
 
 @pytest.fixture
 def schema_validator(test_engine): """Create a SchemaValidator instance for testing."""
+
+
 return SchemaValidator(test_engine)
 
 
 class TestSchemaValidatorInit: """Test SchemaValidator initialization."""
+
 
 def test_init_with_engine(self, test_engine): """Test initialization with SQLAlchemy engine."""
         validator = SchemaValidator(test_engine)
         assert validator.engine == test_engine
         assert isinstance(validator._expected_schemas, dict) assert "youtube_videos" in validator._expected_schemas assert "youtube_metrics" in validator._expected_schemas
 
+
 def test_expected_schemas_structure(
         self, schema_validator): """Test that expected schemas are properly structured."""
         expected = schema_validator._expected_schemas
 
-        # Check youtube_videos schema yt_videos = expected["youtube_videos"] assert "required_columns" in yt_videos assert "primary_key" in yt_videos assert "video_id" in yt_videos["required_columns"] assert yt_videos["primary_key"] == ["video_id"]
+        # Check youtube_videos schema yt_videos = expected["youtube_videos"]
+        # assert "required_columns" in yt_videos assert "primary_key" in yt_videos
+        # assert "video_id" in yt_videos["required_columns"] assert
+        # yt_videos["primary_key"] == ["video_id"]
 
-        # Check youtube_metrics schema yt_metrics = expected["youtube_metrics"] assert "required_columns" in yt_metrics assert "primary_key" in yt_metrics assert yt_metrics["primary_key"] == ["video_id", "metrics_date"]
+        # Check youtube_metrics schema yt_metrics = expected["youtube_metrics"]
+        # assert "required_columns" in yt_metrics assert "primary_key" in
+        # yt_metrics assert yt_metrics["primary_key"] == ["video_id",
+        # "metrics_date"]
 
 
 class TestGetTableSchema: """Test table schema inspection functionality."""
+
 
 def test_get_table_schema_success(self, schema_validator): """Test successful table schema retrieval.""" schema = schema_validator.get_table_schema("youtube_videos")
 
         assert isinstance(schema, TableSchema) assert schema.table_name == "youtube_videos"
         assert len(schema.columns) > 0 assert "video_id" in schema.column_names assert "title" in schema.column_names assert schema.primary_keys == ["video_id"]
+
 
 def test_get_table_schema_nonexistent_table(
         self, schema_validator): """Test schema retrieval for non - existent table."""

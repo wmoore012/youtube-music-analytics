@@ -1537,13 +1537,13 @@ def bulk_upsert(
     insert_stmt = mysql_insert(table).values(rows)  # explicit VALUES list
     pk_cols = {
         c.name for c in inspect(table).primary_key
-    # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error - 1054 - unknown - column - in - field - list?utm_source=chatgpt.com)  # noqa: E501
+    # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error - 1054 - unknown - column - in - field - list?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
     }
     update_map = {c: insert_stmt.inserted[c] for c in rows[0] if c not in pk_cols}
 
     stmt = insert_stmt.on_duplicate_key_update(
         **update_map
-    # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)  # noqa: E501
+    # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
     )
     with engine.begin() as conn:
         return conn.execute(stmt).rowcount

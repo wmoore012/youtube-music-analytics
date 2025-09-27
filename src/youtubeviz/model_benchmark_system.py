@@ -242,136 +242,139 @@ class ModelBenchmarkSystem:
             )
             recommendations.append(
                 f"Severe imbalance: {largest_class} class has {imbalance
-                    _ratio:.1f}"}"}x more samples than {smallest_class}."
+                                                               _ratio:.1f}"}"}x more samples than {smallest_class}."  # noqa: E999
             )
-            recommendations.append(f"Add {max_class_size - min_class_size} more {smallest_class} examples to balance.")
+                recommendations.append(f"Add {max_class_size
+     - min_class_size} more {smallest_class} examples to balance.")
 
-        # Add size - based recommendations
-        if min_class_size < 100:
+            # Add size - based recommendations
+            if min_class_size < 100:
             recommendations.append(
-                f"Smallest class has only {min_class_size} samples. Need minimum 100 per class for reliable ML."
+               f"Smallest class has only {min_class_size} samples. Need minimum 100 per class for reliable ML."
             )
 
-        return DatasetQualityMetrics(
-            total_samples=total_samples,
-            positive_count=pos_count,
-            negative_count=neg_count,
-            neutral_count=neu_count,
-            positive_percent=pos_percent,
-            negative_percent=neg_percent,
-            neutral_percent=neu_percent,
-            balance_score=balance_score,
-            quality_level=quality_level,
-            min_class_size=min_class_size,
-            max_class_size=max_class_size,
-            imbalance_ratio=imbalance_ratio,
-            recommendations=recommendations,
+            return DatasetQualityMetrics(
+            total_samples = total_samples,
+            positive_count = pos_count,
+            negative_count = neg_count,
+            neutral_count = neu_count,
+            positive_percent = pos_percent,
+            negative_percent = neg_percent,
+            neutral_percent = neu_percent,
+            balance_score = balance_score,
+            quality_level = quality_level,
+            min_class_size = min_class_size,
+            max_class_size = max_class_size,
+            imbalance_ratio = imbalance_ratio,
+            recommendations = recommendations,
         )
 
-    def print_dataset_quality_report(self, quality_metrics: DatasetQualityMetrics) -> None:
+        def print_dataset_quality_report(self, quality_metrics: DatasetQualityMetrics) -> None:
         """Print a comprehensive dataset quality report."""
 
         print("📊 DATASET QUALITY ASSESSMENT")
         print("=" * 50)
 
         # Overall quality
-        quality_emoji = {"excellent": "🟢", "good": "🟡", "acceptable": "🟠", "poor": "🔴"}
+        quality_emoji= {"excellent": "🟢", "good": "🟡", "acceptable": "🟠", "poor": "🔴"}
 
         print(
-            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {quality_metrics.quality_level.upper()}"
+           f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {
+                                                 quality_metrics.quality_level.upper()}"
         )
-        print(f"Balance Score: {quality_metrics.balance_score:.3f} (1.0 = perfect)")
-        print()
+            print(f"Balance Score: {quality_metrics.balance_score:.3f} (1.0 = perfect)")
+            print()
 
-        # Distribution
-        print("📈 CLASS DISTRIBUTION:")
-        print(f"  Positive: {quality_metrics.positive_count:4d} ({quality_metrics.positive_percent:5.1f}%)")
-        print(f"  Negative: {quality_metrics.negative_count:4d} ({quality_metrics.negative_percent:5.1f}%)")
-        print(f"  Neutral:  {quality_metrics.neutral_count:4d} ({quality_metrics.neutral_percent:5.1f}%)")
-        print(f"  Total:    {quality_metrics.total_samples:4d} samples")
-        print()
+            # Distribution
+            print("📈 CLASS DISTRIBUTION:")
+            print(f"  Positive: {quality_metrics.positive_count:4d} ({quality_metrics.positive_percent:5.1f}%)")
+            print(f"  Negative: {quality_metrics.negative_count:4d} ({quality_metrics.negative_percent:5.1f}%)")
+            print(f"  Neutral:  {quality_metrics.neutral_count:4d} ({quality_metrics.neutral_percent:5.1f}%)")
+            print(f"  Total:    {quality_metrics.total_samples:4d} samples")
+            print()
 
-        # Balance metrics
-        print("⚖️  BALANCE METRICS:")
-        print(f"  Imbalance Ratio: {quality_metrics.imbalance_ratio:.2f}x (1.0 = perfect)")
-        print(f"  Smallest Class:  {quality_metrics.min_class_size} samples")
-        print(f"  Largest Class:   {quality_metrics.max_class_size} samples")
-        print()
+            # Balance metrics
+            print("⚖️  BALANCE METRICS:")
+            print(f"  Imbalance Ratio: {quality_metrics.imbalance_ratio:.2f}x (1.0 = perfect)")
+            print(f"  Smallest Class:  {quality_metrics.min_class_size} samples")
+            print(f"  Largest Class:   {quality_metrics.max_class_size} samples")
+            print()
 
-        # Benchmarks
-        print("🎯 QUALITY BENCHMARKS:")
-        print("  CURRENT:")
-        print(f"    {quality_metrics.quality_level.title()}: {quality_metrics.total_samples} total samples")
-        print("  MINIMUM ACCEPTABLE:")
-        print("    300 total (100 per class, 33% each)")
-        print("  GOOD FOR PRODUCTION:")
-        print("    3000 total (1000 per class, 33% each)")
-        print()
+            # Benchmarks
+            print("🎯 QUALITY BENCHMARKS:")
+            print("  CURRENT:")
+            print(f"    {quality_metrics.quality_level.title()}: {quality_metrics.total_samples} total samples")
+            print("  MINIMUM ACCEPTABLE:")
+            print("    300 total (100 per class, 33% each)")
+            print("  GOOD FOR PRODUCTION:")
+            print("    3000 total (1000 per class, 33% each)")
+            print()
 
-        # Recommendations
-        if quality_metrics.recommendations:
-            print("💡 RECOMMENDATIONS:")
+            # Recommendations
+            if quality_metrics.recommendations:
+        print("💡 RECOMMENDATIONS:")
             for i, rec in enumerate(quality_metrics.recommendations, 1):
-                print(f"  {i}. {rec}")
-        else:
-            print("✅ No recommendations - dataset quality is excellent!")
+        print(f"  {i}. {rec}")
+            else:
+        print("✅ No recommendations - dataset quality is excellent!")
 
-    def _register_models(self):
+        def _register_models(self):
         """Register all available models for benchmarking."""
 
         # ML Classifier (our new champion)
-        self.models["ml_classifier"] = {
-            "type": "ml_model",
+        self.models["ml_classifier"]= {
+           "type": "ml_model",
             "name": "Music Industry ML Classifier",
             "description": "Machine learning classifier trained on manual music industry classifications",
             "scorer": self._score_ml_classifier,
         }
 
-        # Transformer Models - Enhanced for music domain
-        try:
-            from youtubeviz.music_ml_classifier import create_transformer_models
+            # Transformer Models - Enhanced for music domain
+            try:
+        from youtubeviz.music_ml_classifier import create_transformer_models
 
             transformer_models = create_transformer_models()
             for model_key, transformer in transformer_models.items():
-                self.models[f"transformer_{model_key}"] = {
-                    "type": "transformer",
+        self.models[f"transformer_{model_key}"] = {
+                   "type": "transformer",
                     "name": f"Transformer {model_key.replace('_', ' ').title()}",
                     "description": f"Music - enhanced transformer: {transformer.model_name}",
                     "scorer": lambda text, t=transformer: self._score_transformer(text, t),
                 }
 
-            if transformer_models:
+                if transformer_models:
                 print(f"✅ Registered {len(transformer_models)} music - enhanced transformer models")
-        except Exception as e:
-            print(f"⚠️  Could not register transformer models: {e}")
+                except Exception as e:
+                print(f"⚠️  Could not register transformer models: {e}")
 
-        # Add a specific transformer sentiment model for the benchmark
-        try:
-            from youtubeviz.music_ml_classifier import MusicSentimentTransformer
+                # Add a specific transformer sentiment model for the benchmark
+                try:
+                from youtubeviz.music_ml_classifier import MusicSentimentTransformer
 
-            # Create the main transformer model for benchmarking
-            main_transformer = MusicSentimentTransformer("cardiffnlp / twitter - roberta - base - sentiment - latest")
-            self.models["transformer_sentiment"] = {
+                # Create the main transformer model for benchmarking
+                main_transformer = MusicSentimentTransformer(
+                    "cardiffnlp / twitter - roberta - base - sentiment - latest")
+                self.models["transformer_sentiment"]= {
                 "type": "transformer",
                 "name": "Music Sentiment Transformer",
                 "description": "Twitter RoBERTa fine - tuned for music domain sentiment",
                 "scorer": lambda text: self._score_transformer(text, main_transformer),
             }
-            print(f"✅ Registered main transformer_sentiment model")
-        except Exception as e:
+                print(f"✅ Registered main transformer_sentiment model")
+            except Exception as e:
             print(f"⚠️  Could not register main transformer model: {e}")
 
-        # Proprietary model
-        if True:  # Always available
+            # Proprietary model
+            if True:  # Always available
             self.models["proprietary_enhanced"] = {
-                "type": "proprietary",
+               "type": "proprietary",
                 "name": "Proprietary Enhanced VADER",
                 "description": "Advanced multi - algorithm enhancement with CSA, DERW, MMSF, TSDM",
                 "scorer": self._score_proprietary,
             }
 
-        # Enhanced VADER variants with clear descriptions
-        vader_descriptions = {
+            # Enhanced VADER variants with clear descriptions
+            vader_descriptions = {
             "minimal": "VADER + Basic Slang (slaps, fire, goated, mid)",
             "moderate": "VADER + Gen Z Terms (ate, periodt, bussin, cringe)",
             "comprehensive": "VADER + Full Music Lexicon (200+ terms + emoji)",
@@ -379,43 +382,43 @@ class ModelBenchmarkSystem:
             "hybrid": "VADER + Context Rules (cultural adjustments)",
         }
 
-        for variant in VariantType:
-            self.models[f"enhanced_vader_{variant.value}"] = {
-                "type": "enhanced_vader",
+            for variant in VariantType:
+        self.models[f"enhanced_vader_{variant.value}"] = {
+               "type": "enhanced_vader",
                 "name": vader_descriptions[variant.value],
                 "description": f"VADER with {variant.value} music domain enhancements",
                 "scorer": lambda text, v=variant: self._score_enhanced_vader(text, v),
             }
 
-        # Open source baselines
-        try:
+            # Open source baselines
+            try:
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
             self.models["stock_vader"] = {
-                "type": "open_source",
+               "type": "open_source",
                 "name": "Stock VADER",
                 "description": "Baseline VADER sentiment analyzer",
                 "scorer": self._score_stock_vader,
             }
-        except ImportError:
+            except ImportError:
             pass
 
-        try:
+            try:
             from textblob import TextBlob
 
             self.models["textblob"] = {
-                "type": "open_source",
+               "type": "open_source",
                 "name": "TextBlob",
                 "description": "TextBlob sentiment analyzer",
                 "scorer": self._score_textblob,
             }
-        except ImportError:
+            except ImportError:
             pass
 
-    def fetch_benchmark_dataset(
+            def fetch_benchmark_dataset(
         self, sample_size: int = 1000, random_state: int = 42, require_isrc: bool = True
     ) -> pd.DataFrame:
-        """
+    """
         Fetch comments for benchmarking directly from database.
 
         Bypasses unique comment manager to ensure we can always get data for testing.
@@ -423,9 +426,9 @@ class ModelBenchmarkSystem:
 
         try:
             # Fetch comments directly from database
-            engine = get_engine()
+    engine = get_engine()
 
-            query = """
+            query= """
             SELECT
                 c.comment_id,
                 c.comment_text,
@@ -443,34 +446,34 @@ class ModelBenchmarkSystem:
             """
 
             with engine.connect() as conn:
-                comments_df = pd.read_sql(text(query), conn, params={"sample_size": sample_size})
+    comments_df = pd.read_sql(text(query), conn, params={"sample_size": sample_size})
 
             if comments_df.empty:
-                raise ValueError("No comments found in database")
+    raise ValueError("No comments found in database")
 
-            comments_data = comments_df.to_dict("records")
+            comments_data= comments_df.to_dict("records")
 
             # Convert to DataFrame with ground truth labels
-            df_data = []
+            df_data= []
             for comment_data in comments_data:
-                comment_text_item = comment_data["comment_text"]
-                like_count = comment_data.get("like_count", 0)
+    comment_text_item = comment_data["comment_text"]
+                like_count= comment_data.get("like_count", 0)
 
                 # Engagement level
                 if like_count >= 50:
-                    engagement_level = "high_engagement"
+    engagement_level = "high_engagement"
                 elif like_count >= 10:
-                    engagement_level = "medium_engagement"
+    engagement_level = "medium_engagement"
                 else:
-                    engagement_level = "low_engagement"
+    engagement_level = "low_engagement"
 
                 # Enhanced ground truth labels - more inclusive to capture music sentiment
-                ground_truth = None
-                comment_lower = comment_text_item.lower()
+                ground_truth= None
+                comment_lower= comment_text_item.lower()
 
                 # Strong positive indicators (these should NEVER be neutral)
-                strong_positive_terms = [
-                    "fire",
+                strong_positive_terms= [
+                   "fire",
                     "slaps",
                     "banger",
                     "goated",
@@ -496,9 +499,9 @@ class ModelBenchmarkSystem:
                     "great",
                 ]
 
-                # Strong negative indicators
-                strong_negative_terms = [
-                    "mid",
+                    # Strong negative indicators
+                    strong_negative_terms = [
+                   "mid",
                     "trash",
                     "terrible",
                     "awful",
@@ -511,26 +514,26 @@ class ModelBenchmarkSystem:
                     "fell off",
                 ]
 
-                # Excitement indicators
-                excitement_indicators = ["🔥", "💗", "<3", "!!!", "fr fr", "no cap"]
+                    # Excitement indicators
+                    excitement_indicators = ["🔥", "💗", "<3", "!!!", "fr fr", "no cap"]
 
-                # More inclusive positive detection
-                has_positive_terms = any(term in comment_lower for term in strong_positive_terms)
-                has_excitement = any(indicator in comment_text_item for indicator in excitement_indicators)
-                has_negative_terms = any(term in comment_lower for term in strong_negative_terms)
+                    # More inclusive positive detection
+                    has_positive_terms = any(term in comment_lower for term in strong_positive_terms)
+                    has_excitement = any(indicator in comment_text_item for indicator in excitement_indicators)
+                    has_negative_terms = any(term in comment_lower for term in strong_negative_terms)
 
-                # Assign labels based on content, not just engagement
-                if has_positive_terms or (like_count >= 10 and has_excitement):
-                    ground_truth = "positive"
-                elif has_negative_terms or (like_count <= 1 and len(comment_text_item) > 20):
-                    ground_truth = "negative"
-                elif like_count >= 3 or len(comment_text_item) >= 15:
-                    ground_truth = "neutral"
+                    # Assign labels based on content, not just engagement
+                    if has_positive_terms or (like_count >= 10 and has_excitement):
+                ground_truth = "positive"
+                    elif has_negative_terms or (like_count <= 1 and len(comment_text_item) > 20):
+                ground_truth = "negative"
+                    elif like_count >= 3 or len(comment_text_item) >= 15:
+                ground_truth = "neutral"
 
-                # Only include comments with ground truth
-                if ground_truth:
-                    df_data.append(
-                        {
+                    # Only include comments with ground truth
+                    if ground_truth:
+                df_data.append(
+                       {
                             "comment_id": f"unique_{hash(comment_text_item) % 1000000}",
                             "comment_text": comment_text_item,
                             "like_count": like_count,
@@ -542,17 +545,17 @@ class ModelBenchmarkSystem:
                         }
                     )
 
-            df = pd.DataFrame(df_data)
+                    df = pd.DataFrame(df_data)
 
-            # Validate this is real database data
-            if len(df) == 0:
+                    # Validate this is real database data
+                    if len(df) == 0:
                 print("⚠️  No comments with ground truth labels found. This is normal if:")
                 print("   - Comments don't match the ground truth criteria (engagement + keywords)")
                 print("   - All suitable comments are already allocated to other systems")
                 print("   - Database has limited comment data")
                 # Return empty DataFrame instead of raising error
                 return pd.DataFrame(
-                    columns=[
+                    columns = [
                         "comment_id",
                         "comment_text",
                         "like_count",
@@ -564,70 +567,71 @@ class ModelBenchmarkSystem:
                     ]
                 )
 
-            print(f"✅ Fetched {len(df)} comments from database for benchmarking")
-            print(f"   Ground truth distribution: {df['ground_truth'].value_counts().to_dict()}")
+                print(f"✅ Fetched {len(df)} comments from database for benchmarking")
+                print(f"   Ground truth distribution: {df['ground_truth'].value_counts().to_dict()}")
 
-            # STRICT VALIDATION: Ensure only real data
-            self._validate_real_data_only(df)
+                # STRICT VALIDATION: Ensure only real data
+                self._validate_real_data_only(df)
 
-            return df
+                return df
 
-        except Exception as e:
-            print(f"❌ Database fetch failed: {e}")
-            raise ValueError(f"Cannot run benchmark without real database data. Database error: {e}")
+                except Exception as e:
+                print(f"❌ Database fetch failed: {e}")
+                raise ValueError(f"Cannot run benchmark without real database data. Database error: {e}")
 
-    def _validate_real_data_only(self, dataset: pd.DataFrame) -> bool:
-        """
+                def _validate_real_data_only(self, dataset: pd.DataFrame) -> bool:
+                """
         Strict validation to ensure we're using ONLY real database data.
 
         Raises ValueError if any fake / synthetic data is detected.
         """
 
-        # Check 1: Must have real comment IDs
-        if "comment_id" not in dataset.columns:
-            raise ValueError("Missing comment_id column - not real database data")
+                # Check 1: Must have real comment IDs
+                if "comment_id" not in dataset.columns:
+                raise ValueError("Missing comment_id column - not real database data")
 
-        # Check 2: Comment IDs should not be synthetic patterns
-        synthetic_patterns = ["pos_", "neg_", "neu_", "fake_", "test_", "synthetic_"]
-        for pattern in synthetic_patterns:
-            if dataset["comment_id"].str.contains(pattern, case=False).any():
+                # Check 2: Comment IDs should not be synthetic patterns
+                synthetic_patterns = ["pos_", "neg_", "neu_", "fake_", "test_", "synthetic_"]
+                for pattern in synthetic_patterns:
+                if dataset["comment_id"].str.contains(pattern, case=False).any():
                 raise ValueError(f"Detected synthetic comment IDs with pattern '{pattern}' - only real data allowed")
 
-        # Check 3: Must have real comment text
-        if "comment_text" not in dataset.columns:
-            raise ValueError("Missing comment_text column - not real database data")
+                # Check 3: Must have real comment text
+                if "comment_text" not in dataset.columns:
+                raise ValueError("Missing comment_text column - not real database data")
 
-        # Check 4: Comment text should not be repetitive (sign of synthetic data)
-        unique_comments = dataset["comment_text"].nunique()
-        total_comments = len(dataset)
-        if unique_comments < total_comments * 0.8:  # Less than 80% unique suggests synthetic
-            print(
-                f"⚠️  Warning: Only {unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
+                # Check 4: Comment text should not be repetitive (sign of synthetic data)
+                unique_comments = dataset["comment_text"].nunique()
+                total_comments = len(dataset)
+                if unique_comments < total_comments * 0.8:  # Less than 80% unique suggests synthetic
+                print(
+                f"⚠️  Warning: Only {
+                    unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
             )
-            print("   This might indicate synthetic data, but proceeding with real database validation")
+                print("   This might indicate synthetic data, but proceeding with real database validation")
 
-        # Check 5: Must have realistic engagement metrics
-        if "like_count" in dataset.columns:
+            # Check 5: Must have realistic engagement metrics
+            if "like_count" in dataset.columns:
             if dataset["like_count"].min() < 0:
-                raise ValueError("Invalid like_count values - not real database data")
+            raise ValueError("Invalid like_count values - not real database data")
 
-        print(f"✅ DATA VALIDATION PASSED: {len(dataset)} samples verified as real database data")
-        return True
+            print(f"✅ DATA VALIDATION PASSED: {len(dataset)} samples verified as real database data")
+            return True
 
-    def _score_proprietary(self, text: str) -> Tuple[float, float]:
-        """Score text using proprietary enhancement."""
-        try:
+            def _score_proprietary(self, text: str) -> Tuple[float, float]:
+            """Score text using proprietary enhancement."""
+            try:
             from textblob import TextBlob
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
             # Get base scores
-            vader = SentimentIntensityAnalyzer()
-            vader_score = vader.polarity_scores(text)["compound"]
-            textblob_score = TextBlob(text).sentiment.polarity
+            vader= SentimentIntensityAnalyzer()
+            vader_score= vader.polarity_scores(text)["compound"]
+            textblob_score= TextBlob(text).sentiment.polarity
 
             # Apply proprietary enhancement
-            enhanced_score, confidence = self.proprietary_enhancer.enhance_sentiment_score(
-                vader_score, textblob_score, text
+            enhanced_score, confidence= self.proprietary_enhancer.enhance_sentiment_score(
+               vader_score, textblob_score, text
             )
 
             return enhanced_score, confidence
@@ -639,8 +643,8 @@ class ModelBenchmarkSystem:
     def _score_enhanced_vader(self, text: str, variant: VariantType) -> Tuple[float, float]:
         """Score text using enhanced VADER variant."""
         try:
-            analyzer = self.vader_manager.create_variant(variant)
-            scores = analyzer.polarity_scores(text)
+            analyzer= self.vader_manager.create_variant(variant)
+            scores= analyzer.polarity_scores(text)
             return scores["compound"], abs(scores["compound"])
         except Exception as e:
             print(f"⚠️  Enhanced VADER scoring failed: {e}")
@@ -651,8 +655,8 @@ class ModelBenchmarkSystem:
         try:
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-            analyzer = SentimentIntensityAnalyzer()
-            scores = analyzer.polarity_scores(text)
+            analyzer= SentimentIntensityAnalyzer()
+            scores= analyzer.polarity_scores(text)
             return scores["compound"], abs(scores["compound"])
         except Exception as e:
             print(f"⚠️  Stock VADER scoring failed: {e}")
@@ -663,7 +667,7 @@ class ModelBenchmarkSystem:
         try:
             from textblob import TextBlob
 
-            blob = TextBlob(text)
+            blob= TextBlob(text)
             return blob.sentiment.polarity, abs(blob.sentiment.polarity)
         except Exception as e:
             print(f"⚠️  TextBlob scoring failed: {e}")
@@ -674,19 +678,19 @@ class ModelBenchmarkSystem:
         try:
             # Initialize ML classifier if not already done
             if self.ml_classifier is None:
-                self.ml_classifier = SimpleMusicMLClassifier()
+                self.ml_classifier= SimpleMusicMLClassifier()
                 self.ml_classifier.train()
 
             # Get ML prediction
-            result = self.ml_classifier.predict(text)
+            result= self.ml_classifier.predict(text)
 
             # Convert to compound score for comparison
             if result["sentiment"] == "positive":
-                compound_score = result["confidence"] * 0.8
+                compound_score= result["confidence"] * 0.8
             elif result["sentiment"] == "negative":
-                compound_score = -result["confidence"] * 0.8
+                compound_score= -result["confidence"] * 0.8
             else:  # neutral
-                compound_score = 0.0
+                compound_score= 0.0
 
             return compound_score, result["confidence"]
 
@@ -698,15 +702,15 @@ class ModelBenchmarkSystem:
         """Score text using transformer model."""
         try:
             # Get transformer prediction
-            result = transformer.predict(text, has_isrc=False)
+            result= transformer.predict(text, has_isrc=False)
 
             # Convert to compound score for comparison
             if result["sentiment"] == "positive":
-                compound_score = result["sentiment_confidence"] * 0.8
+                compound_score= result["sentiment_confidence"] * 0.8
             elif result["sentiment"] == "negative":
-                compound_score = -result["sentiment_confidence"] * 0.8
+                compound_score= -result["sentiment_confidence"] * 0.8
             else:  # neutral
-                compound_score = 0.0
+                compound_score= 0.0
 
             return compound_score, result["sentiment_confidence"]
 
@@ -737,9 +741,9 @@ class ModelBenchmarkSystem:
         # Test 1: Database connection
         print("1️⃣  Testing database connection...")
         try:
-            engine = get_engine()
+            engine= get_engine()
             with engine.connect() as conn:
-                result = conn.execute(text("SELECT 1")).fetchone()
+                result= conn.execute(text("SELECT 1")).fetchone()
                 if result[0] != 1:
                     raise ValueError("Database connection test failed")
             print("   ✅ Database connection OK")
@@ -750,8 +754,8 @@ class ModelBenchmarkSystem:
         print("2️⃣  Testing real comments table...")
         try:
             with engine.connect() as conn:
-                count_result = conn.execute(text("SELECT COUNT(*) FROM youtube_comments")).fetchone()
-                comment_count = count_result[0]
+                count_result= conn.execute(text("SELECT COUNT(*) FROM youtube_comments")).fetchone()
+                comment_count= count_result[0]
                 if comment_count == 0:
                     raise ValueError("No real comments found in database")
             print(f"   ✅ Found {comment_count} real comments in database")
@@ -762,8 +766,8 @@ class ModelBenchmarkSystem:
         print("3️⃣  Testing data quality...")
         try:
             with engine.connect() as conn:
-                sample_result = conn.execute(
-                    text(
+                sample_result= conn.execute(
+                   text(
                         """
                     SELECT comment_id, comment_text, like_count
                     FROM youtube_comments
@@ -773,38 +777,38 @@ class ModelBenchmarkSystem:
                     )
                 ).fetchall()
 
-                if len(sample_result) == 0:
-                    raise ValueError("No valid comment data found")
+                    if len(sample_result) == 0:
+                raise ValueError("No valid comment data found")
 
-                # Check for synthetic patterns
-                for row in sample_result:
-                    comment_id, comment_text, like_count = row
+                    # Check for synthetic patterns
+                    for row in sample_result:
+                comment_id, comment_text, like_count = row
 
                     # Check comment ID patterns
-                    synthetic_patterns = ["pos_", "neg_", "neu_", "fake_", "test_", "synthetic_"]
+                    synthetic_patterns= ["pos_", "neg_", "neu_", "fake_", "test_", "synthetic_"]
                     for pattern in synthetic_patterns:
-                        if pattern in str(comment_id).lower():
-                            raise ValueError(
-                                f"SYNTHETIC DATA DETECTED: comment_id '{comment_id}' contains pattern '{pattern}'"
+                if pattern in str(comment_id).lower():
+                raise ValueError(
+                               f"SYNTHETIC DATA DETECTED: comment_id '{comment_id}' contains pattern '{pattern}'"
                             )
 
-                    # Check comment text quality
-                    if len(str(comment_text)) < 3:
+                            # Check comment text quality
+                            if len(str(comment_text)) < 3:
                         raise ValueError(f"Invalid comment text detected: '{comment_text}'")
 
-                    # Check like count validity
-                    if like_count < 0:
+                                # Check like count validity
+                                if like_count < 0:
                         raise ValueError(f"Invalid like_count detected: {like_count}")
 
-            print("   ✅ Data quality checks passed")
-        except Exception as e:
+                                print("   ✅ Data quality checks passed")
+                                except Exception as e:
             raise ValueError(f"Data quality test failed: {e}")
 
-        # Test 4: Ground truth generation capability
-        print("4️⃣  Testing ground truth generation...")
-        try:
+                                # Test 4: Ground truth generation capability
+                                print("4️⃣  Testing ground truth generation...")
+                                try:
             with engine.connect() as conn:
-                gt_result = conn.execute(
+                gt_result= conn.execute(
                     text(
                         """
                     SELECT COUNT(*) FROM youtube_comments c
@@ -827,20 +831,20 @@ class ModelBenchmarkSystem:
                     )
                 ).fetchone()
 
-                labelable_count = gt_result[0]
-                if labelable_count < 100:
-                    raise ValueError(f"Insufficient labelable data: only {labelable_count} comments can be labeled")
+                    labelable_count = gt_result[0]
+                    if labelable_count < 100:
+                raise ValueError(f"Insufficient labelable data: only {labelable_count} comments can be labeled")
 
-            print(f"   ✅ Found {labelable_count} labelable comments for ground truth")
-        except Exception as e:
-            raise ValueError(f"Ground truth generation test failed: {e}")
+                print(f"   ✅ Found {labelable_count} labelable comments for ground truth")
+                except Exception as e:
+                raise ValueError(f"Ground truth generation test failed: {e}")
 
-        print("🎉 ALL PRE - BENCHMARK TESTS PASSED")
-        print("🔒 VERIFIED: Only real database data will be used")
-        print("-" * 50)
-        return True
+                print("🎉 ALL PRE - BENCHMARK TESTS PASSED")
+                    print("🔒 VERIFIED: Only real database data will be used")
+                    print("-" * 50)
+                    return True
 
-    def _run_data_integrity_tests(self) -> bool:
+                    def _run_data_integrity_tests(self) -> bool:
         """
         Run data integrity tests to ensure no synthetic data capabilities exist.
 
@@ -852,55 +856,55 @@ class ModelBenchmarkSystem:
 
         # Test 1: Ensure no synthetic data methods exist
         print("1️⃣  Checking for forbidden synthetic data methods...")
-        forbidden_methods = [
+        forbidden_methods= [
             "_create_synthetic_dataset",
             "create_fake_data",
             "generate_dummy_data",
             "make_synthetic_comments",
         ]
 
-        for method_name in forbidden_methods:
-            if hasattr(self, method_name):
-                raise ValueError(f"FORBIDDEN METHOD DETECTED: '{method_name}' - no synthetic data allowed")
+            for method_name in forbidden_methods:
+        if hasattr(self, method_name):
+        raise ValueError(f"FORBIDDEN METHOD DETECTED: '{method_name}' - no synthetic data allowed")
 
-        print("   ✅ No forbidden synthetic data methods found")
+            print("   ✅ No forbidden synthetic data methods found")
 
-        # Test 2: Ensure validation methods exist
-        print("2️⃣  Checking required validation methods...")
-        required_methods = ["_validate_real_data_only", "_run_pre_benchmark_tests"]
+            # Test 2: Ensure validation methods exist
+            print("2️⃣  Checking required validation methods...")
+            required_methods = ["_validate_real_data_only", "_run_pre_benchmark_tests"]
 
-        for method_name in required_methods:
-            if not hasattr(self, method_name):
-                raise ValueError(f"MISSING REQUIRED METHOD: '{method_name}' - data validation required")
+            for method_name in required_methods:
+        if not hasattr(self, method_name):
+        raise ValueError(f"MISSING REQUIRED METHOD: '{method_name}' - data validation required")
 
-        print("   ✅ All required validation methods present")
+            print("   ✅ All required validation methods present")
 
-        # Test 3: Check source code for forbidden patterns (skip if method is mocked)
-        print("3️⃣  Scanning source code for forbidden patterns...")
-        try:
-            import inspect
+            # Test 3: Check source code for forbidden patterns (skip if method is mocked)
+            print("3️⃣  Scanning source code for forbidden patterns...")
+            try:
+        import inspect
 
             # Skip if method is mocked (during testing)
             if hasattr(self.fetch_benchmark_dataset, "_mock_name"):
-                print("   ⚠️  Method is mocked, skipping source scan")
+        print("   ⚠️  Method is mocked, skipping source scan")
             else:
-                source = inspect.getsource(self.fetch_benchmark_dataset)
-                forbidden_patterns = ["create_fake", "generate_dummy", "return.*synthetic"]
+        source = inspect.getsource(self.fetch_benchmark_dataset)
+                forbidden_patterns= ["create_fake", "generate_dummy", "return.*synthetic"]
 
                 for pattern in forbidden_patterns:
-                    if pattern.lower() in source.lower():
-                        raise ValueError(f"FORBIDDEN PATTERN DETECTED: '{pattern}' in source code")
+        if pattern.lower() in source.lower():
+        raise ValueError(f"FORBIDDEN PATTERN DETECTED: '{pattern}' in source code")
 
                 print("   ✅ Source code scan passed")
-        except (TypeError, OSError):
-            print("   ⚠️  Source code scan skipped (method may be mocked)")
+            except (TypeError, OSError):
+        print("   ⚠️  Source code scan skipped (method may be mocked)")
 
-        print("🔒 DATA INTEGRITY TESTS PASSED")
-        print("✅ GUARANTEE: No synthetic data capabilities exist")
-        print("-" * 40)
-        return True
+            print("🔒 DATA INTEGRITY TESTS PASSED")
+            print("✅ GUARANTEE: No synthetic data capabilities exist")
+            print("-" * 40)
+            return True
 
-    def run_benchmark(self, config: BenchmarkConfig, models_to_test: Optional[List[str]] = None) -> BenchmarkRun:
+        def run_benchmark(self, config: BenchmarkConfig, models_to_test: Optional[List[str]] = None) -> BenchmarkRun:
         """
         Run comprehensive benchmark with professional methodology.
 
@@ -924,189 +928,189 @@ class ModelBenchmarkSystem:
         self._run_data_integrity_tests()
 
         # Generate experiment ID
-        experiment_id = f"{config.experiment_name}_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
+        experiment_id= f"{config.experiment_name}_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
 
         # Fetch dataset
         print("📊 Fetching benchmark dataset...")
-        dataset = self.fetch_benchmark_dataset()
+        dataset= self.fetch_benchmark_dataset()
 
         if len(dataset) < config.min_samples_per_class * 3:
-            raise ValueError(
-                f"Insufficient REAL database data: need at least {config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
+        raise ValueError(
+               f"Insufficient REAL database data: need at least {config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
             )
 
-        # NEW: Dataset quality assessment
-        print("\n🔍 Assessing dataset quality...")
-        labels = dataset["ground_truth"].tolist()
-        dataset_quality = self.assess_dataset_quality(labels)
+            # NEW: Dataset quality assessment
+            print("\n🔍 Assessing dataset quality...")
+            labels = dataset["ground_truth"].tolist()
+            dataset_quality = self.assess_dataset_quality(labels)
 
-        if config.require_quality_check:
+            if config.require_quality_check:
             self.print_dataset_quality_report(dataset_quality)
 
             # Check if dataset meets minimum quality requirements
             if dataset_quality.balance_score < config.min_balance_score:
-                if config.warn_on_imbalance:
-                    print(
-                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({config.min_balance_score})"
+            if config.warn_on_imbalance:
+            print(
+                       f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({config.min_balance_score})"
                     )
-                    print("This may lead to biased model performance!")
+                        print("This may lead to biased model performance!")
 
-                    response = input("\nContinue anyway? (y/N): ").strip().lower()
-                    if response != "y":
-                        raise ValueError("Benchmark cancelled due to poor dataset quality")
-                else:
+                        response = input("\nContinue anyway? (y/N): ").strip().lower()
+                        if response != "y":
+                    raise ValueError("Benchmark cancelled due to poor dataset quality")
+                    else:
                     raise ValueError(
-                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {config.min_balance_score})"
+                       f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {config.min_balance_score})"
                     )
 
-            print("✅ Dataset quality check passed!")
-        print()
+                    print("✅ Dataset quality check passed!")
+                        print()
 
-        # Professional train / test split with stratification
-        print("🔀 Creating professional train / test split...")
-        X = dataset["comment_text"].values
-        y = dataset["ground_truth"].values
+                        # Professional train / test split with stratification
+                        print("🔀 Creating professional train / test split...")
+                        X = dataset["comment_text"].values
+                        y = dataset["ground_truth"].values
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=config.test_size, random_state=config.random_state, stratify=y
+                        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size = config.test_size, random_state = config.random_state, stratify = y
         )
 
-        print(f"   Train set: {len(X_train)} samples")
-        print(f"   Test set: {len(X_test)} samples")
-        print(f"   Test distribution: {pd.Series(y_test).value_counts().to_dict()}")
+            print(f"   Train set: {len(X_train)} samples")
+            print(f"   Test set: {len(X_test)} samples")
+            print(f"   Test distribution: {pd.Series(y_test).value_counts().to_dict()}")
 
-        # Select models to test
-        if models_to_test is None:
-            models_to_test = list(self.models.keys())
+            # Select models to test
+            if models_to_test is None:
+        models_to_test = list(self.models.keys())
 
-        # Filter by config preferences
-        if not config.include_proprietary:
-            models_to_test = [m for m in models_to_test if self.models[m]["type"] != "proprietary"]
-        if not config.include_open_source:
-            models_to_test = [m for m in models_to_test if self.models[m]["type"] != "open_source"]
+            # Filter by config preferences
+            if not config.include_proprietary:
+        models_to_test = [m for m in models_to_test if self.models[m]["type"] != "proprietary"]
+            if not config.include_open_source:
+        models_to_test = [m for m in models_to_test if self.models[m]["type"] != "open_source"]
 
-        print(f"🧪 Testing {len(models_to_test)} models...")
+            print(f"🧪 Testing {len(models_to_test)} models...")
 
-        # Run benchmarks
-        results = []
-        for model_name in models_to_test:
-            print(f"\n🔍 Testing: {self.models[model_name]['name']}")
+            # Run benchmarks
+            results = []
+            for model_name in models_to_test:
+        print(f"\n🔍 Testing: {self.models[model_name]['name']}")
 
-            start_time = time.time()
+            start_time= time.time()
 
             # Score test set
-            predictions = []
-            confidences = []
+            predictions= []
+            confidences= []
 
             for text_item in X_test:
-                try:
-                    score, confidence = self.models[model_name]["scorer"](text_item)
+        try:
+        score, confidence = self.models[model_name]["scorer"](text_item)
                     predictions.append(score)
                     confidences.append(confidence)
                 except Exception as e:
-                    print(f"   ⚠️  Scoring failed for text: {e}")
+        print(f"   ⚠️  Scoring failed for text: {e}")
                     predictions.append(0.0)
                     confidences.append(0.5)
 
-            processing_time = time.time() - start_time
+            processing_time= time.time() - start_time
 
             # Convert to classification
-            y_pred = self._convert_to_classification(predictions)
+            y_pred= self._convert_to_classification(predictions)
 
             # Calculate metrics
-            accuracy = accuracy_score(y_test, y_pred)
-            precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-            recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
-            f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
+            accuracy= accuracy_score(y_test, y_pred)
+            precision= precision_score(y_test, y_pred, average="weighted", zero_division=0)
+            recall= recall_score(y_test, y_pred, average="weighted", zero_division=0)
+            f1= f1_score(y_test, y_pred, average="weighted", zero_division=0)
 
-            result = ModelResult(
-                model_name=model_name,
-                model_type=self.models[model_name]["type"],
-                accuracy=accuracy,
-                precision=precision,
-                recall=recall,
-                f1_score=f1,
-                processing_time=processing_time,
-                predictions=predictions if config.save_predictions else None,
-                confidence_scores=confidences if config.save_predictions else None,
+            result= ModelResult(
+               model_name = model_name,
+                model_type = self.models[model_name]["type"],
+                accuracy = accuracy,
+                precision = precision,
+                recall = recall,
+                f1_score = f1,
+                processing_time = processing_time,
+                predictions = predictions if config.save_predictions else None,
+                confidence_scores = confidences if config.save_predictions else None,
             )
 
-            results.append(result)
+                results.append(result)
 
-            print(f"   📈 Accuracy: {accuracy:.3f}")
-            print(f"   📈 F1 - Score: {f1:.3f}")
-            print(f"   ⏱️  Time: {processing_time:.2f}s")
+                print(f"   📈 Accuracy: {accuracy:.3f}")
+                print(f"   📈 F1 - Score: {f1:.3f}")
+                print(f"   ⏱️  Time: {processing_time:.2f}s")
 
-        # Statistical analysis
-        print(f"\n📊 STATISTICAL ANALYSIS")
-        print("-" * 40)
+            # Statistical analysis
+            print(f"\n📊 STATISTICAL ANALYSIS")
+            print("-" * 40)
 
-        statistical_tests = self._run_statistical_tests(results, y_test)
+            statistical_tests = self._run_statistical_tests(results, y_test)
 
-        # Create summary
-        summary = self._create_summary(results, dataset)
+            # Create summary
+            summary = self._create_summary(results, dataset)
 
-        # Create benchmark run
-        benchmark_run = BenchmarkRun(
-            experiment_id=experiment_id,
-            timestamp=datetime.now(),
-            config=config,
-            dataset_info={
+            # Create benchmark run
+            benchmark_run = BenchmarkRun(
+            experiment_id = experiment_id,
+            timestamp = datetime.now(),
+            config = config,
+            dataset_info = {
                 "total_samples": len(dataset),
                 "train_samples": len(X_train),
                 "test_samples": len(X_test),
                 "class_distribution": pd.Series(y_test).value_counts().to_dict(),
             },
-            dataset_quality=dataset_quality,  # NEW: Add dataset quality metrics
-            models=results,
-            statistical_tests=statistical_tests,
-            summary=summary,
+            dataset_quality = dataset_quality,  # NEW: Add dataset quality metrics
+            models = results,
+            statistical_tests = statistical_tests,
+            summary = summary,
         )
 
-        # Save results
-        self._save_benchmark_run(benchmark_run)
+            # Save results
+            self._save_benchmark_run(benchmark_run)
 
-        # Print final results
-        self._print_final_results(benchmark_run)
+            # Print final results
+            self._print_final_results(benchmark_run)
 
-        # Print interpretation
-        self._print_results_interpretation(benchmark_run)
+            # Print interpretation
+            self._print_results_interpretation(benchmark_run)
 
-        return benchmark_run
+            return benchmark_run
 
-    def _run_statistical_tests(self, results: List[ModelResult], y_test: np.ndarray) -> Dict[str, Any]:
+        def _run_statistical_tests(self, results: List[ModelResult], y_test: np.ndarray) -> Dict[str, Any]:
         """Run statistical significance tests."""
 
-        tests = {}
+        tests= {}
 
         # Find best model
-        best_model = max(results, key=lambda x: x.f1_score)
-        tests["best_model"] = {
-            "name": best_model.model_name,
+        best_model= max(results, key=lambda x: x.f1_score)
+        tests["best_model"]= {
+           "name": best_model.model_name,
             "f1_score": best_model.f1_score,
             "accuracy": best_model.accuracy,
         }
 
-        # Model type comparison
-        type_performance = {}
-        for result in results:
-            model_type = result.model_type
+            # Model type comparison
+            type_performance = {}
+            for result in results:
+        model_type = result.model_type
             if model_type not in type_performance:
-                type_performance[model_type] = []
+        type_performance[model_type] = []
             type_performance[model_type].append(result.f1_score)
 
-        tests["type_comparison"] = {
-            model_type: {"mean_f1": np.mean(scores), "std_f1": np.std(scores), "count": len(scores)}
+            tests["type_comparison"] = {
+           model_type: {"mean_f1": np.mean(scores), "std_f1": np.std(scores), "count": len(scores)}
             for model_type, scores in type_performance.items()
         }
 
-        return tests
+            return tests
 
-    def _create_summary(self, results: List[ModelResult], dataset: pd.DataFrame) -> Dict[str, Any]:
+        def _create_summary(self, results: List[ModelResult], dataset: pd.DataFrame) -> Dict[str, Any]:
         """Create benchmark summary."""
 
         return {
-            "total_models_tested": len(results),
+           "total_models_tested": len(results),
             "best_accuracy": max(r.accuracy for r in results),
             "best_f1_score": max(r.f1_score for r in results),
             "avg_processing_time": np.mean([r.processing_time for r in results]),
@@ -1114,7 +1118,7 @@ class ModelBenchmarkSystem:
             "model_types": list(set(r.model_type for r in results)),
         }
 
-    def _save_benchmark_run(self, benchmark_run: BenchmarkRun):
+        def _save_benchmark_run(self, benchmark_run: BenchmarkRun):
         """Save benchmark run to JSON file."""
 
         # Convert to dict for JSON serialization
@@ -1126,36 +1130,36 @@ class ModelBenchmarkSystem:
         filepath = self.results_dir / filename
 
         with open(filepath, "w") as f:
-            json.dump(run_dict, f, indent=2, default=str)
+        json.dump(run_dict, f, indent=2, default=str)
 
         print(f"💾 Results saved to: {filepath}")
 
         # Save to database if available
         if self.use_database and self.db:
-            try:
-                db_id = self.db.store_benchmark_run(benchmark_run, str(filepath))
+        try:
+        db_id = self.db.store_benchmark_run(benchmark_run, str(filepath))
                 print(f"💾 Results also stored in database (ID: {db_id})")
             except Exception as e:
-                print(f"⚠️  Database storage failed: {e}")
+        print(f"⚠️  Database storage failed: {e}")
 
         # Update benchmark history
         self._update_benchmark_history(benchmark_run)
 
-    def _update_benchmark_history(self, benchmark_run: BenchmarkRun):
+        def _update_benchmark_history(self, benchmark_run: BenchmarkRun):
         """Update the benchmark history file."""
 
         history_file = self.results_dir / "benchmark_history.json"
 
         # Load existing history
         if history_file.exists():
-            with open(history_file, "r") as f:
-                history = json.load(f)
+        with open(history_file, "r") as f:
+        history = json.load(f)
         else:
-            history = {"runs": [], "summary": {}}
+        history = {"runs": [], "summary": {}}
 
         # Add new run summary
         run_summary = {
-            "experiment_id": benchmark_run.experiment_id,
+           "experiment_id": benchmark_run.experiment_id,
             "timestamp": benchmark_run.timestamp.isoformat(),
             "experiment_name": benchmark_run.config.experiment_name,
             "best_f1_score": max(r.f1_score for r in benchmark_run.models),
@@ -1164,22 +1168,22 @@ class ModelBenchmarkSystem:
             "dataset_size": benchmark_run.dataset_info["total_samples"],
         }
 
-        history["runs"].append(run_summary)
+            history["runs"].append(run_summary)
 
-        # Update summary statistics
-        all_f1_scores = [run["best_f1_score"] for run in history["runs"]]
-        history["summary"] = {
-            "total_runs": len(history["runs"]),
+            # Update summary statistics
+            all_f1_scores = [run["best_f1_score"] for run in history["runs"]]
+            history["summary"] = {
+           "total_runs": len(history["runs"]),
             "best_f1_ever": max(all_f1_scores),
             "avg_f1_score": np.mean(all_f1_scores),
             "last_updated": datetime.now().isoformat(),
         }
 
-        # Save updated history
-        with open(history_file, "w") as f:
-            json.dump(history, f, indent=2)
+            # Save updated history
+            with open(history_file, "w") as f:
+        json.dump(history, f, indent=2)
 
-    def _print_final_results(self, benchmark_run: BenchmarkRun):
+        def _print_final_results(self, benchmark_run: BenchmarkRun):
         """Print comprehensive final results."""
 
         print(f"\n🏆 BENCHMARK RESULTS: {benchmark_run.config.experiment_name}")
@@ -1195,8 +1199,8 @@ class ModelBenchmarkSystem:
 
         # Human - readable model descriptions with training details
         model_descriptions = {
-            "transformer_distilbert_base_uncased": "DistilBERT - Fast AI (trained on Wikipedia + books)",
-            "transformer_j_hartmann_emotion_english_distilroberta_base":" " + "" "Emotion AI - Trained to detect 6 emotions + sentiment",
+           "transformer_distilbert_base_uncased": "DistilBERT - Fast AI (trained on Wikipedia + books)",
+            "transformer_j_hartmann_emotion_english_distilroberta_base": " " + "" "Emotion AI - Trained to detect 6 emotions + sentiment",
             "transformer_sentiment": "Twitter AI - Trained on social media posts",
             "transformer_roberta_base": "RoBERTa - Advanced AI (trained on 160GB of text)",
             "transformer_cardiffnlp_twitter_roberta_base_sentiment_latest": "Twitter Sentiment AI - Trained on 124M tweets",
@@ -1206,16 +1210,16 @@ class ModelBenchmarkSystem:
             "ml_classifier": "Music ML - Trained on your 267 classifications",
         }
 
-        for i, result in enumerate(sorted_results, 1):
-            model_key = result.model_name.replace(" ", "_").replace("-", "_").lower()
+            for i, result in enumerate(sorted_results, 1):
+        model_key = result.model_name.replace(" ", "_").replace("-", "_").lower()
             description = model_descriptions.get(model_key, result.model_name)
 
             # Shorten very long descriptions
             if len(description) > 44:
-                description = description[:41] + "..."
+        description = description[:41] + "..."
 
             print(
-                f"{i:<4} {result.model_name[:34]:<35} {description:<45} "                 f"{result.f1_score:.3f}  {result.accuracy:.3f}  {result.processing_time:.2f}s"
+               f"{i:<4} {result.model_name[:34]:<35} {description:<45} "                 f"{result.f1_score:.3f}  {result.accuracy:.3f}  {result.processing_time:.2f}s"
             )
 
         print(f"\n🤖 WHAT ARE TRANSFORMERS?")
@@ -1228,14 +1232,14 @@ class ModelBenchmarkSystem:
         print(f"🎯 KEY INSIGHTS")
         print("-" * 30)
 
-        best = sorted_results[0]
+        best= sorted_results[0]
         print(f"🥇 Best Model: {best.model_name}")
         print(f"   F1 - Score: {best.f1_score:.3f}")
         print(f"   Accuracy: {best.accuracy:.3f}")
         print(f"   Type: {best.model_type}")
 
         # Type comparison
-        type_stats = benchmark_run.statistical_tests["type_comparison"]
+        type_stats= benchmark_run.statistical_tests["type_comparison"]
         print(f"\n📈 Performance by Type:")
         for model_type, stats in type_stats.items():  # noqa: C901
             print(f"   {model_type.title()}: {stats['mean_f1']:.3f} ± {stats['std_f1']:.3f}")
@@ -1250,9 +1254,9 @@ class ModelBenchmarkSystem:
         print("=" * 80)
         print("Let's break down what these numbers actually mean for analyzing music comments!")
 
-        sorted_results = sorted(benchmark_run.models, key=lambda x: x.f1_score, reverse=True)
-        best = sorted_results[0]
-        worst = sorted_results[-1]
+        sorted_results= sorted(benchmark_run.models, key=lambda x: x.f1_score, reverse=True)
+        best= sorted_results[0]
+        worst= sorted_results[-1]
 
         # What is F1 - Score? (Educational)
         print(f"\n🤔 WHAT THE HECK IS AN F1 - SCORE?")
@@ -1275,17 +1279,17 @@ class ModelBenchmarkSystem:
         print()
 
         for model in sorted_results:  # All models
-            time_per_comment = model.processing_time / 300  # 300 test comments
-            million_comment_time = time_per_comment * 1000000
+            time_per_comment= model.processing_time / 300  # 300 test comments
+            million_comment_time= time_per_comment * 1000000
 
             if million_comment_time < 60:
-                time_display = f"{million_comment_time:.1f} seconds"
+                time_display= f"{million_comment_time:.1f} seconds"
             elif million_comment_time < 3600:
-                time_display = f"{million_comment_time / 60:.1f} minutes"
+                time_display= f"{million_comment_time / 60:.1f} minutes"
             elif million_comment_time < 86400:
-                time_display = f"{million_comment_time / 3600:.1f} hours"
+                time_display= f"{million_comment_time / 3600:.1f} hours"
             else:
-                time_display = f"{million_comment_time / 86400:.1f} days"
+                time_display= f"{million_comment_time / 86400:.1f} days"
 
             print(f"📊 {model.model_name}: {time_display}")
 
@@ -1297,26 +1301,26 @@ class ModelBenchmarkSystem:
         print("-" * 50)
 
         # Find VADER variants and analyze differences
-        vader_models = [r for r in sorted_results if "vader" in r.model_name.lower()]
+        vader_models= [r for r in sorted_results if "vader" in r.model_name.lower()]
 
         print("Let's look at what's happening with your VADER enhancements:")
         print()
 
         for model in vader_models:
             if "minimal" in model.model_name:
-                enhancement_level = "Just the basics (sick, fire, goated, mid, cringe)"
+                enhancement_level= "Just the basics (sick, fire, goated, mid, cringe)"
             elif "moderate" in model.model_name:
-                enhancement_level = "More slang + Gen Z terms (periodt, bussin, ate)"
+                enhancement_level= "More slang + Gen Z terms (periodt, bussin, ate)"
             elif "comprehensive" in model.model_name:
-                enhancement_level = "Full music lexicon + cultural terms + emoji"
+                enhancement_level= "Full music lexicon + cultural terms + emoji"
             elif "aggressive" in model.model_name:
-                enhancement_level = "Comprehensive + boosted weights + experimental terms"
+                enhancement_level= "Comprehensive + boosted weights + experimental terms"
             elif "hybrid" in model.model_name:
-                enhancement_level = "Context - sensitive + cultural adjustments"
+                enhancement_level= "Context - sensitive + cultural adjustments"
             elif "proprietary" in model.model_name:
-                enhancement_level = "Your secret sauce with 4 algorithms (CSA, DERW, MMSF, TSDM)"
+                enhancement_level= "Your secret sauce with 4 algorithms (CSA, DERW, MMSF, TSDM)"
             else:
-                enhancement_level = "Stock VADER (no music enhancements)"
+                enhancement_level= "Stock VADER (no music enhancements)"
 
             print(f"   {model.model_name}: {model.f1_score:.3f} F1, {model.accuracy:.1%} accuracy")
             print(f"   └─ {enhancement_level}")
@@ -1329,14 +1333,14 @@ class ModelBenchmarkSystem:
         print("• TextBlob uses a completely different approach (not rule - based)")
 
         # Dataset Reality Check
-        class_dist = benchmark_run.dataset_info["class_distribution"]
-        total_samples = sum(class_dist.values())
+        class_dist= benchmark_run.dataset_info["class_distribution"]
+        total_samples= sum(class_dist.values())
 
         print(f"\n📊 THE DATASET REALITY CHECK")
         print("-" * 35)
         print("Your test data breakdown:")
         for class_name, count in class_dist.items():
-            pct = (count / total_samples) * 100
+            pct= (count / total_samples) * 100
             print(f"   {class_name.title()}: {count} comments ({pct:.1f}%)")
 
         print(f"\n🎯 The Problem: 79% of comments are neutral!")
@@ -1351,10 +1355,10 @@ class ModelBenchmarkSystem:
 
         try:
             # Get some test samples that were labeled neutral
-            engine = get_engine()
+            engine= get_engine()
             with engine.connect() as conn:
-                sample_neutrals = pd.read_sql(
-                    text(
+                sample_neutrals= pd.read_sql(
+                   text(
                         """
                     SELECT c.comment_text, c.like_count
                     FROM youtube_comments c
@@ -1369,34 +1373,34 @@ class ModelBenchmarkSystem:
                     conn,
                 )
 
-            for i, row in enumerate(sample_neutrals.itertuples(), 1):
-                comment = row.comment_text[:80] + "..." if len(row.comment_text) > 80 else row.comment_text
+                for i, row in enumerate(sample_neutrals.itertuples(), 1):
+                comment= row.comment_text[:80] + "..." if len(row.comment_text) > 80 else row.comment_text
                 print(f'   {i}. "{comment}" (👍 {row.like_count})')
 
-            print(f"\n🤔 Do these look 'neutral' to you? Maybe the labeling logic needs work!")
+                print(f"\n🤔 Do these look 'neutral' to you? Maybe the labeling logic needs work!")
 
-        except Exception as e:
-            print(f"   ❌ Couldn't fetch sample comments: {e}")
-            print("   (This might explain why the models are struggling!)")
+                except Exception as e:
+                print(f"   ❌ Couldn't fetch sample comments: {e}")
+                print("   (This might explain why the models are struggling!)")
 
-        # AI - Powered Suggestions
-        print(f"\n🤖 AI SUGGESTIONS FOR IMPROVEMENT")
-        print("-" * 40)
+                # AI - Powered Suggestions
+                print(f"\n🤖 AI SUGGESTIONS FOR IMPROVEMENT")
+                    print("-" * 40)
 
-        # Analyze what went wrong
-        proprietary_model = next((r for r in sorted_results if r.model_type == "proprietary"), None)
+                    # Analyze what went wrong
+                    proprietary_model = next((r for r in sorted_results if r.model_type == "proprietary"), None)
 
-        suggestions = []
+                    suggestions = []
 
-        if proprietary_model and proprietary_model.f1_score < 0.3:
+                    if proprietary_model and proprietary_model.f1_score < 0.3:
             suggestions.append("🔧 Your proprietary model needs debugging - it should beat stock VADER!")
 
-        if all(abs(r.accuracy - 0.227) < 0.01 for r in vader_models if "enhanced" in r.model_name):
+                    if all(abs(r.accuracy - 0.227) < 0.01 for r in vader_models if "enhanced" in r.model_name):
             suggestions.append(
                 "🎯 All enhanced VADER models get identical accuracy - check if enhancements are actually being applied"
             )
 
-        suggestions.extend(
+            suggestions.extend(
             [
                 "📝 Check your ground truth labeling - maybe 'fire' comments are labeled as neutral?",
                 "🎵 Test on comments with more obvious music slang (not just engagement - based labels)",
@@ -1406,69 +1410,69 @@ class ModelBenchmarkSystem:
             ]
         )
 
-        for i, suggestion in enumerate(suggestions, 1):
-            print(f"   {i}. {suggestion}")
+            for i, suggestion in enumerate(suggestions, 1):
+        print(f"   {i}. {suggestion}")
 
-        # What TextBlob is doing right
-        print(f"\n🏆 WHY TEXTBLOB IS WINNING")
-        print("-" * 30)
-        print("TextBlob uses a completely different approach:")
-        print("• It's trained on movie reviews, not rules")
-        print("• It doesn't rely on specific slang terms")
-        print("• It looks at overall sentence structure and context")
-        print("• It's not confused by music - specific terms it doesn't know")
-        print(f"• It's {(worst.processing_time / best.processing_time):.0f}x faster!")
+            # What TextBlob is doing right
+            print(f"\n🏆 WHY TEXTBLOB IS WINNING")
+            print("-" * 30)
+            print("TextBlob uses a completely different approach:")
+            print("• It's trained on movie reviews, not rules")
+            print("• It doesn't rely on specific slang terms")
+            print("• It looks at overall sentence structure and context")
+            print("• It's not confused by music - specific terms it doesn't know")
+            print(f"• It's {(worst.processing_time / best.processing_time):.0f}x faster!")
 
-        # Next Steps
-        print(f"\n🚀 NEXT STEPS TO CRUSH TEXTBLOB")
-        print("-" * 35)
-        print("1. 🐛 Debug your enhancements with specific test cases")
-        print("2. 📊 Create better ground truth labels (use actual sentiment words)")
-        print("3. 🎵 Test on comments with obvious music slang")
-        print("4. ⚖️ Balance your dataset (more positive / negative examples)")
-        print("5. 🔍 Check if your proprietary algorithms are actually running")
+            # Next Steps
+            print(f"\n🚀 NEXT STEPS TO CRUSH TEXTBLOB")
+            print("-" * 35)
+            print("1. 🐛 Debug your enhancements with specific test cases")
+            print("2. 📊 Create better ground truth labels (use actual sentiment words)")
+            print("3. 🎵 Test on comments with obvious music slang")
+            print("4. ⚖️ Balance your dataset (more positive / negative examples)")
+            print("5. 🔍 Check if your proprietary algorithms are actually running")
 
-        # Resume - worthy highlights
-        print(f"\n🎓 WHAT TO PUT ON YOUR RESUME")
-        print("-" * 35)
-        print("✅ 'Benchmarked 8 sentiment analysis models on real music industry data'")
-        print("✅ 'Identified dataset challenges in music sentiment classification'")
-        print("✅ 'Discovered class imbalance issues affecting model performance'")
-        print("✅ 'Applied rigorous train / test methodology with statistical validation'")
-        print("✅ 'Built proprietary sentiment enhancement system with 4 algorithms'")
-        print("✅ 'Analyzed processing time trade - offs for production deployment'")
+            # Resume - worthy highlights
+            print(f"\n🎓 WHAT TO PUT ON YOUR RESUME")
+            print("-" * 35)
+            print("✅ 'Benchmarked 8 sentiment analysis models on real music industry data'")
+            print("✅ 'Identified dataset challenges in music sentiment classification'")
+            print("✅ 'Discovered class imbalance issues affecting model performance'")
+            print("✅ 'Applied rigorous train / test methodology with statistical validation'")
+            print("✅ 'Built proprietary sentiment enhancement system with 4 algorithms'")
+            print("✅ 'Analyzed processing time trade - offs for production deployment'")
 
-        print(f"\n" + "=" * 80)
-        print("🎵 Remember: This is music sentiment analysis - it's genuinely hard!")
-        print("The fact that you're getting consistent results means your methodology is solid.")
-        print("Now it's time to debug why your music enhancements aren't showing up! 🔍")
+            print(f"\n" + "=" * 80)
+            print("🎵 Remember: This is music sentiment analysis - it's genuinely hard!")
+            print("The fact that you're getting consistent results means your methodology is solid.")
+            print("Now it's time to debug why your music enhancements aren't showing up! 🔍")
 
 
-def main():
-    """Run example benchmark."""
+        def main():
+        """Run example benchmark."""
 
-    print("🧪 MODEL BENCHMARK SYSTEM DEMO")
-    print("=" * 60)
+        print("🧪 MODEL BENCHMARK SYSTEM DEMO")
+        print("=" * 60)
 
-    # Create benchmark system
-    benchmark_system = ModelBenchmarkSystem()
+        # Create benchmark system
+        benchmark_system = ModelBenchmarkSystem()
 
-    # Configure benchmark
-    config = BenchmarkConfig(
-        experiment_name="sentiment_model_comparison",
-        test_size=0.3,
-        random_state=42,
-        include_proprietary=True,
-        include_open_source=True,
+        # Configure benchmark
+        config = BenchmarkConfig(
+        experiment_name = "sentiment_model_comparison",
+        test_size = 0.3,
+        random_state = 42,
+        include_proprietary = True,
+        include_open_source = True,
     )
 
-    # Run benchmark
-    results = benchmark_system.run_benchmark(config)
+        # Run benchmark
+        results = benchmark_system.run_benchmark(config)
 
-    print(f"\n✅ Benchmark completed successfully!")
-    print(f"📊 {len(results.models)} models tested")
-    print(f"💾 Results logged for tracking over time")
+        print(f"\n✅ Benchmark completed successfully!")
+        print(f"📊 {len(results.models)} models tested")
+        print(f"💾 Results logged for tracking over time")
 
 
-if __name__ == "__main__":
+    if __name__ == "__main__":
     main()

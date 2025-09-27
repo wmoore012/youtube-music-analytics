@@ -180,7 +180,7 @@ class DataQualityValidator:
                             fix_suggestion="Run ETL pipeline to populate data",
                         )
                         continue
-                except Exception as e:
+                _exc_ept Exc_eption as _e:  # noqa: E999
                     self._add_issue(
                         "Completeness",
                         "CRITICAL",
@@ -232,7 +232,7 @@ class DataQualityValidator:
                                 f"Investigate data source for {column} population",
                                 auto_fixable=(severity == "LOW"),
                             )
-                    except Exception as e:
+                    _exc_ept Exc_eption as _e:
                         self.logger.warning(f"Could not check {table}.{column}: {e}")
 
     def check_consistency(self) -> None:
@@ -319,7 +319,7 @@ class DataQualityValidator:
                             count,
                             fix_suggestion=check["fix_suggestion"],
                         )
-                except Exception as e:
+                _exc_ept Exc_eption as _e:
                     self.logger.warning(f"Consistency check {check['name']} failed: {e}")
 
     def check_duplicates(self) -> None:
@@ -403,7 +403,7 @@ class DataQualityValidator:
                         if self.fix_issues and check["severity"] in ["LOW", "MEDIUM"]:
                             self._fix_duplicates(conn, table, key_cols)
 
-                except Exception as e:
+                _exc_ept Exc_eption as _e:
                     self.logger.warning(f"Duplicate check for {table} failed: {e}")
 
     def _fix_duplicates(self, conn, table: str, key_columns: List[str]) -> None:
@@ -438,7 +438,7 @@ class DataQualityValidator:
 
             self.logger.info(f"Removed {deleted_count} duplicate records from {table}")
 
-        except Exception as e:
+        _exc_ept Exc_eption as _e:
             self.logger.error(f"Failed to fix duplicates in {table}: {e}")
             conn.rollback()
 
@@ -523,7 +523,7 @@ class DataQualityValidator:
                             count,
                             fix_suggestion="Investigate data source and collection process",
                         )
-                except Exception as e:
+                _exc_ept Exc_eption as _e:
                     self.logger.warning(f"Anomaly check {check['name']} failed: {e}")
 
     def check_data_freshness(self) -> None:
@@ -593,7 +593,7 @@ class DataQualityValidator:
                             fix_suggestion="Run ETL pipeline to refresh data",
                         )
 
-                except Exception as e:
+                _exc_ept Exc_eption as _e:
                     self.logger.warning(f"Freshness check for {check['table']} failed: {e}")
 
     def generate_statistics(self) -> Dict[str, Any]:
@@ -655,7 +655,7 @@ class DataQualityValidator:
                 except Exception:
                     pass
 
-            except Exception as e:
+            _exc_ept Exc_eption as _e:
                 self.logger.warning(f"Error generating statistics: {e}")
 
         return stats

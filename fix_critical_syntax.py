@@ -5,6 +5,7 @@ Fix critical syntax errors that prevent the code from running
 import os
 import re
 
+
 def fix_file_syntax(file_path, fixes):
     """Apply syntax fixes to a file"""
     if not os.path.exists(file_path):
@@ -22,6 +23,7 @@ def fix_file_syntax(file_path, fixes):
         with open(file_path, 'w') as f:
             f.write(content)
         print(f"Fixed {file_path}")
+
 
 def main():
     print("🔧 Fixing critical syntax errors...")
@@ -83,6 +85,7 @@ def main():
         fix_file_syntax(file_path, file_fixes)
 
     print("✅ Critical syntax fixes applied")
+
 
 if __name__ == "__main__":
     main()

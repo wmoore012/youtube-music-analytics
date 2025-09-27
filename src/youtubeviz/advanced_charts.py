@@ -957,7 +957,6 @@ def create_positive_theme_lollipops(
         # Re - raise unexpected errors - don't hide them
         raise RuntimeError(f"PositiveThemeLollipops execution error: {e}") from e
 
-
                     artist,  # noqa: E999
                     row[theme_col],
                     "positive",

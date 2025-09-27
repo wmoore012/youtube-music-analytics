@@ -4,6 +4,8 @@ from src.youtubeviz import data as data_module
 
 
 def _prepare_engine(rows: int) -> object:
+
+
 engine = create_engine("sqlite:///:memory:")
 with engine.begin() as conn:
         conn.exec_driver_sql("""
@@ -27,7 +29,7 @@ with engine.begin() as conn:
         for idx in range(rows): vid = f"v{idx}"
             conn.exec_driver_sql("INSERT INTO youtube_videos (video_id, " "title, " "channel_title, " "published_at, " "isrc) VALUES (?, ?, ?, ?, ?)", (vid, f"Song {idx}", "Artist", "2020-01-01", f"ISRC{idx}"),
                                   )
-            conn.exec_driver_sql( "INSERT INTO youtube_metrics (video_id,
+            conn.exec_driver_sql( "INSERT INTO youtube_metrics (video_id,  # noqa: E999
                     metrics_date,
                     view_count,
                     like_count,

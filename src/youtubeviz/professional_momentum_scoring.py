@@ -390,95 +390,95 @@ def create_momentum_summary_dataframe(momentum_scores: List[MomentumScore]) -> p
                 "recent_videos": score.recent_videos,
                 "data_quality_score": score.data_quality_score,
                 "confidence_interval": f"[{score.confidence_interval
-                    _lower:.3f}"}"}, {score.confidence_interval_upper:.3f}]",
-            }
+                                           _lower:.3f}"}"}, {score.confidence_interval_upper:.3f}]",
+        }  # noqa: E999
         )
 
-    return pd.DataFrame(data)
+        return pd.DataFrame(data)
 
 
-def display_momentum_analysis_results(momentum_scores: List[MomentumScore]) -> None:
-    """Display professional momentum analysis results with educational content."""
-    if not momentum_scores:
+            def display_momentum_analysis_results(momentum_scores: List[MomentumScore]) -> None:
+        """Display professional momentum analysis results with educational content."""
+            if not momentum_scores:
         print("⚠️  No momentum scores to display")
-        return
+            return
 
-    print("\n🏆 PROFESSIONAL MOMENTUM ANALYSIS RESULTS")
-    print("=" * 60)
+        print("\n🏆 PROFESSIONAL MOMENTUM ANALYSIS RESULTS")
+            print("=" * 60)
 
-    # Summary statistics
-    scores = [s.score_value for s in momentum_scores]
-    confidences = [s.confidence for s in momentum_scores]
+            # Summary statistics
+        scores = [s.score_value for s in momentum_scores]
+            confidences= [s.confidence for s in momentum_scores]
 
-    print(f"📊 Analysis Summary:")
-    print(f"   Artists Analyzed: {len(momentum_scores)}")
-    print(f"   Average Score: {np.mean(scores):.3f} ± {np.std(scores):.3f}")
-    print(f"   Average Confidence: {np.mean(confidences):.3f}")
-    print(f"   Score Range: {min(scores):.3f} - {max(scores):.3f}")
+            print(f"📊 Analysis Summary:")
+            print(f"   Artists Analyzed: {len(momentum_scores)}")
+            print(f"   Average Score: {np.mean(scores):.3f} ± {np.std(scores):.3f}")
+            print(f"   Average Confidence: {np.mean(confidences):.3f}")
+            print(f"   Score Range: {min(scores):.3f} - {max(scores):.3f}")
 
-    # Category distribution
-    categories = [s.category for s in momentum_scores]
-    category_counts = pd.Series(categories).value_counts()
+            # Category distribution
+            categories= [s.category for s in momentum_scores]
+            category_counts= pd.Series(categories).value_counts()
 
-    print(f"\n📈 Momentum Categories:")
-    for category, count in category_counts.items():
-        percentage = (count / len(momentum_scores)) * 100
-        print(f"   {category}: {count} artists ({percentage:.1f}%)")
+            print(f"\n📈 Momentum Categories:")
+            for category, count in category_counts.items():
+            percentage = (count / len(momentum_scores)) * 100
+            print(f"   {category}: {count} artists ({percentage:.1f}%)")
 
-    # Top performers
-    print(f"\n🌟 Top 5 Momentum Leaders:")
-    for i, score in enumerate(momentum_scores[:5], 1):
-        confidence_indicator = "🔴" if score.confidence < 0.5 else "🟡" if score.confidence < 0.8 else "🟢"
-        print(f"   {i}. {score.artist_name}")
-        print(f"      Score: {score.score_value:.3f} ({score.category})")
-        print(f"      Confidence: {confidence_indicator} {score.confidence:.3f}")
-        print(f"      Growth Rate: {score.growth_rate_pct:+.1f}%")
-        print()
+            # Top performers
+            print(f"\n🌟 Top 5 Momentum Leaders:")
+            for i, score in enumerate(momentum_scores[:5], 1):
+            confidence_indicator = "🔴" if score.confidence < 0.5 else "🟡" if score.confidence < 0.8 else "🟢"
+            print(f"   {i}. {score.artist_name}")
+            print(f"      Score: {score.score_value:.3f} ({score.category})")
+            print(f"      Confidence: {confidence_indicator} {score.confidence:.3f}")
+            print(f"      Growth Rate: {score.growth_rate_pct:+.1f}%")
+            print()
 
-    # Educational content
-    print(f"🎓 UNDERSTANDING MOMENTUM SCORES")
-    print("-" * 40)
-    print("💡 Score Interpretation:")
-    print("   • 0.70 - 1.00: High Momentum - Strong growth trajectory")
-    print("   • 0.40 - 0.69: Moderate Momentum - Steady progress")
-    print("   • 0.20 - 0.39: Low Momentum - Limited growth")
-    print("   • 0.00 - 0.19: Declining - Negative or stagnant trends")
+            # Educational content
+            print(f"🎓 UNDERSTANDING MOMENTUM SCORES")
+            print("-" * 40)
+            print("💡 Score Interpretation:")
+            print("   • 0.70 - 1.00: High Momentum - Strong growth trajectory")
+            print("   • 0.40 - 0.69: Moderate Momentum - Steady progress")
+            print("   • 0.20 - 0.39: Low Momentum - Limited growth")
+            print("   • 0.00 - 0.19: Declining - Negative or stagnant trends")
 
-    print("\n🔍 Confidence Indicators:")
-    print("   🟢 High (0.8+): Statistically reliable, sufficient data")
-    print("   🟡 Medium (0.5 - 0.8): Moderately reliable, some uncertainty")
-    print("   🔴 Low (<0.5): Limited reliability, insufficient data")
+            print("\n🔍 Confidence Indicators:")
+            print("   🟢 High (0.8+): Statistically reliable, sufficient data")
+            print("   🟡 Medium (0.5 - 0.8): Moderately reliable, some uncertainty")
+            print("   🔴 Low (<0.5): Limited reliability, insufficient data")
 
-    print("\n📈 Business Applications:")
-    print("   • High momentum artists: Priority for marketing investment")
-    print("   • Moderate momentum: Monitor for breakthrough potential")
-    print("   • Low momentum: Consider strategic repositioning")
-    print("   • Declining: Investigate causes, potential intervention needed")
+            print("\n📈 Business Applications:")
+            print("   • High momentum artists: Priority for marketing investment")
+            print("   • Moderate momentum: Monitor for breakthrough potential")
+            print("   • Low momentum: Consider strategic repositioning")
+            print("   • Declining: Investigate causes, potential intervention needed")
 
 
-if __name__ == "__main__":
-    # Demo the professional momentum scoring system
-    from web.etl_helpers import get_engine
+            if __name__ == "__main__":
+            # Demo the professional momentum scoring system
+            from web.etl_helpers import get_engine
 
-    print("🚀 PROFESSIONAL MOMENTUM SCORING DEMO")
-    print("=" * 60)
+            print("🚀 PROFESSIONAL MOMENTUM SCORING DEMO")
+            print("=" * 60)
 
-    try:
-        engine = get_engine()
-        scorer = ProfessionalMomentumScorer()
+            try:
+            engine = get_engine()
+            scorer = ProfessionalMomentumScorer()
 
-        # Calculate momentum scores
-        momentum_scores = scorer.calculate_momentum_scores(engine)
+            # Calculate momentum scores
+            momentum_scores = scorer.calculate_momentum_scores(engine)
 
-        # Display results
-        display_momentum_analysis_results(momentum_scores)
+            # Display results
+            display_momentum_analysis_results(momentum_scores)
 
-        # Create summary DataFrame
-        summary_df = create_momentum_summary_dataframe(momentum_scores)
-        print(f"\n📋 Summary DataFrame created with {len(summary_df)} records")
+            # Create summary DataFrame
+            summary_df = create_momentum_summary_dataframe(momentum_scores)
+            print(f"\n📋 Summary DataFrame created with {len(summary_df)} records")
 
-    except Exception as e:
-        print(f"❌ Demo failed: {e}")
-        import traceback
+            except Exception as e:
+            print(f"❌ Demo failed: {e}")
+            import traceback
 
-        traceback.print_exc()
+            traceback.print_exc()

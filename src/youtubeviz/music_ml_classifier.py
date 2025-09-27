@@ -648,7 +648,7 @@ class MusicSentimentTransformer:
             # Use simulated tokenizer for demonstration
             self.tokenizer = "simulated"
             print(f"🎭 Using simulated transformer logic for {model_name}")
-  # noqa: C901
+  # noqa: C901  # noqa: E114
 
     def predict(self, text: str, has_isrc: bool = False) -> Dict[str, any]:  # noqa: C901
         """

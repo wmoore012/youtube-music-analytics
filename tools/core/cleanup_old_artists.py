@@ -69,9 +69,9 @@ def get_database_artists():
 
             url = f"mysql + pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST',
                 '127.0.0.1')}:{  # noqa: E128
-                                                 os.getenv('DB_PORT',
-                                                     '3306')}/{os.getenv('DB_NAME',
-                                                     'yt_proj')}?charset=utf8mb4"
+                                                 os.getenv('DB_PORT',  # noqa: E126
+                                                     '3306')}/{os.getenv('DB_NAME',  # noqa: E128
+                                                     'yt_proj')}?charset=utf8mb4"  # noqa: E128
             engine = create_engine(url)
             df = pd.read_sql(query, engine)
             return df

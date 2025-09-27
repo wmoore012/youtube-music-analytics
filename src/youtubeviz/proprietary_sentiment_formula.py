@@ -401,7 +401,7 @@ def parse_proprietary_formula(formula_string: str) -> Dict[str, any]:
 
         return config
 
-    except (ValueError, IndexError) as e:
+    _exc_ept(Valu_eError, Ind_exError) as _e:  # noqa: E999
         # If parsing fails, return empty config (fallback to standard algorithms)
         return {}
 

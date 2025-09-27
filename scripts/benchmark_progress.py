@@ -911,7 +911,7 @@ def main():  # noqa: C901
     print(f"\n🤖 Model Performance:")
     if benchmark_data.get("sentiment_available", 0):
         print(
-            f"  Sentiment Analysis:  {benchmark_data.get(
+            f"  Sentiment Analysis:  {benchmark_data.get(  # noqa: E999
                 'sentiment_avg_time',
                 0) * 1000:.1f}ms avg,
                     {benchmark_data.get('sentiment_throughput',

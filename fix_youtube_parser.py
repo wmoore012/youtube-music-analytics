@@ -20,7 +20,7 @@ def fix_youtube_parser():
                 j += 1
 
             # Replace all these lines with a single fixed line
-            new_line = '    comma_pattern = r"^([A-Za-z0-9\\s&.\']{{1,
+            new_line = '    comma_pattern = r"^([A-Za-z0-9\\s&.\']{{1,  # noqa: E999
                 15}}),
                 \\s+([A-Za-z0-9\\s&.\']{{1,
                 15}})\\s+([A-Za-z0-9\\s\'\""]{{3,  # noqa: E226

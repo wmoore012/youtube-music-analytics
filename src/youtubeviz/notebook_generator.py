@@ -12,49 +12,61 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 
-class NotebookTemplateManager:     """Manages production - ready notebook templates with automatic chart validation."""
+class NotebookTemplateManager: """Manages production - ready notebook templates with automatic chart validation."""
 
-def __init__(self, total_charts: int = 20):         """
+
+def __init__(self, total_charts: int = 20): """
         Initialize notebook template manager.
 
         Args:
             total_charts: Total number of charts expected in notebooks         """
-        self.total_charts = total_charts
+        self.total_charts = total_charts  # noqa: E999
         self.chart_registry = self._build_chart_registry()
 
+
 def _build_chart_registry(self) -> Dict[int, Dict[str, Any]
-                                            ]:         """Build registry of all available charts with metadata."""
+                                            ]: """Build registry of all available charts with metadata."""
         return {
             # Original 15 advanced charts
-            1: {"name": "Sentiment Breakdown by Artist",                 "function": "create_diverging_sentiment_bars",                 "module": "advanced_charts",
+            1: {"name": "Sentiment Breakdown by Artist", "function": "create_diverging_sentiment_bars", "module": "advanced_charts",
                                  },
-            2: {"name": "Sentiment Model Categories Heatmap",                 "function": "create_sentiment_cluster_heatmap",                 "module": "advanced_charts",
+            2: {"name": "Sentiment Model Categories Heatmap", "function": "create_sentiment_cluster_heatmap", "module": "advanced_charts",
                                  },
-            3: {"name": "Top 3 Positive Theme Lollipops",                 "function": "create_positive_theme_lollipops",                 "module": "advanced_charts",
+            3: {"name": "Top 3 Positive Theme Lollipops", "function": "create_positive_theme_lollipops", "module": "advanced_charts",
                                  },
-            4: {"name": "Top 3 Negative Theme Lollipops",                 "function": "create_negative_theme_lollipops",                 "module": "advanced_charts",
+            4: {"name": "Top 3 Negative Theme Lollipops", "function": "create_negative_theme_lollipops", "module": "advanced_charts",
                                  },
-            5: {"name": "Standout Videos Scatter Plot",                 "function": "create_standout_videos_scatter",                 "module": "advanced_charts",
+            5: {"name": "Standout Videos Scatter Plot", "function": "create_standout_videos_scatter", "module": "advanced_charts",
                                  },
-            6: {"name": "Tour Compatibility Analysis",                 "function": "create_tour_compatibility_analysis",                 "module": "advanced_charts",
+            6: {"name": "Tour Compatibility Analysis", "function": "create_tour_compatibility_analysis", "module": "advanced_charts",
                                  },
-            7: {"name": "UpSet Plot for Feature Intersections",                 "function": "create_upset_feature_intersections",                 "module": "advanced_charts",
-                                 },             8: {"name": "ISRC Balance Analysis", "function": "create_isrc_balance_bars", "module": "advanced_charts"},
-            9: {"name": "Content Length Analysis",                 "function": "create_content_length_dumbbells",                 "module": "advanced_charts",
-                                 },             10: {"name": "Content Type Breakdown", "function": "create_content_type_dots", "module": "advanced_charts"},
-            11: {"name": "Views by Category Over Time",                 "function": "create_views_by_category_areas",                 "module": "advanced_charts",
+            7: {"name": "UpSet Plot for Feature Intersections", "function": "create_upset_feature_intersections", "module": "advanced_charts",
+                                 }, 8: {"name": "ISRC Balance Analysis", "function": "create_isrc_balance_bars", "module": "advanced_charts"},
+            9: {"name": "Content Length Analysis", "function": "create_content_length_dumbbells", "module": "advanced_charts",
+                                 }, 10: {"name": "Content Type Breakdown", "function": "create_content_type_dots", "module": "advanced_charts"},
+            11: {"name": "Views by Category Over Time", "function": "create_views_by_category_areas", "module": "advanced_charts",
                                   },
-            12: {"name": "Genre Context Heatmap",                 "function": "create_genre_context_heatmap",                 "module": "advanced_charts",
+            12: {"name": "Genre Context Heatmap", "function": "create_genre_context_heatmap", "module": "advanced_charts",
                                   },
-            13: {"name": "Artist Rank Bump Chart",                 "function": "create_roster_rank_bump_chart",                 "module": "advanced_charts",
+            13: {"name": "Artist Rank Bump Chart", "function": "create_roster_rank_bump_chart", "module": "advanced_charts",
                                   },
-            14: {"name": "Comment Polarity Ridgelines",                 "function": "create_polarity_ridgelines",                 "module": "advanced_charts",
-                                  },             15: {"name": "A / B Test Framework", "function": "create_ab_test_framework", "module": "advanced_charts"},
-            # Additional charts from Complete Dashboard             16: {"name": "Views Over Time", "function": "views_over_time_plotly", "module": "charts"},             17: {"name": "Artist Comparison Chart", "function": "create_artist_comparison_chart", "module": "content"},             18: {"name": "Top Positive Comments", "function": "extract_top_positive_comments", "module": "sentiment"},             19: {"name": "Storytelling Dashboard", "function": "story_block", "module": "storytelling"},             20: {"name": "Executive Summary", "function": "generate_executive_summary", "module": "summary_generator"},
+            14: {"name": "Comment Polarity Ridgelines", "function": "create_polarity_ridgelines", "module": "advanced_charts",
+                                  }, 15: {"name": "A / B Test Framework", "function": "create_ab_test_framework", "module": "advanced_charts"},
+            # Additional charts from Complete Dashboard             16: {"name":
+            # "Views Over Time", "function": "views_over_time_plotly", "module":
+            # "charts"},             17: {"name": "Artist Comparison Chart",
+            # "function": "create_artist_comparison_chart", "module": "content"},
+            # 18: {"name": "Top Positive Comments", "function":
+            # "extract_top_positive_comments", "module": "sentiment"},             19:
+            # {"name": "Storytelling Dashboard", "function": "story_block", "module":
+            # "storytelling"},             20: {"name": "Executive Summary",
+            # "function": "generate_executive_summary", "module":
+            # "summary_generator"},
         }
 
+
 def generate_notebook_template(self, notebook_name: str = "MusicScope™_Production_Dashboard", include_charts: Optional[List[int]] = None
-                                            ) -> Dict[str, Any]:         """
+                                            ) -> Dict[str, Any]: """
         Generate a complete notebook template with all charts and validation.
 
         Args:
@@ -66,9 +78,9 @@ def generate_notebook_template(self, notebook_name: str = "MusicScope™_Product
         if include_charts is None:
             include_charts = list(range(1, self.total_charts + 1))
 
-        notebook = {"cells": [],             "metadata": {"kernelspec": {"display_name": "YouTube Analytics", "language": "python", "name": "youtubeviz"},                 "language_info": {"codemirror_mode": {"name": "ipython", "version": 3},                     "file_extension": ".py",                     "mimetype": "text / x - python",                     "name": "python",                     "nbconvert_exporter": "python",                     "pygments_lexer": "ipython3",                     "version": "3.13.5",
+        notebook = {"cells": [], "metadata": {"kernelspec": {"display_name": "YouTube Analytics", "language": "python", "name": "youtubeviz"}, "language_info": {"codemirror_mode": {"name": "ipython", "version": 3}, "file_extension": ".py", "mimetype": "text / x - python", "name": "python", "nbconvert_exporter": "python", "pygments_lexer": "ipython3", "version": "3.13.5",
                                                                                                                                                                                                                                                 },
-                                                                                        },             "nbformat": 4,             "nbformat_minor": 4,
+                                                                                        }, "nbformat": 4, "nbformat_minor": 4,
                                  }
 
         # Add header cell         notebook["cells"].append(self._create_header_cell(notebook_name, len(include_charts)))
@@ -86,19 +98,22 @@ def generate_notebook_template(self, notebook_name: str = "MusicScope™_Product
 
         return notebook
 
+
 def _create_header_cell(self, notebook_name: str,
-                            chart_count: int) -> Dict[str, Any]:         """Create notebook header cell."""
-        return {"cell_type": "markdown",             "metadata": {},             "source": [f"# 🎵 {notebook_name}\n",                 "\n",                 f"**Production Analytics with {chart_count} Data - Science Grade Charts - REAL DATA ONLY**\n",                 "\n",                 "This notebook uses ONLY real data from the database. No fake / mock data.\n",                 "Charts will show data requirements if columns are missing.\n",                 "\n",                 f"- 📊 **Total Charts**: {chart_count}\n",                 "- 🚫 **No Fake Data**: Only real database data\n",                 "- ✅ **CI / CD Ready**: Automatic validation\n",                 "- 💝 **Compassionate Analytics**: Human - centered insights\n",
+                            chart_count: int) -> Dict[str, Any]: """Create notebook header cell."""
+        return {"cell_type": "markdown", "metadata": {}, "source": [f"# 🎵 {notebook_name}\n", "\n", f"**Production Analytics with {chart_count} Data - Science Grade Charts - REAL DATA ONLY**\n", "\n", "This notebook uses ONLY real data from the database. No fake / mock data.\n", "Charts will show data requirements if columns are missing.\n", "\n", f"- 📊 **Total Charts**: {chart_count}\n", "- 🚫 **No Fake Data**: Only real database data\n", "- ✅ **CI / CD Ready**: Automatic validation\n", "- 💝 **Compassionate Analytics**: Human - centered insights\n",
                                                                                                                           ],
                              }
 
-def _create_imports_cell(self) -> Dict[str, Any]:         """Create imports cell with all required functions."""
-        return {"cell_type": "code",             "execution_count": None,             "metadata": {},             "outputs": [],             "source": ["# Core imports\n",                 "import pandas as pd\n",                 "import numpy as np\n",                 "import plotly.graph_objects as go\n",                 "import warnings\n",                 "warnings.filterwarnings('ignore')\n",                 "\n",                 "print('✅ Core imports loaded')\n",                 "\n",                 "# Import all chart functions\n",                 "try:\n",                 "    # Advanced charts (Charts 1 - 15)\n",                 "    from youtubeviz.advanced_charts import (\n",                 "        create_diverging_sentiment_bars, create_sentiment_cluster_heatmap,\n",                 "        create_positive_theme_lollipops, create_negative_theme_lollipops,\n",                 "        create_standout_videos_scatter, create_tour_compatibility_analysis,\n",                 "        create_upset_feature_intersections, create_isrc_balance_bars,\n",                 "        create_content_length_dumbbells, create_content_type_dots,\n",                 "        create_views_by_category_areas, create_genre_context_heatmap,\n",                 "        create_roster_rank_bump_chart, create_polarity_ridgelines,\n",                 "        create_ab_test_framework, enhance_chart_beauty\n",                 "    )\n",                 "    \n",                 "    # Additional charts (Charts 16 - 20)\n",                 "    from youtubeviz.charts import views_over_time_plotly\n",                 "    from youtubeviz.content import create_artist_comparison_chart\n",                 "    from youtubeviz.sentiment import extract_top_positive_comments\n",                 "    from youtubeviz.storytelling import story_block, narrative_intro\n",                 "    from youtubeviz.summary_generator import generate_executive_summary\n",                 "    \n",                 "    print('✅ All chart functions imported successfully!')\n",                 "    \n",                 "except ImportError as e:\n",                 "    print(f'❌ Import error: {e}')\n",                 "    print('💡 Run: pip install -e . to install package')\n",
+
+def _create_imports_cell(self) -> Dict[str, Any]: """Create imports cell with all required functions."""
+        return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": ["# Core imports\n", "import pandas as pd\n", "import numpy as np\n", "import plotly.graph_objects as go\n", "import warnings\n", "warnings.filterwarnings('ignore')\n", "\n", "print('✅ Core imports loaded')\n", "\n", "# Import all chart functions\n", "try:\n", "    # Advanced charts (Charts 1 - 15)\n", "    from youtubeviz.advanced_charts import (\n", "        create_diverging_sentiment_bars, create_sentiment_cluster_heatmap,\n", "        create_positive_theme_lollipops, create_negative_theme_lollipops,\n", "        create_standout_videos_scatter, create_tour_compatibility_analysis,\n", "        create_upset_feature_intersections, create_isrc_balance_bars,\n", "        create_content_length_dumbbells, create_content_type_dots,\n", "        create_views_by_category_areas, create_genre_context_heatmap,\n", "        create_roster_rank_bump_chart, create_polarity_ridgelines,\n", "        create_ab_test_framework, enhance_chart_beauty\n", "    )\n", "    \n", "    # Additional charts (Charts 16 - 20)\n", "    from youtubeviz.charts import views_over_time_plotly\n", "    from youtubeviz.content import create_artist_comparison_chart\n", "    from youtubeviz.sentiment import extract_top_positive_comments\n", "    from youtubeviz.storytelling import story_block, narrative_intro\n", "    from youtubeviz.summary_generator import generate_executive_summary\n", "    \n", "    print('✅ All chart functions imported successfully!')\n", "    \n", "except ImportError as e:\n", "    print(f'❌ Import error: {e}')\n", "    print('💡 Run: pip install -e . to install package')\n",
                                                                                                                                                                                       ],
                              }
 
-def _create_data_loading_cell(self) -> Dict[str, Any]:         """Create data loading cell with real data only."""
-        return {"cell_type": "code",             "execution_count": None,             "metadata": {},             "outputs": [],             "source": ["# Load REAL data only - no fake data fallback\n",                 "try:\n",                 "    from youtubeviz.data import load_recent_window_days\n",                 "    df = load_recent_window_days(days=30)\n",                 "    \n",                 "    if not df.empty:\n",                 "        print(f'✅ Loaded REAL data: {len(df):,} records')\n",                 '        print(f\'🎭 Artists: {", ".join(df["artist_name"].unique())}\')\n',                 "        print(f'📊 Columns: {list(df.columns)}')\n",                 "        \n",                 "        # Show data quality summary\n",                 "        print(f'\\n📈 Data Quality Summary:')\n",                 "        required_cols = ['sentiment_category', 'daily"                     "_views', 'engagement_rate', 'has_isrc', 'content_type']\n",                 "        for col in required_cols:\n",                 "            if col in df.columns:\n",                 "                non_null = df[col].notna().sum()\n",                 "                print(f'   ✅ {col}: {non_null:,
+
+def _create_data_loading_cell(self) -> Dict[str, Any]: """Create data loading cell with real data only."""
+        return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": ["# Load REAL data only - no fake data fallback\n", "try:\n", "    from youtubeviz.data import load_recent_window_days\n", "    df = load_recent_window_days(days=30)\n", "    \n", "    if not df.empty:\n", "        print(f'✅ Loaded REAL data: {len(df):,} records')\n", '        print(f\'🎭 Artists: {", ".join(df["artist_name"].unique())}\')\n', "        print(f'📊 Columns: {list(df.columns)}')\n", "        \n", "        # Show data quality summary\n", "        print(f'\\n📈 Data Quality Summary:')\n", "        required_cols = ['sentiment_category', 'daily"                     "_views', 'engagement_rate', 'has_isrc', 'content_type']\n", "        for col in required_cols:\n", "            if col in df.columns:\n", "                non_null = df[col].notna().sum()\n",                 "                print(f'   ✅ {col}: {non_null:,
                     }/{len(df):,
                     } records ({non_null / len(df)*100:.1f}%)')\n",                 "            else:\n",                 "                print(f'   ❌ {col}: Missing - charts will show requirements')\n",                 "    else:\n",                 "        print('⚠️  Empty dataset returned from database')\n",                 "        \n",                 "except Exception as e:\n",                 "    print(f'❌ Real data loading failed: {e}')\n",                 "    print('🚫 NO FAKE DATA FALLBACK')\n",                 "    print('💡 Charts will show data requirements')\n",                 "    \n",                 "    # Create empty dataframe\n",                 "    df = pd.DataFrame()\n",                 "    print('⚠️  Empty dataframe - fix data loading to see real analytics')\n",                 "\n",                 "print(f'\\n🎯 Ready for real data analysis!')\n",
             ],

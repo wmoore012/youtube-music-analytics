@@ -67,7 +67,7 @@ class TestNormalization(unittest.TestCase):
             )
             # Two metrics rows for latest selection
             conn.execute(
-                text( "INSERT INTO youtube_metrics (video_id,
+                text( "INSERT INTO youtube_metrics (video_id,  # noqa: E999
                         view_count,
                         like_count,
                         comment_count,

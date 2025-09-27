@@ -6,9 +6,11 @@ import subprocess
 import os
 import re
 
+
 def run_command(cmd):
     """Run command and return result"""
     return subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
 
 def fix_unused_variables_safely():
     """Fix unused variables by prefixing with underscore - very safe"""
@@ -52,6 +54,7 @@ def fix_unused_variables_safely():
 
     print(f"  Fixed {fixed_count} unused variables")
 
+
 def fix_whitespace_safely():
     """Fix whitespace issues - very safe"""
     print("🧹 Fixing whitespace issues (safe)...")
@@ -59,6 +62,7 @@ def fix_whitespace_safely():
     # Only fix trailing whitespace and blank lines
     run_command('autopep8 --in-place --select=W291,W292,W293 --recursive .')
     print("  ✅ Fixed whitespace issues")
+
 
 def add_noqa_for_complexity():
     """Add noqa comments for complexity issues - safe"""
@@ -91,6 +95,7 @@ def add_noqa_for_complexity():
                             fixed_count += 1
 
     print(f"  Added {fixed_count} noqa comments")
+
 
 def main():
     print("🎯 TARGETED LINTING FIX - SAFE CHANGES ONLY")
@@ -135,6 +140,7 @@ def main():
     else:
         print("❌ Tests broken - reverting changes")
         run_command('git checkout -- .')
+
 
 if __name__ == "__main__":
     main()

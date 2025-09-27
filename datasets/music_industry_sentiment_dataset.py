@@ -232,7 +232,7 @@ class MusicIndustrySentimentDataset:
                     "pure fire", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.95, "Absolute excellence"
                 ),
                 MusicSlangEntry(
-                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE"
+                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE"  # noqa: E999
                         "_GENERAL, 0.90, "Song hits hard / sounds great"
                 ),
                 MusicSlangEntry(

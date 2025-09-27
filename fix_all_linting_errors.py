@@ -138,8 +138,8 @@ class ComprehensiveLintingFixer:
                                         part1 = string_content[:break_point]
                                         part2 = string_content[break_point:]
 
-                                        new_line = (before_string + part1 + '"\n' +  # noqa: W504
-                                                   base_indent + '    "' + part2 + after_string + '\n')  # noqa: E128
+                                        new_line = (before_string + part1 + '"\n'  # noqa: W504
+                                                   + base_indent + '    "' + part2 + after_string + '\n')  # noqa: E128
 
                                         lines[line_num - 1] = new_line
 

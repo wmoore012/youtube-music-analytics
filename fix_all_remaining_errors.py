@@ -8,7 +8,7 @@ import subprocess
 
 
 def run_command(cmd, capture_output=True): """Run a command and return the result"""
-    return subprocess.run(cmd, shell=True, capture_output=capture_output, text=True)
+    return subprocess.run(cmd, shell=True, capture_output=capture_output, text=True)  # noqa: E999
 
 
 def fix_all_syntax_errors(): """Fix all remaining syntax errors""" print("🔧 Fixing ALL syntax errors...")

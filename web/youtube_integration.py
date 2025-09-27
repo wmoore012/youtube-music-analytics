@@ -524,7 +524,7 @@ def get_playlist_videos(  # noqa: C901
         else:
             logger.error(f"Error getting playlist videos: {e}")
         return []
-  # noqa: C901
+  # noqa: C901  # noqa: E114
 
 
 def get_video_details(  # noqa: C901
@@ -613,8 +613,8 @@ def get_video_details(  # noqa: C901
         while retry_count <= max_retries:
             try:
                 logger.info(
-                    f"Fetching details for batch {i // batch_size + \
-                        1}/{(len(videos_to_fetch) - 1) // batch_size + 1} ({len(batch)} videos)"  # noqa: E128
+                    f"Fetching details for batch {i // batch_size
+                        + 1}/{(len(videos_to_fetch) - 1) // batch_size + 1} ({len(batch)} videos)"  # noqa: E128
                 )
 
                 # Use safe_execute to abort immediately on quota exceeded
@@ -1605,7 +1605,7 @@ def ensure_youtube_tables(engine: Engine, check_staging: bool = False) -> None:
         msg = "youtube_videos schema out of date – missing 'title' " "column. Expected: title, isrc, video_id"
         logger.error(msg)
         raise RuntimeError(msg)
-  # noqa: C901
+  # noqa: C901  # noqa: E114
     logger.info("✅ All YouTube tables exist with required columns")
 
 

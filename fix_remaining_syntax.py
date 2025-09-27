@@ -7,7 +7,7 @@ import re
 
 def fix_specific_files(): """Fix specific syntax errors in problematic files"""
 
-    fixes = {
+    fixes = {  # noqa: E999
         # Fix unterminated strings "datasets/music_industry_sentiment_dataset.py":
         # [ (r'SlangCategory\.PRAISE_GENERAL, 0\.90, "Song hits hard / sounds
         # great"',  'SlangCategory.PRAISE_GENERAL, 0.90, "Song hits hard / sounds

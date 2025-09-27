@@ -605,8 +605,7 @@ class SentimentEvaluationFramework:
             return []
 
         # Sort p - values with original indices
-        indexed_p_values = [(p, i) for i, p in enumerate(p_values)]
-        indexed_p_values.sort()
+        indexed_p_values = sorted([(p, i) for i, p in enumerate(p_values)])
 
         # Apply BH procedure
         significant = [False] * n

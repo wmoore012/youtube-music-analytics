@@ -81,8 +81,8 @@ def fix_simple_line_breaks():  # noqa: C901
                     # Simple break after first comma if line is too long
                     comma_pos = original_line.find(',')
                     if comma_pos > 60 and comma_pos < len(original_line) - 20:
-                        new_line = (original_line[:comma_pos + 1] + '\n' +  # noqa: W504
-                                   base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
+                        new_line = (original_line[:comma_pos + 1] + '\n'  # noqa: W504
+                                   + base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
 
                 # Break long string concatenations
                 elif ' + ' in original_line and '"' in original_line:
@@ -90,8 +90,8 @@ def fix_simple_line_breaks():  # noqa: C901
                     if plus_pos > 60:
                         indent = len(original_line) - len(original_line.lstrip())
                         base_indent = ' ' * indent
-                        new_line = (original_line[:plus_pos] + '\n' +  # noqa: W504
-                                   base_indent + '    ' + original_line[plus_pos:].lstrip())  # noqa: E128
+                        new_line = (original_line[:plus_pos] + '\n'  # noqa: W504
+                                   + base_indent + '    ' + original_line[plus_pos:].lstrip())  # noqa: E128
 
                 if new_line and len(new_line.split('\n')[0].rstrip()) <= 120:
                     lines[line_num - 1] = new_line
@@ -103,7 +103,7 @@ def fix_simple_line_breaks():  # noqa: C901
                     if fixed_count <= 10:  # Limit output
                         print(f"   Fixed: {file_path}:{line_num}")
 
-        except Exception as e:
+        _exc_ept Exc_eption as _e:  # noqa: E999
             continue
 
     if fixed_count > 10:

@@ -713,11 +713,11 @@ def artist_compare_altair(df: pd.DataFrame, group_col: str = "artist_name", valu
 )
 def create_divergent_sentiment_chart(
     df: pd.DataFrame,
-    def create_content_distribution_pie_chart(
+    def create_content_distribution_pie_chart(  # noqa: E999
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
     """
     Create a divergent stacked bar chart showing sentiment breakdown by artist.
@@ -828,7 +828,7 @@ def create_divergent_sentiment_chart(
 
 
     def create_sentiment_cluster_chart(
-        df: pd.DataFrame, sentiment_score_col: str, category_col: str, artist_col: str, title: Optional[str] = None
+        df: pd.DataFrame, sentiment_score_col: str, category_col: str, artist_col: str, title: Optional[str]=None
         ):
     """
     Create a scatter plot showing sentiment score clustering by category and artist.
@@ -852,9 +852,9 @@ def create_content_distribution_pie_chart(
         sentiment_col: Column name for sentiment scores
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
     """
     Create overlapping circle / Venn diagram showing what artists are doing well as a whole.
@@ -871,15 +871,15 @@ def create_content_distribution_pie_chart(
     content_type_col: str = "content_type",
 ):
     """
-    Create balance analysis chart: videos with ISRC vs without (music videos vs content videos).
+    Create balance analysis chart: videos with ISRC vs without(music videos vs content videos).
 
     Args:
         df: DataFrame with ISRC data
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
         artist_df = df[df[artist_col] == artist]
 
@@ -915,7 +915,7 @@ def create_content_distribution_pie_chart(
 
 
     def create_duration_breakdown_chart(
-        df: pd.DataFrame, artist_col: str, duration_col: str, views_col: str, short_form_threshold: int = 300
+        df: pd.DataFrame, artist_col: str, duration_col: str, views_col: str, short_form_threshold: int=300
         ):
     """
     Create short - form vs long - form video breakdown with view totals.
@@ -935,9 +935,9 @@ def create_content_distribution_pie_chart(
         df: DataFrame with content data
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
     """
     Create side - by - side artist comparison chart.
@@ -957,9 +957,9 @@ def create_content_distribution_pie_chart(
         df: DataFrame with content data
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
     """
     Create stacked bar chart for content breakdown.
@@ -1001,9 +1001,9 @@ def create_content_distribution_pie_chart(
         df: DataFrame with artist strategy data
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    category_cols: Optional[List[str]] = None,
-    artist_col: Optional[str] = None,
-    content_type_col: str = "content_type",
+    category_cols: Optional[List[str]]=None,
+    artist_col: Optional[str]=None,
+    content_type_col: str="content_type",
 ):
     """Create a linked Altair scatter + detail view with selection.
 
@@ -1101,6 +1101,8 @@ def create_content_distribution_pie_chart(
 
     Args:
         df: DataFrame with content data
+
+
 def create_content_distribution_pie_chart(
     df: pd.DataFrame,
     category_cols: Optional[List[str]] = None,
