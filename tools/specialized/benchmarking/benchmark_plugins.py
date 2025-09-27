@@ -61,7 +61,7 @@ def benchmark_momentum_scoring():
         execution_time = time.time() - start_time
 
         print(f"⚡ Execution time: {execution_time:.3f} seconds")
-        print(f"📈 Throughput: {len(momentum_data) /execution_time:.0f} records / second")
+        print(f"📈 Throughput: {len(momentum_data) / execution_time:.0f} records / second")
         print(f"🎯 Results: {len(result.entity_scores)} artist scores")
 
         # Analyze results quality
@@ -93,8 +93,8 @@ def benchmark_momentum_scoring():
                 bottom_artists = scores.nsmallest(min(3, len(scores)), "score_value")
                 for i, (_, row) in enumerate(bottom_artists.iterrows(), 1):
                     print(
-                        f"   #{len(scores) -len(bottom_artists) + \
-                                   i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
+                        f"   #{len(scores) - len(bottom_artists) + \
+                               i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
                     )
         else:
             print(f"\n📊 All Artists (identical scores - algorithm needs tuning):")
@@ -160,7 +160,7 @@ def benchmark_engagement_scoring():
         execution_time = time.time() - start_time
 
         print(f"⚡ Execution time: {execution_time:.3f} seconds")
-        print(f"📈 Throughput: {len(data) /execution_time:.0f} records / second")
+        print(f"📈 Throughput: {len(data) / execution_time:.0f} records / second")
         print(f"🎯 Results: {len(result.entity_scores)} video scores")
 
         # Analyze results

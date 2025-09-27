@@ -286,7 +286,7 @@ def analyze_content_strategy_effectiveness(
         # Calculate strategy insights
         total_views = artist_df[views_col].sum()
         music_content_views = artist_df[artist_df[isrc_col] is True][views_col].sum()
-        content_video_views = artist_df[artist_df[isrc_col] is False][views_col].sum()
+        _content_video_views = artist_df[artist_df[isrc_col] is False][views_col].sum()
 
         music_content_ratio = (music_content_views / total_views) if total_views > 0 else 0
 

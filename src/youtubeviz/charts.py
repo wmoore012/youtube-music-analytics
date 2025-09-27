@@ -713,9 +713,11 @@ def artist_compare_altair(df: pd.DataFrame, group_col: str = "artist_name", valu
 )
 def create_divergent_sentiment_chart(
     df: pd.DataFrame,
-    artist_col: str = "artist_name",
-    sentiment_col: str = "sentiment_category",
-    title: Optional[str] = None,
+    def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """
     Create a divergent stacked bar chart showing sentiment breakdown by artist.
@@ -740,12 +742,12 @@ def create_divergent_sentiment_chart(
         # Calculate engagement rate
         df["engagement_rate"] = (df.get(likes_col, 0).fillna(0) + df.get(comments_col, 0).fillna(0)) / df.get(
             views_col, 1
-        ).fillna(1).clip(lower=1)
+    ).fillna(1).clip(lower=1)
 
         # Categorize into sentiment buckets
         df[sentiment_col] = pd.cut(
             df["engagement_rate"], bins=[0, 0.02, 0.04, float("inf")], labels=["negative", "neutral", "positive"]
-        )
+    )
 
     # Calculate sentiment percentages by artist
     sentiment_counts = df.groupby([artist_col, sentiment_col]).size().unstack(fill_value=0)
@@ -825,9 +827,9 @@ def create_divergent_sentiment_chart(
     return fig
 
 
-def create_sentiment_cluster_chart(
-    df: pd.DataFrame, sentiment_score_col: str, category_col: str, artist_col: str, title: Optional[str] = None
-):
+    def create_sentiment_cluster_chart(
+        df: pd.DataFrame, sentiment_score_col: str, category_col: str, artist_col: str, title: Optional[str] = None
+        ):
     """
     Create a scatter plot showing sentiment score clustering by category and artist.
 
@@ -835,80 +837,11 @@ def create_sentiment_cluster_chart(
         df: DataFrame with sentiment data
         sentiment_score_col: Column name for sentiment scores
         category_col: Column name for sentiment categories
-        artist_col: Column name for artist names
-        title: Optional chart title
-
-    Returns:
-        Plotly figure with scatter plot
-    """
-    if px is None:
-        return df
-
-    fig = px.scatter(
-        df,
-        x=sentiment_score_col,
-        y=artist_col,
-        color=category_col,
-        title=title or "Sentiment Score Clustering",
-        labels={sentiment_score_col: "Sentiment Score", artist_col: "Artist", category_col: "Sentiment Category"},
-        color_discrete_map={"positive": "#2E8B57", "negative": "#DC143C", "neutral": "#FFD700"},
-    )
-
-    # Add vertical line at neutral (0)
-    fig.add_vline(x=0, line_dash="dash", line_color="gray", opacity=0.5)
-
-    return fig
-
-
-def create_sentiment_wordcloud(comments: List[str], sentiment_type: str = "positive") -> Optional[str]:
-    """
-    Create word cloud data for sentiment visualization.
-
-    Args:
-        comments: List of comment strings
-        sentiment_type: Type of sentiment ('positive' or 'negative')
-
-    Returns:
-        Word cloud data or None if wordcloud not available
-    """
-    try:
-        import base64
-        import io
-
-        import matplotlib.pyplot as plt
-        from wordcloud import WordCloud
-
-        # Combine all comments
-        text = " ".join(comments)
-
-        # Generate word cloud
-        wordcloud = WordCloud(
-            width=800,
-            height=400,
-            background_color="white",
-            colormap="viridis" if sentiment_type == "positive" else "Reds",
-        ).generate(text)
-
-        # Convert to base64 for embedding
-        img_buffer = io.BytesIO()
-        plt.figure(figsize=(10, 5))
-        plt.imshow(wordcloud, interpolation="bilinear")
-        plt.axis("off")
-        plt.savefig(img_buffer, format="png", bbox_inches="tight")
-        img_buffer.seek(0)
-
-        img_str = base64.b64encode(img_buffer.getvalue()).decode()
-        plt.close()
-
-        return f"data:image / png;base64,{img_str}"
-
-    except ImportError:
-        # WordCloud not available, return text summary
-        return f"Word cloud for {sentiment_type} sentiment: {len(comments)} comments analyzed"
-
-
-def create_sentiment_timeline(
-    df: pd.DataFrame, date_col: str, sentiment_col: str, artist_col: str, title: Optional[str] = None
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """
     Create timeline chart showing sentiment changes over time.
@@ -917,31 +850,12 @@ def create_sentiment_timeline(
         df: DataFrame with time - series sentiment data
         date_col: Column name for dates
         sentiment_col: Column name for sentiment scores
-        artist_col: Column name for artist names
-        title: Optional chart title
-
-    Returns:
-        Plotly figure with timeline
-    """
-    if px is None:
-        return df
-
-    fig = px.line(
-        df,
-        x=date_col,
-        y=sentiment_col,
-        color=artist_col,
-        title=title or "Sentiment Timeline",
-        labels={date_col: "Date", sentiment_col: "Average Sentiment", artist_col: "Artist"},
-    )
-
-    # Add horizontal line at neutral (0)
-    fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
-
-    return fig
-
-
-def create_artist_strengths_venn_diagram(df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create overlapping circle / Venn diagram showing what artists are doing well as a whole.
 
@@ -950,56 +864,23 @@ def create_artist_strengths_venn_diagram(df: pd.DataFrame, artist_col: str, cont
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-
-    Returns:
-        Plotly figure or data structure for visualization
-    """
-    if px is None:
-        return df
-
-    # Calculate performance by artist and content type
-    performance = df.groupby([artist_col, content_type_col])[views_col].sum().reset_index()
-
-    # Create bubble chart showing artist strengths
-    fig = px.scatter(
-        performance,
-        x=content_type_col,
-        y=artist_col,
-        size=views_col,
-        color=artist_col,
-        title="Artist Content Strengths Overview",
-        labels={content_type_col: "Content Type", artist_col: "Artist", views_col: "Total Views"},
-    )
-
-    # Update layout for better readability
-    fig.update_layout(showlegend=True, height=500, xaxis_tickangle=-45)
-
-    return fig
-
-
-def create_isrc_balance_chart(df: pd.DataFrame, artist_col: str, isrc_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create balance analysis chart: videos with ISRC vs without (music videos vs content videos).
 
     Args:
         df: DataFrame with ISRC data
-        artist_col: Column name for artist names
-        isrc_col: Column name for ISRC boolean
-        views_col: Column name for view counts
-
-    Returns:
-        Plotly figure showing ISRC balance
-    """
-    if px is None:
-        return df
-
-    # Calculate ISRC vs non - ISRC views by artist
-    isrc_data = []
-
-    for artist in df[artist_col].unique():
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
         artist_df = df[df[artist_col] == artist]
 
         isrc_views = artist_df[artist_df[isrc_col] is True][views_col].sum()
@@ -1033,223 +914,64 @@ def create_isrc_balance_chart(df: pd.DataFrame, artist_col: str, isrc_col: str, 
     return fig
 
 
-def create_duration_breakdown_chart(
-    df: pd.DataFrame, artist_col: str, duration_col: str, views_col: str, short_form_threshold: int = 300
-):
+    def create_duration_breakdown_chart(
+        df: pd.DataFrame, artist_col: str, duration_col: str, views_col: str, short_form_threshold: int = 300
+        ):
     """
     Create short - form vs long - form video breakdown with view totals.
 
     Args:
         df: DataFrame with duration data
-        artist_col: Column name for artist names
-        duration_col: Column name for duration in seconds
-        views_col: Column name for view counts
-        short_form_threshold: Threshold in seconds for short - form classification
-
-    Returns:
-        Plotly figure showing duration breakdown
-    """
-    if px is None:
-        return df
-
-    # Classify videos by duration
-    df_copy = df.copy()
-    df_copy["duration_category"] = df_copy[duration_col].apply(
-        lambda x: "Short - form (≤5 min)" if x <= short_form_threshold else "Long - form (>5 min)"
-    )
-
-    # Calculate views by duration category and artist
-    duration_views = df_copy.groupby([artist_col, "duration_category"])[views_col].sum().reset_index()
-
-    # Create grouped bar chart
-    fig = px.bar(
-        duration_views,
-        x=artist_col,
-        y=views_col,
-        color="duration_category",
-        title="Short - form vs Long - form Content Performance",
-        labels={views_col: "Total Views", artist_col: "Artist", "duration_category": "Video Duration"},
-        color_discrete_map={
-            "Short - form (≤5 min)": "#4169E1",  # Royal blue
-            "Long - form (>5 min)": "#32CD32",  # Lime green
-        },
-    )
-
-    fig.update_layout(barmode="group")
-
-    return fig
-
-
-def create_content_type_breakdown_chart(df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create chart showing music video count vs lyric video count vs visualizer count vs other content.
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-
-    Returns:
-        Plotly figure showing content type breakdown
-    """
-    if px is None:
-        return df
-
-    # Calculate content type statistics
-    content_stats = df.groupby([artist_col, content_type_col]).agg({views_col: ["count", "sum"]}).reset_index()
-
-    # Flatten column names
-    content_stats.columns = [artist_col, content_type_col, "video_count", "total_views"]
-
-    # Create subplot with count and views
-    from plotly.subplots import make_subplots
-
-    fig = make_subplots(
-        rows=1,
-        cols=2,
-        subplot_titles=("Video Count by Type", "Total Views by Type"),
-        specs=[[{"secondary_y": False}, {"secondary_y": False}]],
-    )
-
-    # Add video count chart
-    count_chart = px.bar(
-        content_stats, x=artist_col, y="video_count", color=content_type_col, title="Video Count by Content Type"
-    )
-
-    for trace in count_chart.data:
-        fig.add_trace(trace, row=1, col=1)
-
-    # Add views chart
-    views_chart = px.bar(
-        content_stats, x=artist_col, y="total_views", color=content_type_col, title="Total Views by Content Type"
-    )
-
-    for trace in views_chart.data:
-        fig.add_trace(trace, row=1, col=2)
-
-    fig.update_layout(title="Content Type Analysis: Count vs Performance", showlegend=True, height=500)
-
-    return fig
-
-
-def create_artist_content_comparison_chart(
-    df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str, comparison_type: str = "side_by_side"
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """
     Create side - by - side artist comparison chart.
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-        comparison_type: Type of comparison ('side_by_side' or 'stacked')
-
-    Returns:
-        Plotly figure showing artist comparison
-    """
-    if px is None:
-        return df
-
-    # Calculate content performance by artist
-    artist_performance = df.groupby([artist_col, content_type_col])[views_col].sum().reset_index()
-
-    if comparison_type == "side_by_side":
-        fig = px.bar(
-            artist_performance,
-            x=content_type_col,
-            y=views_col,
-            color=artist_col,
-            title="Side - by - Side Artist Content Comparison",
-            labels={views_col: "Total Views", content_type_col: "Content Type", artist_col: "Artist"},
-            barmode="group",
-        )
-    else:  # stacked
-        fig = px.bar(
-            artist_performance,
-            x=content_type_col,
-            y=views_col,
-            color=artist_col,
-            title="Stacked Artist Content Comparison",
-            labels={views_col: "Total Views", content_type_col: "Content Type", artist_col: "Artist"},
-            barmode="stack",
-        )
-
-    fig.update_layout(xaxis_tickangle=-45)
-
-    return fig
-
-
-def create_roster_content_overview_chart(df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create combined roster analysis showing overall content strategy.
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-
-    Returns:
-        Plotly figure showing roster overview
-    """
-    if px is None:
-        return df
-
-    # Calculate overall content distribution
-    content_totals = df.groupby(content_type_col)[views_col].sum().reset_index()
-
-    # Create pie chart for overall distribution
-    fig = px.pie(
-        content_totals,
-        values=views_col,
-        names=content_type_col,
-        title="Roster - Wide Content Strategy Overview",
-        labels={views_col: "Total Views", content_type_col: "Content Type"},
-    )
-
-    # Update layout
-    fig.update_traces(textposition="inside", textinfo="percent + label")
-    fig.update_layout(showlegend=True)
-
-    return fig
-
-
-def create_content_stacked_bar_chart(df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create stacked bar chart for content breakdown.
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-
-    Returns:
-        Plotly figure with stacked bars
-    """
-    if px is None:
-        return df
-
-    # Group data for stacked chart
-    stacked_data = df.groupby([artist_col, content_type_col])[views_col].sum().reset_index()
-
-    fig = px.bar(
-        stacked_data,
-        x=artist_col,
-        y=views_col,
-        color=content_type_col,
-        title="Content Type Distribution by Artist",
-        labels={views_col: "Total Views", artist_col: "Artist", content_type_col: "Content Type"},
-    )
-
-    fig.update_layout(barmode="stack")
-
-    return fig
-
-
-def create_content_distribution_pie_chart(df: pd.DataFrame, content_type_col: str, views_col: str):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create pie chart for content distribution.
 
@@ -1271,50 +993,17 @@ def create_content_distribution_pie_chart(df: pd.DataFrame, content_type_col: st
     return fig
 
 
-def create_artist_strategy_comparison_chart(df: pd.DataFrame, artist_col: str):
+    def create_artist_strategy_comparison_chart(df: pd.DataFrame, artist_col: str):
     """
     Create comparison chart for artist content strategies.
 
     Args:
         df: DataFrame with artist strategy data
-        artist_col: Column name for artist names
-
-    Returns:
-        Plotly figure comparing strategies
-    """
-    if px is None:
-        return df
-
-    # Assuming df has columns like 'music_video_views', 'content_video_views'
-    # Melt the dataframe for plotting
-    value_cols = [col for col in df.columns if col != artist_col and "views" in col]
-
-    if len(value_cols) > 0:
-        melted_df = df.melt(id_vars=[artist_col], value_vars=value_cols, var_name="strategy_type", value_name="views")
-
-        fig = px.bar(
-            melted_df,
-            x=artist_col,
-            y="views",
-            color="strategy_type",
-            title="Artist Content Strategy Comparison",
-            barmode="group",
-        )
-
-        return fig
-
-    # Fallback: simple bar chart
-    fig = px.bar(df, x=artist_col, y=df.columns[1], title="Artist Strategy Comparison")  # First numeric column
-
-    return fig
-
-
-def linked_scatter_detail_altair(
+def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    x_col: str,
-    y_col: str,
-    group_col: Optional[str] = None,
-    hover_col: Optional[str] = None,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """Create a linked Altair scatter + detail view with selection.
 
@@ -1367,29 +1056,29 @@ def linked_scatter_detail_altair(
         return base
 
 
-__all__ = [
-    "views_over_time_plotly",
-    "artist_compare_altair",
-    "linked_scatter_detail_altair",
-    "get_artist_color_map",
-    "enhance_chart_beauty",
-    "apply_color_scheme",
-    "create_chart_annotations",
-    "create_divergent_sentiment_chart",
-    "create_sentiment_cluster_chart",
-    "create_sentiment_wordcloud",
-    "create_sentiment_timeline",
-    "create_artist_strengths_venn_diagram",
-    "create_isrc_balance_chart",
-    "create_duration_breakdown_chart",
-    "create_content_type_breakdown_chart",
-    "create_content_distribution_pie_chart",
-    "create_content_category_stacked_chart",
-    "create_performance_diversity_bubble_chart",
-]
+    __all__ = [
+        "views_over_time_plotly",
+        "artist_compare_altair",
+        "linked_scatter_detail_altair",
+        "get_artist_color_map",
+        "enhance_chart_beauty",
+        "apply_color_scheme",
+        "create_chart_annotations",
+        "create_divergent_sentiment_chart",
+        "create_sentiment_cluster_chart",
+        "create_sentiment_wordcloud",
+        "create_sentiment_timeline",
+        "create_artist_strengths_venn_diagram",
+        "create_isrc_balance_chart",
+        "create_duration_breakdown_chart",
+        "create_content_type_breakdown_chart",
+        "create_content_distribution_pie_chart",
+        "create_content_category_stacked_chart",
+        "create_performance_diversity_bubble_chart",
+        ]
 
 
-def create_content_distribution_pie_chart(
+    # def create_content_distribution_pie_chart(
     df: pd.DataFrame,
     category_cols: Optional[List[str]] = None,
     artist_col: Optional[str] = None,
@@ -1401,64 +1090,23 @@ def create_content_distribution_pie_chart(
     Args:
         df: DataFrame with content data
         category_cols: Optional list of category columns (for backward compatibility)
-        artist_col: Optional artist column for filtering
-        content_type_col: Column name for content types
-
-    Returns:
-        Plotly figure with pie chart
-    """
-    if px is None:
-        return df
-
-    # Calculate content distribution
-    if category_cols:
-        # Use category_cols for backward compatibility
-        distribution_data = []
-        for col in category_cols:
-            if col in df.columns:
-                total = df[col].sum()
-                distribution_data.append({"category": col, "count": total})
-
-        dist_df = pd.DataFrame(distribution_data)
-
-        fig = px.pie(dist_df, values="count", names="category", title="Content Distribution")
-    else:
-        # Use content_type_col
-        content_counts = df[content_type_col].value_counts().reset_index()
-        content_counts.columns = [content_type_col, "count"]
-
-        fig = px.pie(content_counts, values="count", names=content_type_col, title="Content Type Distribution")
-
-    return fig
-
-
-def create_content_category_stacked_chart(
+def create_content_distribution_pie_chart(
     df: pd.DataFrame,
-    artist_col: str,
-    content_type_col: str = "content_type",
-    views_col: str = "views",
     category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """
     Create stacked bar chart for content categories.
 
     Args:
         df: DataFrame with content data
-        artist_col: Column name for artist names
-        content_type_col: Column name for content types
-        views_col: Column name for view counts
-        category_cols: Optional list of category columns for backward compatibility
-
-    Returns:
-        Plotly figure with stacked bar chart
-    """
-    if px is None:
-        return df
-
-    if category_cols:
-        # Use category_cols for backward compatibility - reshape data
-        stacked_data = []
-        for _, row in df.iterrows():
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
             artist = row[artist_col]
             for col in category_cols:
                 if col in row:
@@ -1467,24 +1115,24 @@ def create_content_category_stacked_chart(
         stacked_df = pd.DataFrame(stacked_data)
 
         fig = px.bar(
-            stacked_df,
-            x=artist_col,
-            y="value",
-            color="category",
-            title="Content Categories by Artist",
-            labels={"value": "Count", artist_col: "Artist", "category": "Content Category"},
+        stacked_df,
+        x=artist_col,
+        y="value",
+        color="category",
+        title="Content Categories by Artist",
+        labels={"value": "Count", artist_col: "Artist", "category": "Content Category"},
         )
     else:
         # Calculate views by artist and content type
         stacked_data = df.groupby([artist_col, content_type_col])[views_col].sum().reset_index()
 
         fig = px.bar(
-            stacked_data,
-            x=artist_col,
-            y=views_col,
-            color=content_type_col,
-            title="Content Performance by Artist and Type",
-            labels={views_col: "Total Views", artist_col: "Artist", content_type_col: "Content Type"},
+        stacked_data,
+        x=artist_col,
+        y=views_col,
+        color=content_type_col,
+        title="Content Performance by Artist and Type",
+        labels={views_col: "Total Views", artist_col: "Artist", content_type_col: "Content Type"},
         )
 
     fig.update_layout(barmode="stack")
@@ -1492,139 +1140,57 @@ def create_content_category_stacked_chart(
     return fig
 
 
-def create_performance_diversity_bubble_chart(
-    df: pd.DataFrame,
-    artist_col: str,
-    performance_col: str = "performance",
-    diversity_col: str = "diversity",
-    size_col: Optional[str] = None,
-    x_col: Optional[str] = None,
-    y_col: Optional[str] = None,
-):
+    def create_performance_diversity_bubble_chart(
+        df: pd.DataFrame,
+        artist_col: str,
+        performance_col: str = "performance",
+        diversity_col: str = "diversity",
+        size_col: Optional[str] = None,
+        x_col: Optional[str] = None,
+        y_col: Optional[str] = None,
+        ):
     """
     Create bubble chart showing performance vs content diversity.
 
     Args:
         df: DataFrame with performance data
-        artist_col: Column name for artist names
-        performance_col: Column name for performance metric
-        diversity_col: Column name for diversity metric
-        size_col: Optional column name for bubble size
-        x_col: Optional x - axis column (overrides performance_col)
-        y_col: Optional y - axis column (overrides diversity_col)
-
-    Returns:
-        Plotly figure with bubble chart
-    """
-    if px is None:
-        return df
-
-    # Use x_col and y_col if provided for backward compatibility
-    x_axis = x_col if x_col else performance_col
-    y_axis = y_col if y_col else diversity_col
-
-    # Use the data as - is if it already has the right structure
-    if x_axis in df.columns and y_axis in df.columns:
-        bubble_data = df.copy()
-    else:
-        # Calculate metrics by artist
-        agg_dict = {}
-        if x_axis in df.columns:
-            agg_dict[x_axis] = "sum"
-        if y_axis in df.columns:
-            agg_dict[y_axis] = "mean"
-
-        if agg_dict:
-            bubble_data = df.groupby(artist_col).agg(agg_dict).reset_index()
-        else:
-            bubble_data = df.copy()
-
-    # Add size column if not provided
-    if size_col is None or size_col not in bubble_data.columns:
-        if artist_col in bubble_data.columns:
-            bubble_data["bubble_size"] = 10  # Default size
-        size_col = "bubble_size"
-
-    fig = px.scatter(
-        bubble_data,
-        x=x_axis,
-        y=y_axis,
-        size=size_col,
-        color=artist_col,
-        hover_name=artist_col,
-        title="Performance vs Content Diversity",
-        labels={x_axis: "X Metric", y_axis: "Y Metric", size_col: "Size Metric"},
-    )
-
-    return fig
-
-
-def create_genre_context_chart(
-    df: pd.DataFrame, artist_col: str, genre_col: str, views_col: str, title: Optional[str] = None
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
 ):
     """
     Create genre context chart showing new signees across different genres.
 
     Args:
         df: DataFrame with artist and genre data
-        artist_col: Column name for artist names
-        genre_col: Column name for genres
-        views_col: Column name for view counts
-        title: Optional chart title
-
-    Returns:
-        Plotly figure showing genre distribution and performance
-    """
-    if px is None:
-        return df
-
-    # Calculate performance by genre
-    genre_performance = df.groupby([genre_col, artist_col])[views_col].sum().reset_index()
-
-    # Create sunburst chart showing genre -> artist hierarchy
-    fig = px.sunburst(
-        genre_performance,
-        path=[genre_col, artist_col],
-        values=views_col,
-        title=title or "🎵 Genre Context - New Signees Across Different Genres",
-    )
-
-    fig.update_layout(font=dict(size=12), showlegend=True)
-
-    return fig
-
-
-def create_venn_diagram_chart(df: pd.DataFrame, artist_col: str, categories: List[str], title: Optional[str] = None):
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
     """
     Create Venn diagram showing overlapping artist strengths.
 
     Args:
         df: DataFrame with artist performance data
-        artist_col: Column name for artist names
-        categories: List of categories to analyze (e.g., ['high_views', 'high_engagement'])
-        title: Optional chart title
-
-    Returns:
-        Plotly figure with Venn - like visualization
-    """
-    if px is None:
-        return df
-
-    # For now, create a scatter plot matrix as Venn diagrams are complex in Plotly
-    # This shows relationships between different performance categories
-
-    # Calculate category scores for each artist
-    artist_scores = []
-    for artist in df[artist_col].unique():
+def create_content_distribution_pie_chart(
+    df: pd.DataFrame,
+    category_cols: Optional[List[str]] = None,
+    artist_col: Optional[str] = None,
+    content_type_col: str = "content_type",
+):
         artist_df = df[df[artist_col] == artist]
 
         scores = {
-            "artist_name": artist,
-            "high_views": 1 if artist_df["views"].mean() > df["views"].quantile(0.75) else 0,
-            "high_engagement": (
-                1 if (artist_df["likes"].sum() + artist_df["comments"].sum()) / artist_df["views"].sum() > 0.05 else 0
+        "artist_name": artist,
+        "high_views": 1 if artist_df["views"].mean() > df["views"].quantile(0.75) else 0,
+        "high_engagement": (
+            1 if (artist_df["likes"].sum() + artist_df["comments"].sum()) / artist_df["views"].sum() > 0.05 else 0
             ),
-            "consistent_uploads": 1 if len(artist_df) > df.groupby(artist_col).size().median() else 0,
+        "consistent_uploads": 1 if len(artist_df) > df.groupby(artist_col).size().median() else 0,
         }
         artist_scores.append(scores)
 
@@ -1636,10 +1202,10 @@ def create_venn_diagram_chart(df: pd.DataFrame, artist_col: str, categories: Lis
         dimensions=["high_views", "high_engagement", "consistent_uploads"],
         color="artist_name",
         title=title or "🎯 Artist Strengths Overlap Analysis",
-    )
+        )
 
     return fig
 
 
-# Add the new functions to __all__
-__all__.extend(["create_genre_context_chart", "create_venn_diagram_chart"])
+    # Add the new functions to __all__
+    __all__.extend(["create_genre_context_chart", "create_venn_diagram_chart"])

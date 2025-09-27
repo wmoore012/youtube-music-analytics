@@ -242,7 +242,8 @@ def update_config_from_env():
             "expected_artists": sorted(list(env_artists)),
             "minimum_artists": len(env_artists),
             "last_updated": "2025 - 09 - 15",
-            "description": "Expected artists configuration for CI / CD validation. Update this when adding / removing artists from .env",
+            "description": "Expected artists configuration for CI / CD"
+            " validation. Update this when adding / removing artists from .env",
         }
 
         config_path = Path("config / expected_artists.json")

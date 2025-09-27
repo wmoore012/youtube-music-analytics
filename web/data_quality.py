@@ -419,7 +419,7 @@ class DataQualityValidator:
             }
         }
         """
-        context = ErrorContext(
+        _context = ErrorContext(
             component="DataQualityValidator",
             operation="run_comprehensive_validation",
             user_data={"tables": list(tables_config.keys())},

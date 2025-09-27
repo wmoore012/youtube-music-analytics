@@ -152,7 +152,8 @@ class VideoFilterEngine:
             "kJQP7kiw5Fk",  # Example - replace with actual problematic video IDs
             "fC7oUOUEEi4",  # Example - replace with actual problematic video IDs
         }
-        print(f"⚠️ Using default personal issue video IDs - configure actual IDs in config / personal_issue_videos.json")
+        print(f"⚠️ Using default personal issue video IDs - configure actual"
+            " IDs in config / personal_issue_videos.json")  # noqa: E128
         return default_ids
 
     def _load_personal_issue_videos(self) -> Set[str]:

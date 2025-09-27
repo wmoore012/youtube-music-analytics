@@ -35,7 +35,7 @@ def fix_bare_except(file_path: Path) -> bool:
         return False
 
 
-def fix_missing_imports(file_path: Path) -> bool:
+def fix_missing_imports(file_path: Path) -> bool:  # noqa: C901
     """Fix common missing imports."""
     try:
         with open(file_path, "r", encoding="utf - 8") as f:

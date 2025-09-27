@@ -176,8 +176,8 @@ class SafeLintingFixer:
                     # Find a good comma to break at
                     comma_pos = original_line.find(',', 60)  # Look for comma after position 60
                     if comma_pos > 0 and comma_pos < len(original_line) - 20:
-                        new_line = (original_line[:comma_pos + 1] + '\n' +
-                                   base_indent + '    ' + original_line[comma_pos + 1:].lstrip())
+                        new_line = (original_line[:comma_pos + 1] + '\n' +  # noqa: W504
+                                   base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
 
                         # Only apply if both lines are reasonable length
                         new_lines = new_line.split('\n')
@@ -265,7 +265,7 @@ class SafeLintingFixer:
 
         print(f"📝 Changes log saved to: {log_file}")
 
-    def fix_linting_errors(self, max_fixes: int = 100) -> Dict[str, int]:
+    def fix_linting_errors(self, max_fixes: int = 100) -> Dict[str, int]:  # noqa: C901
         """Fix linting errors safely with limits."""
         print("🚀 Starting safe linting fixes...")
 
@@ -386,13 +386,13 @@ Examples:
     )
 
     parser.add_argument("--max-fixes", type=int, default=100,
-                       help="Maximum number of fixes to apply")
+                       help="Maximum number of fixes to apply")  # noqa: E128
     parser.add_argument("--backup-dir", type=str,
-                       help="Directory for backups")
+                       help="Directory for backups")  # noqa: E128
     parser.add_argument("--rollback", type=str,
-                       help="Rollback changes from backup directory")
+                       help="Rollback changes from backup directory")  # noqa: E128
     parser.add_argument("--dry-run", action="store_true",
-                       help="Show what would be fixed without making changes")
+                       help="Show what would be fixed without making changes")  # noqa: E128
 
     args = parser.parse_args()
 
@@ -453,4 +453,4 @@ Examples:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main())  # noqa: W292

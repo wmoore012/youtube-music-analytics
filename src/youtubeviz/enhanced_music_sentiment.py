@@ -302,7 +302,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             r"\bwho produced\b",
         ]
 
-    def analyze_comment(self, comment_text: str) -> Dict[str, float]:
+    def analyze_comment(self, comment_text: str) -> Dict[str, float]:  # noqa: C901
         """
         Analyze sentiment of a music industry comment with comprehensive Gen Z understanding.
 

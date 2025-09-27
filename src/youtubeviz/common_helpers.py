@@ -125,7 +125,7 @@ def batch_insert_records(conn: Connection, table_name: str, records: List[Dict],
         query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
 
         try:
-            result = conn.execute(text(query), batch)
+            _result = conn.execute(text(query), batch)
             total_inserted += len(batch)
         except Exception as e:
             logging.error(f"Batch insert failed for {table_name}: {e}")

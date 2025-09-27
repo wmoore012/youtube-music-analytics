@@ -926,12 +926,12 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
         # Generate user - friendly explanation
         if consistent:
             if sentiment_count == 0:
-                explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {
-                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."
+                _explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {  # noqa: E501
+                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501
             else:
-                explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
+                _explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
         else:
-            explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {
+            _explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {
                 core_counts}. This indicates a bug in the analytics functions."
 
         # Temporal consistency check - sentiment data should exist for same time period
@@ -961,7 +961,9 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
                 if consistent
                 else f"Inconsistent counts - Core: {core_counts}, Sentiment: {sentiment_count}"
             ),
-            "explanation": f"Core functions: {data_count} artists. Sentiment: {sentiment_count} artists ({'normal - no sentiment data for this period' if sentiment_count == 0 else 'matches core count'})",
+            "explanation": f"Core functions: {data_count} artists."
+            " Sentiment: {sentiment_count} artists ({'normal - no"
+            " sentiment data for this period' if sentiment_count == 0 else 'matches core count'})",
         }
 
     except Exception as e:

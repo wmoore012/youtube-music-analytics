@@ -60,7 +60,7 @@ def enable_safe_mode() -> None:
 
     Recommended for production environments and untrusted code.
     """
-    global _security_config
+    global _security_config  # noqa: F824
     _security_config.auto_install_enabled = False
     _security_config.require_confirmation = True
     _security_config.strict_mode = True
@@ -73,7 +73,7 @@ def enable_auto_install_mode() -> None:
 
     ⚠️ WARNING: Only use with trusted code and in isolated environments.
     """
-    global _security_config
+    global _security_config  # noqa: F824
     if _security_config.show_security_warnings:
         warnings.warn(
             "⚠️ SECURITY WARNING: Automatic installation enabled. "
@@ -228,7 +228,7 @@ def create_security_report(packages: List[str]) -> dict:
         "warnings": [],
     }
 
-    config = get_security_config()
+    _config = get_security_config()
 
     for package in packages:
         try:
@@ -252,7 +252,7 @@ def create_security_report(packages: List[str]) -> dict:
 # Environment - based security defaults
 def _load_security_from_environment():
     """Load security configuration from environment variables."""
-    global _security_config
+    global _security_config  # noqa: F824
 
     # Check for safe mode environment variable
     if os.getenv("NOTEBOOK_GUARDIAN_SAFE_MODE", "").lower() in ("true", "1", "yes"):

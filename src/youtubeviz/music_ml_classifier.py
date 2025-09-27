@@ -277,11 +277,13 @@ class MusicMLClassifier:
                 # POSITIVE (you said these are obviously positive)
                 ("YALL ATEEEE", "positive"),
                 (
-                    "U R so criminally underrated its actually so crazy. I swear that if you keep it up you'll make it big",
+                    "U R so criminally underrated its actually so crazy. I swear"
+                    " that if you keep it up you'll make it big",
                     "positive",
                 ),
                 (
-                    "The amount of potential that has been expressed from your recent and old music videos is unreal. Another artist that doesn't deserve to be gatekept, but in opposition, deserves the recognition.",
+                    "The amount of potential that has been expressed from your"
+                    " recent and old music videos is unreal. Another artist that doesn't deserve to be gatekept, but in opposition, deserves the recognition.",
                     "positive",
                 ),
                 ("Omg she ATEEEEE", "positive"),
@@ -635,7 +637,7 @@ class MusicSentimentTransformer:
         if TRANSFORMERS_AVAILABLE:
             # Initialize real tokenizer
             try:
-                from transformers import AutoTokenizer
+                #                 from transformers import AutoTokenizer
 
                 self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                 print(f"✅ Loaded real tokenizer for {model_name}")
@@ -646,8 +648,9 @@ class MusicSentimentTransformer:
             # Use simulated tokenizer for demonstration
             self.tokenizer = "simulated"
             print(f"🎭 Using simulated transformer logic for {model_name}")
+  # noqa: C901
 
-    def predict(self, text: str, has_isrc: bool = False) -> Dict[str, any]:
+    def predict(self, text: str, has_isrc: bool = False) -> Dict[str, any]:  # noqa: C901
         """
         Predict sentiment using transformer model with enhanced music domain understanding.
 

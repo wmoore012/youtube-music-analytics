@@ -224,7 +224,7 @@ def init_tables(engine: Engine) -> None:
     """
     Reflect ALL core tables once and expose them as module - level variables.
     """
-    global _GLOBAL_META, _TABLE_HANDLES, _TABLES_INITIALIZED
+    global _GLOBAL_META, _TABLE_HANDLES, _TABLES_INITIALIZED  # noqa: F824
 
     if _TABLES_INITIALIZED:
         return
@@ -354,7 +354,7 @@ def detect_version_type(track_title: str, album_title: str = None) -> str:
     # First, try to extract version from parentheses in the track title
     m = re.match(r"^(.*?)\s*\(([^)]+)\)", track_title)
     if m:
-        version_text_item = m.group(2).strip()
+        _version_text_item = m.group(2).strip()
         # Check if the extracted version matches any of our known version types
         for version_type, pattern in version_keywords.items():
             if re.search(pattern, version_text, re.IGNORECASE):
@@ -445,7 +445,7 @@ def batch_upsert_song_version(
         track_title (str): The title of the track
         album_title (str, optional): The title of the album
     """
-    global _song_versions_buffer
+    global _song_versions_buffer  # noqa: F824
 
     # Detect the version type
     version_type = detect_version_type(track_title, album_title)
@@ -584,8 +584,8 @@ def get_tidal_disc_number(track: object, conn: Connection = None) -> int | None:
 from typing import Dict
 
 # ⬇️  Just drop this whole function in place of the old one
-from sqlalchemy import Table, select
-from sqlalchemy.engine import Connection
+# from sqlalchemy import Table, select
+# from sqlalchemy.engine import Connection
 
 # ============================================================================
 # 3. SPOTIFY DATA PROCESSING
@@ -794,7 +794,7 @@ def normalize_youtube_video(
     Convert one YouTube playlistItem JSON → YoutubeMetrics row.
     Simplified — adapt to your schema.
     """
-    youtube_metrics_tbl = tables["YoutubeMetrics"]
+    _youtube_metrics_tbl = tables["YoutubeMetrics"]
     dsp_tbl = tables["DSPProviders"]
     songs_tbl = tables["Songs"]
 
@@ -1479,7 +1479,7 @@ def upsert_songs(conn_or_records, records_or_conn=None, conn_or_none=None) -> No
 
 import logging
 
-from sqlalchemy import func, select
+# from sqlalchemy import func, select
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 
 
@@ -1525,9 +1525,9 @@ def bulk_upsert(
     """
     Insert *rows* into *table*, updating existing rows on conflicts.
 
-    • Works on every MySQL ≥5.7 release. [oai_citation:5‡dev.mysql.com](https://dev.mysql.com / doc / relnotes / mysql / 8.0 / en / news - 8-0 - 19.html)
+    • Works on every MySQL ≥5.7 release. [oai_citation:5‡dev.mysql.com](https://dev.mysql.com / doc / relnotes / mysql / 8.0 / en / news - 8-0 - 19.html)  # noqa: E501
     • UPDATE clause references *only* the columns you actually supplied,
-      so “unknown column new.xyz” can’t happen again. [oai_citation:6‡stackoverflow.com](https://stackoverflow.com / questions / 68878680 / on - duplicate - key - doesnt - work - with - my - insert - into - script)
+      so “unknown column new.xyz” can’t happen again. [oai_citation:6‡stackoverflow.com](https://stackoverflow.com / questions / 68878680 / on - duplicate - key - doesnt - work - with - my - insert - into - script)  # noqa: E501
     """
     conflict_columns = conflict_columns or []
     update_columns = update_columns or []
@@ -1537,13 +1537,13 @@ def bulk_upsert(
     insert_stmt = mysql_insert(table).values(rows)  # explicit VALUES list
     pk_cols = {
         c.name for c in inspect(table).primary_key
-    # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error - 1054 - unknown - column - in - field - list?utm_source=chatgpt.com)
+    # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error - 1054 - unknown - column - in - field - list?utm_source=chatgpt.com)  # noqa: E501
     }
     update_map = {c: insert_stmt.inserted[c] for c in rows[0] if c not in pk_cols}
 
     stmt = insert_stmt.on_duplicate_key_update(
         **update_map
-    # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)
+    # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)  # noqa: E501
     )
     with engine.begin() as conn:
         return conn.execute(stmt).rowcount
@@ -1569,7 +1569,7 @@ def clean_df_playcounts(df_playcounts):
 # ──────────────────────────────────────────────────────────────
 # 1D.  Ensure required DSP rows exist
 # ──────────────────────────────────────────────────────────────
-from sqlalchemy import insert, select
+# from sqlalchemy import insert, select
 
 # %%  ← ordinary notebook cell
 
@@ -1932,7 +1932,7 @@ def load_playcounts(path: str) -> pd.DataFrame:
 # ------------------------------------------------------------------------------
 import logging
 
-from sqlalchemy import func
+# from sqlalchemy import func
 
 
 def debug_upsert_spotify_playcounts(conn, df, pc_tbl, tracks_tbl, dsp_id):
@@ -2038,7 +2038,7 @@ if __name__ == "__main__":
     #  ⬇️  Create debug - only handles *after* init_tables() has run
     # ────────────────────────────────────────────────────────────────
     if __name__ == "__main__":
-        from sqlalchemy import select
+        #         from sqlalchemy import select
 
         # 1️⃣  Engine + full reflection
         engine = get_engine(echo=False)

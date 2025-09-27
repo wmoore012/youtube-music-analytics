@@ -501,7 +501,8 @@ def validate_database_connection_string(connection_string: str) -> bool:
         pattern = r"^mysql\+pymysql://[^:]+:[^@]+@[^:]+:\d+/[^/]+$"
         if not re.match(pattern, connection_string):
             raise ValidationError(
-                "Invalid MySQL connection string format. Expected: mysql + pymysql://user:password@host:port / database",
+                "Invalid MySQL connection string format. Expected: mysql +"
+                " pymysql://user:password@host:port / database",
                 field="database_url",
                 value=connection_string,
             )

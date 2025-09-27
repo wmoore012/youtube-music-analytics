@@ -484,7 +484,7 @@ class TestRelevanceAssessor(ToolBase):
 
         return removal_results
 
-    def generate_assessment_report(self, assessment_result: TestRelevanceResult) -> str:
+    def generate_assessment_report(self, assessment_result: TestRelevanceResult) -> str:  # noqa: C901
         """
         Generate comprehensive test relevance assessment report.
 

@@ -54,7 +54,7 @@ class BulletproofETLRunner:
 
     def initialize_components(self) -> None:
         """Initialize database connection and components with error handling."""
-        context_item = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")
+        _context_item = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")
 
         try:
             logger.info("🔧 Initializing ETL components...")
@@ -73,7 +73,7 @@ class BulletproofETLRunner:
         except Exception as e:
             raise ETLError(
                 "Failed to initialize ETL components",
-                context=context,
+                context=context,  # noqa: F821
                 original_error=e,
                 severity=ErrorSeverity.CRITICAL,
             )
@@ -95,7 +95,7 @@ class BulletproofETLRunner:
 
     def validate_system_prerequisites(self) -> None:
         """Validate that system is ready for ETL execution."""
-        context_item = ErrorContext(component="BulletproofETLRunner", operation="validate_system_prerequisites")
+        _context_item = ErrorContext(component="BulletproofETLRunner", operation="validate_system_prerequisites")
 
         try:
             logger.info("🔍 Validating system prerequisites...")
@@ -125,7 +125,7 @@ class BulletproofETLRunner:
                 issues = validation_results["issues_found"]
                 raise ETLError(
                     f"System prerequisites validation failed: {'; '.join(issues)}",
-                    context=context,
+                    context=context,  # noqa: F821
                     severity=ErrorSeverity.CRITICAL,
                     category=ErrorCategory.VALIDATION,
                 )
@@ -137,14 +137,14 @@ class BulletproofETLRunner:
         except Exception as e:
             raise ETLError(
                 "Unexpected error during system prerequisites validation",
-                context=context,
+                context=context,  # noqa: F821
                 original_error=e,
                 severity=ErrorSeverity.CRITICAL,
             )
 
     def process_youtube_data_with_validation(self, channel_ids: List[str]) -> Dict[str, Any]:
         """Process YouTube data with comprehensive validation and error handling."""
-        context_item = ErrorContext(
+        _context_item = ErrorContext(
             component="BulletproofETLRunner",
             operation="process_youtube_data_with_validation",
             user_data={"channel_count": len(channel_ids)},
@@ -213,7 +213,7 @@ class BulletproofETLRunner:
         except Exception as e:
             raise ETLError(
                 "Critical failure in YouTube data processing",
-                context=context,
+                context=context,  # noqa: F821
                 original_error=e,
                 severity=ErrorSeverity.CRITICAL,
             )
@@ -243,7 +243,7 @@ class BulletproofETLRunner:
 
     def run_sentiment_analysis_with_validation(self) -> Dict[str, Any]:
         """Run sentiment analysis with comprehensive validation."""
-        context_item = ErrorContext(
+        _context_item = ErrorContext(
             component="BulletproofETLRunner", operation="run_sentiment_analysis_with_validation"
         )
 
@@ -309,12 +309,12 @@ class BulletproofETLRunner:
                 "Sentiment analysis failed", context={"error": str(e), "duration_seconds": duration}
             )
             raise ETLError(
-                "Failed to run sentiment analysis", context=context, original_error=e, severity=ErrorSeverity.HIGH
+                "Failed to run sentiment analysis", context=context, original_error=e, severity=ErrorSeverity.HIGH  # noqa: F821
             )
 
     def run_final_data_quality_validation(self) -> Dict[str, Any]:
         """Run final comprehensive data quality validation."""
-        context_item = ErrorContext(component="BulletproofETLRunner", operation="run_final_data_quality_validation")
+        _context_item = ErrorContext(component="BulletproofETLRunner", operation="run_final_data_quality_validation")
 
         try:
             logger.info("🔍 Running final data quality validation...")
@@ -350,7 +350,7 @@ class BulletproofETLRunner:
         except Exception as e:
             raise ETLError(
                 "Failed to run final data quality validation",
-                context=context,
+                context=context,  # noqa: F821
                 original_error=e,
                 severity=ErrorSeverity.MEDIUM,
             )

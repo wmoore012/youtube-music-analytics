@@ -17,7 +17,7 @@ load_dotenv(dotenv_path=ENV_PATH, override=False)
 # Normalize DB_* env from DATABASE_URL when present (helps local mismatches)
 _dburl = os.getenv("DATABASE_URL")
 if _dburl:
-    from urllib.parse import urlparse
+    #     from urllib.parse import urlparse
 
     p = urlparse(_dburl)
     auth, hostport = p.netloc.split("@", 1) if "@" in p.netloc else ("", p.netloc)
@@ -190,7 +190,7 @@ def test_batch_upsert_raw_and_metrics_smoke(monkeypatch):
             placeholders = ",".join(["%s"] * len(vids))
             cur.execute(
                 f"SELECT COUNT(*) AS n FROM youtube_metrics WHERE video_id IN ({
-                               placeholders}) AND metrics_date = CURDATE()",
+                    placeholders}) AND metrics_date = CURDATE()",
                 vids,
             )
             assert cur.fetchone()["n"] == 3
@@ -272,7 +272,9 @@ def test_daily_max_semantics(monkeypatch):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT view_count, like_count, comment_count FROM youtube_metrics WHERE video_id=%s AND metrics_date = CURDATE()",
+                "SELECT view_count, "
+                "like_count, "
+                "comment_count FROM youtube_metrics WHERE video_id=%s AND metrics_date = CURDATE()",
                 (v,),
             )
             row = cur.fetchone()

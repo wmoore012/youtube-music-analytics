@@ -230,7 +230,7 @@ class TestNotebookExecution:
         """Test that comprehensive artist validation passes."""
 
         result = subprocess.run(
-            [sys.executable, "scripts / comprehensive_artist_validation.py"], capture_output=True, text=True, timeout=180
+            [sys.executable, "scripts / comprehensive_artist_validation.py"], capture_output=True, text=True, timeout=180  # noqa: E501
         )
 
         assert result.returncode == 0, f"Comprehensive validation failed: {result.stderr}"

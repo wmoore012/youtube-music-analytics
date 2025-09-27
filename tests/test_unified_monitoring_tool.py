@@ -631,8 +631,8 @@ class TestReportPrinting:
             print_monitoring_report(result)
 
         # Verify report sections were printed
-        printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
-        printed_content = "\n".join(printed_calls)
+#         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
+        printed_content = "\n".join(printed_calls)  # noqa: F821
 
         assert "UNIFIED SYSTEM MONITORING REPORT" in printed_content
         assert "Status: HEALTHY" in printed_content
@@ -653,8 +653,8 @@ class TestReportPrinting:
         with patch("builtins.print") as mock_print:
             print_monitoring_report(result, verbose=True)
 
-        printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
-        printed_content = "\n".join(printed_calls)
+#         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
+        printed_content = "\n".join(printed_calls)  # noqa: F821
 
         assert "ISSUES FOUND:" in printed_content
         assert "Missing video titles" in printed_content

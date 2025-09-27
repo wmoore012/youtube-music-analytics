@@ -71,7 +71,9 @@ def main():
         ),
         # Notebook validation with corruption handling
         (
-            "python -c \"import nbformat; import sys; [nbformat.validate(nbformat.read(f, as_version=4)) for f in sys.argv[1:] if f.endswith('.ipynb')]\" notebooks/*.ipynb || echo 'Some notebooks may be corrupted - will attempt repair'",
+            "python -c \"import nbformat; import sys;"
+            " [nbformat.validate(nbformat.read(f, as_version=4)) for f in"
+            " sys.argv[1:] if f.endswith('.ipynb')]\" notebooks/*.ipynb || echo 'Some notebooks may be corrupted - will attempt repair'",
             "Notebook Structure Validation",
             30,
         ),

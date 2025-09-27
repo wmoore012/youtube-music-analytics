@@ -357,7 +357,7 @@ class EnhancedSentimentPipeline:
             recommendation = "deploy_with_monitoring"
             risk_level = "medium"
             rationale = f"Good agreement ({avg_agreement:.2f}) and correlation ({
-                                          avg_correlation:.2f}), deploy with close monitoring"
+                avg_correlation:.2f}), deploy with close monitoring"
         else:
             recommendation = "do_not_deploy"
             risk_level = "high"

@@ -4,7 +4,7 @@ Load a CSV of songs (isrc,title,artist) into the songs table quickly.
 
 Requirements:
 - CSV headers: isrc,title,artist (case - insensitive OK)
-- ISRC must match format: ^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$ (case - insensitive accepted; will be uppercased)
+- ISRC must match format: ^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$ (case - insensitive accepted; will be uppercased)  # noqa: E501
 
 Behavior:
 - Validates rows and prints a summary of accepted / rejected

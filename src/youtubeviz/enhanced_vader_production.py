@@ -87,10 +87,10 @@ class ProductionMusicVADER:
                 "cringe": -1.8,
                 "trash": -2.2,
                 "overrated": -1.8,
-                "fell_off": -2.0,
+                "fell_off": -2.0,  # noqa: F601
                 "this_ain't_it": -2.4,
                 "overproduced": -1.4,
-                "mix_is_muddy": -1.8,
+                "mix_is_muddy": -1.8,  # noqa: F601
                 "too_much_autotune": -1.4,
                 "industry_plant": -1.8,
                 "no_replay_value": -2.0,
@@ -125,8 +125,8 @@ class ProductionMusicVADER:
                 "mix_is_clean": 2.0,
                 "production_is_clean": 2.0,
                 "this_aint_it": -2.4,
-                "fell_off": -2.0,
-                "mix_is_muddy": -1.8,
+                "fell_off": -2.0,  # noqa: F601
+                "mix_is_muddy": -1.8,  # noqa: F601
             }
         )
 

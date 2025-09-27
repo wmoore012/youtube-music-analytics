@@ -179,7 +179,8 @@ def main():
         print()
         print("   Or install everything at once:")
         print(
-            "   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory - profiler"
+            "   pip install pandas numpy scipy plotly matplotlib seaborn"
+            " sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory - profiler"
         )
         print()
         sys.exit(1)

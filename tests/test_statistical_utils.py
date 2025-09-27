@@ -174,7 +174,7 @@ class TestUtilityFunctions:
         standardized = standardize_residuals(residuals)
 
         # Standardized residuals should have mean ~0 and std ~1
-        assert abs(np.mean(standardized)) < 1e - 10
+        assert abs(np.mean(standardized)) < 1e - 10  # noqa: E999
         assert abs(np.std(standardized) - 1.0) < 1e - 10
 
 

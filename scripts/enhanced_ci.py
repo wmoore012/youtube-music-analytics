@@ -260,7 +260,7 @@ class EnhancedCI:
 
         return results
 
-    def validate_code_quality(self) -> CodeQualityMetrics:
+    def validate_code_quality(self) -> CodeQualityMetrics:  # noqa: C901
         """
         Comprehensive code quality validation with production - ready standards.
 
@@ -479,7 +479,7 @@ class EnhancedCI:
 
         return metrics
 
-    def repair_corrupted_notebooks(self) -> bool:
+    def repair_corrupted_notebooks(self) -> bool:  # noqa: C901
         """
         Attempt to repair corrupted notebook files instead of deleting them.
 
@@ -619,7 +619,7 @@ class EnhancedCI:
 
         return all_compliant
 
-    def _check_sql_formatting(self) -> List[str]:
+    def _check_sql_formatting(self) -> List[str]:  # noqa: C901
         """Check for human - readable SQL formatting with proper line breaks."""
         issues = []
 
@@ -895,7 +895,7 @@ except Exception as e:
 
         return duplicates_found
 
-    def _detect_ai_generated_patterns(self) -> List[str]:
+    def _detect_ai_generated_patterns(self) -> List[str]:  # noqa: C901
         """
         Detect bulky AI - generated code patterns and functions that should be combined.
 
@@ -1317,7 +1317,7 @@ except Exception as e:
 
         return all_compliant
 
-    def _generate_intelligent_recommendations(
+    def _generate_intelligent_recommendations(  # noqa: C901
         self, system_health, failure_patterns, performance_analytics, critical_issues, risk_factors
     ) -> list:
         """Generate intelligent recommendations based on comprehensive analysis."""
@@ -1618,7 +1618,7 @@ except Exception as e:
 
         return snapshot
 
-    def generate_ai_agent_report(self) -> None:
+    def generate_ai_agent_report(self) -> None:  # noqa: C901
         """
         Generate comprehensive AI agent intelligence report.
 

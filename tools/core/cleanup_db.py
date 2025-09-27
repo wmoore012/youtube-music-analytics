@@ -523,7 +523,7 @@ def confirm_deletion_with_user(channels_to_delete: Set[str], analysis_type: str)
             print("❌ Invalid response. Type 'DELETE' to confirm or 'cancel' to abort.")
 
 
-def main():
+def main():  # noqa: C901
     """
     Main cleanup orchestration with comprehensive validation and user guidance.
 

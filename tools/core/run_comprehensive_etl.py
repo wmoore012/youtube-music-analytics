@@ -211,7 +211,7 @@ def validate_data_quality(engine) -> dict:
                 (SELECT COUNT(*) FROM youtube_videos) as total_videos,
                 (SELECT COUNT(*) FROM youtube_comments) as total_comments,
                 (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
-                (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists
+                (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
         """
             )
         )

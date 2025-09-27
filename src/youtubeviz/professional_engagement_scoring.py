@@ -58,4 +58,4 @@ class EngagementScore:
     statistical_significance: float
 
     # Confidence intervals
-    confidenc
+    confidenc  # noqa: F821

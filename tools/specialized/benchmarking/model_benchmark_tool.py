@@ -297,7 +297,7 @@ class ModelBenchmarkTool(ToolBase):
             self.benchmark_system.cleanup_resources()
 
 
-def main():
+def main():  # noqa: C901
     """Main entry point for the model benchmark tool."""
     parser = argparse.ArgumentParser(
         description="Model Benchmark Tool for Sentiment Analysis",

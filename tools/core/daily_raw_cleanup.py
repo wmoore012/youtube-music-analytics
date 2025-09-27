@@ -330,7 +330,7 @@ def main():
         integrity_ok = validate_data_integrity()
 
         # Generate report
-        report = generate_cleanup_report()
+        _report = generate_cleanup_report()
 
         total_deleted = raw_deleted + processed_deleted + orphaned_deleted
 

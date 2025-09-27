@@ -64,7 +64,7 @@ class SentimentMonitor:
         correct = 0
         results = []
 
-        for i, (text, expected) in enumerate(test_cases):
+        for i, (text, expected) in enumerate(test_cases):  # noqa: F402
             if i < len(weak_labels) and weak_labels[i].final_label:
                 predicted_value = weak_labels[i].final_label.value
                 if predicted_value > 0:

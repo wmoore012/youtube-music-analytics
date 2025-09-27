@@ -241,8 +241,8 @@ class ModelBenchmarkSystem:
                 else ("negative" if neg_count == min_class_size else "neutral")
             )
             recommendations.append(
-                f"Severe imbalance: {largest_class} class has {
-                    imbalance_ratio:.1f}x more samples than {smallest_class}."
+                f"Severe imbalance: {largest_class} class has {imbalance
+                    _ratio:.1f}"}"}x more samples than {smallest_class}."
             )
             recommendations.append(f"Add {max_class_size - min_class_size} more {smallest_class} examples to balance.")
 
@@ -278,8 +278,7 @@ class ModelBenchmarkSystem:
         quality_emoji = {"excellent": "🟢", "good": "🟡", "acceptable": "🟠", "poor": "🔴"}
 
         print(
-            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {
-                                                  quality_metrics.quality_level.upper()}"
+            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {quality_metrics.quality_level.upper()}"
         )
         print(f"Balance Score: {quality_metrics.balance_score:.3f} (1.0 = perfect)")
         print()
@@ -603,8 +602,7 @@ class ModelBenchmarkSystem:
         total_comments = len(dataset)
         if unique_comments < total_comments * 0.8:  # Less than 80% unique suggests synthetic
             print(
-                f"⚠️  Warning: Only {
-                    unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
+                f"⚠️  Warning: Only {unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
             )
             print("   This might indicate synthetic data, but proceeding with real database validation")
 
@@ -720,7 +718,7 @@ class ModelBenchmarkSystem:
         """Convert continuous scores to classification labels."""  # noqa: C901
         return ["positive" if score > 0.1 else "negative" if score < -0.1 else "neutral" for score in scores]
 
-    def _run_pre_benchmark_tests(self) -> bool:
+    def _run_pre_benchmark_tests(self) -> bool:  # noqa: C901
         """
         MANDATORY pre - benchmark tests that run every time.
 
@@ -934,8 +932,7 @@ class ModelBenchmarkSystem:
 
         if len(dataset) < config.min_samples_per_class * 3:
             raise ValueError(
-                f"Insufficient REAL database data: need at least {
-                    config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
+                f"Insufficient REAL database data: need at least {config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
             )
 
         # NEW: Dataset quality assessment
@@ -950,18 +947,16 @@ class ModelBenchmarkSystem:
             if dataset_quality.balance_score < config.min_balance_score:
                 if config.warn_on_imbalance:
                     print(
-                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({
-                                                                config.min_balance_score})"
+                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({config.min_balance_score})"
                     )
                     print("This may lead to biased model performance!")
 
-                    response = input("\nContinue anyway? (y / N): ").strip().lower()
+                    response = input("\nContinue anyway? (y/N): ").strip().lower()
                     if response != "y":
                         raise ValueError("Benchmark cancelled due to poor dataset quality")
                 else:
                     raise ValueError(
-                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {
-                                                    config.min_balance_score})"
+                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {config.min_balance_score})"
                     )
 
             print("✅ Dataset quality check passed!")
@@ -1201,7 +1196,7 @@ class ModelBenchmarkSystem:
         # Human - readable model descriptions with training details
         model_descriptions = {
             "transformer_distilbert_base_uncased": "DistilBERT - Fast AI (trained on Wikipedia + books)",
-            "transformer_j_hartmann_emotion_english_distilroberta_base": "Emotion AI - Trained to detect 6 emotions + sentiment",
+            "transformer_j_hartmann_emotion_english_distilroberta_base":" " + "" "Emotion AI - Trained to detect 6 emotions + sentiment",
             "transformer_sentiment": "Twitter AI - Trained on social media posts",
             "transformer_roberta_base": "RoBERTa - Advanced AI (trained on 160GB of text)",
             "transformer_cardiffnlp_twitter_roberta_base_sentiment_latest": "Twitter Sentiment AI - Trained on 124M tweets",
@@ -1220,8 +1215,7 @@ class ModelBenchmarkSystem:
                 description = description[:41] + "..."
 
             print(
-                f"{i:<4} {result.model_name[:34]:<35} {description:<45} "
-                f"{result.f1_score:.3f}  {result.accuracy:.3f}  {result.processing_time:.2f}s"
+                f"{i:<4} {result.model_name[:34]:<35} {description:<45} "                 f"{result.f1_score:.3f}  {result.accuracy:.3f}  {result.processing_time:.2f}s"
             )
 
         print(f"\n🤖 WHAT ARE TRANSFORMERS?")
@@ -1248,7 +1242,7 @@ class ModelBenchmarkSystem:
 
         print(f"\n💾 Results saved to: {self.results_dir}")
         print(f"🔗 Experiment ID: {benchmark_run.experiment_id}")
-
+  # noqa: C901
     def _print_results_interpretation(self, benchmark_run: BenchmarkRun):
         """Print fun, educational, and practical interpretation of benchmark results."""
 

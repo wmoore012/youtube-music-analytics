@@ -366,7 +366,7 @@ def run_v2_validation():
     print(f"{'Comment':<35} | {'Sentiment':<10} | {'Score':<8} | {'Beat':<5}")
     print("-" * 65)
 
-    original_correct = 0
+    _original_correct = 0
     for comment in original_cases:
         result = full_analyzer.analyze_comment(comment)
         score = result["sentiment_score"]

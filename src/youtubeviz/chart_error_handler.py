@@ -193,7 +193,7 @@ def bulletproof_chart(chart_name: str, required_columns: List[str]):
                     return None
 
                 # Validate data quality (warnings only)
-                data_issues = error_handler.validate_data_quality(df, chart_name, required_columns)
+                _data_issues = error_handler.validate_data_quality(df, chart_name, required_columns)
 
                 # Execute chart function
                 logger.info(f"Generating chart: {chart_name}")

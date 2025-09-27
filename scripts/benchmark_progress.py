@@ -126,7 +126,7 @@ def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[
     if improved and (abs(z) >= SIGMA_Z_THRESH or abs(rz) >= ROBUST_Z_THRESH):
         flags.append(
             f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={
-                                                    rz:.2f}). Recheck sample size, caching, and code paths."
+                rz:.2f}). Recheck sample size, caching, and code paths."
         )
 
     if latest < low_fence or latest > high_fence:
@@ -558,8 +558,9 @@ try:
             true_bots = [False] * 11 + [True] * 4 + [False] * 3  # Rough labeling
             if len(bot_results) == len(true_bots):
                 true_positives = sum(1 for i, (pred, true) in enumerate(zip(bot_results, true_bots)) if pred and true)
-                false_positives = sum(1 for i, (pred, true) in enumerate(zip(bot_results, true_bots)) if pred and not true)
-                precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
+                false_positives = sum(1 for i,
+                    (pred, true) in enumerate(zip(bot_results, true_bots)) if pred and not true)
+                precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0  # noqa: E501
 
                 print(f"BOT_DETECTION_AVAILABLE:1")
                 print(f"BOT_DETECTION_AVG_TIME:{avg_bot_time:.4f}")
@@ -653,8 +654,8 @@ def count_lines_of_code():
         try:
             with open(py_file, "r", encoding="utf - 8", errors="ignore") as f:
                 lines = f.readlines()
-                # Count non - empty, non - comment lines
-                code_lines = [l for l in lines if l.strip() and not l.strip().startswith("#")]
+                # Count non - empty, non - comment lines  # noqa: E741
+                code_lines = [l for l in lines if l.strip() and not l.strip().startswith("#")]  # noqa: E741
                 total_lines += len(code_lines)
         except OSError as exc:
             log.debug("Skipping %s while counting LOC: %s", py_file, exc)
@@ -690,7 +691,7 @@ def generate_resume_bullets(data):
         load_time = data.get("load_time_seconds", 0)
         bullets.append(
             f"• Achieved {
-                throughput:.0f} rows / sec throughput with p95 data freshness ≤ {load_time:.1f}s for real - time analytics"
+                throughput:.0f} rows / sec throughput with p95 data freshness ≤ {load_time:.1f}s for real - time analytics"  # noqa: E501
         )
 
     # Data quality with specific metrics
@@ -717,7 +718,7 @@ def generate_resume_bullets(data):
         if throughput > 0:
             bullets.append(
                 f"• Sentiment analysis processes {
-                    throughput:.0f} comments / sec with p95 latency {p95_time:.0f}ms for real - time fan engagement scoring"
+                    throughput:.0f} comments / sec with p95 latency {p95_time:.0f}ms for real - time fan engagement scoring"  # noqa: E501
             )
 
     # Bot detection with precision metrics
@@ -726,7 +727,7 @@ def generate_resume_bullets(data):
         if precision > 0:
             bullets.append(
                 f"• Bot detector achieves {precision:.1%} precision, reducing manual content review workload by ~{
-                    (1 - precision) *100:.0f}%"
+                    (1 - precision) * 100:.0f}%"
             )
 
     # System architecture and scale
@@ -836,8 +837,10 @@ def save_benchmark(data):
     else:
         print(f"✅ Benchmark saved to JSON (database unavailable)")
 
+  # noqa: C901
 
-def main():
+
+def main():  # noqa: C901
     """Run benchmark and save results."""
     print("📊 Running project benchmark (tests, data quality, models)...")
 
@@ -909,7 +912,10 @@ def main():
     if benchmark_data.get("sentiment_available", 0):
         print(
             f"  Sentiment Analysis:  {benchmark_data.get(
-                'sentiment_avg_time', 0) *1000:.1f}ms avg, {benchmark_data.get('sentiment_throughput', 0):.0f} comments / sec"
+                'sentiment_avg_time',
+                0) * 1000:.1f}ms avg,
+                    {benchmark_data.get('sentiment_throughput',
+                    0):.0f} comments / sec"
         )
         print(f"  P95 Latency:         {benchmark_data.get('sentiment_p95_time', 0) *1000:.0f}ms")
     else:

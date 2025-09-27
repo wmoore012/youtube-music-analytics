@@ -79,11 +79,13 @@ def remove_unauthorized_artist(engine, artist_name: str) -> dict:
             ("youtube_sentiment_summary", "video_id IN (SELECT video_id FROM youtube_videos WHERE channel_title = %s)"),
             (
                 "comment_sentiment",
-                "comment_id IN (SELECT c.comment_id FROM youtube_comments c JOIN youtube_videos v ON c.video_id = v.video_id WHERE v.channel_title = %s)",
+                "comment_id IN (SELECT c.comment_id FROM youtube_comments c"
+                " JOIN youtube_videos v ON c.video_id = v.video_id WHERE v.channel_title = %s)",
             ),
             (
                 "comment_bot_analysis",
-                "comment_id IN (SELECT c.comment_id FROM youtube_comments c JOIN youtube_videos v ON c.video_id = v.video_id WHERE v.channel_title = %s)",
+                "comment_id IN (SELECT c.comment_id FROM youtube_comments c"
+                " JOIN youtube_videos v ON c.video_id = v.video_id WHERE v.channel_title = %s)",
             ),
             ("youtube_comments", "video_id IN (SELECT video_id FROM youtube_videos WHERE channel_title = %s)"),
             ("youtube_metrics", "video_id IN (SELECT video_id FROM youtube_videos WHERE channel_title = %s)"),

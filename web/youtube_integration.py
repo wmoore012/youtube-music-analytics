@@ -77,7 +77,7 @@ try:
     # wherever you keep globals; adjust the module name
     from config import YT_SEARCH_ENABLED
 except Exception:
-    import os
+    #     import os
 
     YT_SEARCH_ENABLED = os.getenv("YT_SEARCH_ENABLED", "0") == "1"
 
@@ -526,7 +526,8 @@ def get_playlist_videos(  # noqa: C901
         return []
   # noqa: C901
 
-def get_video_details(
+
+def get_video_details(  # noqa: C901
     youtube,
     video_ids: List[str],
     max_retries: int = 3,
@@ -612,8 +613,8 @@ def get_video_details(
         while retry_count <= max_retries:
             try:
                 logger.info(
-                    f"Fetching details for batch {i //batch_size + \
-                        1}/{(len(videos_to_fetch) -1) //batch_size + 1} ({len(batch)} videos)"
+                    f"Fetching details for batch {i // batch_size + \
+                        1}/{(len(videos_to_fetch) - 1) // batch_size + 1} ({len(batch)} videos)"  # noqa: E128
                 )
 
                 # Use safe_execute to abort immediately on quota exceeded
@@ -680,7 +681,7 @@ def find_youtube_videos_for_songs(*_, **__):
     return {}  # noqa: C901
 
 
-def find_youtube_videos_from_playlist(
+def find_youtube_videos_from_playlist(  # noqa: C901
     engine: Engine,
     youtube,
     playlist_id: str,
@@ -755,8 +756,9 @@ def find_youtube_videos_from_playlist(
         cache_threshold_hours,
     )
     logger.info(
-        f"Processing {len(playlist_videos)} videos from playlist (offset: {offset}, max: {max_videos if max_videos >
-                          0 else 'unlimited'}, development_mode: {development_mode}, cache_threshold_hours: {cache_threshold_hours})"
+        f"Processing {len(playlist_videos)} videos from playlist (offset: {offset}, "
+        f"max: {max_videos if max_videos > 0 else 'unlimited'}, "
+        f"development_mode: {development_mode}, cache_threshold_hours: {cache_threshold_hours})"
     )
 
     # Extract video IDs for detailed info
@@ -856,7 +858,7 @@ def find_youtube_videos_from_playlist(
     return isrc_to_video_id
 
 
-def insert_youtube_videos(engine: Engine, isrc_to_video_id: Dict[str, str], development_mode: bool = False) -> None:
+def insert_youtube_videos(engine: Engine, isrc_to_video_id: Dict[str, str], development_mode: bool = False) -> None:  # noqa: C901
     """
     Insert YouTube videos into the database.
 
@@ -1607,7 +1609,7 @@ def ensure_youtube_tables(engine: Engine, check_staging: bool = False) -> None:
     logger.info("✅ All YouTube tables exist with required columns")
 
 
-def process_youtube_data(
+def process_youtube_data(  # noqa: C901
     engine: Engine,
     batch_size: int = 100,
     use_playlist: bool = True,

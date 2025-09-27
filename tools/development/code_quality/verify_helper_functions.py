@@ -14,7 +14,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date / time helpers; Pandas helpers
+from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date / time helpers; Pandas helpers  # noqa: E501
     check_table_exists,
     clean_dataframe_columns,
     clean_text_field,

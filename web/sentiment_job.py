@@ -131,7 +131,9 @@ class YouTubeCommentSentimentJob:
             sql = (
                 "INSERT INTO youtube_sentiment_summary (video_id, avg_sentiment, comment_count, last_updated) "
                 "VALUES (%s,%s,%s,NOW()) "
-                "ON DUPLICATE KEY UPDATE avg_sentiment=VALUES(avg_sentiment), comment_count=VALUES(comment_count), last_updated=NOW()"
+                "ON DUPLICATE KEY UPDATE avg_sentiment=VALUES(avg_sentiment), "
+                "comment_count=VALUES(comment_count), "
+                "last_updated=NOW()"
             )
             with conn.cursor() as cur:
                 cur.executemany(sql, upserts)

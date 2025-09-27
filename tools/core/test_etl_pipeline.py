@@ -91,7 +91,7 @@ def test_etl_pipeline():
     # Test 5: Small ETL execution (dry run)
     print("\n5. Testing ETL instantiation...")
     try:
-        etl = YouTubeChannelETL(
+        _etl = YouTubeChannelETL(
             api_key=os.getenv("YOUTUBE_API_KEY"),
             db_host=os.getenv("DB_HOST"),
             db_port=int(os.getenv("DB_PORT", 3306)),
@@ -107,7 +107,7 @@ def test_etl_pipeline():
     # Test 6: Sentiment job instantiation
     print("\n6. Testing sentiment job...")
     try:
-        sentiment_job = YouTubeCommentSentimentJob()
+        _sentiment_job = YouTubeCommentSentimentJob()
         print("   ✅ Sentiment job created successfully")
     except Exception as e:
         print(f"   ❌ Sentiment job creation failed: {e}")

@@ -298,7 +298,7 @@ class StorageMigrator(ToolBase):
                 self.log_progress(f"Applied column mapping: {column_mapping}")
 
             # Import data to database
-            records_imported = df.to_sql(table_name, engine, if_exists="append", index=False, method="multi")
+            _records_imported = df.to_sql(table_name, engine, if_exists="append", index=False, method="multi")
 
             results["records_imported"] = len(df)
             results["columns_imported"] = list(df.columns)
@@ -425,7 +425,8 @@ class StorageMigrator(ToolBase):
                             {
                                 "check": "record_count",
                                 "status": "FAIL",
-                                "message": f"Record count mismatch: expected {expected_records}, found {actual_records}",
+                                "message": f"Record count mismatch: expected {expected
+                                    _records}"}"}, found {actual_records}",
                             }
                         )
                         results["overall_success"] = False
@@ -636,7 +637,7 @@ class StorageMigrator(ToolBase):
         self.migration_log["end_time"] = datetime.now().isoformat()
         self.log_progress(f"Migration session {self.migration_session_id} completed")
 
-
+  # noqa: C901
 def main():
     """Main entry point for the storage migrator tool."""
     parser = argparse.ArgumentParser(

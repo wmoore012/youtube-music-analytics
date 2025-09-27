@@ -284,7 +284,7 @@ def create_youtube_tables() -> bool:
           `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
           `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           PRIMARY KEY (`isrc`),
-          CONSTRAINT `isrc_format_chk` CHECK (regexp_like(`isrc`,_utf8mb4'^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$'))
+          CONSTRAINT `isrc_format_chk` CHECK (regexp_like(`isrc`,_utf8mb4'^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$'))  # noqa: E501
         )
         """,
         """

@@ -1071,7 +1071,8 @@ class SystemMonitor(ToolBase):
                 {
                     "severity": "HIGH",
                     "component": "SLA Compliance",
-                    "message": f"SLA compliance below threshold: {sla_compliance.get('overall_compliance_percent', 0):.1f}%",
+                    "message": f"SLA compliance below threshold: {sla_compliance.get('overall_compliance_percent',
+                        0):.1f}%",  # noqa: E128
                     "action_required": "Review SLA breaches and implement corrective actions",
                 }
             )

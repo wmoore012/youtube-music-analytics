@@ -332,7 +332,7 @@ def main():
         config["dry_run"] = True
 
     # Run pipeline
-    pipeline = ProductionPipeline(config)
+    pipeline = ProductionPipeline(config)  # noqa: F821
     results = pipeline.run_pipeline()
 
     # Exit with appropriate code

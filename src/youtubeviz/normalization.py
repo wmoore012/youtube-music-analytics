@@ -183,9 +183,25 @@ def upsert_normalized(engine: Engine, rows: Iterable[NormalizedVideo]) -> int:
     sql = text(
         """
         INSERT INTO music_videos_normalized
-            (video_id, artist_name, title, isrc, published_at, total_views, total_likes, total_comments, est_revenue_usd)
+            (video_id,
+                artist_name,
+                title,
+                isrc,
+                published_at,
+                total_views,
+                total_likes,
+                total_comments,
+                est_revenue_usd)
         VALUES
-            (:video_id, :artist_name, :title, :isrc, :published_at, :total_views, :total_likes, :total_comments, :est_revenue_usd)
+            (:video_id,
+                :artist_name,
+                :title,
+                :isrc,
+                :published_at,
+                :total_views,
+                :total_likes,
+                :total_comments,
+                :est_revenue_usd)
         ON DUPLICATE KEY UPDATE
             artist_name=VALUES(artist_name),
             title=VALUES(title),

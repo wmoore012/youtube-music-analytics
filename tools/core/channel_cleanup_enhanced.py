@@ -361,7 +361,7 @@ def main():
 
         # Step 6: Perform cleanup
         print("\n📋 Step 6: Performing database cleanup...")
-        results = perform_cleanup(engine, channels_to_remove)
+        _results = perform_cleanup(engine, channels_to_remove)
 
         print("\n🎉 Channel cleanup completed successfully!")
         print("\nNext steps:")

@@ -466,7 +466,7 @@ class NotebookScoringValidator:
                     for output in cell.outputs:
                         # Check for text outputs indicating real data
                         if output.output_type == "stream" and hasattr(output, "text"):
-                            text_item = output.text.lower()
+                            _text_item = output.text.lower()
                             if "real" in text and "database" in text:
                                 validation_result["real_data_found"] = True
                                 validation_result["validation_details"].append("Found real data confirmation")

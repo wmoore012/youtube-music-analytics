@@ -158,7 +158,7 @@ class NamingConventionAuditor:
 
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from scanning."""
-        file_str = str(file_path)
+        _file_str = str(file_path)
         for pattern in self.exclude_patterns:
             if file_path.match(pattern):
                 return True

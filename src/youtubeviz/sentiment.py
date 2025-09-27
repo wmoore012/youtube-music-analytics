@@ -316,7 +316,7 @@ def _generate_model_explanation(accuracy: float, precision: float, recall: float
     📊 **Sentiment Model Performance Analysis**
 
     **Accuracy ({accuracy:.1%})**: How often the model is correct overall.
-    - For music industry sentiment, {accuracy:.1%} accuracy is {'excellent' if accuracy > 0.85 else 'good' if accuracy > 0.7 else 'needs improvement'}.
+    - For music industry sentiment, {accuracy:.1%} accuracy is {'excellent' if accuracy > 0.85 else 'good' if accuracy > 0.7 else 'needs improvement'}.  # noqa: E501
     - Music comments often use slang and context that general models miss.
 
     **Precision ({precision:.1%})**: When model predicts positive, how often is it right?

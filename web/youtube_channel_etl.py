@@ -224,9 +224,15 @@ class YouTubeChannelETL:
         if not rows:
             return 0
         sql = (
-            "INSERT INTO youtube_videos_raw (video_id, playlist_id, raw_data, fetched_at, processed) "
-            "VALUES (%s,%s,%s,NOW(),0) "
-            "ON DUPLICATE KEY UPDATE raw_data=VALUES(raw_data), fetched_at=NOW(), processed=0"
+            "INSERT INTO youtube_videos_raw (video_id, "
+            "playlist_id, "
+            "raw_data, "
+            "fetched_at, "
+            "processed) "
+            "VALUES (%s, %s, %s, NOW(), 0) "
+            "ON DUPLICATE KEY UPDATE raw_data=VALUES(raw_data), "
+            "fetched_at=NOW(), "
+            "processed=0"
         )
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
@@ -262,12 +268,22 @@ class YouTubeChannelETL:
 
         Each row: (video_id, isrc, title, channel_title, published_at_str, view_count, like_count, comment_count)
         published_at_str should be '%Y-%m-%d %H:%M:%S' or None.
-        duration is stored from raw as provided (ISO8601); we use a separate parameter here for simplicity (computed inline below).
+        duration is stored from raw as provided (ISO8601); we use a separate parameter here for simplicity (computed inline below).  # noqa: E501
         """
         if not rows:
             return 0
         sql = (
-            "INSERT INTO youtube_videos (video_id, isrc, title, channel_title, published_at, duration, view_count, like_count, comment_count, dsp_name, fetched_at) "
+            "INSERT INTO youtube_videos (video_id, "
+            "isrc, "
+            "title, "
+            "channel_title, "
+            "published_at, "
+            "duration, "
+            "view_count, "
+            "like_count, "
+            "comment_count, "
+            "dsp_name, "
+            "fetched_at) "
             "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'YouTube',NOW()) "
             "ON DUPLICATE KEY UPDATE "
             "title=VALUES(title), channel_title=VALUES(channel_title), published_at=VALUES(published_at), duration=VALUES(duration), "
@@ -289,8 +305,7 @@ class YouTubeChannelETL:
         if not rows:
             return 0
         sql = (
-            "INSERT IGNORE INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s)"
+            "INSERT IGNORE INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "             "VALUES (%s,%s,%s,%s,%s,%s)"
         )
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
@@ -298,14 +313,7 @@ class YouTubeChannelETL:
 
     def _upsert_daily_metrics(self, conn: Any, video_id: str, v: int, like_count: int, c: int) -> None:
         sql = (
-            "INSERT INTO youtube_metrics (video_id, view_count, like_count, dislike_count, comment_count, "
-            "subscriber_count, metrics_date, fetched_at) "
-            "VALUES (%s,%s,%s,%s,%s,NULL,CURDATE(),NOW()) "
-            "ON DUPLICATE KEY UPDATE "
-            "view_count = IF(VALUES(view_count) > view_count, VALUES(view_count), view_count), "
-            "like_count = IF(VALUES(like_count) > like_count, VALUES(like_count), like_count), "
-            "comment_count = IF(VALUES(comment_count) > comment_count, VALUES(comment_count), comment_count), "
-            "fetched_at = NOW()"
+            "INSERT INTO youtube_metrics (video_id, view_count, like_count, dislike_count, comment_count, "             "subscriber_count, metrics_date, fetched_at) "             "VALUES (%s,%s,%s,%s,%s,NULL,CURDATE(),NOW()) "             "ON DUPLICATE KEY UPDATE "             "view_count = IF(VALUES(view_count) > view_count, VALUES(view_count), view_count), "             "like_count = IF(VALUES(like_count) > like_count, VALUES(like_count), like_count), "             "comment_count = IF(VALUES(comment_count) > comment_count, VALUES(comment_count), comment_count), "             "fetched_at = NOW()"
         )
         with conn.cursor() as cur:
             cur.execute(sql, (video_id, v, like_count, 0, c))
@@ -317,8 +325,7 @@ class YouTubeChannelETL:
         Returns True if lock acquired, False if already exists for today.
         """
         sql = (
-            "INSERT IGNORE INTO youtube_etl_runs (channel_id, run_date, started_at, status) "
-            "VALUES (%s, CURDATE(), NOW(), 'started')"
+            "INSERT IGNORE INTO youtube_etl_runs (channel_id, run_date, started_at, status) "             "VALUES (%s, CURDATE(), NOW(), 'started')"
         )
         with conn.cursor() as cur:
             cur.execute(sql, (channel_id,))

@@ -253,8 +253,22 @@ class TestDatabaseTransactionIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
+                        (video_id,
+                            title,
+                            channel_id,
+                            channel_title,
+                            published_at,
+                            view_count,
+                            like_count,
+                            comment_count)
+                        VALUES (:video_id,
+                            :title,
+                            :channel_id,
+                            :channel_title,
+                            :published_at,
+                            :view_count,
+                            :like_count,
+                            :comment_count)
                     """
                         ),
                         {

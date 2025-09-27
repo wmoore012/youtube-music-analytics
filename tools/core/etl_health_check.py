@@ -158,7 +158,7 @@ class ETLHealthChecker:
                     raise Exception("Database connection test failed")
 
             # Test pymysql connection (used by ETL)
-            import pymysql
+#             import pymysql
 
             conn = pymysql.connect(
                 host=os.getenv("DB_HOST"),
@@ -214,7 +214,7 @@ class ETLHealthChecker:
         ]
 
         try:
-            import pymysql
+            #             import pymysql
 
             conn = pymysql.connect(
                 host=os.getenv("DB_HOST"),
@@ -381,7 +381,7 @@ class ETLHealthChecker:
         self.logger.info("Checking data freshness...")
 
         try:
-            import pymysql
+            #             import pymysql
 
             conn = pymysql.connect(
                 host=os.getenv("DB_HOST"),

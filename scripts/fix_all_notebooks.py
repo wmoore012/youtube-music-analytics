@@ -118,7 +118,8 @@ def fix_data_quality_notebook():
                     "    kpis['unique_artists'] = df['artist_name'].nunique()\\n",
                     "    \\n",
                     "    # Data quality metrics\\n",
-                    "    kpis['completeness_score'] = (1 - df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100\\n",
+                    "    kpis['completeness_score'] = (1 -"
+                    " df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100\\n",
                     "    kpis['duplicate_rate'] = (len(df) - len(df.drop_duplicates())) / len(df) * 100\\n",
                     "    \\n",
                     "    # Artist distribution\\n",
@@ -159,7 +160,8 @@ def fix_data_quality_notebook():
                     "    # Artist balance (20% weight) - more balanced is better\\n",
                     "    artist_counts = list(kpis.get('artist_distribution', {}).values())\\n",
                     "    if artist_counts:\\n",
-                    "        cv = np.std(artist_counts) / np.mean(artist_counts) if np.mean(artist_counts) > 0 else 1\\n",
+                    "        cv = np.std(artist_counts) / np.mean(artist_counts)"
+                    " if np.mean(artist_counts) > 0 else 1\\n",
                     "        balance_score = max(0, 100 - cv * 50) * 0.2\\n",
                     "    else:\\n",
                     "        balance_score = 0\\n",

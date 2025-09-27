@@ -137,7 +137,8 @@ class TestRepositorySwitcher(unittest.TestCase):
 
         # Verify git remote set - url was called
         mock_run.assert_any_call(
-            ["git", "remote", "set - url", "staging", "https://github.com / wmoore012 / staging_yt_analytics.git"], check=True
+            ["git", "remote", "set - url", "staging", "https://github.com"
+                " / wmoore012 / staging_yt_analytics.git"], check=True
         )
 
     @patch("subprocess.run")

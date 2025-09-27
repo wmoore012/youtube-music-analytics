@@ -771,7 +771,7 @@ class TestDataScienceWorkflowValidation:
         # Test with extreme values
         extreme_data = pd.DataFrame(
             {
-                "very_small_values": [1e - 10, 1e - 15, 1e - 20],
+                "very_small_values": [1e - 10, 1e - 15, 1e - 20],  # noqa: E999
                 "very_large_values": [1e10, 1e15, 1e20],
                 "infinite_values": [float("inf"), float("-inf"), float("nan")],
                 "zero_values": [0.0, 0.0, 0.0],

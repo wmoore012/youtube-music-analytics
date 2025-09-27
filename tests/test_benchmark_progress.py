@@ -41,7 +41,7 @@ def test_summarize_series_returns_expected_keys(benchmark_module):
 
     assert result is not None
     assert result["n"] == 4
-    assert pytest.approx(result["mean"], rel=1e - 6) == 2.5
+    assert pytest.approx(result["mean"], rel=1e - 6) == 2.5  # noqa: E999
     assert result["median"] == 2.5
     assert set(result) >= {
         "n",

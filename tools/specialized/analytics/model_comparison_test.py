@@ -274,7 +274,7 @@ def test_music_industry_model() -> Dict:
         }
 
 
-def run_model_comparison():
+def run_model_comparison():  # noqa: C901
     """Run comprehensive model comparison and save results."""
 
     print("🎵 Running Comprehensive Sentiment Model Comparison")

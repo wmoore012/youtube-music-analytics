@@ -75,7 +75,7 @@ class EnvironmentSafetyChecker:
         status = {}
         for pattern in self.sensitive_patterns:
             # Check if pattern is commented out (not ignored)
-            pattern_escaped = pattern.replace("*", r"\*").replace(".", r"\.")
+            _pattern_escaped = pattern.replace("*", r"\*").replace(".", r"\.")
             is_ignored = f"\n{pattern}\n" in gitignore_content or gitignore_content.startswith(f"{pattern}\n")
             is_commented = f"# {pattern}" in gitignore_content
 

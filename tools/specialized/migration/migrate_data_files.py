@@ -193,7 +193,7 @@ def archive_files(migrator: DataMigrator, files: list, archive_dir: str) -> bool
     return result.success
 
 
-def main():
+def main():  # noqa: C901
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description="Migrate CSV / JSON data files to database tables",

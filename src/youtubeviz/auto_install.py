@@ -174,10 +174,10 @@ class AutoInstaller:
             if line and not line.startswith("#"):
                 # Handle package==version format
                 if "==" in line:
-                    pkg_name = line.split("==")[0]
+                    _pkg_name = line.split("==")[0]
                     packages.append(line)  # Keep version specification
                 elif ">=" in line:
-                    pkg_name = line.split(">=")[0]
+                    _pkg_name = line.split(">=")[0]
                     packages.append(line)
                 else:
                     packages.append(line)
@@ -188,7 +188,7 @@ class AutoInstaller:
         success_count = 0
         for package_spec in packages:
             # Extract package name for version specs
-            pkg_name = package_spec.split("==")[0].split(">=")[0].split("<=")[0]
+            _pkg_name = package_spec.split("==")[0].split(">=")[0].split("<=")[0]
 
             if self._install_package(package_spec):
                 success_count += 1
@@ -253,7 +253,7 @@ def auto_install_package(package_name: str, import_name: str = None, timeout: in
     Returns:
         True if package is available (either was installed or already present)
     """
-    global _global_installer
+    global _global_installer  # noqa: F824
     _global_installer.timeout = timeout
     module = _global_installer.ensure_package(package_name, import_name)
     return module is not None
@@ -578,7 +578,7 @@ ANALYTICS_ESSENTIALS = {
 }
 
 JUPYTER_ESSENTIALS = {"ipywidgets": "ipywidgets", "tqdm": "tqdm",
-    "rich": "rich", "memory - profiler": "memory_profiler"}
+    "rich": "rich", "memory - profiler": "memory_profiler"}  # noqa: E128
 
 MUSIC_ANALYTICS = {"librosa": "librosa", "spotipy": "spotipy", "textblob": "textblob", "wordcloud": "wordcloud"}
 

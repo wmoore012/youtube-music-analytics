@@ -206,7 +206,7 @@ class DocArchiver:
                 action = "MOVE" if apply else "DRY - RUN"
                 print(
                     f"{action}: {
-                        rec.rel_path} -> docs / archive/{rec.mtime.strftime('%Y % m%d')}/{rec.category}/ (reason={rec.reason})"
+                        rec.rel_path} -> docs / archive/{rec.mtime.strftime('%Y % m%d')}/{rec.category}/ (reason={rec.reason})"  # noqa: E501
                 )
                 self.archive_record(rec, dry_run=dry_run)
         else:

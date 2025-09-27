@@ -168,12 +168,12 @@ class StagedFormatter:
         # Show black diff
         print("\n📝 Black formatting changes:")
         cmd = ["python", "-m", "black", "--diff", "--color"] + [str(f) for f in batch]
-        result = subprocess.run(cmd, cwd=self.project_root)
+        _result = subprocess.run(cmd, cwd=self.project_root)
 
         # Show isort diff
         print("\n📚 Import sorting changes:")
         cmd = ["python", "-m", "isort", "--diff", "--color"] + [str(f) for f in batch]
-        result = subprocess.run(cmd, cwd=self.project_root)
+        _result = subprocess.run(cmd, cwd=self.project_root)
 
         return True
 

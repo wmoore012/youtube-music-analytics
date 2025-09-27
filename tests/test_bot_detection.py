@@ -259,9 +259,9 @@ class TestEdgeAndPerf:
         df = pd.DataFrame(
             {
                 "comment_id": [f"c{i}" for i in range(n)],
-                "video_id": [f"v{i //20}" for i in range(n)],
+                "video_id": [f"v{i // 20}" for i in range(n)],
                 "comment_text": ["amazing track"] * (n // 2) + [f"unique {i}" for i in range(n - n // 2)],
-                "author_name": [f"user{i //5}" for i in range(n)],
+                "author_name": [f"user{i // 5}" for i in range(n)],
                 "like_count": [0] * n,
                 "published_at": [datetime.now(timezone.utc) - timedelta(seconds=i) for i in range(n)],
             }

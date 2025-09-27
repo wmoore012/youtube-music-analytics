@@ -55,7 +55,8 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
             name="music_virality",
             version="1.2.0",
             author="Music Analytics Community",
-            description="Calculates virality potential for music videos based on engagement patterns and growth velocity",
+            description="Calculates virality potential for music videos based on"
+            " engagement patterns and growth velocity",
             parameters={
                 "velocity_weight": 0.4,
                 "engagement_weight": 0.3,

@@ -172,7 +172,7 @@ class BackupVerifier(ToolBase):
             # Calculate file size
             try:
                 result.total_size_bytes += backup_file.stat().st_size
-            except:
+            except:  # noqa: E722
                 pass
 
             # Check if file was successfully moved
@@ -335,7 +335,7 @@ class BackupVerifier(ToolBase):
             self.log_progress(f"⚠️  Error identifying unique content in {backup_file}: {e}")
             return False
 
-    def remove_verified_backups(
+    def remove_verified_backups(  # noqa: C901
         self, verification_result: BackupVerificationResult, dry_run: bool = True
     ) -> Dict[str, any]:
         """
@@ -491,7 +491,7 @@ class BackupVerifier(ToolBase):
         try:
             with open(file_path, "rb") as f:
                 return hashlib.md5(f.read()).hexdigest()
-        except:
+        except:  # noqa: E722
             return None
 
     def _content_similarity(self, hash1: str, hash2: str) -> float:
@@ -528,7 +528,7 @@ class BackupVerifier(ToolBase):
                         content = f.read()
                         if f"def {element}" in content or f"class {element}" in content:
                             return True
-                except:
+                except:  # noqa: E722
                     continue
 
         return False
@@ -575,7 +575,7 @@ class BackupVerifier(ToolBase):
                             if key_line in content:
                                 found_lines += 1
                                 break
-                except:
+                except:  # noqa: E722
                     continue
 
         return found_lines >= len(key_lines) * 0.5

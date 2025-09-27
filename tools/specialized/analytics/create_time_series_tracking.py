@@ -343,7 +343,7 @@ def print_time_series_summary():
     for _, video in top_growth.iterrows():
         print(
             f"   📈 {video['artist_name']}: {video['title'][:50]}... - {video['total_views_growth']
-                :.1f}% growth ({video['initial_views']:,} → {video['final_views']:,} views)"
+                :.1f}% growth ({video['initial_views']:,} → {video['final_views']:,} views)"  # noqa: E128
         )
 
     # Revenue growth leaders

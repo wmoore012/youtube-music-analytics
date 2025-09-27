@@ -448,7 +448,7 @@ class DataRetentionManager:
                     batch_deleted = result.rowcount
                     deleted_count += batch_deleted
 
-                    logger.info(f"Deleted batch {i //DEFAULT_BATCH_SIZE + 1}: {batch_deleted} videos")
+                    logger.info(f"Deleted batch {i // DEFAULT_BATCH_SIZE + 1}: {batch_deleted} videos")
 
                 conn.commit()
                 logger.info(f"Successfully deleted {deleted_count} videos")

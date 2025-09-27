@@ -1,0 +1,186 @@
+name: Code Quality & Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 black isort mypy pytest autopep8
+        pip install -e .
+    
+    - name: � CRITIcCAL: Syntax Errors (BLOCKING)
+      run: |
+        echo "🚨 Checking for syntax errors that prevent code execution..."
+        echo "These errors MUST be zero - they break the code!"
+        
+        # Check for syntax errors
+        SYNTAX_ERRORS=$(flake8 --select=E999 --count 2>/dev/null || echo "0")
+        echo "📊 Syntax errors (E999): $SYNTAX_ERRORS"
+        
+        if [ "$SYNTAX_ERRORS" -gt 0 ]; then
+          echo "❌ CRITICAL: $SYNTAX_ERRORS syntax errors found!"
+          flake8 --select=E999
+          exit 1
+        fi
+        echo "✅ No syntax errors found"
+    
+    - name: �  CRITICAL: Undefined Names (BLOCKING)
+      run: |
+        echo "� RChecking for undefined variables that cause runtime crashes..."
+        
+        # Check for undefined names
+        UNDEFINED_NAMES=$(flake8 --select=F821 --count 2>/dev/null || echo "0")
+        echo "📊 Undefined names (F821): $UNDEFINED_NAMES"
+        
+        if [ "$UNDEFINED_NAMES" -gt 0 ]; then
+          echo "❌ CRITICAL: $UNDEFINED_NAMES undefined names found!"
+          flake8 --select=F821
+          exit 1
+        fi
+        echo "✅ No undefined names found"
+    
+    - name: � CRITICCAL: Import Redefinitions (BLOCKING)
+      run: |
+        echo "� Checkning for import redefinitions that cause confusion..."
+        
+        # Check for redefined imports
+        REDEFINITIONS=$(flake8 --select=F811 --count 2>/dev/null || echo "0")
+        echo "📊 Import redefinitions (F811): $REDEFINITIONS"
+        
+        if [ "$REDEFINITIONS" -gt 0 ]; then
+          echo "❌ CRITICAL: $REDEFINITIONS import redefinitions found!"
+          flake8 --select=F811
+          exit 1
+        fi
+        echo "✅ No import redefinitions found"
+    
+    - name: 🧹 Code Formatting Check
+      run: |
+        echo "🔍 Checking code formatting..."
+        black --check --line-length=120 .
+        isort --check-only --profile black .
+    
+    - name: 📏 Line Length Check (WARNING)
+      run: |
+        echo "📏 Checking line lengths (max 120 characters)..."
+        
+        LONG_LINES=$(flake8 --select=E501 --max-line-length=120 --count 2>/dev/null || echo "0")
+        echo "📊 Long lines (E501): $LONG_LINES"
+        
+        # Warning only - don't fail build for line length
+        if [ "$LONG_LINES" -gt 100 ]; then
+          echo "⚠️  WARNING: Many long lines ($LONG_LINES). Consider refactoring."
+        fi
+    
+    - name: 🗑️ Unused Variables Check (WARNING)
+      run: |
+        echo "🗑️ Checking for unused variables..."
+        
+        UNUSED_VARS=$(flake8 --select=F841 --count 2>/dev/null || echo "0")
+        echo "📊 Unused variables (F841): $UNUSED_VARS"
+        
+        # Warning only - don't fail build for unused variables
+        if [ "$UNUSED_VARS" -gt 50 ]; then
+          echo "⚠️  WARNING: Many unused variables ($UNUSED_VARS). Consider cleanup."
+        fi
+    
+    - name: 📏 Comprehensive Linting Check
+      run: |
+        echo "🔍 Running comprehensive linting check..."
+        
+        # Get total error count
+        ERROR_COUNT=$(flake8 --max-line-length=120 --count 2>/dev/null || echo "0")
+        echo "📊 Total linting errors: $ERROR_COUNT"
+        
+        # Show breakdown by error type
+        echo "📊 Error breakdown:"
+        flake8 --max-line-length=120 --statistics 2>/dev/null || true
+        
+        # Fail if more than 200 total errors (gradual improvement target)
+        if [ "$ERROR_COUNT" -gt 200 ]; then
+          echo "❌ Too many linting errors ($ERROR_COUNT > 200). Please fix issues."
+          echo "Focus on critical errors first: E999, F821, F811"
+          exit 1
+        fi
+        
+        echo "✅ Linting error count acceptable ($ERROR_COUNT ≤ 200)"
+    
+    - name: 🔬 Type Checking
+      run: |
+        echo "🔍 Running type checking..."
+        mypy src/ --ignore-missing-imports --no-strict-optional || true
+    
+    - name: 🧪 Run Tests (BLOCKING)
+      run: |
+        echo "🧪 Running test suite..."
+        PYTHONPATH=. pytest -v --tb=short
+        
+        if [ $? -ne 0 ]; then
+          echo "❌ CRITICAL: Tests are failing!"
+          exit 1
+        fi
+        echo "✅ All tests pass"
+    
+    - name: 📊 Generate Quality Report
+      if: always()
+      run: |
+        echo "📊 Generating comprehensive code quality report..."
+        
+        cat > quality-report.md << 'EOF'
+        # 📊 Code Quality Report
+        
+        ## 🚨 Critical Issues (Must be Zero)
+        EOF
+        
+        echo "### Syntax Errors (E999)" >> quality-report.md
+        SYNTAX_COUNT=$(flake8 --select=E999 --count 2>/dev/null || echo "0")
+        echo "Count: $SYNTAX_COUNT" >> quality-report.md
+        
+        echo "### Undefined Names (F821)" >> quality-report.md  
+        UNDEFINED_COUNT=$(flake8 --select=F821 --count 2>/dev/null || echo "0")
+        echo "Count: $UNDEFINED_COUNT" >> quality-report.md
+        
+        echo "### Import Redefinitions (F811)" >> quality-report.md
+        REDEFINITION_COUNT=$(flake8 --select=F811 --count 2>/dev/null || echo "0") 
+        echo "Count: $REDEFINITION_COUNT" >> quality-report.md
+        
+        echo "" >> quality-report.md
+        echo "## 📏 Code Quality Metrics" >> quality-report.md
+        echo "### Full Linting Results" >> quality-report.md
+        flake8 --max-line-length=120 --count --statistics >> quality-report.md 2>/dev/null || true
+        
+        echo "" >> quality-report.md
+        echo "### Test Results" >> quality-report.md
+        PYTHONPATH=. pytest --tb=no -q >> quality-report.md 2>/dev/null || true
+    
+    - name: 📋 Upload Quality Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-report
+        path: quality-report.md

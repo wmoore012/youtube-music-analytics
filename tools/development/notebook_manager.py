@@ -89,7 +89,7 @@ def create_new_notebook(template_path=None, notebooks_dir="notebooks"):
     if existing:
         latest = existing[-1]  # Most recent version
         print(f"🔄 Found existing notebook: {latest.name}")
-        archived = archive_notebook(latest)
+        _archived = archive_notebook(latest)
         print(f"✅ Archived previous version")
 
     # Create new notebook
@@ -150,7 +150,7 @@ def test_notebook(notebook_path):
         import nbformat
 
         with open(notebook_path) as f:
-            nb = nbformat.read(f, as_version=4)
+            _nb = nbformat.read(f, as_version=4)
 
         # Quick syntax check - just try to parse
         print(f"✅ Notebook syntax is valid: {notebook_path.name}")

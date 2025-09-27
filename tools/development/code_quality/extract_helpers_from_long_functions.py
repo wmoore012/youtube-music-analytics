@@ -65,7 +65,7 @@ def analyze_long_functions() -> List[Tuple[str, str, int, List[str]]]:
     return sorted(long_functions, key=lambda x: x[2], reverse=True)
 
 
-def analyze_function_for_breakdown(node: ast.FunctionDef, function_lines: List[str]) -> List[str]:
+def analyze_function_for_breakdown(node: ast.FunctionDef, function_lines: List[str]) -> List[str]:  # noqa: C901
     """Analyze a function and suggest how to break it down."""
     suggestions = []
 

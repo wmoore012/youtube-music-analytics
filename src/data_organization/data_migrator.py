@@ -654,7 +654,7 @@ class DataMigrator:
         try:
             with self.engine.connect() as conn:
                 # Build query to select relevant columns
-                columns_str = ", ".join(key_columns + ["*"])
+                _columns_str = ", ".join(key_columns + ["*"])
                 query = text(f"SELECT * FROM {table_name}")
 
                 result = conn.execute(query)

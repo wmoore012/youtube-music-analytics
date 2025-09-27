@@ -1,3 +1,4 @@
+import re
 #!/usr / bin / env python3
 """
 Smart Comment Classification Assistant

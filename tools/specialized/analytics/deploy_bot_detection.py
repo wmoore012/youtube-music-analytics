@@ -99,10 +99,10 @@ class EnhancedBotDetector:
                     return True
         return False
 
-    def calculate_bot_score(self, comment_data: dict) -> float:
+    def calculate_bot_score(self, comment_data: dict) -> float:  # noqa: C901
         """Calculate bot probability score (0.0 = human, 1.0 = bot)."""
         score = 0.0
-        text_item = comment_data["comment_text"]
+        _text_item = comment_data["comment_text"]
 
         # If whitelisted as fan, very low bot score
         if self.is_whitelisted_fan(text):
@@ -172,7 +172,7 @@ class EnhancedBotDetector:
 
     def calculate_engagement_authenticity(self, comment_data: dict) -> float:
         """Calculate engagement authenticity score (higher = more authentic)."""
-        text_item = comment_data["comment_text"]
+        _text_item = comment_data["comment_text"]
 
         # Authentic engagement indicators
         authenticity_score = 0.0

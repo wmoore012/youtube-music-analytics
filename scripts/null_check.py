@@ -120,7 +120,7 @@ def _truncate(val: str, width: int) -> str:
     return s[: max(0, width - 1)] + "…"
 
 
-def format_table(report: List[Dict[str, object]]) -> str:
+def format_table(report: List[Dict[str, object]]) -> str:  # noqa: C901
     """Pretty table format sorted by null_count desc, then blanks / empty JSON."""
     # Determine optional columns present
     has_blanks = any("blank_count" in r for r in report)

@@ -129,7 +129,7 @@ def validate_data_quality(engine) -> dict:
                     (SELECT COUNT(*) FROM youtube_videos) as total_videos,
                     (SELECT COUNT(*) FROM youtube_comments) as total_comments,
                     (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
-                    (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists
+                    (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
             """
                 )
             )
@@ -261,7 +261,7 @@ def run_bot_detection(engine) -> dict:
         return {"processed": 0, "status": "failed", "error": str(e)}
 
 
-def preflight_setup() -> dict:
+def preflight_setup() -> dict:  # noqa: C901
     """Ensure environment, tables, optional seed load, normalization, and quick DQ summary.
 
     Returns a dict with simple metrics to include in the final summary.
@@ -309,10 +309,10 @@ def preflight_setup() -> dict:
                 print("   ⚠️ Songs CSV loader returned non - zero exit code")
                 if result.stdout:
                     print("      ├─ stdout:")
-                    print("\n".join(["      │ " + l for l in result.stdout.strip().splitlines()[-10:]]))
+                    print("\n".join(["      │ " + l for l in result.stdout.strip().splitlines()[-10:]]))  # noqa: E741
                 if result.stderr:
                     print("      ├─ stderr:")
-                    print("\n".join(["      │ " + l for l in result.stderr.strip().splitlines()[-10:]]))
+                    print("\n".join(["      │ " + l for l in result.stderr.strip().splitlines()[-10:]]))  # noqa: E741
         except Exception as e:
             print(f"   ❌ Failed loading songs CSV '{csv_path}': {e}")
 

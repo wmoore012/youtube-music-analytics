@@ -28,7 +28,11 @@ class EducationalContentGenerator:
             "youtube_metrics": {
                 "beginner": {
                     "title": "📊 Understanding YouTube Metrics",
-                    "content": "YouTube provides several key metrics that help us understand how content performs:\n\n• **Views**: How many times people watched the video\n• **Likes**: Positive reactions from viewers\n• **Comments**: Direct engagement and feedback\n• **Shares**: How often people share the content\n• **Watch Time**: Total minutes people spent watching\n\n * Think of these like applause, cheers, and conversations at a live concert!*",
+                    "content": "YouTube provides several key metrics that help us"
+                    " understand how content performs:\n\n• **Views**: How many"
+                    " times people watched the video\n• **Likes**: Positive"
+                    " reactions from viewers\n• **Comments**: Direct engagement"
+                    " and feedback\n• **Shares**: How often people share the content\n• **Watch Time**: Total minutes people spent watching\n\n * Think of these like applause, cheers, and conversations at a live concert!*",
                     "business_context": "For music labels, these metrics help decide which artists to invest in and which songs to promote.",
                 },
                 "intermediate": {
@@ -80,9 +84,11 @@ class EducationalContentGenerator:
 
         self.glossary = {
             "engagement_rate": "The percentage of viewers who interact with content (likes, comments, shares) divided by total views",
-            "viral_coefficient": "How many new viewers each existing viewer brings through sharing and word - of - mouth",
+            "viral_coefficient": "How many new viewers each existing"
+            " viewer brings through sharing and word - of - mouth",
             "retention_curve": "A graph showing what percentage of viewers are still watching at each point in a video",
-            "algorithmic_reach": "How many people see content through YouTube's recommendation system vs. direct searches",
+            "algorithmic_reach": "How many people see content through"
+            " YouTube's recommendation system vs. direct searches",
             "cross_platform_synergy": "How success on one platform (like YouTube) drives growth on others (like Spotify)",
             "demographic_penetration": "What percentage of a target audience group has engaged with an artist's content",
             "momentum_indicator": "Metrics that show whether an artist's career is accelerating or decelerating",

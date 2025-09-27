@@ -8,7 +8,7 @@ import time
 from dotenv import load_dotenv
 
 
-def run_docker_setup():
+def run_docker_setup():  # noqa: C901
     # Load environment variables from .env file
     load_dotenv()
 

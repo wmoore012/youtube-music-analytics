@@ -486,7 +486,7 @@ class ComprehensiveCleanupOrchestrator:
         print(f"📊 Estimated files to process: {sum(len(p.files_to_archive) + len(p.files_to_delete) for p in phases)}")
 
         for i, phase in enumerate(phases, 1):
-            print(f"\n{'=' *80}")
+            print(f"\n{'=' * 80}")
             print(f"Phase {i}/{len(phases)}")
 
             if not self.execute_phase(phase):

@@ -763,7 +763,8 @@ class SentimentEvaluationFramework:
 
         def has_emoji(text_series):
             emoji_pattern = re.compile(
-                r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002700-\U000027BF]+"
+                r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680"
+                "-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002700-\U000027BF]+"
             )
             return text_series.str.contains(emoji_pattern, regex=True, na=False)
 
@@ -1132,7 +1133,7 @@ class SentimentEvaluationFramework:
 
         return processed
 
-    def _classify_music_domain_simple(self, text: str) -> "MusicDomain":
+    def _classify_music_domain_simple(self, text: str) -> "MusicDomain":  # noqa: F821
         """Simple music domain classification."""
         if not ML_MODELS_AVAILABLE:
             return "general"

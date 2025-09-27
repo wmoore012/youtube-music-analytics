@@ -383,7 +383,7 @@ class ParallelInstaller:
             # Use optimized pip command
             cmd = [sys.executable, "-m", "pip", "install", package, "--quiet", "--no - warn - script - location"]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout, check=True)
+            _result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout, check=True)
 
             return True, None
 

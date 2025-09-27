@@ -247,7 +247,7 @@ def main():
             improvement = initial - final
             if improvement > 0:
                 print(f"🎉 Improved by {improvement} errors!")
-        except:
+        except:  # noqa: E722
             pass
 
     # Run tests to make sure we didn't break anything

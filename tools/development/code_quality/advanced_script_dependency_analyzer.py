@@ -558,7 +558,7 @@ def main():
 
     # Dependency analysis
     if args.dependencies or args.usage or args.analyze:
-        dependency_map = analyzer.analyze_dependencies()
+        _dependency_map = analyzer.analyze_dependencies()
         analyzer.print_dependency_report()
 
     # Duplication analysis
@@ -567,7 +567,7 @@ def main():
         print("RUNNING DUPLICATE CODE ANALYSIS...")
         print("=" * 80)
 
-        duplication_report = analyzer.analyze_codebase()
+        _duplication_report = analyzer.analyze_codebase()
 
         if args.extract:
             helpers = analyzer.generate_helper_functions()

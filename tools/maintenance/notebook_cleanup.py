@@ -284,7 +284,7 @@ def main():
         return 1
 
     try:
-        results = cleanup.full_cleanup()
+        _results = cleanup.full_cleanup()
 
         print("\n✅ CLEANUP COMPLETED SUCCESSFULLY")
         print("\n💡 Recommendations:")

@@ -45,7 +45,7 @@ def _run(cmd: list[str], critical: bool = True) -> None:
             print(f"⚠️  {msg}")
 
 
-def create_professional_dashboard(sample_mode=False, execute_after=False):
+def create_professional_dashboard(sample_mode=False, execute_after=False):  # noqa: C901
     """
     Create a fresh Professional Dashboard notebook using proper toolchain.
 

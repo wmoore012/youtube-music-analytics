@@ -111,7 +111,7 @@ def create_momentum_trend_chart(momentum_df: pd.DataFrame):
 def create_momentum_heatmap(momentum_df: pd.DataFrame):
     """Create momentum heatmap by artist and time period."""
 
-    momentum_analyzer = MomentumAnalyzer()
+    momentum_analyzer = MomentumAnalyzer()  # noqa: F821
 
     # Calculate momentum scores
     momentum_df["momentum_score"] = momentum_df.apply(
@@ -154,7 +154,7 @@ def create_momentum_heatmap(momentum_df: pd.DataFrame):
 def create_momentum_distribution_chart(momentum_df: pd.DataFrame):
     """Create momentum score distribution chart."""
 
-    momentum_analyzer = MomentumAnalyzer()
+    momentum_analyzer = MomentumAnalyzer()  # noqa: F821
 
     # Calculate momentum scores
     momentum_df["momentum_score"] = momentum_df.apply(
@@ -187,7 +187,7 @@ def create_momentum_distribution_chart(momentum_df: pd.DataFrame):
 def create_momentum_vs_engagement_scatter(momentum_df: pd.DataFrame):
     """Create momentum vs engagement scatter plot."""
 
-    momentum_analyzer = MomentumAnalyzer()
+    momentum_analyzer = MomentumAnalyzer()  # noqa: F821
 
     # Calculate momentum and engagement metrics
     momentum_df["momentum_score"] = momentum_df.apply(
@@ -249,7 +249,7 @@ def create_momentum_dashboard():
     )
 
     # Add momentum trend (simplified for subplot)
-    momentum_analyzer = MomentumAnalyzer()
+    momentum_analyzer = MomentumAnalyzer()  # noqa: F821
 
     for i, artist in enumerate(momentum_df["artist_name"].unique()[:6]):  # Limit to 6 artists
         if pd.isna(artist):

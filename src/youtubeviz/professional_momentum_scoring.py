@@ -258,7 +258,7 @@ class ProfessionalMomentumScorer:
         comment_rate = total_comments / total_views
 
         # Weight comments higher than likes (comments show deeper engagement)
-        engagement_rate = like_rate * 0.3 + comment_rate * 0.7
+        _engagement_rate = like_rate * 0.3 + comment_rate * 0.7
 
         # Normalize to 0 - 1 scale using industry benchmarks
         # Typical music video engagement rates: 2 - 5% likes, 0.1 - 0.5% comments
@@ -389,7 +389,8 @@ def create_momentum_summary_dataframe(momentum_scores: List[MomentumScore]) -> p
                 "total_videos": score.total_videos,
                 "recent_videos": score.recent_videos,
                 "data_quality_score": score.data_quality_score,
-                "confidence_interval": f"[{score.confidence_interval_lower:.3f}, {score.confidence_interval_upper:.3f}]",
+                "confidence_interval": f"[{score.confidence_interval
+                    _lower:.3f}"}"}, {score.confidence_interval_upper:.3f}]",
             }
         )
 

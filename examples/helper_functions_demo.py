@@ -17,7 +17,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date helpers
+from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date helpers  # noqa: E501
     clean_text_field,
     create_progress_bar,
     execute_query_safely,

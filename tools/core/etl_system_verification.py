@@ -244,7 +244,7 @@ def main():
     error_handling_result = test_error_handling()
 
     # Generate summary
-    summary = generate_system_summary()
+    _summary = generate_system_summary()
 
     # Determine overall status
     all_tests_passed = all(

@@ -531,7 +531,7 @@ class ETLScoringIntegration:
             self.results["migration_results"] = self.run_data_migration()
 
             # Step 3: Register scoring plugins
-            plugin_results = self.register_scoring_plugins()
+            _plugin_results = self.register_scoring_plugins()
 
             # Step 4: Execute scoring algorithms
             self.results["scoring_results"] = self.execute_scoring_algorithms()

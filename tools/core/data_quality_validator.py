@@ -366,9 +366,9 @@ class DataQualityValidator:
                 try:
                     # Find duplicates
                     duplicate_query = f"""
-                        SELECT {key_list}, COUNT(*) as duplicate_count
+                        SELECT {key_list}, COUNT(*) as duplicate_count  # noqa: F821
                         FROM {table}
-                        GROUP BY {key_list}
+                        GROUP BY {key_list}  # noqa: F821
                         HAVING COUNT(*) > 1
                     """
 
@@ -392,7 +392,7 @@ class DataQualityValidator:
                             table,
                             "duplicate_records",
                             f"{check['description']} ({len(duplicates)} groups, {
-                                                      total_duplicate_records} excess records)",
+                                total_duplicate_records} excess records)",
                             total_duplicate_records,
                             samples,
                             f"Remove duplicate records keeping most recent",
@@ -588,7 +588,7 @@ class DataQualityValidator:
                             check["table"],
                             "stale_data",
                             f"{check['description']} is stale ({stale_percentage:.1f}% older than {
-                                                               check['max_age_hours']}h)",
+                                check['max_age_hours']}h)",
                             stale_count,
                             fix_suggestion="Run ETL pipeline to refresh data",
                         )

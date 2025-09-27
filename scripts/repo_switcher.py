@@ -112,7 +112,7 @@ class RepositorySwitcher:
                 print(f"   Status: ⚠️  Not in git repository")
             else:
                 try:
-                    result = subprocess.run(
+                    _result = subprocess.run(
                         ["git", "remote", "get - url", repo_config["name"]], capture_output=True, text=True, check=True
                     )
                     print(f"   Status: ✅ Remote configured")

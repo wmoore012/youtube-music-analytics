@@ -166,7 +166,7 @@ def fix_unused_variables():
                     print(f"   Error fixing {file_path}: {e}")
 
 
-def fix_line_length():
+def fix_line_length():  # noqa: C901
     """Try to fix some simple line length issues."""
     print("📏 Fixing line length issues...")
 

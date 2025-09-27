@@ -642,7 +642,7 @@ class NotebookValidator:
 
         # Check required cell fields
         required_fields = ["cell_type"]
-        for field in required_fields:
+        for field in required_fields:  # noqa: F402
             if field not in cell:
                 result.add_error(f"Cell {cell_index} missing required field: {field}")
 

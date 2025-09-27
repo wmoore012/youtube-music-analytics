@@ -43,7 +43,7 @@ def fix_bare_except_clauses():
             # Fix bare except Exception: pass
             content = re.sub(
                 r"except Exception:\s*\n\s * pass",
-                'except Exception as e:\n                logging.warning(f"Operation failed: {e}")\n                pass',
+                'except Exception as e:\n                logging.warning(f"Operation failed: {e}")\n                pass',  # noqa: E501
                 content,
             )
 

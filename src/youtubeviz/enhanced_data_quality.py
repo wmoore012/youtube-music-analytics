@@ -135,7 +135,8 @@ class EnhancedDataQualityManager:
                 {
                     "type": "missing_comment_text",
                     "description": "Comments without text content",
-                    "query": "SELECT COUNT(*) FROM youtube_comments WHERE comment_text IS NULL OR comment_text_item = ''",
+                    "query": "SELECT COUNT(*) FROM youtube_comments WHERE comment"
+                    "_text IS NULL OR comment_text_item = ''",
                     "severity": "critical",
                     "table": "youtube_comments",
                     "column": "comment_text",
@@ -167,7 +168,8 @@ class EnhancedDataQualityManager:
                 {
                     "type": "negative_metrics",
                     "description": "Records with negative view / like / comment counts",
-                    "query": "SELECT COUNT(*) FROM youtube_metrics WHERE view_count < 0 OR like_count < 0 OR comment_count < 0",
+                    "query": "SELECT COUNT(*) FROM youtube_metrics WHERE view"
+                    "_count < 0 OR like_count < 0 OR comment_count < 0",
                     "severity": "critical",
                     "table": "youtube_metrics",
                     "column": "metrics",

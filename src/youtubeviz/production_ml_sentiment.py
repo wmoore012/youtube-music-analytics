@@ -241,7 +241,8 @@ class ProductionMLSentiment:
         for i, (_, row) in enumerate(ml_results.head(5).iterrows()):
             if row["sentiment"] != "neutral":
                 _comment_text_item = comments_df.iloc[i]["comment_text"]
-                print(f"   \"{comment_text[:50]}...\" → {row['sentiment'].upper()} ({row['confidence']:.3f})")
+                print(f"   \"{_comment_text_item[:50]}...\" → {row['sentiment'].upper()} "
+                      f"({row['confidence']:.3f})")
 
         return ml_results
 

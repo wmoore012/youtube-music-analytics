@@ -232,7 +232,8 @@ class MusicIndustrySentimentDataset:
                     "pure fire", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.95, "Absolute excellence"
                 ),
                 MusicSlangEntry(
-                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.90, "Song hits hard / sounds great"
+                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE"
+                        "_GENERAL, 0.90, "Song hits hard / sounds great"
                 ),
                 MusicSlangEntry(
                     "this slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.90, "This song hits hard"

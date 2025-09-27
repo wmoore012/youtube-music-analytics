@@ -391,7 +391,7 @@ def main():
         check_database_schema(engine)
 
         # Step 2: Update sentiment analysis
-        results = update_sentiment_analysis(engine)
+        _results = update_sentiment_analysis(engine)
 
         # Step 3: Verify update
         if verify_sentiment_update(engine):

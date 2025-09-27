@@ -482,7 +482,7 @@ def print_music_analysis_summary():
         isrc_indicator = "🎵" if video["has_isrc"] else "📹"
         print(
             f"   {isrc_indicator} {video['artist_name']}: {
-                video['song_title']} ({video['video_type']}) - {video['view_count']:,} views (${video['est_revenue_usd']:.2f})"
+                video['song_title']} ({video['video_type']}) - {video['view_count']:,                                                                } views (${video['est_revenue_usd']:.2f})"
         )
 
     print(f"\n✅ Music analysis complete! Tables saved to music_analysis_tables/")

@@ -158,7 +158,7 @@ def test_notebook_outputs_are_readable():
     print(f"✅ Notebook outputs are readable: {output_ratio:.1%} meaningful output ratio")
 
 
-def test_notebooks_produce_interactive_charts():
+def test_notebooks_produce_interactive_charts():  # noqa: C901
     """Test that notebooks produce interactive charts as expected."""
     notebooks_dir = Path("notebooks")
 
@@ -227,7 +227,7 @@ def test_notebooks_produce_interactive_charts():
     for nb_info in chart_notebooks:
         print(
             f"  {nb_info['notebook']}: {nb_info['interactive_charts']
-                }/{nb_info['total_charts']} interactive ({nb_info['interactivity_rate']:.1%})"
+                                        }/{nb_info['total_charts']} interactive ({nb_info['interactivity_rate']:.1%})"
         )
 
     # Assert overall interactivity

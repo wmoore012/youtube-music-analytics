@@ -385,7 +385,7 @@ class SentimentModelTester:
 
             for model_name in ["VADER", "TextBlob", "Enhanced"]:
                 if results[model_name] and phrase in results[model_name]:
-                    score = results[model_name][phrase]["score"]
+                    _score = results[model_name][phrase]["score"]
                     sentiment = results[model_name][phrase]["sentiment"]
                     row += f" | {sentiment[:6]:<8}"
                 else:

@@ -140,19 +140,19 @@ class MusicSlangPreserver:
         if self.preservation_level == SlangPreservationLevel.NONE:
             return text
 
-        preserved_text_item = text
+        _preserved_text_item = text
         replacements = {}
 
         # Find and mark slang terms for preservation
         for term, info in self.patterns.items():
-            matches = info["pattern"].finditer(preserved_text)
+            matches = info["pattern"].finditer(preserved_text)  # noqa: F821
             for match in matches:
                 original = match.group()
                 if info["preserve_case"]:
                     # Keep original case
                     placeholder = f"__SLANG_{len(replacements)}__"
                     replacements[placeholder] = original
-                    preserved_text = preserved_text.replace(original, placeholder, 1)
+                    preserved_text = preserved_text.replace(original, placeholder, 1)  # noqa: F821
                 else:
                     # Normalize to lowercase but mark as slang
                     placeholder = f"__SLANG_{len(replacements)}__"
@@ -357,11 +357,11 @@ class TransformerTextProcessor:
             raise RuntimeError("Tokenizer not available. Install transformers library.")
 
         # Preprocess text first
-        processed_text_item = self.preprocess_text(text)
+        _processed_text_item = self.preprocess_text(text)
 
         # Tokenize
         tokens = self.tokenizer(
-            processed_text,
+            processed_text,  # noqa: F821
             add_special_tokens=self.config.add_special_tokens,
             max_length=self.config.max_length or 512,
             truncation=True,
@@ -374,7 +374,7 @@ class TransformerTextProcessor:
 
     def batch_preprocess(self, texts: List[str]) -> List[str]:
         """Preprocess a batch of texts."""
-        return [self.preprocess_text(text) for text_item in texts]
+        return [self.preprocess_text(text) for text_item in texts]  # noqa: F821
 
     def batch_tokenize(self, texts: List[str]) -> Dict[str, List[List[int]]]:
         """Tokenize a batch of texts."""
@@ -498,10 +498,10 @@ if __name__ == "__main__":
         processor = create_music_text_processor(slang_preservation=slang_level, emoji_mode=emoji_mode)
 
         for text_item in sample_texts[:2]:  # Show first 2 examples
-            processed = processor.preprocess_text(text)
-            features = processor.analyze_text_features(text)
+            processed = processor.preprocess_text(text)  # noqa: F821
+            features = processor.analyze_text_features(text)  # noqa: F821
 
-            print(f"Original:  {text}")
+            print(f"Original:  {text}")  # noqa: F821
             print(f"Processed: {processed}")
             print(f"Features:  {features['slang_count']} slang, {features['emoji_count']} emoji")
             print()

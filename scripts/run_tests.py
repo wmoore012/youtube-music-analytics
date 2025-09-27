@@ -36,7 +36,7 @@ def run_command(cmd, description=""):
         return False
 
 
-def main():
+def main():  # noqa: C901
     parser = argparse.ArgumentParser(description="Run ETL pipeline tests")
 
     # Test selection options

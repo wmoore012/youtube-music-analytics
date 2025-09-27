@@ -24,7 +24,7 @@ from tests.test_data_quality import TestDataQuality
 from web.etl_helpers import get_engine
 
 
-def run_quality_checks(fail_on_duplicates=False, output_format="text"):
+def run_quality_checks(fail_on_duplicates=False, output_format="text"):  # noqa: C901
     """Run comprehensive data quality checks."""
 
     results = {"timestamp": datetime.now().isoformat(), "status": "PASSED", "checks": {}, "summary": {}, "errors": []}

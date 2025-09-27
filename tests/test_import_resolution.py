@@ -116,7 +116,7 @@ class TestPipInstallEditable:
         """Test that the package is properly installed in development mode"""
         # Check if package is in sys.path
         import os
-        import sys
+#         import sys
 
         # Look for the package in installed packages or development paths
         package_found = False
