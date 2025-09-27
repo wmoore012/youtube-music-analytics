@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Data Quality Monitoring Script
 
@@ -130,7 +130,7 @@ class DataQualityMonitor:
             with self.engine.connect() as conn:
                 from sqlalchemy import text
 
-                # Check like-to-view ratios
+                # Check like - to - view ratios
                 like_ratio_query = text(
                     """
                     SELECT COUNT(*) as violation_count
@@ -152,12 +152,12 @@ class DataQualityMonitor:
                     results["alerts"].append(
                         {
                             "severity": "MEDIUM",
-                            "issue": f"{like_violations} videos have suspicious like-to-view ratios",
+                            "issue": f"{like_violations} videos have suspicious like - to - view ratios",
                             "recommendation": "Review videos with unusually high engagement rates",
                         }
                     )
 
-                # Check comment-to-view ratios
+                # Check comment - to - view ratios
                 comment_ratio_query = text(
                     """
                     SELECT COUNT(*) as violation_count
@@ -179,7 +179,7 @@ class DataQualityMonitor:
                     results["alerts"].append(
                         {
                             "severity": "MEDIUM",
-                            "issue": f"{comment_violations} videos have suspicious comment-to-view ratios",
+                            "issue": f"{comment_violations} videos have suspicious comment - to - view ratios",
                             "recommendation": "Review videos with unusually high comment rates",
                         }
                     )
@@ -424,7 +424,7 @@ class DataQualityMonitor:
         return monitoring_results
 
     def generate_monitoring_report(self, results: Dict[str, Any]) -> str:
-        """Generate human-readable monitoring report."""
+        """Generate human - readable monitoring report."""
         report_lines = [
             "=" * 60,
             "📊 DATA QUALITY MONITORING REPORT",

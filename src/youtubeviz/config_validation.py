@@ -21,7 +21,7 @@ def get_artists_from_env() -> Tuple[List[str], int]:
     load_dotenv()
 
     # Pattern to match YT_ARTISTNAME_YT variables
-    artist_pattern = r"^YT_([A-Z0-9_]+)_YT="
+    artist_pattern = r"^YT_([A - Z0 - 9_]+)_YT="
 
     artists = []
 
@@ -95,7 +95,7 @@ def validate_artist_count_in_data(df: pd.DataFrame, artist_col: str = "artist_na
     # Check if counts match
     count_match = actual_count == expected_count
 
-    # Check if artist names match (case-insensitive)
+    # Check if artist names match (case - insensitive)
     expected_lower = [name.lower() for name in expected_artists]
     actual_lower = [name.lower() for name in actual_artists]
     names_match = set(expected_lower) == set(actual_lower)
@@ -189,7 +189,7 @@ def print_validation_results(validation_result: Dict[str, any], loud: bool = Tru
     if loud:
         print("\n🔧 RECOMMENDED ACTIONS:")
         if validation_result["actual_count"] == 0:
-            print("   1. Run ETL pipeline to populate database: python tools/etl/run_focused_etl.py")
+            print("   1. Run ETL pipeline to populate database: python tools / etl / run_focused_etl.py")
             print("   2. Check database connection and table structure")
         elif validation_result.get("missing_artists"):
             print("   1. Run ETL pipeline to fetch missing artist data")

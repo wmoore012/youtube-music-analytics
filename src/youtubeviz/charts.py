@@ -6,6 +6,16 @@ from typing import Any, List, Mapping, Optional, Sequence
 
 import pandas as pd
 
+from .chart_contracts import (
+    ChartSpec,
+    apply_plotly_hover_enhancements,
+    bulletproof_chart,
+    create_altair_brush_selection,
+    create_altair_click_selection,
+    create_interactive_plotly_config,
+    setup_plotly_animation,
+)
+
 try:
     import plotly.express as px
     import plotly.graph_objects as go
@@ -66,7 +76,7 @@ _SCHEME_COLORS: dict[str, list[str]] = {
 
 
 def _default_palette(n: int) -> list[str]:
-    # Plotly category10-like fallback palette
+    # Plotly category10 - like fallback palette
     base = [
         "#1f77b4",
         "#ff7f0e",
@@ -102,7 +112,7 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
     """
     # Input validation - reject DataFrames explicitly
     if hasattr(artists, "columns"):  # This catches pandas DataFrames
-        raise TypeError("artists cannot be a DataFrame. Pass a list/array of artist names instead.")
+        raise TypeError("artists cannot be a DataFrame. Pass a list / array of artist names instead.")
 
     if not isinstance(artists, (list, tuple, pd.Index, pd.Series)) and not hasattr(artists, "__iter__"):
         raise TypeError(f"artists must be a sequence of strings, got {type(artists)}")
@@ -115,7 +125,7 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
     except Exception as e:
         raise TypeError(f"Could not convert artists to list of strings: {e}")
 
-    # Load user-specified mapping from env (JSON or file path)
+    # Load user - specified mapping from env (JSON or file path)
     env_map: dict[str, str] = {}
     # (a) JSON directly
     raw = os.getenv("ARTIST_COLORS_JSON")
@@ -129,7 +139,7 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
         path = os.getenv("ARTIST_COLORS_FILE")
         if path and os.path.exists(path):
             try:
-                with open(path, "r", encoding="utf-8") as fh:
+                with open(path, "r", encoding="utf - 8") as fh:
                     env_map = json.load(fh)
             except Exception:
                 env_map = {}
@@ -194,7 +204,7 @@ def enhance_chart_beauty(
         "width": None,
         "title_size": 24,
         "axis_title_size": 14,
-        "font_family": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+        "font_family": "system - ui, -apple - system, Segoe UI, Roboto, sans - serif",
     }
 
     if config:
@@ -287,7 +297,7 @@ def enhance_chart_beauty(
     return chart
 
 
-def apply_color_scheme(
+def apply_color_scheme(  # noqa: C901
     chart,
     scheme_name: Optional[str] = None,
     custom_colors: Optional[Mapping[str, str]] = None,
@@ -397,7 +407,7 @@ def create_chart_annotations(
     chart_type: str = "line",
     highlight_points: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> list[dict[str, Any]]:
-    """Generate Plotly-style annotations for insights and highlights."""
+    """Generate Plotly - style annotations for insights and highlights."""
 
     annotations: list[dict[str, Any]] = []
     insight_texts = [str(text) for text in (insights or [])][:5]
@@ -466,6 +476,14 @@ def create_chart_annotations(
     return annotations
 
 
+@bulletproof_chart(
+    ChartSpec(
+        name="ViewsOverTime",
+        required_columns=["published_at", "view_count", "artist_name"],
+        max_rows=200_000,
+        timeout_sec=8,
+    )
+)
 def views_over_time_plotly(
     df: pd.DataFrame,
     date_col: str = "published_at",
@@ -474,44 +492,98 @@ def views_over_time_plotly(
     hover_col: Optional[str] = None,
     animate_by: Optional[str] = None,
 ):
-    """Small wrapper that returns a Plotly figure (or df) for views over time.
+    """
+    Interactive views over time chart with animation and hover features.
 
-    If Plotly isn't available, return the input dataframe so notebooks can still inspect data.
+    Features:
+    - Interactive legend (click to hide / show artists)
+    - Hover tooltips with detailed metrics (ISRC, DSP data)
+    - Optional animation by date with stable axis ranges
+    - Fixed axis ranges to prevent jitter
     """
     if px is None:
-        return df
-    fig = px.line(
-        df.sort_values(date_col),
-        x=date_col,
-        y=value_col,
-        color=group_col,
-        hover_name=hover_col,
+        raise ImportError("Plotly is required for this chart")
+
+    # Sort data for proper line connections
+    df_sorted = df.sort_values([date_col, group_col])
+
+    # Prepare hover data (include ISRC / DSP if available)
+    hover_data = []
+    if "isrc" in df_sorted.columns:
+        hover_data.append("isrc")
+    if "dsp" in df_sorted.columns:
+        hover_data.append("dsp")
+
+    # Create base chart with animation frame
+    if animate_by:
+        fig = px.line(
+            df_sorted,
+            x=date_col,
+            y=value_col,
+            color=group_col,
+            hover_name=hover_col,
+            hover_data=hover_data,
+            animation_frame=animate_by,
+            title="📈 Views Over Time (Animated)",
+        )
+        # Setup animation with stable axes and smooth transitions
+        setup_plotly_animation(fig, autoplay=False, frame_duration=300, transition_duration=200)
+    else:
+        fig = px.line(
+            df_sorted,
+            x=date_col,
+            y=value_col,
+            color=group_col,
+            hover_name=hover_col,
+            hover_data=hover_data,
+            title="📈 Views Over Time",
+        )
+
+    # Pin axis ranges to prevent jitter (critical for animations)
+    date_range = [df_sorted[date_col].min(), df_sorted[date_col].max()]
+    view_range = [0, df_sorted[value_col].max() * 1.1]  # 10% padding above max
+
+    fig.update_layout(
+        xaxis_range=date_range,
+        yaxis_range=view_range,
+        hovermode="x unified",
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
+
+    # Apply hover enhancements with music industry context
+    apply_plotly_hover_enhancements(fig, hover_data)
+
     return fig
 
 
+@bulletproof_chart(
+    ChartSpec(
+        name="ViewsOverTimeAdvanced",
+        required_columns=["published_at", "view_count", "artist_name"],
+        max_rows=150_000,
+        timeout_sec=10,
+    )
+)
 def views_over_time_advanced(
     df: pd.DataFrame,
-    date_col: str,
-    value_col: str,
-    group_col: str,
+    date_col: str = "published_at",
+    value_col: str = "view_count",
+    group_col: str = "artist_name",
     rolling_window: int = 7,
     highlight_artists: Optional[Sequence[str]] = None,
     palette_override: Optional[Mapping[str, str]] = None,
-) -> Optional["go.Figure"]:
-    """Interactive time series with optional rolling averages and highlights.
+) -> "go.Figure":
+    """Interactive time series with rolling averages and artist highlights.
 
-    - Draws per-artist daily series
-    - Adds a rolling mean trace per artist
-    - Highlights selected artists with thicker lines
-
-    Returns a Plotly figure, or None if Plotly is unavailable.
+    Features:
+    - Per - artist daily series with rolling averages
+    - Highlighted artists with thicker lines
+    - Stable axis ranges and smooth interactions
+    - Music industry hover context
     """
     if px is None or go is None:
-        return None
-
-    if df.empty:
-        return go.Figure()
+        raise ImportError("Plotly is required for this chart")
 
     # Ensure datetime sort
     data = df[[date_col, value_col, group_col]].dropna().copy()
@@ -528,11 +600,16 @@ def views_over_time_advanced(
     hi = set(a for a in (highlight_artists or []) if a in artists)
 
     fig = go.Figure()
+
+    # Calculate stable axis ranges
+    date_range = [data[date_col].min(), data[date_col].max()]
+    value_range = [0, data[value_col].max() * 1.1]
+
     for artist in artists:
         sub = data[data[group_col] == artist]
-        color = color_map.get(artist, None)
-        width_main = 2.0 if artist in hi else 1.2
-        width_roll = 3.0 if artist in hi else 1.6
+        color = color_map.get(artist, "#1f77b4")  # Default blue if no color
+        width_main = 3.0 if artist in hi else 1.5
+        width_roll = 4.0 if artist in hi else 2.0
 
         # Raw daily series
         fig.add_trace(
@@ -542,9 +619,9 @@ def views_over_time_advanced(
                 mode="lines",
                 name=f"{artist} (daily)",
                 line=dict(color=color, width=width_main, dash="solid"),
-                hovertemplate="%{x|%b %d, %Y}<br>%{y:,} views<extra>" + artist + "</extra>",
+                hovertemplate="<b>" + artist + "</b><br>%{x|%b %d, %Y}<br>Daily: %{y:,} views<extra></extra>",
                 legendgroup=artist,
-                opacity=0.5,
+                opacity=0.6,
             )
         )
 
@@ -556,61 +633,119 @@ def views_over_time_advanced(
                 mode="lines",
                 name=f"{artist} ({rolling_window}d avg)",
                 line=dict(color=color, width=width_roll, dash="solid"),
-                hovertemplate=f"%{{x|%b %d, %Y}}<br>{rolling_window}d avg: %{{y:,.0f}}<extra>" + artist + "</extra>",
+                hovertemplate=f"<b>{
+                    artist}</b><br>%{{x|%b %d, %Y}}<br>{rolling_window}d avg: %{{y:,.0f}} views<extra></extra>",
                 legendgroup=artist,
             )
         )
 
     fig.update_layout(
-        title="📈 Views Over Time (with rolling average)",
+        title="📈 Views Over Time (with rolling averages)",
         xaxis_title="Date",
         yaxis_title="Views",
+        xaxis_range=date_range,
+        yaxis_range=value_range,
         hovermode="x unified",
         legend_title="Artist",
         template="plotly_white",
     )
+
     return fig
 
 
+@bulletproof_chart(
+    ChartSpec(
+        name="ArtistCompareAltair", required_columns=["artist_name", "view_count"], max_rows=100_000, timeout_sec=6
+    )
+)
 def artist_compare_altair(df: pd.DataFrame, group_col: str = "artist_name", value_col: str = "view_count"):
-    """Return a simple Altair bar chart comparing artists by an aggregated value.
+    """
+    Interactive Altair bar chart with brush selection for artist comparison.
 
-    If Altair isn't available, return a grouped dataframe as fallback.
+    Features:
+    - Brush selection for filtering
+    - Click selection for multi - artist comparison
+    - Linked interactions with other charts
     """
     if alt is None:
-        # provide a simple aggregated df as fallback
+        # Provide aggregated DataFrame as fallback
         return df.groupby(group_col, as_index=False)[value_col].sum().sort_values(value_col, ascending=False)
 
+    # Aggregate data
     agg = df.groupby(group_col, as_index=False)[value_col].sum()
-    chart = (
-        alt.Chart(agg)
-        .mark_bar()
+
+    # Create brush and click selections
+    brush = create_altair_brush_selection()
+    click = create_altair_click_selection()
+
+    # Base chart with selections
+    base = alt.Chart(agg).add_params(brush, click)
+
+    # Main bar chart
+    bars = (
+        base.mark_bar(stroke="black", strokeWidth=1)
         .encode(
-            x=alt.X(group_col + ":N", sort="-y"),
-            y=value_col + ":Q",
-            tooltip=[group_col, value_col],
+            x=alt.X(f"{group_col}:N", sort="-y", title="Artist"),
+            y=alt.Y(f"{value_col}:Q", title="Total Views"),
+            color=alt.condition(click, alt.Color(f"{group_col}:N", legend=None), alt.value("lightgray")),
+            opacity=alt.condition(brush, alt.value(1.0), alt.value(0.7)),
+            tooltip=[
+                alt.Tooltip(f"{group_col}:N", title="Artist"),
+                alt.Tooltip(f"{value_col}:Q", title="Total Views", format=","),
+            ],
         )
+        .properties(width=600, height=400, title="Artist Performance Comparison (Interactive)")
     )
-    return chart
+
+    # Add text labels on bars
+    text = base.mark_text(align="center", baseline="bottom", dy=-5, fontSize=10).encode(
+        x=alt.X(f"{group_col}:N", sort="-y"),
+        y=alt.Y(f"{value_col}:Q"),
+        text=alt.Text(f"{value_col}:Q", format=".2s"),
+        opacity=alt.condition(brush, alt.value(1.0), alt.value(0.5)),
+    )
+
+    return (bars + text).resolve_scale(color="independent")
 
 
+@bulletproof_chart(
+    ChartSpec(name="DivergentSentimentChart", required_columns=["artist_name"], max_rows=100_000, timeout_sec=8)
+)
 def create_divergent_sentiment_chart(
-    df: pd.DataFrame, artist_col: str, sentiment_col: str, title: Optional[str] = None
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    sentiment_col: str = "sentiment_category",
+    title: Optional[str] = None,
 ):
     """
     Create a divergent stacked bar chart showing sentiment breakdown by artist.
 
-    Args:
-        df: DataFrame with sentiment data
-        artist_col: Column name for artist names
-        sentiment_col: Column name for sentiment categories
-        title: Optional chart title
-
-    Returns:
-        Plotly figure with divergent bar chart
+    Features:
+    - Divergent bars (negative left, positive right)
+    - Interactive hover with detailed metrics
+    - Stable axis ranges and smooth interactions
+    - Music industry color scheme
     """
-    if px is None:
-        return df
+    if px is None or go is None:
+        raise ImportError("Plotly is required for this chart")
+
+    # Handle missing sentiment column by creating proxy from engagement
+    if sentiment_col not in df.columns:
+        # Create sentiment proxy from engagement metrics
+        df = df.copy()
+        likes_col = "like_count" if "like_count" in df.columns else "likes"
+        comments_col = "comment_count" if "comment_count" in df.columns else "comments"
+        views_col = "view_count" if "view_count" in df.columns else "views"
+
+        # Calculate engagement rate
+        df["engagement_rate"] = (df.get(likes_col, 0).fillna(0) + df.get(comments_col, 0).fillna(0)) / df.get(
+            views_col, 1
+        ).fillna(1).clip(lower=1)
+
+        # Categorize into sentiment buckets
+        df[sentiment_col] = pd.cut(
+            df["engagement_rate"], bins=[0, 0.02, 0.04, float("inf")], labels=["negative", "neutral", "positive"]
+        )
 
     # Calculate sentiment percentages by artist
     sentiment_counts = df.groupby([artist_col, sentiment_col]).size().unstack(fill_value=0)
@@ -619,19 +754,47 @@ def create_divergent_sentiment_chart(
     # Reset index for plotting
     sentiment_pct = sentiment_pct.reset_index()
 
-    # Ensure we have positive and negative columns
-    if "positive" not in sentiment_pct.columns:
-        sentiment_pct["positive"] = 0
-    if "negative" not in sentiment_pct.columns:
-        sentiment_pct["negative"] = 0
+    # Ensure we have required sentiment columns
+    for col in ["positive", "negative", "neutral"]:
+        if col not in sentiment_pct.columns:
+            sentiment_pct[col] = 0
 
     # Make negative values negative for divergent chart
-    sentiment_pct["negative"] = -sentiment_pct["negative"]
+    sentiment_pct["negative_display"] = -sentiment_pct["negative"]
 
     # Create divergent bar chart
     fig = go.Figure()
 
-    # Add positive bars
+    # Add negative bars (left side)
+    fig.add_trace(
+        go.Bar(
+            name="Negative",
+            x=sentiment_pct[artist_col],
+            y=sentiment_pct["negative_display"],
+            marker_color="#DC143C",  # Crimson
+            text=[f"{val:.1f}%" for val in sentiment_pct["negative"]],
+            textposition="inside",
+            hovertemplate="<b>%{x}</b><br>Negative: %{text}<br>Count: %{customdata}<extra></extra>",
+            customdata=sentiment_counts.get("negative", [0] * len(sentiment_pct)),
+        )
+    )
+
+    # Add neutral bars (center)
+    if "neutral" in sentiment_pct.columns and sentiment_pct["neutral"].sum() > 0:
+        fig.add_trace(
+            go.Bar(
+                name="Neutral",
+                x=sentiment_pct[artist_col],
+                y=sentiment_pct["neutral"],
+                marker_color="#FFD700",  # Gold
+                text=[f"{val:.1f}%" for val in sentiment_pct["neutral"]],
+                textposition="inside",
+                hovertemplate="<b>%{x}</b><br>Neutral: %{text}<br>Count: %{customdata}<extra></extra>",
+                customdata=sentiment_counts.get("neutral", [0] * len(sentiment_pct)),
+            )
+        )
+
+    # Add positive bars (right side)
     fig.add_trace(
         go.Bar(
             name="Positive",
@@ -640,30 +803,24 @@ def create_divergent_sentiment_chart(
             marker_color="#2E8B57",  # Sea green
             text=[f"{val:.1f}%" for val in sentiment_pct["positive"]],
             textposition="inside",
+            hovertemplate="<b>%{x}</b><br>Positive: %{text}<br>Count: %{customdata}<extra></extra>",
+            customdata=sentiment_counts.get("positive", [0] * len(sentiment_pct)),
         )
     )
 
-    # Add negative bars
-    fig.add_trace(
-        go.Bar(
-            name="Negative",
-            x=sentiment_pct[artist_col],
-            y=sentiment_pct["negative"],
-            marker_color="#DC143C",  # Crimson
-            text=[f"{abs(val):.1f}%" for val in sentiment_pct["negative"]],
-            textposition="inside",
-        )
-    )
-
-    # Update layout
+    # Update layout with stable ranges
     fig.update_layout(
         title=title or "Sentiment Breakdown by Artist",
         xaxis_title="Artist",
         yaxis_title="Sentiment Percentage",
         barmode="relative",
         hovermode="x unified",
-        yaxis=dict(range=[-100, 100]),
+        yaxis=dict(range=[-100, 100], zeroline=True, zerolinecolor="black", zerolinewidth=2),
+        template="plotly_white",
     )
+
+    # Add zero line annotation
+    fig.add_hline(y=0, line_dash="solid", line_color="black", line_width=2)
 
     return fig
 
@@ -743,7 +900,7 @@ def create_sentiment_wordcloud(comments: List[str], sentiment_type: str = "posit
         img_str = base64.b64encode(img_buffer.getvalue()).decode()
         plt.close()
 
-        return f"data:image/png;base64,{img_str}"
+        return f"data:image / png;base64,{img_str}"
 
     except ImportError:
         # WordCloud not available, return text summary
@@ -757,7 +914,7 @@ def create_sentiment_timeline(
     Create timeline chart showing sentiment changes over time.
 
     Args:
-        df: DataFrame with time-series sentiment data
+        df: DataFrame with time - series sentiment data
         date_col: Column name for dates
         sentiment_col: Column name for sentiment scores
         artist_col: Column name for artist names
@@ -786,7 +943,7 @@ def create_sentiment_timeline(
 
 def create_artist_strengths_venn_diagram(df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str):
     """
-    Create overlapping circle/Venn diagram showing what artists are doing well as a whole.
+    Create overlapping circle / Venn diagram showing what artists are doing well as a whole.
 
     Note: True Venn diagrams are complex in Plotly. This creates an alternative
     visualization showing overlapping strengths using bubble charts.
@@ -839,14 +996,14 @@ def create_isrc_balance_chart(df: pd.DataFrame, artist_col: str, isrc_col: str, 
     if px is None:
         return df
 
-    # Calculate ISRC vs non-ISRC views by artist
+    # Calculate ISRC vs non - ISRC views by artist
     isrc_data = []
 
     for artist in df[artist_col].unique():
         artist_df = df[df[artist_col] == artist]
 
-        isrc_views = artist_df[artist_df[isrc_col] == True][views_col].sum()
-        non_isrc_views = artist_df[artist_df[isrc_col] == False][views_col].sum()
+        isrc_views = artist_df[artist_df[isrc_col] is True][views_col].sum()
+        non_isrc_views = artist_df[artist_df[isrc_col] is False][views_col].sum()
 
         isrc_data.extend(
             [
@@ -880,14 +1037,14 @@ def create_duration_breakdown_chart(
     df: pd.DataFrame, artist_col: str, duration_col: str, views_col: str, short_form_threshold: int = 300
 ):
     """
-    Create short-form vs long-form video breakdown with view totals.
+    Create short - form vs long - form video breakdown with view totals.
 
     Args:
         df: DataFrame with duration data
         artist_col: Column name for artist names
         duration_col: Column name for duration in seconds
         views_col: Column name for view counts
-        short_form_threshold: Threshold in seconds for short-form classification
+        short_form_threshold: Threshold in seconds for short - form classification
 
     Returns:
         Plotly figure showing duration breakdown
@@ -898,7 +1055,7 @@ def create_duration_breakdown_chart(
     # Classify videos by duration
     df_copy = df.copy()
     df_copy["duration_category"] = df_copy[duration_col].apply(
-        lambda x: "Short-form (≤5 min)" if x <= short_form_threshold else "Long-form (>5 min)"
+        lambda x: "Short - form (≤5 min)" if x <= short_form_threshold else "Long - form (>5 min)"
     )
 
     # Calculate views by duration category and artist
@@ -910,11 +1067,11 @@ def create_duration_breakdown_chart(
         x=artist_col,
         y=views_col,
         color="duration_category",
-        title="Short-form vs Long-form Content Performance",
+        title="Short - form vs Long - form Content Performance",
         labels={views_col: "Total Views", artist_col: "Artist", "duration_category": "Video Duration"},
         color_discrete_map={
-            "Short-form (≤5 min)": "#4169E1",  # Royal blue
-            "Long-form (>5 min)": "#32CD32",  # Lime green
+            "Short - form (≤5 min)": "#4169E1",  # Royal blue
+            "Long - form (>5 min)": "#32CD32",  # Lime green
         },
     )
 
@@ -980,7 +1137,7 @@ def create_artist_content_comparison_chart(
     df: pd.DataFrame, artist_col: str, content_type_col: str, views_col: str, comparison_type: str = "side_by_side"
 ):
     """
-    Create side-by-side artist comparison chart.
+    Create side - by - side artist comparison chart.
 
     Args:
         df: DataFrame with content data
@@ -1004,7 +1161,7 @@ def create_artist_content_comparison_chart(
             x=content_type_col,
             y=views_col,
             color=artist_col,
-            title="Side-by-Side Artist Content Comparison",
+            title="Side - by - Side Artist Content Comparison",
             labels={views_col: "Total Views", content_type_col: "Content Type", artist_col: "Artist"},
             barmode="group",
         )
@@ -1048,12 +1205,12 @@ def create_roster_content_overview_chart(df: pd.DataFrame, artist_col: str, cont
         content_totals,
         values=views_col,
         names=content_type_col,
-        title="Roster-Wide Content Strategy Overview",
+        title="Roster - Wide Content Strategy Overview",
         labels={views_col: "Total Views", content_type_col: "Content Type"},
     )
 
     # Update layout
-    fig.update_traces(textposition="inside", textinfo="percent+label")
+    fig.update_traces(textposition="inside", textinfo="percent + label")
     fig.update_layout(showlegend=True)
 
     return fig
@@ -1109,7 +1266,7 @@ def create_content_distribution_pie_chart(df: pd.DataFrame, content_type_col: st
 
     fig = px.pie(df, values=views_col, names=content_type_col, title="Content Distribution by Views")
 
-    fig.update_traces(textposition="inside", textinfo="percent+label")
+    fig.update_traces(textposition="inside", textinfo="percent + label")
 
     return fig
 
@@ -1353,8 +1510,8 @@ def create_performance_diversity_bubble_chart(
         performance_col: Column name for performance metric
         diversity_col: Column name for diversity metric
         size_col: Optional column name for bubble size
-        x_col: Optional x-axis column (overrides performance_col)
-        y_col: Optional y-axis column (overrides diversity_col)
+        x_col: Optional x - axis column (overrides performance_col)
+        y_col: Optional y - axis column (overrides diversity_col)
 
     Returns:
         Plotly figure with bubble chart
@@ -1366,7 +1523,7 @@ def create_performance_diversity_bubble_chart(
     x_axis = x_col if x_col else performance_col
     y_axis = y_col if y_col else diversity_col
 
-    # Use the data as-is if it already has the right structure
+    # Use the data as - is if it already has the right structure
     if x_axis in df.columns and y_axis in df.columns:
         bubble_data = df.copy()
     else:
@@ -1448,7 +1605,7 @@ def create_venn_diagram_chart(df: pd.DataFrame, artist_col: str, categories: Lis
         title: Optional chart title
 
     Returns:
-        Plotly figure with Venn-like visualization
+        Plotly figure with Venn - like visualization
     """
     if px is None:
         return df

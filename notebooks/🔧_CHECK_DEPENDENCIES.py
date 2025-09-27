@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-🔧 Dependency Checker - Check and auto-install required packages
+🔧 Dependency Checker - Check and auto - install required packages
 
 Run this before using the 🚀 play button to make sure everything is ready.
-Now with AUTO-INSTALL capability!
+Now with AUTO - INSTALL capability!
 
 Usage:
     python 🔧_CHECK_DEPENDENCIES.py
-    python 🔧_CHECK_DEPENDENCIES.py --auto-install
+    python 🔧_CHECK_DEPENDENCIES.py --auto - install
 """
 
 import argparse
@@ -28,7 +28,7 @@ except ImportError:
 
 
 def check_dependency(package_name, import_name=None, auto_install=False):
-    """Check if a package is installed and importable, optionally auto-installing."""
+    """Check if a package is installed and importable, optionally auto - installing."""
     if import_name is None:
         import_name = package_name
 
@@ -58,21 +58,21 @@ def check_dependency(package_name, import_name=None, auto_install=False):
 
 
 def main():
-    """Check all required dependencies with optional auto-install."""
+    """Check all required dependencies with optional auto - install."""
     parser = argparse.ArgumentParser(description="Check and install MusicScope™ dependencies")
-    parser.add_argument("--auto-install", action="store_true", help="Automatically install missing packages")
+    parser.add_argument("--auto - install", action="store_true", help="Automatically install missing packages")
     args = parser.parse_args()
 
     print("🔧" + "=" * 60)
     print("�  MusicScope™ Dependency Checker")
     if args.auto_install and AUTO_INSTALL_AVAILABLE:
-        print("🚀 AUTO-INSTALL MODE ENABLED")
+        print("🚀 AUTO - INSTALL MODE ENABLED")
     print("🔧" + "=" * 60)
     print()
 
     if not AUTO_INSTALL_AVAILABLE and args.auto_install:
-        print("⚠️  Auto-install not available (missing auto_install module)")
-        print("    Falling back to check-only mode")
+        print("⚠️  Auto - install not available (missing auto_install module)")
+        print("    Falling back to check - only mode")
         print()
 
     auto_install = args.auto_install and AUTO_INSTALL_AVAILABLE
@@ -138,7 +138,7 @@ def main():
     optional_deps = [
         ("rich", "rich"),
         ("psutil", "psutil"),
-        ("memory-profiler", "memory_profiler"),
+        ("memory - profiler", "memory_profiler"),
     ]
 
     optional_ok = all(check_dependency(pkg, imp, auto_install) for pkg, imp in optional_deps)
@@ -146,7 +146,7 @@ def main():
 
     # Overall status
     essential_ok = core_ok and data_ok and viz_ok and db_ok and nb_ok
-    all_ok = essential_ok and optional_ok
+    _all_ok = essential_ok and optional_ok
 
     if essential_ok:
         print("🎉" + "=" * 60)
@@ -159,8 +159,8 @@ def main():
         print()
 
         if AUTO_INSTALL_AVAILABLE:
-            print("💡 Pro tip: Run with --auto-install to install missing packages automatically")
-            print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
+            print("💡 Pro tip: Run with --auto - install to install missing packages automatically")
+            print("   python 🔧_CHECK_DEPENDENCIES.py --auto - install")
         print()
     else:
         print("🚨" + "=" * 60)
@@ -169,8 +169,8 @@ def main():
         print()
 
         if AUTO_INSTALL_AVAILABLE and not auto_install:
-            print("🚀 Quick fix: Run with auto-install")
-            print("   python 🔧_CHECK_DEPENDENCIES.py --auto-install")
+            print("🚀 Quick fix: Run with auto - install")
+            print("   python 🔧_CHECK_DEPENDENCIES.py --auto - install")
             print()
 
         print("🔧 Manual installation:")
@@ -179,7 +179,7 @@ def main():
         print()
         print("   Or install everything at once:")
         print(
-            "   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory-profiler"
+            "   pip install pandas numpy scipy plotly matplotlib seaborn sqlalchemy pymysql nbconvert ipywidgets tqdm rich psutil memory - profiler"
         )
         print()
         sys.exit(1)

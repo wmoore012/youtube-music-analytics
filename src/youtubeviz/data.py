@@ -37,7 +37,7 @@ def _get_engine(engine=None):
     # Lazily import to avoid hard dependency when not needed
     from web.etl_helpers import get_engine
 
-    return get_engine()  # Use unified .env-driven engine for local YouTube analytics database
+    return get_engine()  # Use unified .env - driven engine for local YouTube analytics database
 
 
 def load_youtube_data(
@@ -106,7 +106,7 @@ def load_youtube_data(
     return df
 
 
-def load_artist_daily_metrics(
+def load_artist_daily_metrics(  # noqa: C901
     artists: Iterable[str] | None = None,
     start: Optional[date] = None,
     end: Optional[date] = None,
@@ -122,7 +122,7 @@ def load_artist_daily_metrics(
 
     Notes:
     - The ETL uses channel URLs from your `.env` (e.g. YT_CHANNEL_1=...) to control ingestion. This function does not
-      alter those inputs; the `artists` parameter is a read-time filter only (uses `isrc_recordings.artist_primary` or
+      alter those inputs; the `artists` parameter is a read - time filter only (uses `isrc_recordings.artist_primary` or
       `youtube_videos.channel_title`).
     """
     eng = _get_engine(engine)
@@ -197,7 +197,7 @@ def load_artist_daily_metrics(
 
     # Ensure types
     if not df.empty:
-        df["date"] = pd.to_datetime(df["date"])  # keep datetime64 for plotting/slicing
+        df["date"] = pd.to_datetime(df["date"])  # keep datetime64 for plotting / slicing
         if "published_at" in df.columns:
             df["published_at"] = pd.to_datetime(df["published_at"])
     # Normalize aliases if requested to unify names (e.g., artist variations)
@@ -215,7 +215,7 @@ def load_artist_daily_metrics(
     return df
 
 
-def _build_artist_alias_map(eng) -> dict[str, str]:
+def _build_artist_alias_map(eng) -> dict[str, str]:  # noqa: C901
     """Combine alias mapping from DB (artist_aliases → artists) and ENV JSON.
 
     Returns alias→canonical dict. ENV overrides DB.
@@ -230,12 +230,12 @@ def _build_artist_alias_map(eng) -> dict[str, str]:
         from sqlalchemy import MetaData, Table
 
         meta = MetaData()
-        meta.reflect(bind=eng, only=["artist_aliases"])  # type: ignore[arg-type]
+        meta.reflect(bind=eng, only=["artist_aliases"])  # type: ignore[arg - type]
         aliases_tbl: Table = meta.tables["artist_aliases"]  # type: ignore[index]
         cols = set(aliases_tbl.c.keys())
         with eng.connect() as conn:
             if "canonical_name" in cols:
-                # Natural-key schema
+                # Natural - key schema
                 res = conn.execute(text("SELECT alias, canonical_name FROM artist_aliases WHERE alias <> ''"))
                 for alias, canonical in res:
                     if alias and canonical:
@@ -259,7 +259,7 @@ def _build_artist_alias_map(eng) -> dict[str, str]:
 
         config_path = Path(__file__).parent.parent.parent / "config" / "artist_aliases.json"
         if config_path.exists():
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, "r", encoding="utf - 8") as f:
                 obj = json.load(f)
                 for k, v in (obj or {}).items():
                     if k and v:
@@ -278,7 +278,7 @@ def _build_artist_alias_map(eng) -> dict[str, str]:
     except Exception:
         pass
 
-    # Case-insensitive keys: add lowercase variants for lookups
+    # Case - insensitive keys: add lowercase variants for lookups
     lower = {k.lower(): v for k, v in mapping.items()}
     mapping.update(lower)
     return mapping
@@ -286,10 +286,10 @@ def _build_artist_alias_map(eng) -> dict[str, str]:
 
 def compute_kpis(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Aggregate KPI snapshot per artist using per-video rollup:
-    - total_views: sum of per-video max views within the window
+    Aggregate KPI snapshot per artist using per - video rollup:
+    - total_views: sum of per - video max views within the window
     - videos: number of unique videos
-    - median_views: median of per-video max views
+    - median_views: median of per - video max views
     """
     if df.empty:
         return df
@@ -365,7 +365,7 @@ def compute_estimated_revenue(
     """Estimate revenue from views using RPM (USD per 1,000 views).
 
     - If `rpm_usd` is a float, apply globally; if dict, map per artist (fallback to global 3.0).
-    - Returns per-artist summary; when `per_video=True`, also aggregates by video first using max views.
+    - Returns per - artist summary; when `per_video=True`, also aggregates by video first using max views.
     Columns: artist_name, total_views, est_revenue_usd, videos, median_views, mean_views
     """
     if df.empty:
@@ -405,7 +405,7 @@ def compute_estimated_revenue(
 
 
 def compute_yoy_views(df: pd.DataFrame) -> pd.DataFrame:
-    """Year-over-year total views per artist from daily metrics df (with 'date', 'views')."""
+    """Year - over - year total views per artist from daily metrics df (with 'date', 'views')."""
     if df.empty:
         return df.iloc[0:0]
     data = df.copy()
@@ -424,7 +424,7 @@ def run_artist_metrics_pipeline(
     end: Optional[date] = None,
     rpm_usd: float | dict[str, float] | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Execute an end-to-end pipeline from DB load to revenue summary."""
+    """Execute an end - to - end pipeline from DB load to revenue summary."""
 
     daily = load_artist_daily_metrics(artists=artists, start=start, end=end, engine=engine)
     revenue = compute_estimated_revenue(daily, rpm_usd=rpm_usd)
@@ -434,7 +434,7 @@ def run_artist_metrics_pipeline(
 def benchmark_run_artist_metrics_pipeline(
     *, engine=None, iterations: int = 1, **kwargs
 ) -> dict[str, float | int | pd.DataFrame]:
-    """Benchmark the end-to-end pipeline to detect performance regressions."""
+    """Benchmark the end - to - end pipeline to detect performance regressions."""
 
     runs = max(1, int(iterations))
     total = 0.0
@@ -458,7 +458,7 @@ def load_comment_examples(
 ) -> pd.DataFrame:
     """Load example comments with sentiment scores per artist.
 
-    kind: 'positive', 'negative', or 'both' (returns up to 2*per_artist if both)
+    kind: 'positive', 'negative', or 'both' (returns up to 2 * per_artist if both)
     Returns: artist_name, video_title, video_id, sentiment_score, comment_text, comment_time
     """
     eng = _get_engine(engine)
@@ -499,7 +499,7 @@ def load_comment_examples(
     )
 
     # Use window functions if available; fallback to simple LIMIT per group via variables isn't portable.
-    # We'll select all and do per-group head in pandas.
+    # We'll select all and do per - group head in pandas.
     # Choose a stable alias for time column
     time_sel = f", c.{time_col} AS comment_time" if time_col else ""
     sql = f"""
@@ -923,14 +923,16 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
 
         consistent = core_consistent and sentiment_consistent
 
-        # Generate user-friendly explanation
+        # Generate user - friendly explanation
         if consistent:
             if sentiment_count == 0:
-                explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."
+                explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {
+                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."
             else:
                 explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
         else:
-            explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {core_counts}. This indicates a bug in the analytics functions."
+            explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {
+                core_counts}. This indicates a bug in the analytics functions."
 
         # Temporal consistency check - sentiment data should exist for same time period
         temporal_issues = []

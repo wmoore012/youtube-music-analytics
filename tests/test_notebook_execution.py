@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-🧪 Comprehensive Notebook Execution Tests for CI/CD
+🧪 Comprehensive Notebook Execution Tests for CI / CD
 ==================================================
 
 Tests that all notebooks execute successfully and contain the expected data.
-This is the definitive test that ensures all notebooks work in CI/CD.
+This is the definitive test that ensures all notebooks work in CI / CD.
 """
 
 from pathlib import Path
@@ -197,7 +197,7 @@ class TestNotebookExecution:
         ), "No revenue information found in music analytics"
 
         # Should contain view counts
-        assert re.search(r"\d{1,3}(,\d{3})*\s+views", output), "No properly formatted view counts found"
+        assert re.search(r"\d{1,3}(,\d{3})*\s + views", output), "No properly formatted view counts found"
 
         # Should contain percentages
         assert re.search(r"\d+\.\d+%", output), "No percentage values found"
@@ -230,7 +230,7 @@ class TestNotebookExecution:
         """Test that comprehensive artist validation passes."""
 
         result = subprocess.run(
-            [sys.executable, "scripts/comprehensive_artist_validation.py"], capture_output=True, text=True, timeout=180
+            [sys.executable, "scripts / comprehensive_artist_validation.py"], capture_output=True, text=True, timeout=180
         )
 
         assert result.returncode == 0, f"Comprehensive validation failed: {result.stderr}"
@@ -256,10 +256,10 @@ class TestNotebookFiles:
         """Test that all expected notebook files exist."""
 
         expected_notebooks = [
-            "notebooks/editable/02_artist_comparison.ipynb",
-            "notebooks/editable/03_appendix_data_quality_clean.ipynb",
-            "notebooks/editable/04_sentiment_deep_dive_fun.ipynb",
-            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks / editable / 02_artist_comparison.ipynb",
+            "notebooks / editable / 03_appendix_data_quality_clean.ipynb",
+            "notebooks / editable / 04_sentiment_deep_dive_fun.ipynb",
+            "notebooks / 2025 - 09 - 16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
 
         for notebook in expected_notebooks:

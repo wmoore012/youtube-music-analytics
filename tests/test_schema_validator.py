@@ -148,7 +148,7 @@ class TestGetTableSchema:
         assert schema.primary_keys == ["video_id"]
 
     def test_get_table_schema_nonexistent_table(self, schema_validator):
-        """Test schema retrieval for non-existent table."""
+        """Test schema retrieval for non - existent table."""
         with pytest.raises(SchemaValidationError) as exc_info:
             schema_validator.get_table_schema("nonexistent_table")
 
@@ -178,7 +178,7 @@ class TestGetTableSchema:
         video_id_col = next(col for col in schema.columns if col.name == "video_id")
 
         assert video_id_col.name == "video_id"
-        assert video_id_col.primary_key == True
+        assert video_id_col.primary_key is True
         # Note: SQLite may handle nullable differently, so we just check it's a boolean
         assert isinstance(video_id_col.nullable, bool)
         assert isinstance(video_id_col.type_name, str)
@@ -193,7 +193,7 @@ class TestValidateTableColumns:
         result = schema_validator.validate_table_columns("youtube_videos", expected_columns)
 
         assert isinstance(result, ValidationResult)
-        assert result.is_valid == True
+        assert result.is_valid is True
         assert len(result.errors) == 0
         assert isinstance(result.timestamp, datetime)
 
@@ -202,7 +202,7 @@ class TestValidateTableColumns:
         expected_columns = ["video_id", "title", "nonexistent_column"]
         result = schema_validator.validate_table_columns("youtube_videos", expected_columns)
 
-        assert result.is_valid == False
+        assert result.is_valid is False
         assert len(result.errors) == 1
         assert result.errors[0].error_type == "MISSING_COLUMN"
         assert "nonexistent_column" in result.errors[0].message
@@ -212,7 +212,7 @@ class TestValidateTableColumns:
         expected_columns = ["video_id", "title"]  # Missing some actual columns
         result = schema_validator.validate_table_columns("youtube_videos", expected_columns)
 
-        assert result.is_valid == True  # Unexpected columns are warnings, not errors
+        assert result.is_valid is True  # Unexpected columns are warnings, not errors
         assert len(result.warnings) > 0
 
         # Check that warnings are for unexpected columns
@@ -220,10 +220,10 @@ class TestValidateTableColumns:
         assert "UNEXPECTED_COLUMN" in warning_types
 
     def test_validate_table_columns_nonexistent_table(self, schema_validator):
-        """Test validation for non-existent table."""
+        """Test validation for non - existent table."""
         result = schema_validator.validate_table_columns("nonexistent_table", ["col1"])
 
-        assert result.is_valid == False
+        assert result.is_valid is False
         assert len(result.errors) == 1
         assert result.errors[0].error_type == "TABLE_ACCESS_ERROR"
 
@@ -280,7 +280,7 @@ class TestSchemaDriftDetection:
             report = schema_validator.detect_schema_drift()
 
         assert isinstance(report, SchemaDriftReport)
-        assert report.has_drift == False
+        assert report.has_drift is False
         assert len(report.tables_added) == 0
         assert len(report.tables_removed) == 0
         assert len(report.columns_added) == 0
@@ -299,7 +299,7 @@ class TestSchemaDriftDetection:
         ):
             report = schema_validator.detect_schema_drift()
 
-        assert report.has_drift == True
+        assert report.has_drift is True
         assert "missing_table" in report.tables_removed
         assert "youtube_videos" in report.columns_removed
         assert "missing_column" in report.columns_removed["youtube_videos"]
@@ -341,7 +341,7 @@ class TestReferentialIntegrityValidation:
         assert result.table_name == "youtube_comments"
         assert result.foreign_key == "video_id"
         assert result.referenced_table == "youtube_videos"
-        assert result.is_valid == True
+        assert result.is_valid is True
         assert result.orphaned_count == 0
 
     def test_check_foreign_key_integrity_orphaned(self, schema_validator, test_engine):
@@ -359,7 +359,7 @@ class TestReferentialIntegrityValidation:
             "youtube_comments", "video_id", "youtube_videos.video_id"
         )
 
-        assert result.is_valid == False
+        assert result.is_valid is False
         assert result.orphaned_count == 1
         assert "orphaned_video" in result.sample_orphaned_ids
 
@@ -390,7 +390,7 @@ class TestETLStartupValidation:
 
                     result = schema_validator.validate_etl_startup()
 
-        assert result.is_valid == True
+        assert result.is_valid is True
         assert len(result.errors) == 0
 
     def test_validate_etl_startup_with_errors(self, schema_validator):
@@ -419,7 +419,7 @@ class TestETLStartupValidation:
 
                     result = schema_validator.validate_etl_startup()
 
-        assert result.is_valid == False
+        assert result.is_valid is False
         assert len(result.errors) > 0
 
 
@@ -504,9 +504,9 @@ class TestDataClasses:
 
         assert col.name == "test_column"
         assert col.type_name == "VARCHAR(50)"
-        assert col.nullable == True
+        assert col.nullable is True
         assert col.default == "default_value"
-        assert col.primary_key == False
+        assert col.primary_key is False
 
     def test_table_schema_column_names_property(self):
         """Test TableSchema column_names property."""
@@ -531,9 +531,9 @@ class TestDataClasses:
             is_valid=False, errors=errors, warnings=warnings, timestamp=datetime.now(timezone.utc)
         )
 
-        assert result.has_errors == True
-        assert result.has_warnings == True
-        assert result.is_valid == False
+        assert result.has_errors is True
+        assert result.has_warnings is True
+        assert result.is_valid is False
 
     def test_schema_drift_report_has_drift_property(self):
         """Test SchemaDriftReport has_drift property."""
@@ -546,7 +546,7 @@ class TestDataClasses:
             columns_modified={},
             timestamp=datetime.now(timezone.utc),
         )
-        assert report_no_drift.has_drift == False
+        assert report_no_drift.has_drift is False
 
         # With drift
         report_with_drift = SchemaDriftReport(
@@ -557,7 +557,7 @@ class TestDataClasses:
             columns_modified={},
             timestamp=datetime.now(timezone.utc),
         )
-        assert report_with_drift.has_drift == True
+        assert report_with_drift.has_drift is True
 
     def test_integrity_check_result_creation(self):
         """Test IntegrityCheckResult data class creation."""
@@ -575,7 +575,7 @@ class TestDataClasses:
         assert result.referenced_table == "ref_table"
         assert result.orphaned_count == 5
         assert result.sample_orphaned_ids == ["id1", "id2", "id3"]
-        assert result.is_valid == False
+        assert result.is_valid is False
 
 
 class TestErrorHandling:
@@ -610,7 +610,7 @@ class TestErrorHandling:
 
             result = schema_validator._check_foreign_key_integrity("test_table", "fk_column", "ref_table.ref_column")
 
-            assert result.is_valid == False
+            assert result.is_valid is False
             assert result.orphaned_count == -1  # Indicates error
             assert result.sample_orphaned_ids == []
 
@@ -622,7 +622,7 @@ class TestIntegrationScenarios:
         """Test complete validation workflow."""
         # 1. Validate table columns
         result = schema_validator.validate_table_columns("youtube_videos", ["video_id", "title", "channel_title"])
-        assert result.is_valid == True
+        assert result.is_valid is True
 
         # 2. Check schema drift
         drift_report = schema_validator.detect_schema_drift()

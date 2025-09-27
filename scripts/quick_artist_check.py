@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 🎤 Quick Artist Count Check
 ==========================
@@ -14,7 +14,7 @@ import sys
 def check_artist_count():
     """Check that outputs show the expected number of artists."""
 
-    expected_count = 6  # Update this when adding/removing artists
+    expected_count = 6  # Update this when adding / removing artists
 
     print("🎤 QUICK ARTIST COUNT CHECK")
     print("=" * 30)

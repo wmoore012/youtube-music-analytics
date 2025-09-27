@@ -61,9 +61,9 @@ class TestNotebookValidator:
         output_text = """
 🎯 REAL DATA ANALYTICS SUMMARY
 ==================================================
-📊 Charts with REAL data: 15/20
-📋 Charts showing data requirements: 3/20
-❌ Charts with errors: 2/20
+📊 Charts with REAL data: 15 / 20
+📋 Charts showing data requirements: 3 / 20
+❌ Charts with errors: 2 / 20
 
 ✅ Working with real data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 📋 Need data columns: [16, 17, 18]
@@ -74,7 +74,7 @@ class TestNotebookValidator:
 
 🎵 MusicScope™ Real Data Analytics Complete! 🎵
 
-✅ CI/CD: PASS - Excellent chart health
+✅ CI / CD: PASS - Excellent chart health
         """
 
         result = validator._parse_validation_output(output_text)
@@ -83,7 +83,7 @@ class TestNotebookValidator:
         assert result["requirement_charts"] == 3
         assert result["error_charts"] == 2
         assert result["total_expected"] == 20
-        assert result["success_rate"] == 0.75  # 15/20
+        assert result["success_rate"] == 0.75  # 15 / 20
         assert result["ci_cd_status"] == "PASS"
 
     def test_parse_validation_output_failure_case(self):
@@ -94,9 +94,9 @@ class TestNotebookValidator:
         output_text = """
 🎯 REAL DATA ANALYTICS SUMMARY
 ==================================================
-📊 Charts with REAL data: 0/20
-📋 Charts showing data requirements: 0/20
-❌ Charts with errors: 20/20
+📊 Charts with REAL data: 0 / 20
+📋 Charts showing data requirements: 0 / 20
+❌ Charts with errors: 20 / 20
 
 ❌ Have errors: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
@@ -104,7 +104,7 @@ class TestNotebookValidator:
 
 🎵 MusicScope™ Real Data Analytics Complete! 🎵
 
-❌ CI/CD: FAIL - Poor chart health
+❌ CI / CD: FAIL - Poor chart health
         """
 
         result = validator._parse_validation_output(output_text)
@@ -206,7 +206,7 @@ class TestNotebookValidator:
 
         # Check report content
         assert "NOTEBOOK VALIDATION REPORT" in report
-        assert "18/20" in report
+        assert "18 / 20" in report
         assert "90.0%" in report
         assert "PASS" in report
         assert "Excellent!" in report
@@ -227,7 +227,7 @@ class TestNotebookValidator:
 
         # Check report content
         assert "NOTEBOOK VALIDATION REPORT" in report
-        assert "0/20" in report
+        assert "0 / 20" in report
         assert "0.0%" in report
         assert "FAIL" in report
         assert "Fix data loading" in report
@@ -249,9 +249,9 @@ class TestNotebookValidator:
                             "text": [
                                 "🎯 REAL DATA ANALYTICS SUMMARY\n",
                                 "==================================================\n",
-                                "📊 Charts with REAL data: 10/20\n",
-                                "📋 Charts showing data requirements: 5/20\n",
-                                "❌ Charts with errors: 5/20\n",
+                                "📊 Charts with REAL data: 10 / 20\n",
+                                "📋 Charts showing data requirements: 5 / 20\n",
+                                "❌ Charts with errors: 5 / 20\n",
                             ],
                         }
                     ],
@@ -349,7 +349,7 @@ class TestNotebookValidationIntegration:
         assert "RECOMMENDATIONS" in report
 
         # Should show clear metrics
-        assert "3/20" in report  # Real charts
+        assert "3 / 20" in report  # Real charts
         assert "15.0%" in report  # Success rate
 
 

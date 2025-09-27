@@ -59,8 +59,8 @@ class TestPluginMetadata:
         result = metadata.validate()
         assert not result.is_valid
         assert len(result.errors) == 5
-        assert "Plugin name must be a non-empty string" in result.errors
-        assert "Plugin version must be a non-empty string" in result.errors
+        assert "Plugin name must be a non - empty string" in result.errors
+        assert "Plugin version must be a non - empty string" in result.errors
         assert "Plugin parameters must be a dictionary" in result.errors
         assert "Input requirements must be a list" in result.errors
         assert "Output schema must be a dictionary" in result.errors
@@ -258,7 +258,7 @@ class TestScoringResult:
         assert validation.is_valid  # Warnings don't make it invalid
         assert len(validation.warnings) >= 1
         assert any("null score values" in warning for warning in validation.warnings)
-        assert any("scores outside 0-1 range" in warning for warning in validation.warnings)
+        assert any("scores outside 0 - 1 range" in warning for warning in validation.warnings)
 
 
 class MockScoringPlugin(ScoringPlugin):

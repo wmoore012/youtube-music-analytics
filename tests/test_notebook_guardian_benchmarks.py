@@ -1,7 +1,7 @@
 """
 Performance benchmarks for Notebook Guardian.
 
-Comprehensive benchmarking suite to measure real-world performance
+Comprehensive benchmarking suite to measure real - world performance
 across different file sizes, complexity levels, and usage patterns.
 """
 
@@ -88,15 +88,15 @@ model = RandomForestClassifier()
         print(f"\nSmall File Detection Performance:")
         print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
         print(f"  Median time: {stats['median_time_ms']:.2f}ms")
-        print(f"  Throughput: {stats['mean_throughput']:.1f} deps/sec")
+        print(f"  Throughput: {stats['mean_throughput']:.1f} deps / sec")
 
         # Performance assertions
         assert stats["mean_time_ms"] < 5.0, f"Small file detection too slow: {stats['mean_time_ms']:.2f}ms"
-        assert stats["mean_throughput"] > 100, f"Throughput too low: {stats['mean_throughput']:.1f} deps/sec"
+        assert stats["mean_throughput"] > 100, f"Throughput too low: {stats['mean_throughput']:.1f} deps / sec"
 
     def test_medium_file_detection_speed(self):
-        """Benchmark dependency detection on medium files (1-10KB)."""
-        # Generate medium-sized code file
+        """Benchmark dependency detection on medium files (1 - 10KB)."""
+        # Generate medium - sized code file
         medium_code_parts = [
             "import pandas as pd",
             "import numpy as np",
@@ -141,7 +141,7 @@ model = RandomForestClassifier()
         print(f"  File size: {len(medium_code)} chars")
         print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
         print(f"  Median time: {stats['median_time_ms']:.2f}ms")
-        print(f"  Throughput: {stats['mean_throughput']:.1f} deps/sec")
+        print(f"  Throughput: {stats['mean_throughput']:.1f} deps / sec")
 
         # Performance assertions
         assert stats["mean_time_ms"] < 20.0, f"Medium file detection too slow: {stats['mean_time_ms']:.2f}ms"
@@ -225,7 +225,7 @@ model = RandomForestClassifier()
         print(f"  File size: {len(large_code):,} chars")
         print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
         print(f"  Median time: {stats['median_time_ms']:.2f}ms")
-        print(f"  Throughput: {stats['mean_throughput']:.1f} deps/sec")
+        print(f"  Throughput: {stats['mean_throughput']:.1f} deps / sec")
 
         # Performance assertions
         assert stats["mean_time_ms"] < 100.0, f"Large file detection too slow: {stats['mean_time_ms']:.2f}ms"
@@ -316,7 +316,7 @@ class TestPythonFileValidationBenchmarks:
                 print(f"  File size: {file_size:,} chars")
                 print(f"  Functions: {len(result.functions_found)}")
                 print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
-                print(f"  Throughput: {stats['mean_throughput']:.1f} functions/sec")
+                print(f"  Throughput: {stats['mean_throughput']:.1f} functions / sec")
 
                 # Performance assertions based on file size
                 if category == "small":
@@ -385,11 +385,11 @@ if __name__ == "__main__":
                 print(f"\nParallel Validation ({workers} workers):")
                 print(f"  Files processed: {len(test_files)}")
                 print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
-                print(f"  Throughput: {stats['mean_throughput']:.1f} files/sec")
+                print(f"  Throughput: {stats['mean_throughput']:.1f} files / sec")
 
                 # Parallel should be faster than sequential for multiple files
                 if workers > 1:
-                    assert stats["mean_throughput"] > 5.0  # At least 5 files/sec
+                    assert stats["mean_throughput"] > 5.0  # At least 5 files / sec
 
         finally:
             # Clean up
@@ -450,7 +450,7 @@ class TestDataValidationBenchmarks:
             stats = benchmark.get_stats()
             print(f"\nDataFrame Validation ({size:,} rows):")
             print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
-            print(f"  Throughput: {stats['mean_throughput']:,.0f} rows/sec")
+            print(f"  Throughput: {stats['mean_throughput']:,.0f} rows / sec")
 
             # Performance should scale reasonably
             if size <= 1000:
@@ -493,7 +493,7 @@ class TestDataValidationBenchmarks:
         print(f"\nMetric Explanation Performance:")
         print(f"  Metrics: {len(metrics)}")
         print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
-        print(f"  Throughput: {stats['mean_throughput']:.0f} explanations/sec")
+        print(f"  Throughput: {stats['mean_throughput']:.0f} explanations / sec")
 
         # Should be very fast
         assert stats["mean_time_ms"] < 5.0
@@ -571,7 +571,7 @@ class TestNotebookValidationBenchmarks:
                 stats = benchmark.get_stats()
                 print(f"\nNotebook Validation ({num_cells} cells):")
                 print(f"  Mean time: {stats['mean_time_ms']:.2f}ms")
-                print(f"  Throughput: {stats['mean_throughput']:.1f} cells/sec")
+                print(f"  Throughput: {stats['mean_throughput']:.1f} cells / sec")
 
                 # Performance assertions
                 if num_cells <= 10:

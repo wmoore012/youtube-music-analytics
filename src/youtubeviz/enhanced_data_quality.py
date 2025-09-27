@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Enhanced Data Quality Manager
 
-Professional-grade data quality validation and cleanup system with:
+Professional - grade data quality validation and cleanup system with:
 - Automatic detection and cleanup of missing critical fields
-- Well-formatted cleanup reports with emojis and statistics
+- Well - formatted cleanup reports with emojis and statistics
 - Educational bot analysis display
 - Comprehensive audit logging
 """
@@ -166,7 +166,7 @@ class EnhancedDataQualityManager:
                 },
                 {
                     "type": "negative_metrics",
-                    "description": "Records with negative view/like/comment counts",
+                    "description": "Records with negative view / like / comment counts",
                     "query": "SELECT COUNT(*) FROM youtube_metrics WHERE view_count < 0 OR like_count < 0 OR comment_count < 0",
                     "severity": "critical",
                     "table": "youtube_metrics",
@@ -342,11 +342,11 @@ class EnhancedDataQualityManager:
                 low_risk = len(bot_results[bot_results["bot_risk_level"] == "Low"])
 
                 print(f"📊 Analyzed {total_analyzed:,} recent comments")
-                print(f"🔴 High Risk (Likely Bots): {high_risk:,} ({high_risk/total_analyzed*100:.1f}%)")
-                print(f"🟡 Medium Risk: {medium_risk:,} ({medium_risk/total_analyzed*100:.1f}%)")
-                print(f"🟢 Low Risk (Likely Human): {low_risk:,} ({low_risk/total_analyzed*100:.1f}%)")
+                print(f"🔴 High Risk (Likely Bots): {high_risk:,} ({high_risk / total_analyzed * 100:.1f}%)")
+                print(f"🟡 Medium Risk: {medium_risk:,} ({medium_risk / total_analyzed * 100:.1f}%)")
+                print(f"🟢 Low Risk (Likely Human): {low_risk:,} ({low_risk / total_analyzed * 100:.1f}%)")
 
-                # Display educational examples of high-risk bot comments
+                # Display educational examples of high - risk bot comments
                 if high_risk > 0:
                     self._display_bot_examples(bot_results)
 
@@ -369,7 +369,7 @@ class EnhancedDataQualityManager:
 
     def _display_bot_examples(self, bot_results: pd.DataFrame) -> None:
         """Display educational examples of bot comments."""
-        print("\n🎓 EDUCATIONAL: High-Risk Bot Comment Examples")
+        print("\n🎓 EDUCATIONAL: High - Risk Bot Comment Examples")
         print("-" * 50)
 
         high_risk_bots = bot_results[bot_results["bot_risk_level"] == "High"].head(5)
@@ -392,7 +392,7 @@ class EnhancedDataQualityManager:
         print("   • Music industry decisions should be based on genuine fan feedback")
 
     def calculate_quality_score(self, issues: List[DataIssue], cleanup_ops: List[CleanupOperation]) -> float:
-        """Calculate overall data quality score (0-100)."""
+        """Calculate overall data quality score (0 - 100)."""
         if not issues:
             return 100.0
 
@@ -421,7 +421,8 @@ class EnhancedDataQualityManager:
 
         remaining_issues = [issue for issue in issues if issue.severity == "warning"]
         if remaining_issues:
-            recommendations.append(f"⚠️  {len(remaining_issues)} warning-level issues remain - consider manual review")
+            recommendations.append(
+                f"⚠️  {len(remaining_issues)} warning - level issues remain - consider manual review")
 
         if not issues:
             recommendations.append("🎉 Excellent! Your data quality is pristine")
@@ -434,7 +435,7 @@ class EnhancedDataQualityManager:
         return recommendations
 
     def display_professional_summary(self, report: DataQualityReport) -> None:
-        """Display a professional, well-formatted summary report."""
+        """Display a professional, well - formatted summary report."""
         print("\n" + "=" * 60)
         print("🏆 DATA QUALITY ANALYSIS COMPLETE")
         print("=" * 60)
@@ -447,7 +448,7 @@ class EnhancedDataQualityManager:
 
         if report.bot_analysis_summary.get("total_analyzed", 0) > 0:
             bot_stats = report.bot_analysis_summary
-            print(f"🤖 Bot Analysis: {bot_stats['high_risk']:,} high-risk bots detected")
+            print(f"🤖 Bot Analysis: {bot_stats['high_risk']:,} high - risk bots detected")
 
         print(f"\n💡 Key Recommendations:")
         for rec in report.recommendations:

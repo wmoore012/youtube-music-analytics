@@ -1,5 +1,5 @@
 """
-Data-science grade chart implementations with statistical rigor and cognitive design.
+Data - science grade chart implementations with statistical rigor and cognitive design.
 Implements the 15 chart specifications with Wilson intervals, Bayesian shrinkage, and interactive features.
 """
 
@@ -12,7 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from .bulletproof import bulletproof_chart
+from .chart_contracts import ChartSpec, bulletproof_chart, create_interactive_plotly_config, setup_plotly_animation
 from .statistical_utils import (
     apply_bayesian_shrinkage,
     apply_loess_smoothing,
@@ -24,18 +24,18 @@ from .statistical_utils import (
 
 
 class ColorBrewerPalettes:
-    """ColorBrewer palettes for data-science grade visualizations."""
+    """ColorBrewer palettes for data - science grade visualizations."""
 
-    # Blue-orange diverging palette (primary for sentiment)
+    # Blue - orange diverging palette (primary for sentiment)
     SENTIMENT_DIVERGING = {
-        "very_negative": "#d7191c",  # Red-orange
+        "very_negative": "#d7191c",  # Red - orange
         "negative": "#fdae61",  # Light orange
         "neutral": "#ffffbf",  # Light yellow
         "positive": "#abd9e9",  # Light blue
         "very_positive": "#2c7bb6",  # Blue
     }
 
-    # Purple-green diverging palette (alternative)
+    # Purple - green diverging palette (alternative)
     SENTIMENT_ALT = {
         "very_negative": "#762a83",  # Purple
         "negative": "#c2a5cf",  # Light purple
@@ -57,6 +57,9 @@ class ColorBrewerPalettes:
     ]
 
 
+@bulletproof_chart(
+    ChartSpec(name="DivergingSentimentBars", required_columns=["artist_name"], max_rows=100_000, timeout_sec=10)
+)
 def create_diverging_sentiment_bars(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
@@ -102,7 +105,7 @@ def create_diverging_sentiment_bars(
 
         # Categorize engagement into sentiment buckets based on industry benchmarks:
         # - Low engagement (< 2%): negative sentiment proxy
-        # - Medium engagement (2-4%): neutral sentiment proxy
+        # - Medium engagement (2 - 4%): neutral sentiment proxy
         # - High engagement (> 4%): positive sentiment proxy
         df["sentiment_category"] = pd.cut(
             df["engagement_rate"], bins=[0, 0.02, 0.04, float("inf")], labels=["negative", "neutral", "positive"]
@@ -347,7 +350,7 @@ def create_diverging_sentiment_bars(
                 )
             )
 
-        # Negative error bars (for negative y-values, need to flip the math)
+        # Negative error bars (for negative y - values, need to flip the math)
         if "negative_lower" in wilson_data and "negative_upper" in wilson_data:
             # For negative bars at y=-rate, with CI [L, U] on positive rate r:
             # array = distance up from y=-r towards zero = r - L
@@ -356,7 +359,7 @@ def create_diverging_sentiment_bars(
             array_up = np.maximum(0, neg_rates - wilson_data["negative_lower"])
             array_down = np.maximum(0, wilson_data["negative_upper"] - neg_rates)
 
-            # Only add error bars where we have non-zero distances
+            # Only add error bars where we have non - zero distances
             if np.any(array_up > 0) or np.any(array_down > 0):
                 fig.add_trace(
                     go.Scatter(
@@ -415,6 +418,9 @@ def create_diverging_sentiment_bars(
     return fig
 
 
+@bulletproof_chart(
+    ChartSpec(name="SentimentClusterHeatmap", required_columns=["artist_name"], max_rows=50_000, timeout_sec=12)
+)
 def create_sentiment_cluster_heatmap(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
@@ -427,7 +433,7 @@ def create_sentiment_cluster_heatmap(
     Create clustered heatmap of sentiment aspects × rates per artist.
 
     Chart #2 from specification: Clustered heatmap with Bayesian shrinkage toward roster mean
-    and seriation for optimal row/column ordering.
+    and seriation for optimal row / column ordering.
 
     Args:
         df: DataFrame with sentiment aspect data
@@ -441,7 +447,7 @@ def create_sentiment_cluster_heatmap(
         Plotly figure with clustered heatmap
 
     Note: Updated to work with real data columns (artist_name, likes, comments, views)
-    by creating engagement-based aspect proxies when sentiment aspects not available.
+    by creating engagement - based aspect proxies when sentiment aspects not available.
     """
     if df.empty or artist_col not in df.columns:
         return go.Figure().add_annotation(text="No data available", x=0.5, y=0.5)
@@ -496,11 +502,10 @@ def create_sentiment_cluster_heatmap(
 
         return fig
 
-    except Exception as e:
-        return go.Figure().add_annotation(text=f"Chart 2 Error: {str(e)}", x=0.5, y=0.5, showarrow=False)
-
-    except ImportError:
-        warnings.warn("scipy not available for clustering, using original order")
+    except ImportError as e:
+        # Handle missing scipy gracefully but continue
+        warnings.warn(f"scipy not available for clustering: {e}. Using original order.")
+        # Continue with original data order
 
     # Create heatmap
     fig = go.Figure(
@@ -508,7 +513,7 @@ def create_sentiment_cluster_heatmap(
             z=heatmap_data.values,
             x=heatmap_data.columns,
             y=heatmap_data.index,
-            colorscale="RdYlBu_r",  # Red-Yellow-Blue reversed (red=low, blue=high)
+            colorscale="RdYlBu_r",  # Red - Yellow - Blue reversed (red=low, blue=high)
             zmid=0.5,  # Center colorscale at 50%
             text=[[f"{val:.1%}" for val in row] for row in heatmap_data.values],
             texttemplate="%{text}",
@@ -548,7 +553,7 @@ def enhance_chart_beauty(fig: go.Figure, theme: str = "professional") -> go.Figu
     if theme == "professional":
         fig.update_layout(
             template="plotly_white",
-            font=dict(family="Arial, sans-serif", size=12),
+            font=dict(family="Arial, sans - serif", size=12),
             title=dict(font=dict(size=16, color="#2E2E2E")),
             plot_bgcolor="white",
             paper_bgcolor="white",
@@ -563,7 +568,7 @@ def enhance_chart_beauty(fig: go.Figure, theme: str = "professional") -> go.Figu
     elif theme == "presentation":
         fig.update_layout(
             template="plotly_dark",
-            font=dict(family="Helvetica, sans-serif", size=14),
+            font=dict(family="Helvetica, sans - serif", size=14),
             title=dict(font=dict(size=18, color="white")),
             paper_bgcolor="#1e1e1e",
         )
@@ -667,7 +672,7 @@ def extract_top_themes_per_artist(
         # Extract themes from comment text if available
         if "comment_text" in df.columns:
             df = df.copy()
-            # Simple theme extraction based on common music-related keywords
+            # Simple theme extraction based on common music - related keywords
             comment_text = df["comment_text"].fillna("").str.lower()
 
             # Define theme keywords
@@ -703,7 +708,7 @@ def extract_top_themes_per_artist(
     # Count themes per artist for this sentiment
     theme_counts = sentiment_data.groupby([artist_col, theme_col]).size().reset_index(name="count")
 
-    # Merge with total comments (not just sentiment-filtered comments)
+    # Merge with total comments (not just sentiment - filtered comments)
     theme_counts = theme_counts.merge(artist_totals, on=artist_col)
 
     # Calculate theme rate (proportion of comments mentioning this theme)
@@ -733,7 +738,7 @@ def extract_representative_quotes(
     max_quotes: int = 2,
 ) -> List[Dict[str, str]]:
     """
-    Extract representative quotes for a specific artist-theme-sentiment combination.
+    Extract representative quotes for a specific artist - theme - sentiment combination.
 
     Args:
         df: DataFrame with comment data
@@ -755,7 +760,7 @@ def extract_representative_quotes(
         # Extract themes from comment text if available
         if text_col in df.columns:
             df = df.copy()
-            # Simple theme extraction based on common music-related keywords
+            # Simple theme extraction based on common music - related keywords
             comment_text = df[text_col].fillna("").str.lower()
 
             # Define theme keywords
@@ -802,13 +807,13 @@ def extract_representative_quotes(
             df = df.copy()
             df[timestamp_col] = pd.Timestamp.now()
 
-    # Filter for specific artist-theme-sentiment combination
+    # Filter for specific artist - theme - sentiment combination
     filtered_data = df[(df[artist_col] == artist) & (df[theme_col] == theme) & (df[sentiment_col] == sentiment)].copy()
 
     if filtered_data.empty:
         return []
 
-    # Simple selection: take first max_quotes (could be enhanced with TF-IDF, etc.)
+    # Simple selection: take first max_quotes (could be enhanced with TF - IDF, etc.)
     selected_quotes = filtered_data.head(max_quotes)
 
     quotes = []
@@ -818,6 +823,9 @@ def extract_representative_quotes(
     return quotes
 
 
+@bulletproof_chart(
+    ChartSpec(name="PositiveThemeLollipops", required_columns=["artist_name"], max_rows=75_000, timeout_sec=15)
+)
 def create_positive_theme_lollipops(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
@@ -854,14 +862,14 @@ def create_positive_theme_lollipops(
         Plotly figure with lollipop charts
 
     Note: Updated to work with real data columns (artist_name, likes, comments, views)
-    by creating engagement-based theme proxies when theme data not available.
+    by creating engagement - based theme proxies when theme data not available.
     """
     if df.empty or artist_col not in df.columns:
         return go.Figure().add_annotation(text="No data available", x=0.5, y=0.5)
 
     try:
-        # REAL DATA ADAPTATION: Create engagement-based "themes" from actual YouTube metrics
-        # This replaces sentiment themes with performance-based themes using real data
+        # REAL DATA ADAPTATION: Create engagement - based "themes" from actual YouTube metrics
+        # This replaces sentiment themes with performance - based themes using real data
         artist_metrics = (
             df.groupby(artist_col)
             .agg(
@@ -897,12 +905,12 @@ def create_positive_theme_lollipops(
 
             # THEME 3: Content Prolific (Consistent Output)
             # Measures content volume (consistent creators often have positive reception)
-            # Normalize by dividing by 10 to get 0-1 scale for visualization
+            # Normalize by dividing by 10 to get 0 - 1 scale for visualization
             themes_data.append(
                 {
                     "artist": artist,
                     "theme": "Content Prolific",
-                    "rate": row["video_title"] / 10,  # Normalize to 0-1 scale for chart
+                    "rate": row["video_title"] / 10,  # Normalize to 0 - 1 scale for chart
                     "count": row["video_title"],
                 }
             )
@@ -923,7 +931,7 @@ def create_positive_theme_lollipops(
                 go.Scatter(
                     x=theme_data["artist"],
                     y=theme_data["rate"],
-                    mode="markers+lines",
+                    mode="markers + lines",
                     name=theme,
                     marker=dict(size=12, color=colors[i % len(colors)], line=dict(width=2, color="white")),
                     line=dict(width=3, color=colors[i % len(colors)]),
@@ -942,30 +950,14 @@ def create_positive_theme_lollipops(
 
         return fig
 
+    except ValueError as e:
+        # Re - raise data validation errors - these are real issues
+        raise ValueError(f"PositiveThemeLollipops data error: {e}") from e
     except Exception as e:
-        return go.Figure().add_annotation(text=f"Chart 3 Error: {str(e)}", x=0.5, y=0.5, showarrow=False)
+        # Re - raise unexpected errors - don't hide them
+        raise RuntimeError(f"PositiveThemeLollipops execution error: {e}") from e
 
-    # Create y-axis labels (artist + theme combinations)
-    y_labels = []
-    y_positions = []
-    rates = []
-    counts = []
-    quote_data = []
 
-    current_y = 0
-    for artist in top_themes[artist_col].unique():
-        artist_themes = top_themes[top_themes[artist_col] == artist].sort_values("rate", ascending=True)
-
-        for _, row in artist_themes.iterrows():
-            y_labels.append(f"{artist}\n{row[theme_col]}")
-            y_positions.append(current_y)
-            rates.append(row["rate"])
-            counts.append(row["count"])
-
-            # Extract quotes if requested
-            if include_quotes:
-                quotes = extract_representative_quotes(
-                    df,
                     artist,
                     row[theme_col],
                     "positive",
@@ -1080,7 +1072,7 @@ def create_negative_theme_lollipops(
     """
     Create lollipop charts for top 3 negative themes per artist.
 
-    Chart #4 from specification: Mirror lollipop or second panel with red-orange palette.
+    Chart #4 from specification: Mirror lollipop or second panel with red - orange palette.
 
     Args:
         df: DataFrame with theme and comment data
@@ -1113,10 +1105,10 @@ def create_negative_theme_lollipops(
             top_themes["count"].values, top_themes["total_comments"].values
         )
 
-    # Create the figure (similar to positive but with red-orange colors)
+    # Create the figure (similar to positive but with red - orange colors)
     fig = go.Figure()
 
-    # Create y-axis labels and data
+    # Create y - axis labels and data
     y_labels = []
     y_positions = []
     rates = []
@@ -1166,7 +1158,7 @@ def create_negative_theme_lollipops(
             )
         )
 
-    # Create lollipop dots with red-orange color
+    # Create lollipop dots with red - orange color
     hover_text = []
     for i, (rate, count, quotes) in enumerate(zip(rates, counts, quote_data)):
         hover_info = f"Rate: {rate:.1%}<br>Count: {count}"
@@ -1237,7 +1229,7 @@ def calculate_video_residuals(log_views: np.ndarray, positive_rates: np.ndarray,
     Calculate residuals for video performance analysis.
 
     Args:
-        log_views: Array of log-transformed view counts
+        log_views: Array of log - transformed view counts
         positive_rates: Array of positive sentiment rates
         use_loess: Whether to use LOESS smoothing for trend
 
@@ -1450,7 +1442,7 @@ def create_standout_videos_scatter(
             x=0.5,
             font=dict(size=16),
         ),
-        xaxis=dict(title="Log₁₀(Views)", type="linear", showgrid=True),  # Already log-transformed
+        xaxis=dict(title="Log₁₀(Views)", type="linear", showgrid=True),  # Already log - transformed
         yaxis=dict(title="Positive Sentiment Rate", tickformat=".0%", range=[0, 1], showgrid=True),
         height=600,
         template="plotly_white",
@@ -1574,14 +1566,14 @@ def create_upset_plot(
     Create UpSet plot for feature intersections analysis.
 
     Chart #7 from specification: UpSet plot replacing Venn diagrams for >3 sets,
-    ranked by views/engagement with click intersection filtering.
+    ranked by views / engagement with click intersection filtering.
 
     Args:
         df: DataFrame with feature data
         feature_columns: List of boolean feature column names
         value_column: Column to aggregate for ranking
         rank_by: Metric to rank intersections by
-        enable_click_filtering: Whether to enable click-to-filter functionality
+        enable_click_filtering: Whether to enable click - to - filter functionality
         max_intersections: Maximum number of intersections to display
 
     Returns:
@@ -1729,7 +1721,7 @@ def create_upset_plot(
         showlegend=False,
     )
 
-    # Update x-axis for top plot
+    # Update x - axis for top plot
     fig.update_xaxes(
         title="Intersections (ranked by " + rank_by + ")",
         tickmode="array",
@@ -1740,13 +1732,13 @@ def create_upset_plot(
         col=1,
     )
 
-    # Update y-axis for top plot
+    # Update y - axis for top plot
     fig.update_yaxes(title=f"Total {rank_by.title()}", row=1, col=1)
 
-    # Update x-axis for bottom plot
+    # Update x - axis for bottom plot
     fig.update_xaxes(title="", showticklabels=False, row=2, col=1)
 
-    # Update y-axis for bottom plot
+    # Update y - axis for bottom plot
     fig.update_yaxes(
         title="Features",
         tickmode="array",
@@ -1770,7 +1762,7 @@ from .clustering_analysis import (
 )
 
 
-@bulletproof_chart("UMAP Clustering", ["artist_name", "comment_text"], timeout_sec=15.0)
+@bulletproof_chart(ChartSpec(name="UMAP Clustering", required_columns=["artist_name", "comment_text"], timeout_sec=15))
 def create_umap_clustering_chart(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
@@ -1783,7 +1775,7 @@ def create_umap_clustering_chart(
     """
     Create UMAP clustering chart for tour compatibility analysis.
 
-    Chart #6 from specification: UMAP scatter of video/comment embeddings colored by artist,
+    Chart #6 from specification: UMAP scatter of video / comment embeddings colored by artist,
     shaped by content type, with density contours and similarity matrix.
 
     Args:
@@ -1839,7 +1831,7 @@ def create_umap_clustering_chart(
             "music_video": "circle",
             "lyric_video": "square",
             "visualizer": "diamond",
-            "other": "triangle-up",
+            "other": "triangle - up",
         }
 
         # Add scatter points for each artist
@@ -1984,9 +1976,12 @@ def create_umap_clustering_chart(
         )
         return fig
 
+    except ValueError as e:
+        # Re - raise data validation errors
+        raise ValueError(f"UMAPClustering data error: {e}") from e
     except Exception as e:
-        # Return error chart for any other failures
-        fig = go.Figure()
+        # Re - raise unexpected errors - don't hide them
+        raise RuntimeError(f"UMAPClustering execution error: {e}") from e
         fig.add_annotation(
             text=f"Clustering Analysis Failed<br><br>Error: {str(e)}<br><br>Check data quality and try again",
             x=0.5,
@@ -2020,10 +2015,10 @@ def create_isrc_balance_chart(
     show_p_chart_limits: bool = True,
 ) -> go.Figure:
     """
-    Create ISRC vs non-ISRC balance chart with p-chart control limits.
+    Create ISRC vs non - ISRC balance chart with p - chart control limits.
 
     Chart #8 from specification: 100% stacked bars per artist with Wilson whiskers
-    and p-chart control band at roster level.
+    and p - chart control band at roster level.
 
     Args:
         df: DataFrame with content data
@@ -2031,7 +2026,7 @@ def create_isrc_balance_chart(
         isrc_col: Column name for ISRC flag
         views_col: Column name for views
         use_wilson_intervals: Whether to show Wilson confidence intervals
-        show_p_chart_limits: Whether to show p-chart control limits
+        show_p_chart_limits: Whether to show p - chart control limits
 
     Returns:
         Plotly figure with ISRC balance analysis
@@ -2082,7 +2077,7 @@ def create_isrc_balance_chart(
             )
         )
 
-        # Add non-ISRC bars (top)
+        # Add non - ISRC bars (top)
         fig.add_trace(
             go.Bar(
                 name="No ISRC",
@@ -2117,7 +2112,7 @@ def create_isrc_balance_chart(
                 )
             )
 
-        # Add p-chart control limits if requested
+        # Add p - chart control limits if requested
         if show_p_chart_limits:
             # Add center line
             fig.add_hline(
@@ -2165,7 +2160,7 @@ def create_isrc_balance_chart(
         # Update layout
         fig.update_layout(
             title=dict(
-                text="ISRC vs Non-ISRC Content Balance<br><sub>100% stacked bars with p-chart control limits</sub>",
+                text="ISRC vs Non - ISRC Content Balance<br><sub>100% stacked bars with p - chart control limits</sub>",
                 x=0.5,
                 font=dict(size=16),
             ),
@@ -2253,7 +2248,7 @@ def create_tour_compatibility_analysis(
         go.Scatter(
             x=artist_metrics["daily_views"],
             y=artist_metrics["engagement_rate"],
-            mode="markers+text",
+            mode="markers + text",
             text=artist_metrics.index,
             textposition="top center",
             marker=dict(size=15, color=ColorBrewerPalettes.CATEGORICAL[: len(artist_metrics)]),
@@ -2285,7 +2280,7 @@ def create_upset_feature_intersections(df: pd.DataFrame, features: list = None) 
     feature_data = []
     for feature in features:
         if feature in df.columns:
-            count = df[feature].sum() if df[feature].dtype == bool else len(df[df[feature] == True])
+            count = df[feature].sum() if df[feature].dtype == bool else len(df[df[feature] is True])
             feature_data.append({"feature": feature, "count": count})
 
     if not feature_data:
@@ -2299,7 +2294,7 @@ def create_upset_feature_intersections(df: pd.DataFrame, features: list = None) 
     )
 
     fig.update_layout(
-        title="Feature Intersections Analysis<br><sub>UpSet-style feature combinations</sub>",
+        title="Feature Intersections Analysis<br><sub>UpSet - style feature combinations</sub>",
         xaxis_title="Features",
         yaxis_title="Count",
         template="plotly_white",
@@ -2312,7 +2307,7 @@ def create_isrc_balance_bars(
     df: pd.DataFrame, use_wilson_intervals: bool = True, show_control_bands: bool = True
 ) -> go.Figure:
     """
-    Chart #8: ISRC vs Non-ISRC balance with p-chart control bands.
+    Chart #8: ISRC vs Non - ISRC balance with p - chart control bands.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for ISRC analysis", x=0.5, y=0.5)
@@ -2338,7 +2333,7 @@ def create_isrc_balance_bars(
         )
     )
 
-    # Non-ISRC bars
+    # Non - ISRC bars
     fig.add_trace(
         go.Bar(
             name="No ISRC",
@@ -2349,7 +2344,7 @@ def create_isrc_balance_bars(
     )
 
     fig.update_layout(
-        title="ISRC vs Non-ISRC Balance<br><sub>Music videos vs content videos</sub>",
+        title="ISRC vs Non - ISRC Balance<br><sub>Music videos vs content videos</sub>",
         xaxis_title="Artist",
         yaxis_title="Proportion",
         barmode="stack",
@@ -2366,7 +2361,7 @@ def create_content_length_dumbbells(df: pd.DataFrame, short_form_threshold: int 
     if df.empty:
         return go.Figure().add_annotation(text="No data for content length", x=0.5, y=0.5)
 
-    # Create short/long form data
+    # Create short / long form data
     if "is_short_form" not in df.columns:
         return go.Figure().add_annotation(text="No content length data - need 'is_short_form' column", x=0.5, y=0.5)
 
@@ -2383,7 +2378,7 @@ def create_content_length_dumbbells(df: pd.DataFrame, short_form_threshold: int 
             go.Scatter(
                 x=[length_data.loc[artist, "short_rate"], length_data.loc[artist, "long_rate"]],
                 y=[artist, artist],
-                mode="lines+markers",
+                mode="lines + markers",
                 line=dict(color="gray", width=2),
                 marker=dict(size=10, color=[ColorBrewerPalettes.CATEGORICAL[0], ColorBrewerPalettes.CATEGORICAL[1]]),
                 showlegend=False,
@@ -2391,7 +2386,7 @@ def create_content_length_dumbbells(df: pd.DataFrame, short_form_threshold: int 
         )
 
     fig.update_layout(
-        title="Content Length Analysis<br><sub>Short-form vs Long-form distribution</sub>",
+        title="Content Length Analysis<br><sub>Short - form vs Long - form distribution</sub>",
         xaxis_title="Rate",
         yaxis_title="Artist",
         template="plotly_white",
@@ -2485,7 +2480,7 @@ def create_views_by_category_areas(df: pd.DataFrame, rolling_window: int = 7, us
 
 def create_genre_context_heatmap(df: pd.DataFrame, use_tfidf: bool = True, apply_shrinkage: bool = True) -> go.Figure:
     """
-    Chart #12: Genre context analysis with TF-IDF keyphrase heatmap.
+    Chart #12: Genre context analysis with TF - IDF keyphrase heatmap.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for genre context", x=0.5, y=0.5)
@@ -2493,16 +2488,16 @@ def create_genre_context_heatmap(df: pd.DataFrame, use_tfidf: bool = True, apply
     # Validate required columns for genre analysis
     if "comment_text" not in df.columns:
         return go.Figure().add_annotation(
-            text="No comment text data - need 'comment_text' column for TF-IDF analysis", x=0.5, y=0.5
+            text="No comment text data - need 'comment_text' column for TF - IDF analysis", x=0.5, y=0.5
         )
 
-    # For now, return a placeholder until we implement real TF-IDF analysis
+    # For now, return a placeholder until we implement real TF - IDF analysis
     return go.Figure().add_annotation(
-        text="Genre context analysis requires TF-IDF implementation with real comment data", x=0.5, y=0.5
+        text="Genre context analysis requires TF - IDF implementation with real comment data", x=0.5, y=0.5
     )
 
     fig.update_layout(
-        title="Genre Context Analysis<br><sub>TF-IDF keyphrase analysis by artist</sub>",
+        title="Genre Context Analysis<br><sub>TF - IDF keyphrase analysis by artist</sub>",
         xaxis_title="Genre Keywords",
         yaxis_title="Artist",
         template="plotly_white",
@@ -2522,7 +2517,7 @@ def create_roster_rank_bump_chart(
 
     # Create ranking data over time
     if "date" not in df.columns:
-        df["date"] = pd.date_range("2024-01-01", periods=len(df))
+        df["date"] = pd.date_range("2024 - 01 - 01", periods=len(df))
 
     # Calculate weekly rankings
     df["week"] = df["date"].dt.to_period("W")
@@ -2556,7 +2551,7 @@ def create_roster_rank_bump_chart(
             go.Scatter(
                 x=artist_data["week"].astype(str),
                 y=artist_data["engagement_rate"],
-                mode="lines+markers",
+                mode="lines + markers",
                 name=artist,
                 line=dict(color=colors[i], width=3),
                 marker=dict(size=8),
@@ -2613,20 +2608,20 @@ def create_ab_test_framework(
     df: pd.DataFrame, test_type: str = "uplift_curve", show_confidence_intervals: bool = True
 ) -> go.Figure:
     """
-    Chart #15: A/B test framework with uplift curves.
+    Chart #15: A / B test framework with uplift curves.
     """
     if df.empty:
-        return go.Figure().add_annotation(text="No A/B test data available", x=0.5, y=0.5)
+        return go.Figure().add_annotation(text="No A / B test data available", x=0.5, y=0.5)
 
-    # Validate A/B test data
+    # Validate A / B test data
     required_cols = ["test_group", "conversion_rate"]
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
-        return go.Figure().add_annotation(text=f"No A/B test data - need columns: {missing_cols}", x=0.5, y=0.5)
+        return go.Figure().add_annotation(text=f"No A / B test data - need columns: {missing_cols}", x=0.5, y=0.5)
 
     fig = go.Figure()
 
-    # Box plots for A/B test results using real data
+    # Box plots for A / B test results using real data
     for group in df["test_group"].unique():
         group_data = df[df["test_group"] == group]["conversion_rate"]
 
@@ -2639,7 +2634,7 @@ def create_ab_test_framework(
         )
 
     fig.update_layout(
-        title="A/B Test Framework<br><sub>Uplift analysis with confidence intervals</sub>",
+        title="A / B Test Framework<br><sub>Uplift analysis with confidence intervals</sub>",
         xaxis_title="Test Group",
         yaxis_title="Conversion Rate",
         template="plotly_white",

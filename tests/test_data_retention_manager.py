@@ -127,7 +127,7 @@ class TestDeletionSafetyCheck:
         mock_connection.execute.side_effect = [
             mock_videos,  # _get_expired_videos
             5,  # metrics count
-            [("2023-01-01",), ("2023-01-02",)],  # sample metrics
+            [("2023 - 01 - 01",), ("2023 - 01 - 02",)],  # sample metrics
             10,  # comments count
             [("comment1",), ("comment2",)],  # sample comments
             2,  # isrc links count
@@ -439,7 +439,7 @@ class TestPrivateMethods:
         # Mock dependency counts and samples
         mock_connection.execute.side_effect = [
             5,  # metrics count
-            [("2023-01-01",), ("2023-01-02",)],  # sample metrics
+            [("2023 - 01 - 01",), ("2023 - 01 - 02",)],  # sample metrics
             3,  # comments count
             [("comment1",), ("comment2",)],  # sample comments
             1,  # isrc links count

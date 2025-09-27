@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Helper Functions Demonstration
 
@@ -6,7 +6,7 @@ This script demonstrates how to use the common helper functions in real scenario
 Run this to see the new development standards in action.
 
 Usage:
-    python examples/helper_functions_demo.py
+    python examples / helper_functions_demo.py
 """
 
 import os
@@ -113,7 +113,7 @@ def demo_error_handling():
     # Safe division examples
     print("Safe Division Examples:")
     print(f"10 ÷ 2 = {safe_divide(10, 2)}")
-    print(f"10 ÷ 0 = {safe_divide(10, 0, default='N/A')}")
+    print(f"10 ÷ 0 = {safe_divide(10, 0, default='N / A')}")
     print(f"10 ÷ 0 (default 0) = {safe_divide(10, 0, default=0)}")
 
     # Retry operation example
@@ -138,8 +138,8 @@ def demo_error_handling():
 
 
 def demo_real_world_scenario():
-    """Demonstrate a real-world scenario using multiple helpers."""
-    print("🌍 REAL-WORLD SCENARIO DEMO")
+    """Demonstrate a real - world scenario using multiple helpers."""
+    print("🌍 REAL - WORLD SCENARIO DEMO")
     print("-" * 40)
     print("Processing YouTube video analytics data...")
 
@@ -147,12 +147,12 @@ def demo_real_world_scenario():
     raw_video_data = [
         {
             "id": "dQw4w9WgXcQ",
-            "snippet": {"title": "  Never Gonna Give You Up  ", "publishedAt": "2009-10-25T06:57:33Z"},
+            "snippet": {"title": "  Never Gonna Give You Up  ", "publishedAt": "2009 - 10 - 25T06:57:33Z"},
             "statistics": {"viewCount": "1234567890", "likeCount": "12345678", "commentCount": "123456"},
         },
         {
             "id": "invalid_id",  # This will cause validation error
-            "snippet": {"title": "Invalid Video", "publishedAt": "2023-01-01T12:00:00Z"},
+            "snippet": {"title": "Invalid Video", "publishedAt": "2023 - 01 - 01T12:00:00Z"},
             "statistics": {"viewCount": "1000", "likeCount": "50", "commentCount": "10"},
         },
     ]
@@ -280,10 +280,10 @@ def main():
     print("✅ File helpers simplify common operations")
     print()
     print("Next Steps:")
-    print("1. Review docs/DEVELOPMENT_STANDARDS.md")
-    print("2. Try the exercises in docs/ONBOARDING_WORKSHOP.md")
-    print("3. Use docs/QUICK_REFERENCE.md for daily development")
-    print("4. Import helpers from src/youtubeviz/common_helpers.py")
+    print("1. Review docs / DEVELOPMENT_STANDARDS.md")
+    print("2. Try the exercises in docs / ONBOARDING_WORKSHOP.md")
+    print("3. Use docs / QUICK_REFERENCE.md for daily development")
+    print("4. Import helpers from src / youtubeviz / common_helpers.py")
 
 
 if __name__ == "__main__":

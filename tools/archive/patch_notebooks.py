@@ -59,7 +59,7 @@ def patch_explore_notebook(path: Path) -> bool:
             "import pandas as pd\n"
             "import numpy as np\n"
             "import matplotlib.pyplot as plt\n"
-            "plt.style.use('seaborn-v0_8-whitegrid')\n"
+            "plt.style.use('seaborn - v0_8 - whitegrid')\n"
             "from web.db_guard import get_engine\n\n"
             "eng = get_engine()\n\n"
             "sql = '''\n"
@@ -92,7 +92,7 @@ def patch_explore_notebook(path: Path) -> bool:
             "    ax.set_title('Sentiment vs Popularity (per video)')\n"
             "    plt.show()\n"
             "else:\n"
-            "    print('No sentiment/view data available')\n"
+            "    print('No sentiment / view data available')\n"
         )
     )
     nb.cells.append(

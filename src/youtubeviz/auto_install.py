@@ -1,7 +1,7 @@
 """
 Automatic package installation utilities for YouTube analytics.
 
-This module provides a general-purpose AutoInstaller class that can
+This module provides a general - purpose AutoInstaller class that can
 automatically install any missing Python package on demand.
 """
 
@@ -15,7 +15,7 @@ import warnings
 
 class AutoInstaller:
     """
-    General-purpose automatic package installer.
+    General - purpose automatic package installer.
 
     This class can automatically install any Python package when it's needed,
     with caching to avoid repeated installation attempts.
@@ -27,7 +27,7 @@ class AutoInstaller:
         scipy = installer.ensure_package('scipy')
 
         # Install with different import name
-        sklearn = installer.ensure_package('scikit-learn', import_name='sklearn')
+        sklearn = installer.ensure_package('scikit - learn', import_name='sklearn')
 
         # Install multiple packages
         installer.ensure_packages(['numpy', 'pandas', 'matplotlib'])
@@ -43,7 +43,7 @@ class AutoInstaller:
         """
         self.timeout = timeout
         self.verbose = verbose
-        self._installation_cache = {}  # Cache successful/failed installations
+        self._installation_cache = {}  # Cache successful / failed installations
         self._import_cache = {}  # Cache imported modules
 
     def ensure_package(
@@ -274,7 +274,7 @@ def ensure(package_name: str, import_name: str = None, version: str = None) -> O
 
     Example:
         scipy = ensure('scipy')
-        sklearn = ensure('scikit-learn', 'sklearn')
+        sklearn = ensure('scikit - learn', 'sklearn')
         pandas = ensure('pandas', version='>=1.0.0')
     """
     return _global_installer.ensure_package(package_name, import_name, version)
@@ -291,10 +291,10 @@ def ensure_packages(*packages) -> Dict[str, Optional[object]]:
         Dictionary mapping package names to modules
 
     Example:
-        modules = ensure_packages('numpy', 'pandas', ('scikit-learn', 'sklearn'))
+        modules = ensure_packages('numpy', 'pandas', ('scikit - learn', 'sklearn'))
         np = modules['numpy']
         pd = modules['pandas']
-        sklearn = modules['scikit-learn']
+        sklearn = modules['scikit - learn']
     """
     package_dict = {}
 
@@ -335,7 +335,7 @@ def ensure_analytics_packages() -> Dict[str, bool]:
         # Statistical analysis
         "scipy": "scipy",
         "statsmodels": "statsmodels",
-        "scikit-learn": "sklearn",
+        "scikit - learn": "sklearn",
         # Visualization
         "seaborn": "seaborn",
         "plotly": "plotly",
@@ -348,19 +348,19 @@ def ensure_analytics_packages() -> Dict[str, bool]:
         "fastparquet": "fastparquet",  # Alternative parquet
         # Performance monitoring
         "psutil": "psutil",
-        "memory-profiler": "memory_profiler",
+        "memory - profiler": "memory_profiler",
         # Jupyter notebook enhancements
         "ipywidgets": "ipywidgets",
         "tqdm": "tqdm",  # Progress bars
         "rich": "rich",  # Rich text and progress
-        # Music/audio analysis (optional)
+        # Music / audio analysis (optional)
         "librosa": "librosa",
         "spotipy": "spotipy",  # Spotify API
         # Network analysis
         "networkx": "networkx",
         # Time series analysis
         "prophet": "prophet",
-        "seasonal-decompose": "seasonal",
+        "seasonal - decompose": "seasonal",
         # Text analysis
         "textblob": "textblob",
         "wordcloud": "wordcloud",
@@ -368,12 +368,12 @@ def ensure_analytics_packages() -> Dict[str, bool]:
         # Database connectors
         "sqlalchemy": "sqlalchemy",
         "pymysql": "pymysql",
-        "psycopg2-binary": "psycopg2",
+        "psycopg2 - binary": "psycopg2",
         # API clients
         "requests": "requests",
         "httpx": "httpx",
         # Configuration
-        "python-dotenv": "dotenv",
+        "python - dotenv": "dotenv",
         "pyyaml": "yaml",
         "toml": "toml",
         # Caching
@@ -404,7 +404,7 @@ def check_optional_dependencies() -> Dict[str, List[str]]:
         "essential": [
             ("scipy", "scipy"),
             ("statsmodels", "statsmodels"),
-            ("scikit-learn", "sklearn"),
+            ("scikit - learn", "sklearn"),
             ("plotly", "plotly"),
             ("seaborn", "seaborn"),
             ("tqdm", "tqdm"),
@@ -422,7 +422,7 @@ def check_optional_dependencies() -> Dict[str, List[str]]:
             ("pyarrow", "pyarrow"),
             ("fastparquet", "fastparquet"),
         ],
-        "jupyter": [("ipywidgets", "ipywidgets"), ("memory-profiler", "memory_profiler")],
+        "jupyter": [("ipywidgets", "ipywidgets"), ("memory - profiler", "memory_profiler")],
         "music_analysis": [("librosa", "librosa"), ("spotipy", "spotipy")],
         "advanced_analytics": [
             ("networkx", "networkx"),
@@ -430,11 +430,11 @@ def check_optional_dependencies() -> Dict[str, List[str]]:
             ("textblob", "textblob"),
             ("nltk", "nltk"),
         ],
-        "database": [("sqlalchemy", "sqlalchemy"), ("pymysql", "pymysql"), ("psycopg2-binary", "psycopg2")],
+        "database": [("sqlalchemy", "sqlalchemy"), ("pymysql", "pymysql"), ("psycopg2 - binary", "psycopg2")],
         "utilities": [
             ("requests", "requests"),
             ("httpx", "httpx"),
-            ("python-dotenv", "dotenv"),
+            ("python - dotenv", "dotenv"),
             ("pyyaml", "yaml"),
             ("joblib", "joblib"),
             ("diskcache", "diskcache"),
@@ -492,7 +492,7 @@ def install_missing_dependencies(categories: List[str] = None, auto_install: boo
         print(f"  {category}: {', '.join(packages)}")
 
     if not auto_install:
-        print("\nAuto-install disabled. Install manually with:")
+        print("\nAuto - install disabled. Install manually with:")
         print(f"pip install {' '.join(all_missing)}")
         return False
 
@@ -531,7 +531,7 @@ def safe_import_with_fallback(package_name: str, fallback_message: str = None):
     try:
         return importlib.import_module(package_name)
     except ImportError:
-        # Try auto-installation
+        # Try auto - installation
         if auto_install_package(package_name):
             try:
                 return importlib.import_module(package_name)
@@ -557,8 +557,8 @@ def ensure_statsmodels():
 
 
 def ensure_sklearn():
-    """Ensure scikit-learn is available."""
-    return auto_install_package("scikit-learn", "sklearn")
+    """Ensure scikit - learn is available."""
+    return auto_install_package("scikit - learn", "sklearn")
 
 
 def ensure_seaborn():
@@ -577,11 +577,12 @@ ANALYTICS_ESSENTIALS = {
     "pydantic": "pydantic",  # Required for data validation models
 }
 
-JUPYTER_ESSENTIALS = {"ipywidgets": "ipywidgets", "tqdm": "tqdm", "rich": "rich", "memory-profiler": "memory_profiler"}
+JUPYTER_ESSENTIALS = {"ipywidgets": "ipywidgets", "tqdm": "tqdm",
+    "rich": "rich", "memory - profiler": "memory_profiler"}
 
 MUSIC_ANALYTICS = {"librosa": "librosa", "spotipy": "spotipy", "textblob": "textblob", "wordcloud": "wordcloud"}
 
-DATABASE_CONNECTORS = {"sqlalchemy": "sqlalchemy", "pymysql": "pymysql", "psycopg2-binary": "psycopg2"}
+DATABASE_CONNECTORS = {"sqlalchemy": "sqlalchemy", "pymysql": "pymysql", "psycopg2 - binary": "psycopg2"}
 
 DATA_FORMATS = {"openpyxl": "openpyxl", "xlsxwriter": "xlsxwriter", "pyarrow": "pyarrow", "fastparquet": "fastparquet"}
 
@@ -597,7 +598,7 @@ def install_jupyter_stack() -> Dict[str, Optional[object]]:
 
 
 def install_music_stack() -> Dict[str, Optional[object]]:
-    """Install music-specific analysis packages."""
+    """Install music - specific analysis packages."""
     return _global_installer.ensure_packages(MUSIC_ANALYTICS)
 
 
@@ -625,12 +626,12 @@ def install_full_stack() -> Dict[str, Optional[object]]:
 
 if __name__ == "__main__":
     """Run interactive package installer when called directly."""
-    print("🔍 YouTube Analytics Auto-Installer")
+    print("🔍 YouTube Analytics Auto - Installer")
     print("=" * 50)
 
     print("Available package stacks:")
     print("1. Analytics Essentials (numpy, pandas, scipy, matplotlib, seaborn, plotly)")
-    print("2. Jupyter Enhancements (ipywidgets, tqdm, rich, memory-profiler)")
+    print("2. Jupyter Enhancements (ipywidgets, tqdm, rich, memory - profiler)")
     print("3. Music Analytics (librosa, spotipy, textblob, wordcloud)")
     print("4. Database Connectors (sqlalchemy, pymysql, psycopg2)")
     print("5. Data Formats (openpyxl, xlsxwriter, pyarrow, fastparquet)")
@@ -638,7 +639,7 @@ if __name__ == "__main__":
     print("7. Custom package")
     print("8. Check what's missing")
 
-    choice = input("\nSelect option (1-8): ").strip()
+    choice = input("\nSelect option (1 - 8): ").strip()
 
     if choice == "1":
         print("Installing Analytics Essentials...")

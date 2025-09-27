@@ -30,7 +30,7 @@ def test_read_rpm_from_env_and_compute(monkeypatch):
     default, mapping = read_rpm_from_env()
     assert default == 4.0 and mapping == {}
 
-    # Per-artist override via env used when rpm_usd=None
+    # Per - artist override via env used when rpm_usd=None
     monkeypatch.setenv("REVENUE_RPM_MAP_JSON", json.dumps({"A": 5.0}))
     df = pd.DataFrame(
         {
@@ -40,7 +40,7 @@ def test_read_rpm_from_env_and_compute(monkeypatch):
         }
     )
     out = compute_estimated_revenue(df, rpm_usd=None, per_video=True)
-    # Artist A: per-video max views [1000, 500] with RPM 5.0 → (1.0+0.5)*5 = 7.5
+    # Artist A: per - video max views [1000, 500] with RPM 5.0 → (1.0 + 0.5)*5 = 7.5
     a = out[out["artist_name"] == "A"].iloc[0]
     assert a["est_revenue_usd"] == 7.5
     # Artist B: RPM default 4.0 → (1.0)*4 = 4.0

@@ -9,7 +9,7 @@ Categories:
 - Database operation helpers
 - Data validation helpers
 - Error handling helpers
-- Formatting/output helpers
+- Formatting / output helpers
 - File operation helpers
 """
 
@@ -219,9 +219,9 @@ def validate_youtube_id(youtube_id: str, id_type: str = "video") -> bool:
         return False
 
     patterns = {
-        "video": r"^[a-zA-Z0-9_-]{11}$",
-        "channel": r"^UC[a-zA-Z0-9_-]{22}$",
-        "playlist": r"^[a-zA-Z0-9_-]{34}$",
+        "video": r"^[a - zA - Z0 - 9_-]{11}$",
+        "channel": r"^UC[a - zA - Z0 - 9_-]{22}$",
+        "playlist": r"^[a - zA - Z0 - 9_-]{34}$",
     }
 
     pattern = patterns.get(id_type, patterns["video"])
@@ -309,7 +309,7 @@ def safe_divide(
 
 
 # =============================================================================
-# FORMATTING/OUTPUT HELPERS
+# FORMATTING / OUTPUT HELPERS
 # =============================================================================
 
 
@@ -344,7 +344,7 @@ def format_number(number: Union[int, float], precision: int = 1) -> str:
 
 def format_duration(seconds: Union[int, float]) -> str:
     """
-    Format duration in seconds to human-readable format.
+    Format duration in seconds to human - readable format.
 
     Args:
         seconds: Duration in seconds
@@ -391,11 +391,11 @@ def format_percentage(value: Union[int, float], total: Union[int, float], precis
 
 def create_progress_bar(current: int, total: int, width: int = 50) -> str:
     """
-    Create a text-based progress bar.
+    Create a text - based progress bar.
 
     Args:
         current: Current progress value
-        total: Total/maximum value
+        total: Total / maximum value
         width: Width of progress bar in characters
 
     Returns:
@@ -444,7 +444,7 @@ def read_json_file(file_path: Union[str, Path], default: Any = None) -> Any:
         Parsed JSON data or default value
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf - 8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError) as e:
         logging.warning(f"Could not read JSON file {file_path}: {e}")
@@ -465,7 +465,7 @@ def write_json_file(file_path: Union[str, Path], data: Any, indent: int = 2) -> 
     """
     try:
         ensure_directory_exists(Path(file_path).parent)
-        with open(file_path, "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf - 8") as f:
             json.dump(data, f, indent=indent, ensure_ascii=False)
         return True
     except Exception as e:
@@ -491,7 +491,7 @@ def get_file_size_mb(file_path: Union[str, Path]) -> float:
 
 
 # =============================================================================
-# DATE/TIME HELPERS
+# DATE / TIME HELPERS
 # =============================================================================
 
 
@@ -522,7 +522,7 @@ def parse_youtube_timestamp(timestamp_str: str) -> Optional[datetime]:
     Parse YouTube API timestamp format.
 
     Args:
-        timestamp_str: YouTube timestamp string (e.g., "2023-01-01T12:00:00Z")
+        timestamp_str: YouTube timestamp string (e.g., "2023 - 01 - 01T12:00:00Z")
 
     Returns:
         Parsed datetime object or None if parsing fails

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Enhanced Dataset v2.2 Additions
 
@@ -36,7 +36,7 @@ def get_v22_additions():
 
     # ===== REGIONAL SLANG ADDITIONS =====
 
-    # NYC/AAVE Pack
+    # NYC / AAVE Pack
     additions.extend(
         [
             EnhancedMusicSlangEntry(
@@ -81,7 +81,7 @@ def get_v22_additions():
         ]
     )
 
-    # LA/SoCal Pack
+    # LA / SoCal Pack
     additions.extend(
         [
             EnhancedMusicSlangEntry(
@@ -109,7 +109,7 @@ def get_v22_additions():
                 SlangCategory.HYPE_EXCITEMENT,
                 Aspect.GENERAL,
                 0.80,
-                "LA party/event hype",
+                "LA party / event hype",
             ),
         ]
     )
@@ -184,7 +184,7 @@ def get_v22_additions():
         ]
     )
 
-    # ===== INDUSTRY/META TERMS =====
+    # ===== INDUSTRY / META TERMS =====
 
     additions.extend(
         [
@@ -249,7 +249,7 @@ def get_v22_additions():
                 SlangCategory.CRITICISM_NEGATIVE,
                 Aspect.GENERAL,
                 0.85,
-                "Stop/quit - negative dismissal",
+                "Stop / quit - negative dismissal",
             ),
             EnhancedMusicSlangEntry(
                 "trying too hard",
@@ -403,7 +403,8 @@ def simulate_combined_dataset():
 
         print(f"\n📈 Improvements:")
         print(
-            f"   Size: +{size_improvement} samples ({size_improvement/current_quality.total_samples*100:.1f}% increase)"
+            f"   Size: +{size_improvement} samples "
+            f"({size_improvement / current_quality.total_samples * 100:.1f}% increase)"
         )
         print(f"   Balance: {balance_improvement:+.3f} (higher is better)")
 

@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Demonstration of the Complete Notebook Archiving and DateTime System
 
-Shows the TDD-driven implementation working with real data.
+Shows the TDD - driven implementation working with real data.
 """
 
 import sys
@@ -21,7 +21,7 @@ def demonstrate_system():
 
     print("🎵 MusicScope™ Notebook Archiving System Demonstration")
     print("=" * 70)
-    print("✅ TDD-Driven Implementation")
+    print("✅ TDD - Driven Implementation")
     print("✅ DateTime Organization")
     print("✅ Professional Archiving")
     print("✅ Real Data Integration")
@@ -64,7 +64,7 @@ def demonstrate_system():
 
     # Parse the datetime to show it's valid
     datetime_part = sample_filename.replace("MusicScope™_Professional_Dashboard_", "").replace(".ipynb", "")
-    parsed_datetime = datetime.strptime(datetime_part, "%Y%m%d_%H%M%S")
+    parsed_datetime = datetime.strptime(datetime_part, "%Y % m%d_ % H%M % S")
     print(f"   🕒 Parsed DateTime: {parsed_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
 
     # Show the workflow
@@ -77,7 +77,7 @@ def demonstrate_system():
     print(f"\n🎯 Key Features:")
     print(f"   ✅ Automatic datetime stamping (YYYYMMDD_HHMMSS)")
     print(f"   ✅ Professional archiving system")
-    print(f"   ✅ TDD-driven with comprehensive tests")
+    print(f"   ✅ TDD - driven with comprehensive tests")
     print(f"   ✅ Bulletproof error handling")
     print(f"   ✅ Integration with create_notebook.py")
     print(f"   ✅ Real data only - no fake data ever")

@@ -253,7 +253,7 @@ def generate_content_optimization_recommendations(
     df: pd.DataFrame, artist_col: str, content_type_col: str, performance_metrics: List[str]
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Generate ML-powered content optimization recommendations.
+    Generate ML - powered content optimization recommendations.
 
     Args:
         df: DataFrame with content performance data
@@ -366,7 +366,7 @@ def _analyze_posting_patterns(df: pd.DataFrame) -> Dict[str, Any]:
         return {
             "best_posting_days": [day for day, _ in best_days],
             "day_performance": day_performance,
-            "recommended_frequency": "weekly" if len(df) < 30 else "bi-weekly",
+            "recommended_frequency": "weekly" if len(df) < 30 else "bi - weekly",
         }
 
     return {"best_posting_days": ["Tuesday", "Thursday", "Saturday"], "recommended_frequency": "weekly"}
@@ -382,18 +382,18 @@ def _generate_engagement_strategies(df: pd.DataFrame, metrics: List[str]) -> Lis
 
         if avg_engagement < INDUSTRY_AVG_ENGAGEMENT:
             strategies.append("Focus on improving engagement rate through interactive content")
-            strategies.append("Encourage comments with questions and calls-to-action")
+            strategies.append("Encourage comments with questions and calls - to - action")
 
         if avg_engagement > TOP_PERFORMER_THRESHOLD:
             strategies.append("Maintain high engagement with consistent quality content")
-            strategies.append("Leverage high engagement for cross-promotion")
+            strategies.append("Leverage high engagement for cross - promotion")
 
     # Add general strategies
     strategies.extend(
         [
-            "Optimize video thumbnails for higher click-through rates",
+            "Optimize video thumbnails for higher click - through rates",
             "Use trending hashtags and keywords in descriptions",
-            "Collaborate with other artists for cross-audience exposure",
+            "Collaborate with other artists for cross - audience exposure",
         ]
     )
 
@@ -516,12 +516,12 @@ def _generate_positioning_recommendations(landscape: Dict[str, Dict[str, Any]], 
     total_artists = len(landscape)
 
     if tier_1_count / total_artists < 0.3:
-        recommendations.append("Focus on developing tier-2 artists to tier-1 status")
+        recommendations.append("Focus on developing tier - 2 artists to tier - 1 status")
 
     recommendations.extend(
         [
             "Identify underserved market segments for expansion opportunities",
-            "Leverage strong performers for cross-promotion of developing artists",
+            "Leverage strong performers for cross - promotion of developing artists",
             "Consider strategic partnerships within complementary genres",
         ]
     )
@@ -623,7 +623,7 @@ def perform_audience_segmentation(
     df: pd.DataFrame, artist_col: str, behavioral_features: List[str], n_segments: int = 3
 ) -> Dict[str, Any]:
     """
-    Perform ML-based audience segmentation using clustering.
+    Perform ML - based audience segmentation using clustering.
 
     Args:
         df: DataFrame with behavioral data
@@ -686,13 +686,13 @@ def _fallback_audience_segmentation(
     df: pd.DataFrame, artist_col: str, features: List[str], n_segments: int
 ) -> Dict[str, Any]:
     """Fallback segmentation without sklearn."""
-    # Simple rule-based segmentation
+    # Simple rule - based segmentation
     segments = {}
 
     for i in range(n_segments):
         segments[i] = {
             "size": len(df) // n_segments,
-            "characteristics": f"Segment {i+1}",
+            "characteristics": f"Segment {i + 1}",
             "avg_features": {feature: df[feature].mean() if feature in df.columns else 0 for feature in features},
         }
 
@@ -872,13 +872,13 @@ def _detect_metric_anomalies(df: pd.DataFrame, metric: str, sensitivity: float, 
 
     anomalies = []
 
-    # Statistical anomaly detection using z-score
+    # Statistical anomaly detection using z - score
     mean_val = values.mean()
     std_val = values.std()
 
     if std_val > 0:
         z_scores = np.abs((values - mean_val) / std_val)
-        threshold = stats.norm.ppf(1 - sensitivity / 2)  # Two-tailed test
+        threshold = stats.norm.ppf(1 - sensitivity / 2)  # Two - tailed test
 
         anomaly_indices = np.where(z_scores > threshold)[0]
 
@@ -937,7 +937,7 @@ def perform_statistical_tests(
                     effect_size = _calculate_eta_squared(groups)
                     test_stat = f_stat
                 else:
-                    # T-test for two groups
+                    # T - test for two groups
                     if len(groups) >= 2:
                         t_stat, p_value = stats.ttest_ind(groups[0], groups[1])
                         effect_size = _calculate_cohens_d(groups[0], groups[1])
@@ -966,7 +966,7 @@ def _fallback_statistical_tests(df: pd.DataFrame, group_col: str, metric_cols: L
             # Simple variance analysis
             groups = df.groupby(group_col)[metric].agg(["mean", "std", "count"])
 
-            # Calculate F-statistic approximation
+            # Calculate F - statistic approximation
             between_var = groups["mean"].var()
             within_var = groups["std"].mean()
 
@@ -983,7 +983,7 @@ def _fallback_statistical_tests(df: pd.DataFrame, group_col: str, metric_cols: L
 
 
 def _calculate_eta_squared(groups: List[np.ndarray]) -> float:
-    """Calculate eta-squared effect size for ANOVA."""
+    """Calculate eta - squared effect size for ANOVA."""
     all_values = np.concatenate(groups)
     grand_mean = np.mean(all_values)
 
@@ -994,7 +994,7 @@ def _calculate_eta_squared(groups: List[np.ndarray]) -> float:
 
 
 def _calculate_cohens_d(group1: np.ndarray, group2: np.ndarray) -> float:
-    """Calculate Cohen's d effect size for t-test."""
+    """Calculate Cohen's d effect size for t - test."""
     n1, n2 = len(group1), len(group2)
 
     if n1 <= 1 or n2 <= 1:
@@ -1073,7 +1073,7 @@ def _generate_correlation_insights(correlations: List[Dict[str, Any]]) -> List[s
     # Analyze negative correlations
     negative_corrs = [c for c in correlations if c["correlation"] < 0]
     if negative_corrs:
-        insights.append(f"Found {len(negative_corrs)} negative correlations indicating trade-offs")
+        insights.append(f"Found {len(negative_corrs)} negative correlations indicating trade - offs")
 
     # Highlight strongest correlation
     if correlations:
@@ -1348,7 +1348,7 @@ def calculate_investment_priorities(
         current_scores = []
         for metric in performance_metrics:
             if metric in artist_df.columns:
-                # Normalize metric to 0-1 scale
+                # Normalize metric to 0 - 1 scale
                 metric_values = df[metric].dropna()
                 if len(metric_values) > 0:
                     artist_value = artist_df[metric].mean()
@@ -1427,7 +1427,7 @@ def identify_market_opportunities(
     # Identify performance gaps
     opportunity_gaps = []
 
-    # Genre-based opportunities
+    # Genre - based opportunities
     if "genre" in df.columns:
         genre_performance = (
             df.groupby("genre")[performance_metrics[0]].sum() if performance_metrics[0] in df.columns else pd.Series()
@@ -1481,7 +1481,7 @@ def identify_market_opportunities(
     # Generate strategic recommendations
     strategic_recommendations = [
         "Focus on underperforming genres with high market potential",
-        "Invest in artist development for below-median performers",
+        "Invest in artist development for below - median performers",
         "Consider market expansion strategies for untapped segments",
     ]
 
@@ -1571,7 +1571,7 @@ def create_artist_performance_model(
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    # Cross-validation
+    # Cross - validation
     if model_type != "ensemble":
         cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=CROSS_VALIDATION_FOLDS)
         cv_mean = cv_scores.mean()
@@ -1618,7 +1618,7 @@ def _fallback_performance_model(
     df: pd.DataFrame, artist_col: str, target_metric: str, feature_cols: List[str]
 ) -> Dict[str, Any]:
     """Fallback performance model without sklearn."""
-    # Simple correlation-based model
+    # Simple correlation - based model
     correlations = {}
 
     for feature in feature_cols:
@@ -1657,7 +1657,7 @@ def detect_viral_content_patterns(
         artist_col: Column name for artist names
         content_type_col: Column name for content types
         engagement_metrics: List of engagement metric columns
-        time_col: Column name for time/date
+        time_col: Column name for time / date
 
     Returns:
         Dictionary with viral pattern analysis
@@ -1837,7 +1837,7 @@ def perform_advanced_clustering(
         artist_col: Column name for artist names
         feature_cols: List of feature columns for clustering
         clustering_method: Clustering algorithm ('kmeans', 'hierarchical', 'dbscan')
-        n_clusters: Number of clusters (auto-determined if None)
+        n_clusters: Number of clusters (auto - determined if None)
 
     Returns:
         Dictionary with clustering results and analysis
@@ -2029,7 +2029,7 @@ def _generate_cluster_insights(cluster_analysis: Dict[int, Dict[str, Any]], feat
         f"Largest cluster ({largest_cluster[1]['size']} artists): {', '.join(largest_cluster[1]['characteristics'])}"
     )
 
-    # Find high-performing cluster
+    # Find high - performing cluster
     if "engagement_rate" in feature_names:
         high_engagement_cluster = max(
             cluster_analysis.items(), key=lambda x: x[1]["feature_stats"].get("engagement_rate", {}).get("mean", 0)
@@ -2070,7 +2070,7 @@ def _calculate_feature_importance_clustering(
 
 def _fallback_clustering(df: pd.DataFrame, artist_col: str, feature_cols: List[str], n_clusters: int) -> Dict[str, Any]:
     """Fallback clustering without sklearn."""
-    # Simple rule-based clustering
+    # Simple rule - based clustering
     artists = df[artist_col].unique()
     cluster_size = len(artists) // n_clusters
 
@@ -2081,9 +2081,9 @@ def _fallback_clustering(df: pd.DataFrame, artist_col: str, feature_cols: List[s
     return {
         "cluster_labels": cluster_labels,
         "cluster_analysis": {
-            i: {"size": cluster_size, "characteristics": [f"Cluster {i+1}"]} for i in range(n_clusters)
+            i: {"size": cluster_size, "characteristics": [f"Cluster {i + 1}"]} for i in range(n_clusters)
         },
-        "cluster_insights": ["Simple rule-based clustering applied"],
+        "cluster_insights": ["Simple rule - based clustering applied"],
         "silhouette_score": 0.5,
         "n_clusters": n_clusters,
     }
@@ -2101,7 +2101,7 @@ def integrate_with_youtube_helpers(
         channel_col: Column name for channel titles
 
     Returns:
-        Enhanced DataFrame with ML-derived features
+        Enhanced DataFrame with ML - derived features
     """
     enhanced_df = df.copy()
 
@@ -2156,7 +2156,7 @@ def _calculate_title_complexity(title: str) -> float:
 
     # Factors that contribute to complexity
     factors = {
-        "length": min(len(title) / 100, 1.0),  # Normalize to 0-1
+        "length": min(len(title) / 100, 1.0),  # Normalize to 0 - 1
         "word_count": min(len(title.split()) / 20, 1.0),
         "special_chars": len([c for c in title if not c.isalnum() and c != " "]) / len(title),
         "uppercase_ratio": sum(1 for c in title if c.isupper()) / len(title),

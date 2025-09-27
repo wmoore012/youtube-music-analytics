@@ -1,4 +1,4 @@
-# tests/icatalog_public/oss/test_sql_helpers_v2.py
+# tests / icatalog_public / oss / test_sql_helpers_v2.py
 
 from unittest.mock import MagicMock, call, patch  # Import call
 
@@ -37,7 +37,7 @@ def test_read_sql_safe_sqlite_raw_connection():
 
 
 def test_read_sql_safe_other_dialect_connection():
-    # Mock a non-SQLite engine
+    # Mock a non - SQLite engine
     mock_engine = MagicMock()
     mock_engine.dialect = MagicMock(name="dialect_mock")
     mock_engine.dialect.name = "mysql"
@@ -161,7 +161,7 @@ def test_get_table_raises_error_if_not_initialized():
     init_tables.__globals__["_TABLE_HANDLES"] = {}
 
     with pytest.raises(
-        RuntimeError, match="init_tables\(engine\) must be called once at program start"
+        RuntimeError, match=r"init_tables\(engine\) must be called once at program start"
     ):  # Use double backslashes for escaped parentheses
         get_table("songs")
 

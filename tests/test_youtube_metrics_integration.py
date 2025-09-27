@@ -167,9 +167,9 @@ class TestYouTubeMetricsIntegration:
                 pass
 
     def test_no_references_to_nonexistent_columns_in_database(self):
-        """Test that the database doesn't have non-existent columns that might be referenced."""
+        """Test that the database doesn't have non - existent columns that might be referenced."""
         with self.engine.connect() as conn:
-            # Check that non-existent columns are not in the table
+            # Check that non - existent columns are not in the table
             columns_result = conn.execute(
                 "SELECT column_name FROM information_schema.columns "
                 "WHERE table_schema = DATABASE() AND table_name = 'youtube_metrics'"
@@ -177,7 +177,7 @@ class TestYouTubeMetricsIntegration:
 
             column_names = [row[0].lower() for row in columns_result]
 
-            # Verify non-existent columns are not present
+            # Verify non - existent columns are not present
             assert "isrc" not in column_names, "youtube_metrics should not have isrc column"
             assert "favorite_count" not in column_names, "youtube_metrics should not have favorite_count column"
 

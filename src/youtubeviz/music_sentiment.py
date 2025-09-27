@@ -1,7 +1,7 @@
 """
 Enhanced Music Industry Sentiment Analysis
 
-This module provides music industry-specific sentiment analysis that understands
+This module provides music industry - specific sentiment analysis that understands
 slang, AAVE, and cultural context in music fan comments.
 """
 
@@ -22,7 +22,7 @@ class MusicSentimentConfig:
         r"\bthis is sick\b": 0.8,
         r"\bfuck it up\b": 0.8,
         r"\bbad bish\b": 0.8,
-        r"\bbitch,?\s*it\'?s givinnnng\b": 0.8,
+        r"\bbitch,?\s * it\'?s givinnnng\b": 0.8,
         r"\bno cap.*slaps\b": 0.8,
         r"\bthe way i screamed\b": 0.7,
         r"\bi\'?m obsessed\b": 0.7,
@@ -42,10 +42,10 @@ class MusicSentimentConfig:
         # Affirmative responses
         r"\byessir!?\b": 0.7,
         r"\byessuh\b": 0.7,
-        r"\b10/10\b": 0.9,
-        r"\b100/10\b": 0.9,
+        r"\b10 / 10\b": 0.9,
+        r"\b100 / 10\b": 0.9,
         r"\b100!\b": 0.8,
-        # Queen/royalty references (positive in music context)
+        # Queen / royalty references (positive in music context)
         r"\bqueen\b": 0.7,
         r"\bking\b": 0.7,
         r"\bhot bish\b": 0.8,
@@ -55,7 +55,7 @@ class MusicSentimentConfig:
         r"\bcan\'?t wait\b": 0.6,
         # Enthusiastic expressions
         r"\bbitchhh+!?\b": 0.7,  # Extended "bitch" as excitement
-        # Tour/location requests (positive engagement)
+        # Tour / location requests (positive engagement)
         r"\bplease come to \w+\b": 0.6,
         r"\bcome to my city\b": 0.6,
         r"\btour dates\b": 0.5,
@@ -74,7 +74,7 @@ class MusicSentimentConfig:
         r"\bsay less\b": 0.6,
         r"\bbet\b": 0.5,
         r"\bfacts\b": 0.5,
-        # Music-specific positive terms
+        # Music - specific positive terms
         r"\bbanger\b": 0.8,
         r"\bslaps\b": 0.8,
         r"\bfire\b": 0.7,
@@ -92,7 +92,7 @@ class MusicSentimentConfig:
         r"\bharmonies hit different\b": 0.7,
         # Additional Gen Z expressions
         r"\bsending me\b": 0.6,
-        r"\bI\'?m weak\b": 0.6,  # Laughing/positive
+        r"\bI\'?m weak\b": 0.6,  # Laughing / positive
         r"\bI\'?m crying\b": 0.5,  # Can be positive emotional response
         r"\bthis sent me\b": 0.6,
         r"\bI\'?m screaming\b": 0.6,
@@ -101,16 +101,16 @@ class MusicSentimentConfig:
         r"\bwe love to see it\b": 0.7,
         r"\bchef\'?s kiss\b": 0.8,
         # Fan expressions from real comments (these were missed!)
-        r"\bhottie,?\s*baddie,?\s*\w+\b": 0.8,  # "Hottie, Baddie, Maddie"
+        r"\bhottie,?\s * baddie,?\s*\w+\b": 0.8,  # "Hottie, Baddie, Maddie"
         r"\bpart two please+\b": 0.7,  # "Part two pleaseee"
         r"\bwtf+\b": 0.6,  # "wtfff" - excitement in music context
         r"\bcuz i \w+\b": 0.6,  # "Cuz I willie" - playful expression
-        r"\bsheee+sh\b": 0.8,  # "sheeeeesh" - excitement/approval
+        r"\bsheee + sh\b": 0.8,  # "sheeeeesh" - excitement / approval
         r"\bmy \w+ snapped\b": 0.8,  # "my nigga snapped" - praise
         r"\bsnapped\b": 0.8,  # General praise for performance
-        r"\bmy legs are spread\b": 0.7,  # Excitement/anticipation
+        r"\bmy legs are spread\b": 0.7,  # Excitement / anticipation
         r"\bbestie goals\b": 0.7,  # "Bestie goals fr"
-        r"\bfr\b": 0.5,  # "for real" - agreement/emphasis
+        r"\bfr\b": 0.5,  # "for real" - agreement / emphasis
         # New additions from your examples
         r"\bthis hard af\b": 0.8,  # "this hard af"
         r"\bhard af\b": 0.8,  # "hard as fuck" - very positive
@@ -125,35 +125,35 @@ class MusicSentimentConfig:
         # Variations and related expressions
         r"\bthis crazy\b": 0.7,  # General "this crazy"
         r"\bcrazy bro\b": 0.7,  # "crazy bro"
-        r"\bbro\b": 0.4,  # "bro" - friendly/positive context
+        r"\bbro\b": 0.4,  # "bro" - friendly / positive context
         r"\bthe beat\b": 0.5,  # Beat references are generally positive
-        r"\bbeat\s+(though|tho)\b": 0.7,  # "beat though/tho"
+        r"\bbeat\s+(though|tho)\b": 0.7,  # "beat though / tho"
         r"\bwho made\b": 0.6,  # Asking about producer - appreciation
         r"\bproducer\b": 0.5,  # Producer mentions - appreciation
         # Extended patterns for "hard" (positive in music)
-        r"\bthis\s+hard\b": 0.7,  # "this hard"
-        r"\bgoes?\s+hard\b": 0.8,  # "goes hard" / "go hard"
-        r"\bso\s+hard\b": 0.7,  # "so hard"
-        r"\btoo\s+hard\b": 0.8,  # "too hard" - very positive
-        r"\bway\s+too\s+hard\b": 0.9,  # "way too hard" - extremely positive
+        r"\bthis\s + hard\b": 0.7,  # "this hard"
+        r"\bgoes?\s + hard\b": 0.8,  # "goes hard" / "go hard"
+        r"\bso\s + hard\b": 0.7,  # "so hard"
+        r"\btoo\s + hard\b": 0.8,  # "too hard" - very positive
+        r"\bway\s + too\s + hard\b": 0.9,  # "way too hard" - extremely positive
         # "Crazy" in positive music context
-        r"\bthis\s+crazy\b": 0.7,  # "this crazy"
-        r"\bso\s+crazy\b": 0.7,  # "so crazy"
-        r"\btoo\s+crazy\b": 0.8,  # "too crazy"
-        r"\bway\s+crazy\b": 0.8,  # "way crazy"
+        r"\bthis\s + crazy\b": 0.7,  # "this crazy"
+        r"\bso\s + crazy\b": 0.7,  # "so crazy"
+        r"\btoo\s + crazy\b": 0.8,  # "too crazy"
+        r"\bway\s + crazy\b": 0.8,  # "way crazy"
         # Beat appreciation with variations
-        r"\bbeat\s+is\s+(fire|sick|hard|crazy|insane)\b": 0.8,
+        r"\bbeat\s + is\s+(fire|sick|hard|crazy|insane)\b": 0.8,
         r"\bbeat\s+(fire|sick|hard|crazy|insane)\b": 0.8,
-        r"\b(fire|sick|hard|crazy|insane)\s+beat\b": 0.8,
+        r"\b(fire|sick|hard|crazy|insane)\s + beat\b": 0.8,
         # Variations and extensions
         r"\bhottie\b": 0.7,
         r"\bbaddie\b": 0.7,
         r"\bplease+\b": 0.6,  # Multiple e's show excitement
         r"\bwtf\b": 0.5,  # In music context, often positive surprise
-        r"\bsheesh\b": 0.7,  # Approval/amazement
+        r"\bsheesh\b": 0.7,  # Approval / amazement
         r"\bsnap\b": 0.6,  # "that snaps" = that's good
-        r"\bbestie\b": 0.6,  # Friendly/positive
-        r"\bgoals\b": 0.6,  # Aspirational/positive
+        r"\bbestie\b": 0.6,  # Friendly / positive
+        r"\bgoals\b": 0.6,  # Aspirational / positive
         # Extended letter patterns (show excitement)
         r"\bplease{3,}\b": 0.7,  # "pleaseee" etc.
         r"\bwtf{2,}\b": 0.6,  # "wtfff" etc.
@@ -182,8 +182,8 @@ class MusicSentimentConfig:
         "👏": 0.6,
         "😖": 0.5,  # Can be positive in music context (emotional response)
         "😚": 0.7,  # Kiss emoji - positive
-        "💕": 0.8,  # Love/hearts - positive
-        "🤞": 0.6,  # Crossed fingers - hopeful/positive
+        "💕": 0.8,  # Love / hearts - positive
+        "🤞": 0.6,  # Crossed fingers - hopeful / positive
     }
 
     # Emoji multiplier patterns (multiple emojis = more positive)
@@ -199,7 +199,7 @@ class MusicSentimentConfig:
         (r"🙌{2,}", 0.8),  # Multiple praise hands
     ]
 
-    # Special emoji-only comment patterns
+    # Special emoji - only comment patterns
     emoji_only_patterns = [
         (r"^🔥+$", 0.8),  # Only fire emojis
         (r"^🌊+$", 0.7),  # Only wave emojis
@@ -267,10 +267,10 @@ class MusicIndustrySentimentAnalyzer:
                 # Bonus for multiple same emojis
                 emoji_score += bonus_score * len(matches)
 
-        # Check emoji-only patterns (comments that are just emojis)
+        # Check emoji - only patterns (comments that are just emojis)
         for pattern, score in self.config.emoji_only_patterns:
             if regex_module.match(pattern, comment_text.strip()):
-                emoji_score = max(emoji_score, score)  # Use highest score for emoji-only
+                emoji_score = max(emoji_score, score)  # Use highest score for emoji - only
 
         # Combine pattern and emoji scores
         if pattern_matches > 0:
@@ -298,7 +298,7 @@ class MusicIndustrySentimentAnalyzer:
         }
 
     def _detect_beat_appreciation(self, comment_lower: str) -> bool:
-        """Detect if comment shows appreciation for the beat/production."""
+        """Detect if comment shows appreciation for the beat / production."""
         for pattern in self.config.beat_appreciation_patterns:
             if regex_module.search(pattern, comment_lower, regex_module.IGNORECASE):
                 return True
@@ -410,7 +410,7 @@ def update_comment_sentiment_table(engine, batch_size: int = 1000):
             processed += len(comments_batch)
             offset += batch_size
 
-            print(f"✅ Processed {processed:,}/{total_comments:,} comments ({processed/total_comments*100:.1f}%)")
+            print(f"✅ Processed {processed:,}/{total_comments:,} comments ({processed / total_comments * 100:.1f}%)")
 
         conn.commit()
 

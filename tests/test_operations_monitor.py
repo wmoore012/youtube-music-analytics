@@ -53,12 +53,12 @@ def test_operational_health_basic_metrics():
     reference_time = datetime(2024, 5, 8, 0, 0)
     snapshot = analyze_operational_health(_build_sample_frame(), reference_time=reference_time, lookback_days=7)
 
-    assert snapshot.data_freshness_hours == pytest.approx(24.0, abs=1e-6)
-    assert snapshot.coverage_ratio == pytest.approx(66.6666, rel=1e-4)
-    assert snapshot.average_daily_views == pytest.approx(625.0, abs=1e-6)
-    assert snapshot.engagement_rate == pytest.approx(14.0972, rel=1e-4)
+    assert snapshot.data_freshness_hours == pytest.approx(24.0, abs=1e - 6)
+    assert snapshot.coverage_ratio == pytest.approx(66.6666, rel=1e - 4)
+    assert snapshot.average_daily_views == pytest.approx(625.0, abs=1e - 6)
+    assert snapshot.engagement_rate == pytest.approx(14.0972, rel=1e - 4)
     assert "Artist Three" in snapshot.stale_channels
-    assert snapshot.reliability_score == pytest.approx(72.2, rel=1e-3)
+    assert snapshot.reliability_score == pytest.approx(72.2, rel=1e - 3)
     assert any("stale" in note.lower() for note in snapshot.notes)
 
 

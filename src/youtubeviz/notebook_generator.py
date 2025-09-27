@@ -1,7 +1,7 @@
 """
-Production-ready notebook template system for MusicScope™ analytics.
+Production - ready notebook template system for MusicScope™ analytics.
 
-This module generates notebooks with bulletproof CI/CD validation and ensures
+This module generates notebooks with bulletproof CI / CD validation and ensures
 all charts are properly counted and validated with real data only.
 """
 
@@ -14,7 +14,7 @@ import pandas as pd
 
 
 class NotebookTemplateManager:
-    """Manages production-ready notebook templates with automatic chart validation."""
+    """Manages production - ready notebook templates with automatic chart validation."""
 
     def __init__(self, total_charts: int = 20):
         """
@@ -92,7 +92,7 @@ class NotebookTemplateManager:
                 "function": "create_polarity_ridgelines",
                 "module": "advanced_charts",
             },
-            15: {"name": "A/B Test Framework", "function": "create_ab_test_framework", "module": "advanced_charts"},
+            15: {"name": "A / B Test Framework", "function": "create_ab_test_framework", "module": "advanced_charts"},
             # Additional charts from Complete Dashboard
             16: {"name": "Views Over Time", "function": "views_over_time_plotly", "module": "charts"},
             17: {"name": "Artist Comparison Chart", "function": "create_artist_comparison_chart", "module": "content"},
@@ -124,7 +124,7 @@ class NotebookTemplateManager:
                 "language_info": {
                     "codemirror_mode": {"name": "ipython", "version": 3},
                     "file_extension": ".py",
-                    "mimetype": "text/x-python",
+                    "mimetype": "text / x - python",
                     "name": "python",
                     "nbconvert_exporter": "python",
                     "pygments_lexer": "ipython3",
@@ -163,15 +163,15 @@ class NotebookTemplateManager:
             "source": [
                 f"# 🎵 {notebook_name}\n",
                 "\n",
-                f"**Production Analytics with {chart_count} Data-Science Grade Charts - REAL DATA ONLY**\n",
+                f"**Production Analytics with {chart_count} Data - Science Grade Charts - REAL DATA ONLY**\n",
                 "\n",
-                "This notebook uses ONLY real data from the database. No fake/mock data.\n",
+                "This notebook uses ONLY real data from the database. No fake / mock data.\n",
                 "Charts will show data requirements if columns are missing.\n",
                 "\n",
                 f"- 📊 **Total Charts**: {chart_count}\n",
                 "- 🚫 **No Fake Data**: Only real database data\n",
-                "- ✅ **CI/CD Ready**: Automatic validation\n",
-                "- 💝 **Compassionate Analytics**: Human-centered insights\n",
+                "- ✅ **CI / CD Ready**: Automatic validation\n",
+                "- 💝 **Compassionate Analytics**: Human - centered insights\n",
             ],
         }
 
@@ -194,7 +194,7 @@ class NotebookTemplateManager:
                 "\n",
                 "# Import all chart functions\n",
                 "try:\n",
-                "    # Advanced charts (Charts 1-15)\n",
+                "    # Advanced charts (Charts 1 - 15)\n",
                 "    from youtubeviz.advanced_charts import (\n",
                 "        create_diverging_sentiment_bars, create_sentiment_cluster_heatmap,\n",
                 "        create_positive_theme_lollipops, create_negative_theme_lollipops,\n",
@@ -206,7 +206,7 @@ class NotebookTemplateManager:
                 "        create_ab_test_framework, enhance_chart_beauty\n",
                 "    )\n",
                 "    \n",
-                "    # Additional charts (Charts 16-20)\n",
+                "    # Additional charts (Charts 16 - 20)\n",
                 "    from youtubeviz.charts import views_over_time_plotly\n",
                 "    from youtubeviz.content import create_artist_comparison_chart\n",
                 "    from youtubeviz.sentiment import extract_top_positive_comments\n",
@@ -245,7 +245,7 @@ class NotebookTemplateManager:
                 "        for col in required_cols:\n",
                 "            if col in df.columns:\n",
                 "                non_null = df[col].notna().sum()\n",
-                "                print(f'   ✅ {col}: {non_null:,}/{len(df):,} records ({non_null/len(df)*100:.1f}%)')\n",
+                "                print(f'   ✅ {col}: {non_null:,}/{len(df):,} records ({non_null / len(df)*100:.1f}%)')\n",
                 "            else:\n",
                 "                print(f'   ❌ {col}: Missing - charts will show requirements')\n",
                 "    else:\n",
@@ -388,24 +388,24 @@ class NotebookTemplateManager:
                 "\n",
                 "print('\\n🎵 MusicScope™ Real Data Analytics Complete! 🎵')\n",
                 "\n",
-                "# CI/CD validation\n",
+                "# CI / CD validation\n",
                 "success_rate = len(real_charts) / len(range(1, "
                 + str(total_charts + 1)
                 + ")) if "
                 + str(total_charts)
                 + " > 0 else 0\n",
                 "if success_rate >= 0.8:\n",
-                "    print('\\n✅ CI/CD: PASS - Excellent chart health')\n",
+                "    print('\\n✅ CI / CD: PASS - Excellent chart health')\n",
                 "elif success_rate >= 0.6:\n",
-                "    print('\\n⚠️  CI/CD: WARNING - Acceptable but needs improvement')\n",
+                "    print('\\n⚠️  CI / CD: WARNING - Acceptable but needs improvement')\n",
                 "else:\n",
-                "    print('\\n❌ CI/CD: FAIL - Poor chart health')\n",
+                "    print('\\n❌ CI / CD: FAIL - Poor chart health')\n",
             ],
         }
 
     def save_notebook(self, notebook: Dict[str, Any], filepath: str) -> None:
         """Save notebook to file."""
-        with open(filepath, "w", encoding="utf-8") as f:
+        with open(filepath, "w", encoding="utf - 8") as f:
             json.dump(notebook, f, indent=1, ensure_ascii=False)
 
     def generate_and_save_notebook(
@@ -421,8 +421,8 @@ class NotebookTemplateManager:
         print(f"📊 Total charts: {len(include_charts) if include_charts else self.total_charts}")
 
 
-def create_production_notebook(output_path: str = "notebooks/MusicScope™_Production_Dashboard.ipynb") -> None:
-    """Create a production-ready notebook with all 20 charts."""
+def create_production_notebook(output_path: str = "notebooks / MusicScope™_Production_Dashboard.ipynb") -> None:
+    """Create a production - ready notebook with all 20 charts."""
     manager = NotebookTemplateManager(total_charts=20)
     manager.generate_and_save_notebook(
         filepath=output_path,

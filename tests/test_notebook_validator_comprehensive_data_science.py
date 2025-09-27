@@ -70,7 +70,7 @@ class TestDataScienceWorkflowValidation:
         result = self.notebook_validator.validate_cell_output(ml_results, ml_schema)
         assert result.is_valid is True
 
-        # Validate metric ranges (ML scores should be 0-1)
+        # Validate metric ranges (ML scores should be 0 - 1)
         for metric in ["accuracy", "precision", "recall", "f1_score", "cross_val_score"]:
             range_result = self.output_validator.validate_score_range(ml_results[metric], 0.0, 1.0)
             assert range_result.is_valid is True, f"{metric} validation failed"
@@ -82,7 +82,7 @@ class TestDataScienceWorkflowValidation:
     def test_time_series_analysis_validation(self):
         """Test validation of time series analysis outputs."""
         # Simulate time series data
-        dates = pd.date_range("2024-01-01", periods=100, freq="D")
+        dates = pd.date_range("2024 - 01 - 01", periods=100, freq="D")
         ts_data = pd.DataFrame(
             {
                 "date": dates,
@@ -154,7 +154,7 @@ class TestDataScienceWorkflowValidation:
         result = self.notebook_validator.validate_cell_output(stats_results, stats_schema)
         assert result.is_valid is True
 
-        # Validate p-values are between 0 and 1
+        # Validate p - values are between 0 and 1
         p_result = self.output_validator.validate_score_range(stats_results["p_value"], 0.0, 1.0)
         assert p_result.is_valid is True
 
@@ -207,7 +207,7 @@ class TestDataScienceWorkflowValidation:
             acc_result = self.output_validator.validate_score_range(dl_history[acc_col], 0.0, 1.0)
             assert acc_result.is_valid is True
 
-        # Validate loss values are non-negative
+        # Validate loss values are non - negative
         for loss_col in ["train_loss", "val_loss"]:
             loss_result = self.output_validator.validate_score_range(dl_history[loss_col], 0.0, float("inf"))
             assert loss_result.is_valid is True
@@ -254,7 +254,7 @@ class TestDataScienceWorkflowValidation:
         )
         assert silhouette_result.is_valid is True
 
-        # Validate distances are non-negative
+        # Validate distances are non - negative
         distance_result = self.output_validator.validate_score_range(
             clustering_results["distance_to_centroid"], 0.0, float("inf")
         )
@@ -356,7 +356,7 @@ class TestDataScienceWorkflowValidation:
             metric_result = self.output_validator.validate_score_range(cv_results[metric_col], 0.0, 1.0)
             assert metric_result.is_valid is True
 
-        # Validate bounding box coordinates are non-negative
+        # Validate bounding box coordinates are non - negative
         for bbox_col in ["bounding_box_x", "bounding_box_y", "bounding_box_width", "bounding_box_height"]:
             bbox_result = self.output_validator.validate_score_range(cv_results[bbox_col], 0.0, float("inf"))
             assert bbox_result.is_valid is True
@@ -370,7 +370,7 @@ class TestDataScienceWorkflowValidation:
                 "item_id": np.random.randint(1, 10000, 500),
                 "predicted_rating": np.random.uniform(1, 5, 500),
                 "confidence_score": np.random.uniform(0, 1, 500),
-                "rank": np.tile(range(1, 11), 50),  # Rank 1-10 for each user
+                "rank": np.tile(range(1, 11), 50),  # Rank 1 - 10 for each user
                 "diversity_score": np.random.uniform(0, 1, 500),
                 "novelty_score": np.random.uniform(0, 1, 500),
                 "serendipity_score": np.random.uniform(0, 1, 500),
@@ -398,11 +398,11 @@ class TestDataScienceWorkflowValidation:
         result = self.notebook_validator.validate_cell_output(rec_results, rec_schema)
         assert result.is_valid is True
 
-        # Validate rating range (1-5 scale)
+        # Validate rating range (1 - 5 scale)
         rating_result = self.output_validator.validate_score_range(rec_results["predicted_rating"], 1.0, 5.0)
         assert rating_result.is_valid is True
 
-        # Validate score ranges (0-1)
+        # Validate score ranges (0 - 1)
         for score_col in [
             "confidence_score",
             "diversity_score",
@@ -448,7 +448,7 @@ class TestDataScienceWorkflowValidation:
         result = self.notebook_validator.validate_cell_output(anomaly_results, anomaly_schema)
         assert result.is_valid is True
 
-        # Validate anomaly scores are non-negative
+        # Validate anomaly scores are non - negative
         anomaly_result = self.output_validator.validate_score_range(anomaly_results["anomaly_score"], 0.0, float("inf"))
         assert anomaly_result.is_valid is True
 
@@ -466,7 +466,7 @@ class TestDataScienceWorkflowValidation:
                 "original_feature_2": np.random.randn(n_samples),
                 "scaled_feature_1": np.random.randn(n_samples),  # Standardized
                 "scaled_feature_2": np.random.randn(n_samples),
-                "normalized_feature_1": np.random.uniform(0, 1, n_samples),  # Min-max normalized
+                "normalized_feature_1": np.random.uniform(0, 1, n_samples),  # Min - max normalized
                 "normalized_feature_2": np.random.uniform(0, 1, n_samples),
                 "log_transformed": np.random.lognormal(0, 1, n_samples),
                 "polynomial_feature": np.random.randn(n_samples) ** 2,
@@ -510,8 +510,8 @@ class TestDataScienceWorkflowValidation:
         assert importance_result.is_valid is True
 
     def test_ab_testing_validation(self):
-        """Test validation of A/B testing analysis outputs."""
-        # Simulate A/B test results
+        """Test validation of A / B testing analysis outputs."""
+        # Simulate A / B test results
         ab_results = pd.DataFrame(
             {
                 "experiment_id": ["exp_001", "exp_002", "exp_003", "exp_004"],
@@ -528,7 +528,7 @@ class TestDataScienceWorkflowValidation:
             }
         )
 
-        # Validate A/B testing schema
+        # Validate A / B testing schema
         ab_schema = {
             "type": "dataframe",
             "columns": {
@@ -554,7 +554,7 @@ class TestDataScienceWorkflowValidation:
         conversion_result = self.output_validator.validate_score_range(ab_results["conversion_rate"], 0.0, 1.0)
         assert conversion_result.is_valid is True
 
-        # Validate p-values are between 0 and 1
+        # Validate p - values are between 0 and 1
         p_result = self.output_validator.validate_score_range(ab_results["p_value"], 0.0, 1.0)
         assert p_result.is_valid is True
 
@@ -771,7 +771,7 @@ class TestDataScienceWorkflowValidation:
         # Test with extreme values
         extreme_data = pd.DataFrame(
             {
-                "very_small_values": [1e-10, 1e-15, 1e-20],
+                "very_small_values": [1e - 10, 1e - 15, 1e - 20],
                 "very_large_values": [1e10, 1e15, 1e20],
                 "infinite_values": [float("inf"), float("-inf"), float("nan")],
                 "zero_values": [0.0, 0.0, 0.0],
@@ -860,8 +860,8 @@ class TestDataScienceWorkflowValidation:
         print(f"Validated {n_rows} rows in {validation_time:.2f} seconds")
 
     def test_multi_modal_data_validation(self):
-        """Test validation of multi-modal data science outputs."""
-        # Simulate multi-modal analysis results (text + image + audio)
+        """Test validation of multi - modal data science outputs."""
+        # Simulate multi - modal analysis results (text + image + audio)
         multimodal_results = pd.DataFrame(
             {
                 "sample_id": range(100),
@@ -880,7 +880,7 @@ class TestDataScienceWorkflowValidation:
             }
         )
 
-        # Validate multi-modal schema
+        # Validate multi - modal schema
         multimodal_schema = {
             "type": "dataframe",
             "columns": {
@@ -956,7 +956,7 @@ class TestDataScienceWorkflowValidation:
         result = self.notebook_validator.validate_cell_output(rl_results, rl_schema)
         assert result.is_valid is True
 
-        # Validate epsilon values (exploration rate should be 0-1)
+        # Validate epsilon values (exploration rate should be 0 - 1)
         epsilon_result = self.output_validator.validate_score_range(rl_results["epsilon"], 0.0, 1.0)
         assert epsilon_result.is_valid is True
 

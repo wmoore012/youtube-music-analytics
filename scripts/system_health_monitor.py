@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-System Health Monitor - Production-Grade Monitoring
+System Health Monitor - Production - Grade Monitoring
 ==================================================
 
 Comprehensive monitoring and observability for the YouTube analytics platform.
@@ -22,7 +22,7 @@ import pandas as pd
 
 class SystemHealthMonitor:
     """
-    Production-grade system health monitoring and observability.
+    Production - grade system health monitoring and observability.
 
     Demonstrates advanced data engineering practices:
     - Comprehensive logging and monitoring
@@ -178,7 +178,7 @@ except Exception as e:
                 "throughput_per_sec": len(test_comments) / total_time,
             }
 
-            print(f"✅ Sentiment analysis available ({total_time*1000/len(test_comments):.1f}ms avg)")
+            print(f"✅ Sentiment analysis available ({total_time * 1000 / len(test_comments):.1f}ms avg)")
 
         except Exception as e:
             print(f"⚠️  Sentiment analysis not available: {e}")
@@ -200,7 +200,7 @@ except Exception as e:
                 "throughput_per_sec": len(test_comments) / total_time,
             }
 
-            print(f"✅ Bot detection available ({total_time*1000/len(test_comments):.1f}ms avg)")
+            print(f"✅ Bot detection available ({total_time * 1000 / len(test_comments):.1f}ms avg)")
 
         except Exception as e:
             print(f"⚠️  Bot detection not available: {e}")
@@ -281,7 +281,8 @@ except Exception as e:
 
         # Model recommendations
         if not model_health.get("sentiment_analysis", {}).get("available", False):
-            self.health_report["recommendations"].append("Sentiment analysis not available - run: make setup-sentiment")
+            self.health_report["recommendations"].append(
+                "Sentiment analysis not available - run: make setup - sentiment")
 
         if not model_health.get("bot_detection", {}).get("available", False):
             self.health_report["recommendations"].append("Bot detection not available - check bot_detection.py imports")

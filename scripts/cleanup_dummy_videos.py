@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Delete known dummy video_ids from MySQL tables.
 
@@ -8,7 +8,7 @@ Targets:
 - youtube_metrics (optional via flag)
 
 Reads DB config from either DATABASE_URL or DB_* env vars.
-Supports --dry-run to preview deletions and --ids to override default list.
+Supports --dry - run to preview deletions and --ids to override default list.
 """
 from __future__ import annotations
 
@@ -124,10 +124,10 @@ def main(argv: List[str]) -> int:
         "--ids",
         nargs="+",
         default=DEFAULT_IDS,
-        help=f"Space-separated list of video_ids to delete (default: {', '.join(DEFAULT_IDS)})",
+        help=f"Space - separated list of video_ids to delete (default: {', '.join(DEFAULT_IDS)})",
     )
-    parser.add_argument("--include-metrics", action="store_true", help="Also delete from youtube_metrics")
-    parser.add_argument("--dry-run", action="store_true", help="Preview counts only; no deletion")
+    parser.add_argument("--include - metrics", action="store_true", help="Also delete from youtube_metrics")
+    parser.add_argument("--dry - run", action="store_true", help="Preview counts only; no deletion")
     args = parser.parse_args(argv)
 
     ids = list(dict.fromkeys([s.strip() for s in args.ids if s.strip()]))

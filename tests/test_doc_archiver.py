@@ -11,7 +11,7 @@ def test_categorization_basic(tmp_path: Path, monkeypatch):
     config = {
         "core_docs": ["README.md"],
         "retention_days": 7,
-        "archive_root": "docs/archive",
+        "archive_root": "docs / archive",
         "category_patterns": {"reports": ["report"], "generated": ["ci_report"]},
     }
     cfg_path = repo / "docs" / "doc_archive_config.json"
@@ -37,6 +37,6 @@ def test_categorization_basic(tmp_path: Path, monkeypatch):
     assert cats["data_REPORT.md"] == "reports"
     assert cats["ci_report_status.md"] == "generated"
 
-    # Generated should auto-archive
+    # Generated should auto - archive
     gen_rec = [r for r in records if r.rel_path == "ci_report_status.md"][0]
     assert gen_rec.should_archive is True

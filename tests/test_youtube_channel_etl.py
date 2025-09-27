@@ -51,7 +51,7 @@ def _env_ok():
     return all(os.getenv(k) for k in REQUIRED_ENV)
 
 
-pytestmark = pytest.mark.skipif(not _env_ok(), reason="Database/YouTube env vars not set for integration tests")
+pytestmark = pytest.mark.skipif(not _env_ok(), reason="Database / YouTube env vars not set for integration tests")
 
 
 def _from_database_url():
@@ -189,7 +189,8 @@ def test_batch_upsert_raw_and_metrics_smoke(monkeypatch):
             # metrics should have today's date entries
             placeholders = ",".join(["%s"] * len(vids))
             cur.execute(
-                f"SELECT COUNT(*) AS n FROM youtube_metrics WHERE video_id IN ({placeholders}) AND metrics_date = CURDATE()",
+                f"SELECT COUNT(*) AS n FROM youtube_metrics WHERE video_id IN ({
+                               placeholders}) AND metrics_date = CURDATE()",
                 vids,
             )
             assert cur.fetchone()["n"] == 3

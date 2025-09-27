@@ -89,9 +89,9 @@ class MomentumScoringPlugin(ScoringPlugin):
             if row.get("video_count", 0) < params["min_videos_required"]:
                 continue
 
-            # Calculate growth component (0-1 scale)
+            # Calculate growth component (0 - 1 scale)
             growth_rate = row.get("recent_growth_rate", 0)
-            growth_component = min(max(growth_rate / 100, 0), 1)  # Normalize to 0-1
+            growth_component = min(max(growth_rate / 100, 0), 1)  # Normalize to 0 - 1
 
             # Calculate engagement component
             total_views = row.get("total_views", 1)
@@ -231,7 +231,7 @@ class EngagementScoringPlugin(ScoringPlugin):
             # Weighted engagement score
             engagement_score = like_rate * params["like_weight"] + comment_rate * params["comment_weight"]
 
-            # Normalize to 0-1 scale
+            # Normalize to 0 - 1 scale
             engagement_score = engagement_score / params["engagement_rate_cap"]
             engagement_score = min(max(engagement_score, 0), 1)
 

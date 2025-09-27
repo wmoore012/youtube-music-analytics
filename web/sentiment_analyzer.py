@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Enhanced Sentiment Analysis System for YouTube Comments
 
@@ -12,12 +12,12 @@ This module provides a robust, bulletproof sentiment analysis system with:
 - Detailed logging and monitoring
 
 Key Features:
-- Fail-fast validation using Pydantic models
+- Fail - fast validation using Pydantic models
 - Graceful degradation when libraries are unavailable
 - Batch processing with configurable batch sizes
 - Progress tracking and performance metrics
 - Comprehensive error handling with retry mechanisms
-- Confidence-based result filtering
+- Confidence - based result filtering
 """
 
 from datetime import datetime, timedelta
@@ -120,7 +120,7 @@ class SentimentAnalyzer:
     - Comprehensive error handling and recovery
     - Performance benchmarking and monitoring
     - Batch processing with progress tracking
-    - Confidence-based result validation
+    - Confidence - based result validation
     """
 
     def __init__(self, config: Optional[SentimentAnalysisConfig] = None):
@@ -164,7 +164,7 @@ class SentimentAnalyzer:
 
         # Simple method is always available
         self.available_methods[SentimentMethod.SIMPLE] = self._analyze_with_simple
-        print("✅ Simple rule-based sentiment analysis available")
+        print("✅ Simple rule - based sentiment analysis available")
 
         if not self.available_methods:
             raise ETLError(
@@ -202,7 +202,7 @@ class SentimentAnalyzer:
                     ),
                 )
 
-        # Auto-select best available method
+        # Auto - select best available method
         method_priority = [SentimentMethod.VADER, SentimentMethod.TEXTBLOB, SentimentMethod.SIMPLE]
 
         for method in method_priority:
@@ -248,7 +248,7 @@ class SentimentAnalyzer:
         return sentiment, confidence
 
     def _analyze_with_simple(self, text: str) -> Tuple[float, float]:
-        """Analyze sentiment using simple rule-based approach."""
+        """Analyze sentiment using simple rule - based approach."""
         text_lower = text.lower()
 
         # Positive words and phrases
@@ -565,7 +565,7 @@ class SentimentAnalyzer:
             batch_time = time.time() - batch_start_time
             if self.config.progress_reporting:
                 batch_rate = len(batch) / batch_time if batch_time > 0 else 0
-                print(f"    Batch completed in {batch_time:.2f}s ({batch_rate:.1f} comments/sec)")
+                print(f"    Batch completed in {batch_time:.2f}s ({batch_rate:.1f} comments / sec)")
 
         # Calculate final benchmark
         total_time = time.time() - self._benchmark_start_time
@@ -594,7 +594,7 @@ class SentimentAnalyzer:
         print(f"   Successful: {len(successful_results)}")
         print(f"   Failed: {len(failed_comments)}")
         print(f"   Success rate: {result.success_rate:.1f}%")
-        print(f"   Processing rate: {benchmark.comments_per_second:.1f} comments/sec")
+        print(f"   Processing rate: {benchmark.comments_per_second:.1f} comments / sec")
 
         return result
 

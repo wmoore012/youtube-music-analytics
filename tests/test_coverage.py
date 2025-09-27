@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Test Coverage Analysis and Reporting
 
@@ -178,7 +178,7 @@ class CoverageAnalyzer:
         if critical_missing:
             recommendations.append(f"🚨 Critical: These modules have <50% coverage: {', '.join(critical_missing)}")
 
-        # Module-specific recommendations
+        # Module - specific recommendations
         module_coverage = analysis.get("module_coverage", {})
         for module, data in module_coverage.items():
             coverage_pct = data["coverage"]
@@ -248,7 +248,7 @@ class CoverageAnalyzer:
                 statements = data["statements"]
 
                 status = "✅" if coverage_pct >= 90 else "⚠️" if coverage_pct >= 70 else "❌"
-                report.append(f"{status} {module:<30} {coverage_pct:>6.1f}% ({statements-missed}/{statements} lines)")
+                report.append(f"{status} {module:<30} {coverage_pct:>6.1f}% ({statements - missed}/{statements} lines)")
 
         # Recommendations
         recommendations = results["recommendations"]
@@ -267,7 +267,7 @@ class CoverageAnalyzer:
 
         # HTML report info
         if coverage_data.get("html_report_generated"):
-            report.append("\n📄 Detailed HTML report generated: htmlcov/index.html")
+            report.append("\n📄 Detailed HTML report generated: htmlcov / index.html")
 
         return "\n".join(report)
 
@@ -296,7 +296,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Run test coverage analysis")
     parser.add_argument("--target", type=float, default=80.0, help="Target coverage percentage (default: 80.0)")
-    parser.add_argument("--fail-under", action="store_true", help="Exit with error code if coverage is below target")
+    parser.add_argument("--fail - under", action="store_true", help="Exit with error code if coverage is below target")
 
     args = parser.parse_args()
 

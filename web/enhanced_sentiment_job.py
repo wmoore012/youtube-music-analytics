@@ -37,7 +37,7 @@ class EnhancedYouTubeCommentSentimentJob:
     """Enhanced sentiment job with plugin system integration.
 
     Extends the original sentiment job to support:
-    - Plugin-based sentiment analysis
+    - Plugin - based sentiment analysis
     - Multiple sentiment algorithms
     - Enhanced scoring and storage
     - Integration with the scoring engine
@@ -191,7 +191,7 @@ class EnhancedYouTubeCommentSentimentJob:
             # Get available sentiment algorithms
             available_algorithms = self._plugin_manager.get_available_algorithms()
 
-            # Filter for sentiment-related algorithms
+            # Filter for sentiment - related algorithms
             sentiment_algorithms = [
                 alg for alg in available_algorithms if "sentiment" in alg.lower() or alg in (plugin_algorithms or [])
             ]
@@ -248,7 +248,7 @@ class EnhancedYouTubeCommentSentimentJob:
         plugin_data["text_length"] = plugin_data["comment_text"].str.len()
         plugin_data["word_count"] = plugin_data["comment_text"].str.split().str.len()
 
-        # Add time-based features
+        # Add time - based features
         if "published_at" in plugin_data.columns:
             plugin_data["days_since_published"] = (
                 pd.Timestamp.now() - pd.to_datetime(plugin_data["published_at"])
@@ -345,7 +345,7 @@ class EnhancedYouTubeCommentSentimentJob:
             # Refresh traditional VADER summaries
             result["vader_summaries"] = self._refresh_vader_summary()
 
-            # Refresh plugin-based summaries if enabled
+            # Refresh plugin - based summaries if enabled
             if include_plugin_scores and self._enable_plugins:
                 result["plugin_summaries"] = self._refresh_plugin_summaries()
 
@@ -403,7 +403,7 @@ class EnhancedYouTubeCommentSentimentJob:
             return 0
 
     def _refresh_plugin_summaries(self) -> int:
-        """Refresh plugin-based sentiment summaries."""
+        """Refresh plugin - based sentiment summaries."""
         try:
             # Create plugin summary table if needed
             self._ensure_plugin_summary_table()

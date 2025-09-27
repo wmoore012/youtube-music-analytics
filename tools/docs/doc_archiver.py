@@ -1,28 +1,28 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """Automatic Markdown Documentation Archiver
 
-Inspired by the `NotebookArchiver` system. This tool categorizes and time-based
-archives non-core Markdown files to keep the root repo clean while preserving
+Inspired by the `NotebookArchiver` system. This tool categorizes and time - based
+archives non - core Markdown files to keep the root repo clean while preserving
 history (important due to shallow git history / churn).
 
 Key Features:
   * Deterministic categorization via pattern heuristics (configurable)
-  * Time-based archival (default: > retention_days old)
-  * Immediate archival of obviously generated/ephemeral or zero-byte files
-  * Safe dry-run mode by default (no changes until --apply)
-  * Index generation (docs/archive/README.md) summarizing archived docs
-  * Idempotent: re-running won’t duplicate moves; skips already archived paths
-  * Configurable via `docs/doc_archive_config.json`
+  * Time - based archival (default: > retention_days old)
+  * Immediate archival of obviously generated / ephemeral or zero - byte files
+  * Safe dry - run mode by default (no changes until --apply)
+  * Index generation (docs / archive / README.md) summarizing archived docs
+  * Idempotent: re - running won’t duplicate moves; skips already archived paths
+  * Configurable via `docs / doc_archive_config.json`
 
 Usage:
   Dry run (recommended first):
-    python3 tools/docs/doc_archiver.py
+    python3 tools / docs / doc_archiver.py
 
   Apply changes (perform moves + index generation):
-    python3 tools/docs/doc_archiver.py --apply
+    python3 tools / docs / doc_archiver.py --apply
 
   Regenerate index only:
-    python3 tools/docs/doc_archiver.py --regen-index
+    python3 tools / docs / doc_archiver.py --regen - index
 
 Exit codes:
   0 success, 1 failure.
@@ -62,12 +62,12 @@ class DocArchiver:
         self.config_path = config_path
         if not config_path.exists():
             raise FileNotFoundError(f"Config not found: {config_path}")
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf - 8") as f:
             self.config = json.load(f)
 
         self.core_docs = {self._norm(p) for p in self.config.get("core_docs", [])}
         self.retention_days = int(self.config.get("retention_days", 7))
-        self.archive_root = REPO_ROOT / self.config.get("archive_root", "docs/archive")
+        self.archive_root = REPO_ROOT / self.config.get("archive_root", "docs / archive")
         self.keep_recent = int(self.config.get("keep_recent_count_per_category", 50))
         self.category_patterns: Dict[str, List[str]] = self.config.get("category_patterns", {})
         self.now = datetime.now()
@@ -84,9 +84,9 @@ class DocArchiver:
         files: List[Path] = []
         for p in REPO_ROOT.rglob("*.md"):
             # Skip already archived content
-            if "docs/archive" in str(p.as_posix()):
+            if "docs / archive" in str(p.as_posix()):
                 continue
-            # Skip virtual env & vendored & dot-directories
+            # Skip virtual env & vendored & dot - directories
             if any(seg.startswith(".") and seg not in {".kiro"} for seg in p.relative_to(REPO_ROOT).parts):
                 # allow .kiro specs; skip others like .venv, .git
                 if ".kiro" not in str(p):
@@ -113,7 +113,7 @@ class DocArchiver:
         if category == "core":
             return False, "core doc"
         if size == 0:
-            return True, "zero-byte"
+            return True, "zero - byte"
         if category in {"generated"}:
             return True, f"category={category}"
         if category in {"reports", "specs", "tasks", "experiments", "notebooks"} and age_days > self.retention_days:
@@ -149,7 +149,7 @@ class DocArchiver:
         if not rec.should_archive:
             return None
         # Date folder based on original mtime for historical fidelity
-        date_folder = rec.mtime.strftime("%Y%m%d")
+        date_folder = rec.mtime.strftime("%Y % m%d")
         category_folder = rec.category
         archive_dir = self.archive_root / date_folder / category_folder
         archive_dir.mkdir(parents=True, exist_ok=True)
@@ -169,7 +169,7 @@ class DocArchiver:
             rel = self._relative(md)
             stat = md.stat()
             mtime = datetime.fromtimestamp(stat.st_mtime)
-            # derive category/date from path parts after archive root
+            # derive category / date from path parts after archive root
             parts = md.relative_to(self.archive_root).parts
             date_part = parts[0] if parts else ""
             category = parts[1] if len(parts) > 1 else "uncategorized"
@@ -189,7 +189,7 @@ class DocArchiver:
         index_path = self.archive_root / "README.md"
         if dry_run:
             return index_path
-        with open(index_path, "w", encoding="utf-8") as f:
+        with open(index_path, "w", encoding="utf - 8") as f:
             f.write(content)
         return index_path
 
@@ -203,9 +203,10 @@ class DocArchiver:
         print("")
         if not regen_index:
             for rec in sorted(to_archive, key=lambda r: (r.category, r.mtime)):
-                action = "MOVE" if apply else "DRY-RUN"
+                action = "MOVE" if apply else "DRY - RUN"
                 print(
-                    f"{action}: {rec.rel_path} -> docs/archive/{rec.mtime.strftime('%Y%m%d')}/{rec.category}/ (reason={rec.reason})"
+                    f"{action}: {
+                        rec.rel_path} -> docs / archive/{rec.mtime.strftime('%Y % m%d')}/{rec.category}/ (reason={rec.reason})"
                 )
                 self.archive_record(rec, dry_run=dry_run)
         else:
@@ -213,18 +214,18 @@ class DocArchiver:
 
         index_content = self.generate_index(records)
         idx_path = self.write_index(index_content, dry_run=dry_run)
-        print(f"🗂️ Archive index {'(dry-run)' if dry_run else 'written'}: {idx_path}")
+        print(f"🗂️ Archive index {'(dry - run)' if dry_run else 'written'}: {idx_path}")
 
         if dry_run:
-            print("💡 Dry run complete. Re-run with --apply to perform archival.")
+            print("💡 Dry run complete. Re - run with --apply to perform archival.")
         return 0
 
 
 def parse_args(argv: List[str]) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Automatic documentation archiver")
     p.add_argument("--config", type=str, default=str(DEFAULT_CONFIG_PATH), help="Path to config JSON")
-    p.add_argument("--apply", action="store_true", help="Perform moves (default dry-run)")
-    p.add_argument("--regen-index", action="store_true", help="Only regenerate index (no moves)")
+    p.add_argument("--apply", action="store_true", help="Perform moves (default dry - run)")
+    p.add_argument("--regen - index", action="store_true", help="Only regenerate index (no moves)")
     return p.parse_args(argv)
 
 

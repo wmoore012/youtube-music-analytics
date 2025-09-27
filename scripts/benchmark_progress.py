@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""Track ETL/model progress, compute descriptive stats, and flag suspicious jumps."""
+#!/usr / bin / env python3
+"""Track ETL / model progress, compute descriptive stats, and flag suspicious jumps."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import pandas as pd
 
 # --- Policy knobs (one place, easy to audit) ---
 SIGMA_Z_THRESH = 3.0  # classic 3σ control limit (68–95–99.7 rule)
-ROBUST_Z_THRESH = 3.0  # MAD-based z (~σ via 0.6745 scaling)
+ROBUST_Z_THRESH = 3.0  # MAD - based z (~σ via 0.6745 scaling)
 IQR_K = 1.5  # Tukey's inner fences (whiskers on boxplots)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(message)s")
@@ -43,7 +43,7 @@ METRIC_SPEC = {
 
 
 def _fd_binned_mode(values: pd.Series, max_bins: int = 50):
-    """Freedman–Diaconis binned mode (works better for quasi-continuous metrics)."""
+    """Freedman–Diaconis binned mode (works better for quasi - continuous metrics)."""
     x = pd.to_numeric(values, errors="coerce").dropna().to_numpy()
     if x.size < 2:
         return float(x[0]) if x.size == 1 else None
@@ -103,7 +103,7 @@ def summarize_series(s: pd.Series) -> dict | None:
 
 
 def robust_z(latest: float, median: float, mad: float) -> float:
-    """MAD-based z (~N(0,1) if normal). Scales by 0.6745 to align with σ."""
+    """MAD - based z (~N(0,1) if normal). Scales by 0.6745 to align with σ."""
 
     if mad <= 0:
         return 0.0
@@ -111,7 +111,7 @@ def robust_z(latest: float, median: float, mad: float) -> float:
 
 
 def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[str]:
-    """Compare ``latest`` to history and return short, human-readable flags."""
+    """Compare ``latest`` to history and return short, human - readable flags."""
 
     flags: list[str] = []
     hib = spec["higher_is_better"]
@@ -125,7 +125,8 @@ def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[
 
     if improved and (abs(z) >= SIGMA_Z_THRESH or abs(rz) >= ROBUST_Z_THRESH):
         flags.append(
-            f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={rz:.2f}). Recheck sample size, caching, and code paths."
+            f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={
+                                                    rz:.2f}). Recheck sample size, caching, and code paths."
         )
 
     if latest < low_fence or latest > high_fence:
@@ -149,7 +150,7 @@ def analyze_history_and_print(benchmark_data, history_path: str | Path = "benchm
     """Print compact descriptives and anomaly flags for known metrics."""
 
     try:
-        with open(history_path, "r", encoding="utf-8") as fh:
+        with open(history_path, "r", encoding="utf - 8") as fh:
             history_list = json.load(fh)
         hist = pd.DataFrame(history_list)
     except (OSError, ValueError) as exc:
@@ -219,17 +220,17 @@ def get_test_coverage() -> float:
             "pytest",
             "--cov=src",
             "--cov=web",
-            "--cov-report=json:coverage.json",
+            "--cov - report=json:coverage.json",
             "--quiet",
         ],
         timeout=90,
     )
 
     if rc != 0:
-        log.warning("pytest/coverage failed (rc=%s): %s", rc, err[:200])
+        log.warning("pytest / coverage failed (rc=%s): %s", rc, err[:200])
 
     try:
-        with open("coverage.json", "r", encoding="utf-8") as fh:
+        with open("coverage.json", "r", encoding="utf - 8") as fh:
             data = json.load(fh)
         return float(data.get("totals", {}).get("percent_covered", 0.0))
     except (OSError, ValueError) as exc:
@@ -255,7 +256,7 @@ def count_duplicate_functions():
             continue
 
         try:
-            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
+            with open(py_file, "r", encoding="utf - 8", errors="ignore") as f:
                 content = f.read()
                 for pattern in duplicate_patterns:
                     count = content.count(pattern)
@@ -269,7 +270,7 @@ def count_duplicate_functions():
 
 
 def get_database_metrics():
-    """Get detailed database metrics for resume-worthy analytics."""
+    """Get detailed database metrics for resume - worthy analytics."""
     rc, stdout, stderr = run_subprocess(
         [
             sys.executable,
@@ -322,7 +323,7 @@ try:
     # Try to get comment data for more detailed analytics
     comment_count = 0
     try:
-        # Look for comment-related data
+        # Look for comment - related data
         if 'comment_count' in df.columns:
             comment_count = df['comment_count'].sum()
         elif 'comments' in df.columns:
@@ -394,7 +395,8 @@ def run_existing_model_benchmarks() -> dict[str, float]:
 
     print("  • Running existing model comparison benchmarks...")
 
-    rc, stdout, stderr = run_subprocess([sys.executable, "tools/sentiment/comprehensive_model_test.py"], timeout=120)
+    rc, stdout, stderr = run_subprocess(
+        [sys.executable, "tools / sentiment / comprehensive_model_test.py"], timeout=120)
 
     if rc != 0:
         log.warning("Model benchmark command failed (rc=%s): %s", rc, stderr[:200])
@@ -447,12 +449,12 @@ try:
         "Not feeling this at all, skip",
         "This is mid at best, disappointing",
 
-        # Neutral/mixed
+        # Neutral / mixed
         "Pretty good track, not bad",
         "It's okay I guess, nothing special",
         "Decent but not my style",
 
-        # Bot-like comments
+        # Bot - like comments
         "FIRST! Love this artist so much!!!",
         "Check out my channel for similar music!",
         "Subscribe to my channel please!!!",
@@ -645,13 +647,13 @@ def count_lines_of_code():
     total_lines = 0
 
     for py_file in Path(".").rglob("*.py"):
-        if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+        if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
             continue
 
         try:
-            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
+            with open(py_file, "r", encoding="utf - 8", errors="ignore") as f:
                 lines = f.readlines()
-                # Count non-empty, non-comment lines
+                # Count non - empty, non - comment lines
                 code_lines = [l for l in lines if l.strip() and not l.strip().startswith("#")]
                 total_lines += len(code_lines)
         except OSError as exc:
@@ -674,25 +676,29 @@ def generate_resume_bullets(data):
     if total_records > 0 and unique_channels > 0:
         if years > 0:
             bullets.append(
-                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {unique_channels} artists spanning {years:.1f} years of music data"
+                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {
+                    unique_channels} artists spanning {years:.1f} years of music data"
             )
         else:
             bullets.append(
-                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {unique_channels} artists"
+                f"• Built YouTube ETL pipeline processing {
+                    total_records:,} video records across {unique_channels} artists"
             )
 
     # Performance and throughput
     if throughput > 0:
         load_time = data.get("load_time_seconds", 0)
         bullets.append(
-            f"• Achieved {throughput:.0f} rows/sec throughput with p95 data freshness ≤ {load_time:.1f}s for real-time analytics"
+            f"• Achieved {
+                throughput:.0f} rows / sec throughput with p95 data freshness ≤ {load_time:.1f}s for real - time analytics"
         )
 
     # Data quality with specific metrics
     null_pct = data.get("null_percentage", 0)
     if null_pct < 2.0:  # Only mention if it's actually good
         bullets.append(
-            f"• Maintained data quality guardrails: nulls in core fields ≤ {null_pct:.1f}%, referential integrity checks on every load"
+            f"• Maintained data quality guardrails: nulls in core fields ≤ {
+                null_pct:.1f}%, referential integrity checks on every load"
         )
 
     # Model performance with comparison context
@@ -700,16 +706,18 @@ def generate_resume_bullets(data):
     if existing_benchmarks:
         best_model = max(existing_benchmarks.items(), key=lambda x: x[1])
         bullets.append(
-            f"• Custom sentiment model achieves {best_model[1]:.1f}% accuracy on music slang dataset, outperforming baseline VADER"
+            f"• Custom sentiment model achieves {
+                best_model[1]:.1f}% accuracy on music slang dataset, outperforming baseline VADER"
         )
 
-    # Real-time processing capabilities
+    # Real - time processing capabilities
     if data.get("sentiment_available", 0):
         throughput = data.get("sentiment_throughput", 0)
         p95_time = data.get("sentiment_p95_time", 0) * 1000
         if throughput > 0:
             bullets.append(
-                f"• Sentiment analysis processes {throughput:.0f} comments/sec with p95 latency {p95_time:.0f}ms for real-time fan engagement scoring"
+                f"• Sentiment analysis processes {
+                    throughput:.0f} comments / sec with p95 latency {p95_time:.0f}ms for real - time fan engagement scoring"
             )
 
     # Bot detection with precision metrics
@@ -717,13 +725,15 @@ def generate_resume_bullets(data):
         precision = data.get("bot_detection_precision", 0)
         if precision > 0:
             bullets.append(
-                f"• Bot detector achieves {precision:.1%} precision, reducing manual content review workload by ~{(1-precision)*100:.0f}%"
+                f"• Bot detector achieves {precision:.1%} precision, reducing manual content review workload by ~{
+                    (1 - precision) *100:.0f}%"
             )
 
     # System architecture and scale
     if total_records > 1000:
         bullets.append(
-            f"• Designed scalable architecture handling {total_records:,}+ records with automated monitoring and data quality validation"
+            f"• Designed scalable architecture handling {
+                total_records:,}+ records with automated monitoring and data quality validation"
         )
 
     return bullets
@@ -741,7 +751,7 @@ def save_benchmark_to_database(data):
         engine = get_engine()
 
         # Generate benchmark ID
-        benchmark_id = f"bench_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        benchmark_id = f"bench_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
 
         # Prepare data for database (convert availability flags)
         db_data = data.copy()
@@ -805,7 +815,7 @@ def save_benchmark(data):
     benchmarks = []
     if os.path.exists(benchmark_file):
         try:
-            with open(benchmark_file, "r", encoding="utf-8") as f:
+            with open(benchmark_file, "r", encoding="utf - 8") as f:
                 benchmarks = json.load(f)
         except (OSError, ValueError) as exc:
             log.warning("Unable to read %s: %s", benchmark_file, exc)
@@ -815,7 +825,7 @@ def save_benchmark(data):
     benchmarks.append(data)
 
     # Save updated benchmarks to JSON
-    with open(benchmark_file, "w", encoding="utf-8") as f:
+    with open(benchmark_file, "w", encoding="utf - 8") as f:
         json.dump(benchmarks, f, indent=2)
 
     # Try to save to database
@@ -892,23 +902,25 @@ def main():
         print(f"  Video Date Range:    {benchmark_data.get('date_range_days', 0)} days")
 
     print(f"  Data Load Time:      {benchmark_data.get('load_time_seconds', 0):.3f}s")
-    print(f"  Throughput:          {benchmark_data.get('throughput_rows_per_sec', 0):.1f} rows/sec")
-    print(f"  Data Quality:        {100-benchmark_data.get('null_percentage', 0):.1f}% complete")
+    print(f"  Throughput:          {benchmark_data.get('throughput_rows_per_sec', 0):.1f} rows / sec")
+    print(f"  Data Quality:        {100 - benchmark_data.get('null_percentage', 0):.1f}% complete")
 
     print(f"\n🤖 Model Performance:")
     if benchmark_data.get("sentiment_available", 0):
         print(
-            f"  Sentiment Analysis:  {benchmark_data.get('sentiment_avg_time', 0)*1000:.1f}ms avg, {benchmark_data.get('sentiment_throughput', 0):.0f} comments/sec"
+            f"  Sentiment Analysis:  {benchmark_data.get(
+                'sentiment_avg_time', 0) *1000:.1f}ms avg, {benchmark_data.get('sentiment_throughput', 0):.0f} comments / sec"
         )
-        print(f"  P95 Latency:         {benchmark_data.get('sentiment_p95_time', 0)*1000:.0f}ms")
+        print(f"  P95 Latency:         {benchmark_data.get('sentiment_p95_time', 0) *1000:.0f}ms")
     else:
         print(f"  Sentiment Analysis:  ❌ Not available - needs setup")
 
     if benchmark_data.get("bot_detection_available", 0):
         print(
-            f"  Bot Detection:       {benchmark_data.get('bot_detection_avg_time', 0)*1000:.1f}ms avg, {benchmark_data.get('bot_detection_precision', 0):.1%} precision"
+            f"  Bot Detection:       {benchmark_data.get(
+                'bot_detection_avg_time', 0) *1000:.1f}ms avg, {benchmark_data.get('bot_detection_precision', 0):.1%} precision"
         )
-        print(f"  Bot Throughput:      {benchmark_data.get('bot_detection_throughput', 0):.0f} comments/sec")
+        print(f"  Bot Throughput:      {benchmark_data.get('bot_detection_throughput', 0):.0f} comments / sec")
     else:
         print(f"  Bot Detection:       ❌ Not available - needs setup")
 
@@ -920,8 +932,8 @@ def main():
             print(f"  {model_name:<20} {accuracy:.1f}% accuracy")
     else:
         print(f"\n🏆 Model Comparison Benchmarks:")
-        print(f"  Run: python tools/sentiment/comprehensive_model_test.py")
-        print(f"  Run: python tools/sentiment/model_comparison_test.py")
+        print(f"  Run: python tools / sentiment / comprehensive_model_test.py")
+        print(f"  Run: python tools / sentiment / model_comparison_test.py")
 
     # Show available columns for debugging
     if benchmark_data.get("available_columns"):
@@ -952,7 +964,7 @@ def main():
 
     # Show progress if we have previous benchmarks
     try:
-        with open("benchmarks.json", "r", encoding="utf-8") as f:
+        with open("benchmarks.json", "r", encoding="utf - 8") as f:
             all_benchmarks = json.load(f)
 
         if len(all_benchmarks) > 1:
@@ -1002,9 +1014,9 @@ def main():
             if prev_sentiment > 0 and curr_sentiment > 0:
                 sentiment_change = curr_sentiment - prev_sentiment
                 if sentiment_change < -0.001:
-                    print(f"⚡ Sentiment analysis got faster by {abs(sentiment_change)*1000:.1f}ms")
+                    print(f"⚡ Sentiment analysis got faster by {abs(sentiment_change) *1000:.1f}ms")
                 elif sentiment_change > 0.001:
-                    print(f"🐌 Sentiment analysis got slower by {sentiment_change*1000:.1f}ms")
+                    print(f"🐌 Sentiment analysis got slower by {sentiment_change * 1000:.1f}ms")
 
     except (OSError, ValueError) as exc:
         log.info("No previous benchmark history available: %s", exc)

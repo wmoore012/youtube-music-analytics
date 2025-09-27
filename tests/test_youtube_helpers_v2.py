@@ -1,4 +1,4 @@
-# tests/icatalog_public/oss/test_youtube_helpers_v2.py
+# tests / icatalog_public / oss / test_youtube_helpers_v2.py
 """
 TDD Tests for YouTube Helpers v2
 
@@ -80,13 +80,13 @@ class TestExtractVideoId:
             extract_video_id(item)
 
     def test_extract_video_id_whitespace_video_id(self):
-        """Test handling whitespace-only video ID."""
+        """Test handling whitespace - only video ID."""
         item = {"id": {"videoId": "   "}}
         with pytest.raises(ValueError, match="Video ID cannot be empty"):
             extract_video_id(item)
 
     def test_extract_video_id_non_string_video_id(self):
-        """Test handling non-string video ID."""
+        """Test handling non - string video ID."""
         item = {"id": {"videoId": 123}}
         with pytest.raises(ValueError, match="Video ID must be string"):
             extract_video_id(item)
@@ -121,7 +121,7 @@ class TestNormalizeString:
             normalize_string(None)
 
     def test_normalize_string_non_string_input(self):
-        """Test handling non-string input."""
+        """Test handling non - string input."""
         with pytest.raises(ValueError, match="Text must be string"):
             normalize_string(123)
 
@@ -131,7 +131,7 @@ class TestNormalizeString:
             normalize_string("")
 
     def test_normalize_string_whitespace_only(self):
-        """Test handling whitespace-only input."""
+        """Test handling whitespace - only input."""
         with pytest.raises(ValueError, match="Text cannot be empty"):
             normalize_string("   ")
 
@@ -277,7 +277,7 @@ class TestValidateVideoData:
             validate_video_data(None)
 
     def test_validate_video_data_non_dict_input(self):
-        """Test handling non-dict input."""
+        """Test handling non - dict input."""
         with pytest.raises(ValueError, match="Video data must be dict"):
             validate_video_data("not a dict")
 
@@ -288,7 +288,7 @@ class TestValidatePlaylistData:
     def test_validate_playlist_data_valid(self):
         """Test validating valid playlist data."""
         playlist_data = {
-            "id": "PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q",
+            "id": "PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q",
             "snippet": {"title": "Test Playlist"},
         }
         result = validate_playlist_data(playlist_data)
@@ -365,12 +365,12 @@ class TestParseDurationIso8601:
     def test_parse_duration_minutes_seconds(self):
         """Test parsing minutes and seconds."""
         result = parse_duration_iso8601("PT3M33S")
-        assert result == 213  # 3*60 + 33
+        assert result == 213  # 3 * 60 + 33
 
     def test_parse_duration_hours_minutes_seconds(self):
         """Test parsing hours, minutes, and seconds."""
         result = parse_duration_iso8601("PT1H2M30S")
-        assert result == 3750  # 1*3600 + 2*60 + 30
+        assert result == 3750  # 1 * 3600 + 2 * 60 + 30
 
     def test_parse_duration_seconds_only(self):
         """Test parsing seconds only."""
@@ -380,12 +380,12 @@ class TestParseDurationIso8601:
     def test_parse_duration_minutes_only(self):
         """Test parsing minutes only."""
         result = parse_duration_iso8601("PT5M")
-        assert result == 300  # 5*60
+        assert result == 300  # 5 * 60
 
     def test_parse_duration_hours_only(self):
         """Test parsing hours only."""
         result = parse_duration_iso8601("PT2H")
-        assert result == 7200  # 2*3600
+        assert result == 7200  # 2 * 3600
 
     def test_parse_duration_null_input(self):
         """Test handling null input."""
@@ -484,7 +484,7 @@ class TestIsQuotaExceededError:
         assert result is True
 
     def test_is_quota_exceeded_error_false(self):
-        """Test detecting non-quota error."""
+        """Test detecting non - quota error."""
 
         class MockError:
             def __init__(self):

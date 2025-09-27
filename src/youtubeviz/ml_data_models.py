@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-ML-Ready Data Models with Pydantic Validation
+ML - Ready Data Models with Pydantic Validation
 
-Provides type-safe data models for machine learning preprocessing and training.
+Provides type - safe data models for machine learning preprocessing and training.
 Ensures data quality and consistency across the ML pipeline.
 """
 
@@ -52,7 +52,7 @@ class CommentMetadata(BaseModel):
     published_at: Optional[datetime] = Field(None, description="Comment publication time")
     reply_count: int = Field(0, ge=0, description="Number of replies")
 
-    # Music-specific metadata
+    # Music - specific metadata
     artist_name: Optional[str] = Field(None, description="Associated artist name")
     music_domain: MusicDomain = Field(MusicDomain.GENERAL, description="Music domain category")
     contains_music_slang: bool = Field(False, description="Contains music slang terms")
@@ -68,7 +68,7 @@ class CommentMetadata(BaseModel):
 
 
 class MLComment(BaseModel):
-    """ML-ready comment with preprocessing and validation."""
+    """ML - ready comment with preprocessing and validation."""
 
     # Core data
     text: str = Field(..., min_length=1, max_length=2000, description="Comment text")
@@ -126,7 +126,7 @@ class MLComment(BaseModel):
 
 
 class MLDataset(BaseModel):
-    """Collection of ML-ready comments with metadata."""
+    """Collection of ML - ready comments with metadata."""
 
     dataset_id: str = Field(default_factory=lambda: str(uuid4()), description="Unique dataset ID")
     name: str = Field(..., description="Dataset name")
@@ -227,7 +227,7 @@ class TransformerConfig(BaseModel):
     return_attention_mask: bool = Field(True, description="Return attention mask")
     return_token_type_ids: bool = Field(False, description="Return token type IDs")
 
-    # Music-specific preprocessing
+    # Music - specific preprocessing
     preserve_music_slang: bool = Field(True, description="Preserve music slang terms")
     normalize_emoji: bool = Field(False, description="Normalize emoji to text")
     handle_mentions: bool = Field(True, description="Handle @mentions")

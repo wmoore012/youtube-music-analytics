@@ -164,7 +164,7 @@ class TestScoringSystemIntegration:
         self.engine.unload_plugin("simple_test")
         assert "simple_test" not in self.engine.get_available_algorithms()
 
-        # Re-register plugin
+        # Re - register plugin
         self.engine.register_plugin(plugin)
         assert "simple_test" in self.engine.get_available_algorithms()
 

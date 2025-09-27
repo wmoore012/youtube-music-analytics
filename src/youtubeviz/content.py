@@ -1,6 +1,6 @@
 """
 Content categorization and analysis functions for YouTube video content.
-Analyzes ISRC vs non-ISRC, content types, duration categories, and artist strategies.
+Analyzes ISRC vs non - ISRC, content types, duration categories, and artist strategies.
 """
 
 from __future__ import annotations
@@ -131,11 +131,11 @@ def categorize_content_types(df: pd.DataFrame, content_type_col: str) -> pd.Data
         "music_video": "Music Content",
         "lyric_video": "Music Content",
         "visualizer": "Music Content",
-        "content_video": "Non-Music Content",
-        "lifestyle": "Non-Music Content",
-        "behind_scenes": "Non-Music Content",
-        "interview": "Non-Music Content",
-        "vlog": "Non-Music Content",
+        "content_video": "Non - Music Content",
+        "lifestyle": "Non - Music Content",
+        "behind_scenes": "Non - Music Content",
+        "interview": "Non - Music Content",
+        "vlog": "Non - Music Content",
     }
 
     # Apply mapping
@@ -149,12 +149,12 @@ def categorize_content_types(df: pd.DataFrame, content_type_col: str) -> pd.Data
 
 def classify_video_duration(df: pd.DataFrame, duration_col: str, short_form_threshold: int = 300) -> pd.DataFrame:
     """
-    Classify videos by duration (short-form vs long-form).
+    Classify videos by duration (short - form vs long - form).
 
     Args:
         df: DataFrame with duration data
         duration_col: Column name for duration in seconds
-        short_form_threshold: Threshold in seconds for short-form classification
+        short_form_threshold: Threshold in seconds for short - form classification
 
     Returns:
         DataFrame with added duration_category column
@@ -171,7 +171,7 @@ def classify_video_duration(df: pd.DataFrame, duration_col: str, short_form_thre
 
 def analyze_isrc_distribution(df: pd.DataFrame, artist_col: str, isrc_col: str, views_col: str) -> pd.DataFrame:
     """
-    Analyze ISRC vs non-ISRC distribution by artist.
+    Analyze ISRC vs non - ISRC distribution by artist.
 
     Args:
         df: DataFrame with ISRC data
@@ -189,8 +189,8 @@ def analyze_isrc_distribution(df: pd.DataFrame, artist_col: str, isrc_col: str, 
         artist_df = df[df[artist_col] == artist]
 
         # Count videos with and without ISRC
-        isrc_videos = artist_df[artist_df[isrc_col] == True]
-        non_isrc_videos = artist_df[artist_df[isrc_col] == False]
+        isrc_videos = artist_df[artist_df[isrc_col] is True]
+        non_isrc_videos = artist_df[artist_df[isrc_col] is False]
 
         total_videos = len(artist_df)
         isrc_count = len(isrc_videos)
@@ -277,7 +277,7 @@ def analyze_content_strategy_effectiveness(
         # Calculate content type performance
         content_performance = artist_df.groupby(content_type_col)[views_col].agg(["count", "sum", "mean"]).round(2)
 
-        # Calculate ISRC vs non-ISRC performance
+        # Calculate ISRC vs non - ISRC performance
         isrc_performance = artist_df.groupby(isrc_col)[views_col].agg(["count", "sum", "mean"]).round(2)
 
         # Find best performing content type
@@ -285,16 +285,16 @@ def analyze_content_strategy_effectiveness(
 
         # Calculate strategy insights
         total_views = artist_df[views_col].sum()
-        music_content_views = artist_df[artist_df[isrc_col] == True][views_col].sum()
-        content_video_views = artist_df[artist_df[isrc_col] == False][views_col].sum()
+        music_content_views = artist_df[artist_df[isrc_col] is True][views_col].sum()
+        content_video_views = artist_df[artist_df[isrc_col] is False][views_col].sum()
 
         music_content_ratio = (music_content_views / total_views) if total_views > 0 else 0
 
         # Determine strategy type
         if music_content_ratio > 0.7:
-            strategy_type = "Music-Focused"
+            strategy_type = "Music - Focused"
         elif music_content_ratio < 0.3:
-            strategy_type = "Content-Focused"
+            strategy_type = "Content - Focused"
         else:
             strategy_type = "Balanced"
 
@@ -374,7 +374,7 @@ def create_artist_strengths_venn_diagram(
     performance_metrics: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
-    Create data for overlapping circle/Venn diagram showing what artists are doing well as a whole.
+    Create data for overlapping circle / Venn diagram showing what artists are doing well as a whole.
 
     Args:
         df: DataFrame with content data
@@ -435,9 +435,9 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
     for artist in df[artist_col].unique():
         artist_df = df[df[artist_col] == artist]
 
-        # Calculate ISRC vs non-ISRC metrics
-        isrc_videos = artist_df[artist_df[isrc_col] == True]
-        non_isrc_videos = artist_df[artist_df[isrc_col] == False]
+        # Calculate ISRC vs non - ISRC metrics
+        isrc_videos = artist_df[artist_df[isrc_col] is True]
+        non_isrc_videos = artist_df[artist_df[isrc_col] is False]
 
         isrc_count = len(isrc_videos)
         non_isrc_count = len(non_isrc_videos)
@@ -452,9 +452,9 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
 
         # Determine strategy type
         if balance_score > 0.8:
-            strategy = "Music-Heavy"
+            strategy = "Music - Heavy"
         elif balance_score < 0.2:
-            strategy = "Content-Heavy"
+            strategy = "Content - Heavy"
         else:
             strategy = "Balanced"
 
@@ -478,9 +478,9 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
 
     for item in balance_data:
         artist = item["artist"]
-        if item["strategy_type"] == "Music-Heavy":
+        if item["strategy_type"] == "Music - Heavy":
             isrc_analysis[artist] = item
-        elif item["strategy_type"] == "Content-Heavy":
+        elif item["strategy_type"] == "Content - Heavy":
             content_analysis[artist] = item
         else:
             # Balanced artists go to both
@@ -505,14 +505,14 @@ def analyze_video_length_performance(
     short_form_threshold: int = DEFAULT_SHORT_FORM_THRESHOLD,
 ) -> pd.DataFrame:
     """
-    Analyze short-form vs long-form video performance breakdown with view totals.
+    Analyze short - form vs long - form video performance breakdown with view totals.
 
     Args:
         df: DataFrame with duration data
         artist_col: Column name for artist names
         duration_col: Column name for duration in seconds
         views_col: Column name for view counts
-        short_form_threshold: Threshold in seconds for short-form classification
+        short_form_threshold: Threshold in seconds for short - form classification
 
     Returns:
         DataFrame with video length performance analysis
@@ -558,7 +558,7 @@ def create_artist_comparison_chart(
     chart_type: str = "radar",
 ) -> Dict[str, Any]:
     """
-    Create side-by-side artist comparison data structure.
+    Create side - by - side artist comparison data structure.
 
     Args:
         df: DataFrame with artist data
@@ -595,7 +595,7 @@ def create_artist_comparison_chart(
 
         comparison_data.append(artist_metrics)
 
-    # Normalize metrics for radar chart (0-100 scale)
+    # Normalize metrics for radar chart (0 - 100 scale)
     if chart_type == "radar":
         normalized_data = []
         for artist_data in comparison_data:
@@ -644,7 +644,7 @@ def create_roster_overview_chart(
     # Use metrics if provided, otherwise use performance_metrics
     metrics_to_use = metrics or performance_metrics or ["views"]
 
-    # Calculate roster-wide statistics
+    # Calculate roster - wide statistics
     roster_stats = {}
 
     # Overall metrics
@@ -794,7 +794,8 @@ def analyze_genre_context(
     }
 
     # Add new signee context as string
-    new_signee_context = f"All {total_artists} artists are new signees with different genres, representing {unique_genres} unique musical styles in a diverse roster approach."
+    new_signee_context = f"All {total_artists} artists are new signees with different genres, representing {
+        unique_genres} unique musical styles in a diverse roster approach."
 
     return {
         "genre_analysis": genre_insights,
@@ -903,7 +904,7 @@ def categorize_video_content(
     else:
         df_copy["content_category"] = df_copy[title_col].apply(lambda title: _categorize_single_content(title))
 
-    # Add duration-based refinement if available
+    # Add duration - based refinement if available
     if duration_col and duration_col in df_copy.columns:
         # Very short videos (< 60s) are likely teasers or clips
         df_copy.loc[
@@ -933,7 +934,7 @@ def generate_content_strategy_recommendations(
     Returns:
         List of recommendations or dictionary mapping artists to recommendation lists
     """
-    # Handle simple list/DataFrame input for basic recommendations
+    # Handle simple list / DataFrame input for basic recommendations
     if isinstance(data, pd.DataFrame) and len(data) < 10:
         # Generate simple recommendations based on performance data
         recommendations = []
@@ -1042,11 +1043,11 @@ def check_isrc_compliance(
     # Simple compliance check for test data
     if len(df) < 10:
         music_videos = df[df[content_type_col].isin(music_content_types)]
-        compliant = music_videos[music_videos[isrc_col] == True] if len(music_videos) > 0 else pd.DataFrame()
+        compliant = music_videos[music_videos[isrc_col] is True] if len(music_videos) > 0 else pd.DataFrame()
 
         compliance_rate = len(compliant) / len(music_videos) if len(music_videos) > 0 else 0
 
-        non_compliant = music_videos[music_videos[isrc_col] == False] if len(music_videos) > 0 else pd.DataFrame()
+        non_compliant = music_videos[music_videos[isrc_col] is False] if len(music_videos) > 0 else pd.DataFrame()
 
         # Get list of videos missing ISRC
         missing_isrc_list = non_compliant.to_dict("records") if len(non_compliant) > 0 else []
@@ -1082,8 +1083,8 @@ def check_isrc_compliance(
             continue
 
         # Check ISRC compliance
-        compliant_content = music_content[music_content[isrc_col] == True]
-        non_compliant_content = music_content[music_content[isrc_col] == False]
+        compliant_content = music_content[music_content[isrc_col] is True]
+        non_compliant_content = music_content[music_content[isrc_col] is False]
 
         total_music = len(music_content)
         compliant_count = len(compliant_content)

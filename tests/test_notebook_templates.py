@@ -72,9 +72,9 @@ class TestNotebookConfig:
     @patch.dict(
         os.environ,
         {
-            "YT_TAYLOR_SWIFT_YT": "https://youtube.com/channel/...",
-            "YT_DRAKE_YT": "https://youtube.com/channel/...",
-            "YT_THE_WEEKND_YT": "https://youtube.com/channel/...",
+            "YT_TAYLOR_SWIFT_YT": "https://youtube.com / channel/...",
+            "YT_DRAKE_YT": "https://youtube.com / channel/...",
+            "YT_THE_WEEKND_YT": "https://youtube.com / channel/...",
         },
     )
     def test_from_env_artist_detection(self):
@@ -289,8 +289,8 @@ class TestIntegration:
     @patch.dict(
         os.environ,
         {
-            "YT_ARTIST_A_YT": "https://youtube.com/channel/1",
-            "YT_ARTIST_B_YT": "https://youtube.com/channel/2",
+            "YT_ARTIST_A_YT": "https://youtube.com / channel / 1",
+            "YT_ARTIST_B_YT": "https://youtube.com / channel / 2",
             "ARTIST_COLOR_SCHEME": "pastel",
         },
     )

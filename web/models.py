@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Pydantic Models for YouTube ETL Pipeline
 
@@ -8,7 +8,7 @@ This module provides comprehensive data models with validation for:
 - ETL pipeline configuration
 - Processing results and metrics
 
-All models use Pydantic for strict validation and fail-fast error handling.
+All models use Pydantic for strict validation and fail - fast error handling.
 Natural keys are used throughout for better debugging and maintainability.
 """
 
@@ -52,16 +52,17 @@ class BotRiskLevel(str, Enum):
 class YouTubeVideo(BaseModel):
     """YouTube video data from API with validation."""
 
-    video_id: str = Field(..., pattern=r"^[a-zA-Z0-9_-]{11}$", description="YouTube video ID")
+    video_id: str = Field(..., pattern=r"^[a - zA - Z0 - 9_-]{11}$", description="YouTube video ID")
     title: str = Field(..., min_length=1, max_length=500, description="Video title")
-    channel_id: str = Field(..., pattern=r"^UC[a-zA-Z0-9_-]{22}$", description="YouTube channel ID")
+    channel_id: str = Field(..., pattern=r"^UC[a - zA - Z0 - 9_-]{22}$", description="YouTube channel ID")
     channel_title: str = Field(..., min_length=1, max_length=255, description="Channel name")
     published_at: datetime = Field(..., description="Video publication timestamp")
-    duration: Optional[str] = Field(None, pattern=r"^PT(\d+H)?(\d+M)?(\d+S)?$", description="ISO 8601 duration")
+    duration: Optional[str] = Field(None, pattern=r"^PT(\d + H)?(\d + M)?(\d + S)?$", description="ISO 8601 duration")
     view_count: int = Field(0, ge=0, description="Total view count")
     like_count: int = Field(0, ge=0, description="Total like count")
     comment_count: int = Field(0, ge=0, description="Total comment count")
-    isrc: Optional[str] = Field(None, pattern=r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$", description="ISRC code")
+    isrc: Optional[str] = Field(
+        None, pattern=r"^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$", description="ISRC code")
 
     @field_validator("title")
     @classmethod
@@ -91,7 +92,7 @@ class YouTubeVideo(BaseModel):
             return v
         # Convert to uppercase and validate format
         isrc_upper = v.upper().strip()
-        if not re.match(r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$", isrc_upper):
+        if not re.match(r"^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$", isrc_upper):
             raise ValueError(f"Invalid ISRC format: {v}")
         return isrc_upper
 
@@ -106,7 +107,7 @@ class YouTubeComment(BaseModel):
     """YouTube comment data with validation."""
 
     comment_id: str = Field(..., min_length=1, max_length=100, description="Unique comment ID")
-    video_id: str = Field(..., pattern=r"^[a-zA-Z0-9_-]{11}$", description="Associated video ID")
+    video_id: str = Field(..., pattern=r"^[a - zA - Z0 - 9_-]{11}$", description="Associated video ID")
     author_name: str = Field(..., min_length=1, max_length=255, description="Comment author name")
     comment_text: str = Field(..., min_length=1, max_length=10000, description="Comment content")
     like_count: int = Field(0, ge=0, description="Comment like count")
@@ -144,7 +145,7 @@ class SentimentResult(BaseModel):
     """Sentiment analysis result with validation."""
 
     comment_id: str = Field(..., min_length=1, description="Comment ID")
-    video_id: str = Field(..., pattern=r"^[a-zA-Z0-9_-]{11}$", description="Video ID")
+    video_id: str = Field(..., pattern=r"^[a - zA - Z0 - 9_-]{11}$", description="Video ID")
     sentiment_score: float = Field(..., ge=-1.0, le=1.0, description="Sentiment score (-1 to 1)")
     confidence_score: float = Field(..., ge=0.0, le=1.0, description="Confidence score (0 to 1)")
     method: SentimentMethod = Field(..., description="Analysis method used")
@@ -177,9 +178,9 @@ class BotDetectionResult(BaseModel):
     """Bot detection result with validation."""
 
     comment_id: str = Field(..., min_length=1, description="Comment ID")
-    video_id: str = Field(..., pattern=r"^[a-zA-Z0-9_-]{11}$", description="Video ID")
+    video_id: str = Field(..., pattern=r"^[a - zA - Z0 - 9_-]{11}$", description="Video ID")
     author_name: str = Field(..., min_length=1, description="Comment author")
-    bot_score: float = Field(..., ge=0.0, le=100.0, description="Bot suspicion score (0-100)")
+    bot_score: float = Field(..., ge=0.0, le=100.0, description="Bot suspicion score (0 - 100)")
     bot_risk_level: BotRiskLevel = Field(..., description="Risk level classification")
     duplicate_count_local: int = Field(0, ge=0, description="Similar comments in same video")
     duplicate_count_global: int = Field(0, ge=0, description="Similar comments across videos")
@@ -238,7 +239,7 @@ class ETLConfig(BaseModel):
     @classmethod
     def validate_database_url(cls, v):
         """Validate database URL format."""
-        if not v.startswith(("mysql+pymysql://", "postgresql://", "sqlite:///")):
+        if not v.startswith(("mysql + pymysql://", "postgresql://", "sqlite:///")):
             raise ValueError("Database URL must start with supported scheme")
         return v
 
@@ -410,7 +411,7 @@ class VideoFilter(BaseModel):
     def validate_video_ids(cls, v):
         """Validate video ID format."""
         for video_id in v:
-            if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
+            if not re.match(r"^[a - zA - Z0 - 9_-]{11}$", video_id):
                 raise ValueError(f"Invalid video ID format: {video_id}")
         return v
 
@@ -419,7 +420,7 @@ class VideoFilter(BaseModel):
     def validate_channel_ids(cls, v):
         """Validate channel ID format."""
         for channel_id in v:
-            if not re.match(r"^UC[a-zA-Z0-9_-]{22}$", channel_id):
+            if not re.match(r"^UC[a - zA - Z0 - 9_-]{22}$", channel_id):
                 raise ValueError(f"Invalid channel ID format: {channel_id}")
         return v
 

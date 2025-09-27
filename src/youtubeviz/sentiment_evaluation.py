@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Sentiment Analysis Evaluation Framework
 
 Provides rigorous statistical evaluation with multiple testing approaches including:
 - Paired testing on identical comment sets
-- GroupKFold cross-validation by video_id to prevent data leakage
+- GroupKFold cross - validation by video_id to prevent data leakage
 - McNemar's test for paired classifier comparison
 - Bootstrap confidence intervals for performance deltas
-- Multiple comparison correction with Benjamini-Hochberg FDR control
+- Multiple comparison correction with Benjamini - Hochberg FDR control
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import GroupKFold
 
-# Import ML data models for transformer-ready preprocessing
+# Import ML data models for transformer - ready preprocessing
 try:
     from youtubeviz.ml_data_models import DataSplit, MLComment, MLDataset, SentimentLabel, TransformerConfig
     from youtubeviz.unique_comment_manager import UniqueCommentManager
@@ -47,7 +47,7 @@ except ImportError:
 
 @dataclass
 class ClassMetrics:
-    """Per-class evaluation metrics."""
+    """Per - class evaluation metrics."""
 
     precision: float
     recall: float
@@ -121,7 +121,7 @@ class EvaluationResults:
     f1_score: float
     macro_f1: float
 
-    # Per-class metrics
+    # Per - class metrics
     class_metrics: Dict[str, ClassMetrics]
 
     # Confidence intervals
@@ -182,7 +182,7 @@ class EvaluationResults:
 
 @dataclass
 class CVResults:
-    """Cross-validation evaluation results."""
+    """Cross - validation evaluation results."""
 
     model_name: str
     cv_scores: List[float]
@@ -224,11 +224,11 @@ class StatisticalTestError(EvaluationError):
 
 class SentimentEvaluationFramework:
     """
-    Multi-model evaluation framework with statistical rigor.
+    Multi - model evaluation framework with statistical rigor.
 
     Supports:
     - Paired testing on identical comment sets
-    - GroupKFold cross-validation by video_id
+    - GroupKFold cross - validation by video_id
     - McNemar's test for paired classifier comparison
     - Bootstrap confidence intervals
     - Multiple comparison correction
@@ -267,7 +267,7 @@ class SentimentEvaluationFramework:
 
         # Create experiment config
         experiment_config = ExperimentConfig(
-            experiment_id=experiment_id or f"paired_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            experiment_id=experiment_id or f"paired_eval_{datetime.now().strftime('%Y % m%d_ % H%M % S')}",
             timestamp=datetime.now(),
             random_seed=self.random_seed,
             data_fingerprint=self._compute_data_fingerprint(comments, true_labels),
@@ -331,7 +331,7 @@ class SentimentEvaluationFramework:
         experiment_id: Optional[str] = None,
     ) -> Dict[str, CVResults]:
         """
-        Run GroupKFold cross-validation by video_id to prevent data leakage.
+        Run GroupKFold cross - validation by video_id to prevent data leakage.
 
         Args:
             models: Dictionary of model_name -> model_instance
@@ -355,7 +355,7 @@ class SentimentEvaluationFramework:
 
         # Create experiment config
         experiment_config = ExperimentConfig(
-            experiment_id=experiment_id or f"grouped_cv_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            experiment_id=experiment_id or f"grouped_cv_{datetime.now().strftime('%Y % m%d_ % H%M % S')}",
             timestamp=datetime.now(),
             random_seed=self.random_seed,
             data_fingerprint=self._compute_data_fingerprint(data[text_col].tolist(), data[label_col].tolist()),
@@ -438,15 +438,15 @@ class SentimentEvaluationFramework:
             raise StatisticalTestError("All input lists must have same length")
 
         # Create contingency table for McNemar's test
-        # Rows: Model A correct/incorrect, Cols: Model B correct/incorrect
+        # Rows: Model A correct / incorrect, Cols: Model B correct / incorrect
         correct_a = [pred == true for pred, true in zip(predictions_a, true_labels)]
         correct_b = [pred == true for pred, true in zip(predictions_b, true_labels)]
 
         # McNemar contingency table
-        both_correct = sum(a and b for a, b in zip(correct_a, correct_b))
+        _both_correct = sum(a and b for a, b in zip(correct_a, correct_b))
         a_correct_b_wrong = sum(a and not b for a, b in zip(correct_a, correct_b))
         a_wrong_b_correct = sum(not a and b for a, b in zip(correct_a, correct_b))
-        both_wrong = sum(not a and not b for a, b in zip(correct_a, correct_b))
+        _both_wrong = sum(not a and not b for a, b in zip(correct_a, correct_b))
 
         # McNemar's test focuses on discordant pairs
         discordant_pairs = a_correct_b_wrong + a_wrong_b_correct
@@ -458,7 +458,7 @@ class SentimentEvaluationFramework:
         # McNemar's test statistic with continuity correction
         statistic = ((abs(a_correct_b_wrong - a_wrong_b_correct) - 1) ** 2) / discordant_pairs
 
-        # Chi-square test with 1 degree of freedom
+        # Chi - square test with 1 degree of freedom
         p_value = 1 - stats.chi2.cdf(statistic, df=1)
 
         return McNemarResult(statistic=statistic, p_value=p_value, significant=p_value < alpha, alpha=alpha)
@@ -505,7 +505,7 @@ class SentimentEvaluationFramework:
         slice_definitions: Optional[Dict[str, callable]] = None,
     ) -> Dict[str, Dict[str, SliceMetrics]]:
         """
-        Evaluate models on specific data slices (emoji-heavy, booster-present, etc.).
+        Evaluate models on specific data slices (emoji - heavy, booster - present, etc.).
 
         Args:
             models: Dictionary of model_name -> model_instance
@@ -580,9 +580,9 @@ class SentimentEvaluationFramework:
         Apply multiple comparison correction to control false discovery rate.
 
         Args:
-            p_values: List of p-values from multiple tests
+            p_values: List of p - values from multiple tests
             method: Correction method ("benjamini_hochberg" or "bonferroni")
-            alpha: Family-wise error rate
+            alpha: Family - wise error rate
 
         Returns:
             List of boolean values indicating significance after correction
@@ -599,12 +599,12 @@ class SentimentEvaluationFramework:
             raise ValueError(f"Unknown correction method: {method}")
 
     def _benjamini_hochberg_correction(self, p_values: List[float], alpha: float) -> List[bool]:
-        """Apply Benjamini-Hochberg FDR correction."""
+        """Apply Benjamini - Hochberg FDR correction."""
         n = len(p_values)
         if n == 0:
             return []
 
-        # Sort p-values with original indices
+        # Sort p - values with original indices
         indexed_p_values = [(p, i) for i, p in enumerate(p_values)]
         indexed_p_values.sort()
 
@@ -629,10 +629,10 @@ class SentimentEvaluationFramework:
         for comment in comments:
             try:
                 if hasattr(model, "predict"):
-                    # Sklearn-style interface
+                    # Sklearn - style interface
                     pred = model.predict([comment])[0]
                 elif hasattr(model, "polarity_scores"):
-                    # VADER-style interface
+                    # VADER - style interface
                     scores = model.polarity_scores(comment)
                     compound = scores["compound"]
                     if compound >= 0.05:
@@ -677,7 +677,7 @@ class SentimentEvaluationFramework:
         f1 = f1_score(true_labels, predictions, average="macro", zero_division=0)
         macro_f1 = f1  # Same as f1 with macro averaging
 
-        # Per-class metrics
+        # Per - class metrics
         class_report = classification_report(true_labels, predictions, output_dict=True, zero_division=0)
         class_metrics = {}
 
@@ -686,7 +686,7 @@ class SentimentEvaluationFramework:
                 class_metrics[label] = ClassMetrics(
                     precision=metrics["precision"],
                     recall=metrics["recall"],
-                    f1_score=metrics["f1-score"],
+                    f1_score=metrics["f1 - score"],
                     support=int(metrics["support"]),
                 )
 
@@ -794,7 +794,7 @@ class SentimentEvaluationFramework:
             "short_comments": is_short_comment,
         }
 
-    # ===== TRANSFORMER-READY DATA PREPARATION =====
+    # ===== TRANSFORMER - READY DATA PREPARATION =====
 
     def prepare_transformer_dataset(
         self,
@@ -805,7 +805,7 @@ class SentimentEvaluationFramework:
         use_unique_comments: bool = True,
     ) -> Optional["MLDataset"]:
         """
-        Prepare transformer-ready dataset with proper preprocessing.
+        Prepare transformer - ready dataset with proper preprocessing.
 
         Args:
             comments: List of comment texts
@@ -825,7 +825,7 @@ class SentimentEvaluationFramework:
             # Use default transformer config if not provided
             if transformer_config is None:
                 transformer_config = TransformerConfig(
-                    model_name="distilbert-base-uncased",
+                    model_name="distilbert - base - uncased",
                     max_length=512,
                     preserve_music_slang=True,
                     normalize_emoji=False,
@@ -864,7 +864,7 @@ class SentimentEvaluationFramework:
                     # Create unique hash
                     import hashlib
 
-                    unique_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()[:16]
+                    unique_hash = hashlib.sha256(normalized_text.encode("utf - 8")).hexdigest()[:16]
 
                     if unique_hash in seen_hashes:
                         continue
@@ -931,7 +931,7 @@ class SentimentEvaluationFramework:
         random_seed: int = 42,
     ) -> "MLDataset":
         """
-        Create train/validation/test splits for transformer training.
+        Create train / validation / test splits for transformer training.
 
         Args:
             dataset: ML dataset to split
@@ -974,14 +974,14 @@ class SentimentEvaluationFramework:
                 video_ids = list(video_groups.keys())
                 np.random.shuffle(video_ids)
 
-                # Split videos into train/val/test
+                # Split videos into train / val / test
                 n_videos = len(video_ids)
                 train_end = int(n_videos * train_ratio)
                 val_end = int(n_videos * (train_ratio + val_ratio))
 
                 train_videos = video_ids[:train_end]
                 val_videos = video_ids[train_end:val_end]
-                test_videos = video_ids[val_end:]
+                _test_videos = video_ids[val_end:]
 
                 # Assign splits
                 for comment in labeled_comments:
@@ -1029,7 +1029,7 @@ class SentimentEvaluationFramework:
         self, dataset: "MLDataset", output_dir: str = "transformer_data", format_type: str = "jsonl"
     ) -> Dict[str, str]:
         """
-        Export transformer-ready data in specified format.
+        Export transformer - ready data in specified format.
 
         Args:
             dataset: ML dataset to export
@@ -1070,7 +1070,7 @@ class SentimentEvaluationFramework:
                 if format_type == "jsonl":
                     import json
 
-                    with open(filepath, "w", encoding="utf-8") as f:
+                    with open(filepath, "w", encoding="utf - 8") as f:
                         for item in export_data:
                             f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
@@ -1116,7 +1116,7 @@ class SentimentEvaluationFramework:
         # Preserve music slang if requested
         if config.preserve_music_slang:
             # Don't lowercase music slang terms
-            music_slang = ["GOATED", "PERIODT", "SLAY", "FIRE", "SLAPS", "BANGER", "HITS DIFFERENT", "GOES HARD"]
+            _music_slang = ["GOATED", "PERIODT", "SLAY", "FIRE", "SLAPS", "BANGER", "HITS DIFFERENT", "GOES HARD"]
             # Simple preservation - more sophisticated version would use NER
             pass
 

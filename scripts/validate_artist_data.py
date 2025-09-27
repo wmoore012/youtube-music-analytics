@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 🎤 Artist Data Validation Tool
 =============================
 
 Validates that all expected artists appear in the database and notebooks.
-Works both locally (using .env) and in CI/CD (using config/expected_artists.json).
+Works both locally (using .env) and in CI / CD (using config / expected_artists.json).
 
 This ensures data consistency and prevents missing artist issues.
 """
@@ -17,12 +17,12 @@ from typing import Any, Dict, List, Set
 
 
 def load_expected_artists_from_config() -> Dict[str, Any]:
-    """Load expected artists from config file (for CI/CD)."""
-    config_path = Path("config/expected_artists.json")
+    """Load expected artists from config file (for CI / CD)."""
+    config_path = Path("config / expected_artists.json")
 
     if not config_path.exists():
         raise FileNotFoundError(
-            "config/expected_artists.json not found. " "This file is required for CI/CD validation."
+            "config / expected_artists.json not found. " "This file is required for CI / CD validation."
         )
 
     with open(config_path, "r") as f:
@@ -73,7 +73,7 @@ def get_expected_artists() -> Set[str]:
     except Exception as e:
         print(f"⚠️  Could not load from .env: {e}")
 
-    # Fall back to config file (CI/CD)
+    # Fall back to config file (CI / CD)
     try:
         config = load_expected_artists_from_config()
         config_artists = set(config["expected_artists"])
@@ -93,7 +93,7 @@ def get_database_artists() -> Set[str]:
         df = load_youtube_data()
         db_artists = set(df["artist_name"].unique())
 
-        # Filter out None/NaN values
+        # Filter out None / NaN values
         db_artists = {artist for artist in db_artists if artist and str(artist) != "nan"}
 
         return db_artists
@@ -148,7 +148,7 @@ def validate_artist_consistency() -> Dict[str, Any]:
         print(f"\n⚠️  Unexpected Artists ({len(results['unexpected_artists'])}):")
         for artist in results["unexpected_artists"]:
             print(f"   - {artist}")
-        print("\n💡 Fix: Update config/expected_artists.json or clean database")
+        print("\n💡 Fix: Update config / expected_artists.json or clean database")
 
     if results["validation_passed"]:
         print(f"\n🎉 VALIDATION PASSED!")
@@ -241,11 +241,11 @@ def update_config_from_env():
         config = {
             "expected_artists": sorted(list(env_artists)),
             "minimum_artists": len(env_artists),
-            "last_updated": "2025-09-15",
-            "description": "Expected artists configuration for CI/CD validation. Update this when adding/removing artists from .env",
+            "last_updated": "2025 - 09 - 15",
+            "description": "Expected artists configuration for CI / CD validation. Update this when adding / removing artists from .env",
         }
 
-        config_path = Path("config/expected_artists.json")
+        config_path = Path("config / expected_artists.json")
         config_path.parent.mkdir(exist_ok=True)
 
         with open(config_path, "w") as f:
@@ -268,8 +268,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Validate artist data consistency")
-    parser.add_argument("--update-config", action="store_true", help="Update config file from current .env")
-    parser.add_argument("--notebooks-only", action="store_true", help="Only validate notebook outputs")
+    parser.add_argument("--update - config", action="store_true", help="Update config file from current .env")
+    parser.add_argument("--notebooks - only", action="store_true", help="Only validate notebook outputs")
 
     args = parser.parse_args()
 
@@ -302,7 +302,7 @@ def main():
             print("❌ Artist data inconsistency")
         if not notebook_validation_passed:
             print("❌ Notebook output issues")
-        print("\n💡 Run with --update-config to sync config with .env")
+        print("\n💡 Run with --update - config to sync config with .env")
         sys.exit(1)
 
 

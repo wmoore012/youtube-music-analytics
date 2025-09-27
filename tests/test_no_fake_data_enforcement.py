@@ -3,9 +3,9 @@ TDD tests to enforce NO FAKE DATA policy.
 
 This module ensures that:
 1. All charts ONLY use real data from the database
-2. No fake/sample/generated data is ever used
+2. No fake / sample / generated data is ever used
 3. Charts fail gracefully when real data is missing
-4. CI/CD detects and prevents fake data usage
+4. CI / CD detects and prevents fake data usage
 """
 
 import inspect
@@ -56,7 +56,7 @@ class TestNoFakeDataEnforcement:
         """Test detection of fake data patterns that should never be used."""
 
         def is_fake_data(df):
-            """Detect if DataFrame contains fake/sample data."""
+            """Detect if DataFrame contains fake / sample data."""
             if df is None or df.empty:
                 return False, "Empty data"
 
@@ -114,7 +114,7 @@ class TestNoFakeDataEnforcement:
                     "view_count": [1000, 2000],  # Round numbers
                     "video_id": ["fake_id_123", "test_video"],  # Fake IDs
                     "title": ["Test Video", "Sample Song"],
-                    "published_at": ["2023-01-01", "2023-01-02"],
+                    "published_at": ["2023 - 01 - 01", "2023 - 01 - 02"],
                 }
             )
 
@@ -210,7 +210,7 @@ class TestNoFakeDataEnforcement:
             # Check for minimum data quality indicators
             quality_checks = []
 
-            # Must have reasonable number of rows (not just 1-2 test rows)
+            # Must have reasonable number of rows (not just 1 - 2 test rows)
             if len(df) < 3:
                 quality_checks.append("Too few rows (likely test data)")
 
@@ -227,7 +227,7 @@ class TestNoFakeDataEnforcement:
             if "video_id" in df.columns:
                 video_ids = df["video_id"].dropna().astype(str)
                 # Real YouTube IDs are 11 characters, alphanumeric
-                invalid_ids = video_ids[~video_ids.str.match(r"^[A-Za-z0-9_-]{11}$")]
+                invalid_ids = video_ids[~video_ids.str.match(r"^[A - Za - z0 - 9_-]{11}$")]
                 if len(invalid_ids) > 0:
                     quality_checks.append(f"Invalid video IDs detected: {invalid_ids.tolist()[:3]}")
 
@@ -247,10 +247,10 @@ class TestNoFakeDataEnforcement:
             assert is_valid, f"Real data should pass validation: {message}"
 
     def test_ci_cd_fake_data_detection(self):
-        """Test CI/CD system can detect fake data usage."""
+        """Test CI / CD system can detect fake data usage."""
 
         def ci_cd_data_audit():
-            """Audit data sources for CI/CD pipeline."""
+            """Audit data sources for CI / CD pipeline."""
 
             audit_results = {
                 "database_accessible": False,
@@ -306,21 +306,21 @@ class TestNoFakeDataEnforcement:
                     audit_results["data_quality_score"] = quality_score
 
             except Exception as e:
-                print(f"CI/CD audit error: {e}")
+                print(f"CI / CD audit error: {e}")
 
             return audit_results
 
         # Run audit
         audit = ci_cd_data_audit()
 
-        # CI/CD requirements
-        assert audit["database_accessible"], "CI/CD requires database access"
+        # CI / CD requirements
+        assert audit["database_accessible"], "CI / CD requires database access"
 
         if audit["real_data_available"]:
-            assert not audit["fake_data_detected"], "CI/CD must not detect fake data"
+            assert not audit["fake_data_detected"], "CI / CD must not detect fake data"
             assert audit["data_quality_score"] >= 0.6, f"Data quality too low: {audit['data_quality_score']}"
 
-        print(f"✅ CI/CD audit passed: {audit}")
+        print(f"✅ CI / CD audit passed: {audit}")
 
 
 class TestRealDataOnlyCharts:

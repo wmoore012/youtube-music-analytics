@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Check that notebook outputs are properly stripped.
 
@@ -17,23 +17,23 @@ def check_notebook_outputs(notebook_path: Path) -> List[str]:
     violations = []
 
     try:
-        with open(notebook_path, "r", encoding="utf-8") as f:
+        with open(notebook_path, "r", encoding="utf - 8") as f:
             notebook = json.load(f)
 
         for i, cell in enumerate(notebook.get("cells", [])):
             if cell.get("cell_type") == "code":
                 # Check for outputs
                 if cell.get("outputs"):
-                    violations.append(f"Cell {i+1} has outputs")
+                    violations.append(f"Cell {i + 1} has outputs")
 
                 # Check for execution count
                 if cell.get("execution_count") is not None:
-                    violations.append(f"Cell {i+1} has execution_count: {cell['execution_count']}")
+                    violations.append(f"Cell {i + 1} has execution_count: {cell['execution_count']}")
 
                 # Check for metadata that indicates execution
                 metadata = cell.get("metadata", {})
                 if metadata.get("execution"):
-                    violations.append(f"Cell {i+1} has execution metadata")
+                    violations.append(f"Cell {i + 1} has execution metadata")
 
     except Exception as e:
         violations.append(f"Error reading notebook: {e}")
@@ -81,7 +81,7 @@ def main():
         print(f"\n⚠️  Found {len(all_violations)} output violations in {notebooks_with_outputs} notebooks")
         print("\n💡 To fix this, run:")
         print("   nbstripout notebooks/**/*.ipynb")
-        print("   # or install pre-commit hook:")
+        print("   # or install pre - commit hook:")
         print("   pip install nbstripout")
         print("   nbstripout --install")
         return 1

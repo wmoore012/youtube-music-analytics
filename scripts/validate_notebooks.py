@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Validate Jupyter notebooks for CI pipeline.
 
@@ -24,7 +24,7 @@ class NotebookValidator:
     def validate_notebook_json(self, notebook_path: Path) -> bool:
         """Validate that notebook is valid JSON."""
         try:
-            with open(notebook_path, "r", encoding="utf-8") as f:
+            with open(notebook_path, "r", encoding="utf - 8") as f:
                 json.load(f)
             return True
         except json.JSONDecodeError as e:
@@ -37,7 +37,7 @@ class NotebookValidator:
     def validate_notebook_structure(self, notebook_path: Path) -> bool:
         """Validate notebook has required structure."""
         try:
-            with open(notebook_path, "r", encoding="utf-8") as f:
+            with open(notebook_path, "r", encoding="utf - 8") as f:
                 notebook = json.load(f)
 
             # Check required fields
@@ -88,7 +88,7 @@ class NotebookValidator:
     def check_outputs_stripped(self, notebook_path: Path) -> bool:
         """Check that notebook outputs are stripped."""
         try:
-            with open(notebook_path, "r", encoding="utf-8") as f:
+            with open(notebook_path, "r", encoding="utf - 8") as f:
                 notebook = json.load(f)
 
             for i, cell in enumerate(notebook["cells"]):

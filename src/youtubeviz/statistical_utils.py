@@ -1,5 +1,5 @@
 """
-Statistical utilities for data-science grade charts with uncertainty handling.
+Statistical utilities for data - science grade charts with uncertainty handling.
 Implements Wilson confidence intervals, Bayesian shrinkage, and LOESS smoothing.
 """
 
@@ -10,7 +10,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-# Auto-install scipy if needed
+# Auto - install scipy if needed
 try:
     from .auto_install import ensure
 
@@ -97,7 +97,7 @@ def calculate_wilson_intervals(
 
         return lower, upper
 
-    # Z-score for confidence level
+    # Z - score for confidence level
     z = stats.norm.ppf(1 - (1 - confidence) / 2)
     z_squared = z**2
 
@@ -126,8 +126,8 @@ def apply_bayesian_shrinkage(
     """
     Apply Bayesian shrinkage (empirical Bayes) to stabilize rates for small samples.
 
-    Uses beta-binomial conjugate prior to shrink individual artist rates toward
-    the overall roster mean. Critical for new artists with few comments/videos.
+    Uses beta - binomial conjugate prior to shrink individual artist rates toward
+    the overall roster mean. Critical for new artists with few comments / videos.
 
     Args:
         observed_rates: Series of observed rates (e.g., positive sentiment rate per artist)
@@ -198,7 +198,7 @@ def apply_loess_smoothing(
     Args:
         x: Independent variable (e.g., log views, time)
         y: Dependent variable (e.g., positive rate, engagement)
-        frac: Fraction of data used for each local regression (0.2-0.8)
+        frac: Fraction of data used for each local regression (0.2 - 0.8)
         it: Number of robustifying iterations
         return_confidence_bands: Whether to calculate confidence bands
         confidence: Confidence level for bands
@@ -311,7 +311,7 @@ def standardize_residuals(residuals: np.ndarray) -> np.ndarray:
         residuals: Array of residuals
 
     Returns:
-        Standardized residuals (z-scores)
+        Standardized residuals (z - scores)
     """
     residuals = np.asarray(residuals)
     return (residuals - np.mean(residuals)) / np.std(residuals)

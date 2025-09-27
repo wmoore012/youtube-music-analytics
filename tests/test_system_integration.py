@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 System Integration Tests
 
@@ -42,7 +42,7 @@ class TestSentimentAnalysisIntegration:
         assert labeled_count > 0, "At least some texts should be labeled"
 
     def test_music_slang_detection(self):
-        """Test detection of music-specific slang."""
+        """Test detection of music - specific slang."""
         analyzer = WeakSupervisionSentimentAnalyzer()
 
         music_slang = ["this is fire", "absolute banger", "this slaps", "goes hard"]

@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Unit tests for music video normalization (TDD for null reduction).
-Uses an in-memory sqlite engine via SQLAlchemy for fast cycles.
+Uses an in - memory sqlite engine via SQLAlchemy for fast cycles.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from youtubeviz.normalization import build_normalized_rows, upsert_normalized
 
 class TestNormalization(unittest.TestCase):
     def setUp(self) -> None:
-        self.engine: Engine = create_engine("sqlite+pysqlite:///:memory:")
+        self.engine: Engine = create_engine("sqlite + pysqlite:///:memory:")
         with self.engine.begin() as conn:
             conn.execute(
                 text(
@@ -105,7 +105,7 @@ class TestNormalization(unittest.TestCase):
         count = upsert_normalized(self.engine, rows)
         self.assertEqual(count, 1)
 
-        # Validate non-nulls in required columns
+        # Validate non - nulls in required columns
         df = pd.read_sql("SELECT * FROM music_videos_normalized", self.engine)
         self.assertEqual(len(df), 1)
         row = df.iloc[0]

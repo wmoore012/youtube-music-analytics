@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Complete Plugin Development Example
 
 This example demonstrates the full workflow of creating, testing, validating,
-and using a custom music analytics plugin with the open-source framework.
+and using a custom music analytics plugin with the open - source framework.
 
 Run this example to see:
 1. Plugin creation and registration
 2. Security validation
-3. Input/output validation
+3. Input / output validation
 4. Real data processing
 5. Results export and analysis
 """
@@ -40,7 +40,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
     - Comprehensive metadata
     - Robust input validation
     - Configurable parameters
-    - Security-conscious implementation
+    - Security - conscious implementation
     - Clear output schema
     """
 
@@ -84,13 +84,13 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
                 "prediction_confidence": "float64",
             },
             license="MIT",
-            repository_url="https://github.com/music-analytics/virality-plugin",
-            documentation_url="https://music-analytics.github.io/virality-plugin",
+            repository_url="https://github.com / music - analytics / virality - plugin",
+            documentation_url="https://music - analytics.github.io / virality - plugin",
             tags=["virality", "trending", "music", "prediction", "engagement"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
-        """Comprehensive input validation with music-specific checks."""
+        """Comprehensive input validation with music - specific checks."""
         result = ValidationResult(is_valid=True, errors=[], warnings=[], checked_items=0, passed_items=0)
 
         # Check required columns
@@ -194,7 +194,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
                 # 1. Velocity Component (views per hour)
                 if time_since_pub > 0:
                     velocity = view_count / time_since_pub
-                    velocity_component = min(velocity / 10000, 1.0)  # Normalize to 10k views/hour
+                    velocity_component = min(velocity / 10000, 1.0)  # Normalize to 10k views / hour
                 else:
                     velocity_component = 0.0
 
@@ -296,7 +296,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
 
         min_views = self.config.get("min_views_threshold", 10000)
         if not isinstance(min_views, int) or min_views < 0:
-            raise ValueError("min_views_threshold must be a non-negative integer")
+            raise ValueError("min_views_threshold must be a non - negative integer")
 
 
 def create_sample_music_data() -> pd.DataFrame:
@@ -341,7 +341,7 @@ def create_sample_music_data() -> pd.DataFrame:
             {
                 "video_id": f"{artist.replace(' ', '_')}_{video_type.replace(' ', '_')}_{i:03d}",
                 "artist_name": artist,
-                "video_title": f"{artist} - {video_type} {i+1}",
+                "video_title": f"{artist} - {video_type} {i + 1}",
                 "view_count": base_views,
                 "like_count": like_count,
                 "comment_count": comment_count,
@@ -364,7 +364,7 @@ def demonstrate_complete_workflow():
 
     plugin = MusicViralityPlugin()
     validator = PluginValidator()
-    security_checker = AdvancedSecurityChecker()
+    _security_checker = AdvancedSecurityChecker()
 
     # Validate plugin structure
     structure_result = validator.validate_plugin_structure(plugin)
@@ -517,7 +517,7 @@ def demonstrate_complete_workflow():
         records_per_second = len(results) / max(duration, 0.001)
 
         print(f"Execution time: {duration:.3f} seconds")
-        print(f"Processing rate: {records_per_second:.1f} records/second")
+        print(f"Processing rate: {records_per_second:.1f} records / second")
         print(f"Memory efficiency: {len(results) * 8 / 1024:.1f} KB output")
         print(f"Success rate: {'100%' if execution_metadata.get('success', False) else 'Failed'}")
 

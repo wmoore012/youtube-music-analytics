@@ -5,7 +5,7 @@ from src.youtubeviz.storytelling import quick_takeaways, story_block
 
 class DummyFig:
     def to_html(self, include_plotlyjs="cdn", full_html=False):  # pragma: no cover - trivial
-        return "<div id='dummy-fig'>FIG</div>"
+        return "<div id='dummy - fig'>FIG</div>"
 
 
 def test_quick_takeaways_various():
@@ -35,4 +35,4 @@ def test_story_block_returns_html_for_testing():
     # Ensure bullets rendered as <li>
     assert len(re.findall(r"<li>.*?</li>", html)) >= 2
     # Figure HTML embedded
-    assert "dummy-fig" in html
+    assert "dummy - fig" in html

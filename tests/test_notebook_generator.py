@@ -1,8 +1,8 @@
 """
-Tests for production-ready notebook template system.
+Tests for production - ready notebook template system.
 
 This module tests the NotebookTemplateManager to ensure it generates
-notebooks with correct chart counts and bulletproof CI/CD validation.
+notebooks with correct chart counts and bulletproof CI / CD validation.
 """
 
 import json
@@ -88,7 +88,7 @@ class TestNotebookTemplateManager:
         ]
         assert len(chart_markdown_cells) == 20
 
-        # Check that chart IDs are sequential 1-20
+        # Check that chart IDs are sequential 1 - 20
         chart_numbers = []
         for cell in chart_markdown_cells:
             source = "".join(cell["source"])
@@ -106,14 +106,14 @@ class TestNotebookTemplateManager:
 
         source_code = "".join(validation_cell["source"])
 
-        # Check that it loops through 1-21 (range(1, 21))
+        # Check that it loops through 1 - 21 (range(1, 21))
         assert "range(1, 21)" in source_code
 
         # Check that it reports correct totals
         assert "/20" in source_code
 
-        # Check that it has CI/CD validation
-        assert "CI/CD" in source_code
+        # Check that it has CI / CD validation
+        assert "CI / CD" in source_code
         assert "success_rate" in source_code
 
     def test_header_cell_shows_correct_chart_count(self):
@@ -124,7 +124,7 @@ class TestNotebookTemplateManager:
         source = "".join(header_cell["source"])
 
         # Should mention 20 charts
-        assert "20 Data-Science Grade Charts" in source
+        assert "20 Data - Science Grade Charts" in source
         assert "Total Charts**: 20" in source
 
     def test_imports_cell_includes_all_modules(self):
@@ -197,7 +197,7 @@ class TestNotebookTemplateManager:
             manager.save_notebook(notebook, temp_path)
 
             # Load and verify
-            with open(temp_path, "r", encoding="utf-8") as f:
+            with open(temp_path, "r", encoding="utf - 8") as f:
                 loaded_notebook = json.load(f)
 
             assert loaded_notebook == notebook
@@ -219,7 +219,7 @@ class TestNotebookTemplateManager:
             assert os.path.exists(temp_path)
 
             # Load and verify structure
-            with open(temp_path, "r", encoding="utf-8") as f:
+            with open(temp_path, "r", encoding="utf - 8") as f:
                 notebook = json.load(f)
 
             # Should have all 20 charts
@@ -235,10 +235,10 @@ class TestNotebookTemplateManager:
 
 
 class TestNotebookValidation:
-    """Test notebook validation and CI/CD integration."""
+    """Test notebook validation and CI / CD integration."""
 
     def test_validation_cell_ci_cd_thresholds(self):
-        """Test that validation cell implements correct CI/CD thresholds."""
+        """Test that validation cell implements correct CI / CD thresholds."""
         manager = NotebookTemplateManager(total_charts=20)
         validation_cell = manager._create_validation_cell(20)
 
@@ -247,12 +247,12 @@ class TestNotebookValidation:
         # Check for success rate calculation
         assert "success_rate = len(real_charts)" in source_code
 
-        # Check for CI/CD thresholds
+        # Check for CI / CD thresholds
         assert ">= 0.8" in source_code  # 80% threshold for PASS
         assert ">= 0.6" in source_code  # 60% threshold for WARNING
-        assert "CI/CD: PASS" in source_code
-        assert "CI/CD: WARNING" in source_code
-        assert "CI/CD: FAIL" in source_code
+        assert "CI / CD: PASS" in source_code
+        assert "CI / CD: WARNING" in source_code
+        assert "CI / CD: FAIL" in source_code
 
     def test_notebook_includes_chart_counting_logic(self):
         """Test that notebook includes proper chart counting logic."""

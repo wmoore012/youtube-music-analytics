@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Artist Alias Manager — human-friendly CLI
+Artist Alias Manager — human - friendly CLI
 
 Key features:
-- Interactive picker (optional) and non-interactive flags for automation
-- Safe plan/preview with --dry-run and --yes to auto-confirm
-- Explicit commands: ensure-table, list, add, export
+- Interactive picker (optional) and non - interactive flags for automation
+- Safe plan / preview with --dry - run and --yes to auto - confirm
+- Explicit commands: ensure - table, list, add, export
 - Atomic JSON writes for durability
 """
 
@@ -51,7 +51,7 @@ def _load_env() -> None:
 def get_engine_from_env(schema: Optional[str]) -> Engine:
     _load_env()
     schema_env = (schema or os.getenv("ALIAS_MANAGER_SCHEMA") or os.getenv("DB_SCHEMA") or "PUBLIC").upper()
-    # get_engine() requires keyword-only args; pass schema explicitly
+    # get_engine() requires keyword - only args; pass schema explicitly
     return _get_engine()
 
 
@@ -115,7 +115,7 @@ def fetch_candidates(engine: Engine, limit: Optional[int] = None) -> List[str]:
     return items[: limit or len(items)]
 
 
-# --- Back-compat shims for older tests ----------------------------------
+# --- Back - compat shims for older tests ----------------------------------
 def fetch_artists_and_channels(engine: Engine, limit: Optional[int] = None) -> List[tuple[str, int]]:
     """Compat: return List[(name, count)] for tests that expect counts."""
     rows: Dict[str, int] = {}
@@ -143,7 +143,7 @@ def upsert_aliases(engine: Engine, canonical: str, aliases: List[str]) -> int:
     with engine.begin() as conn:
         insp = sa_inspect(engine)
         cols = {c["name"] for c in insp.get_columns("artist_aliases")}
-        if "canonical_name" in cols:  # natural-key schema (preferred)
+        if "canonical_name" in cols:  # natural - key schema (preferred)
             if is_sqlite:
                 conn.execute(
                     text(
@@ -279,9 +279,9 @@ def export_mapping(engine: Engine, out_path: Path) -> int:
 
     # Atomic + durable write
     tmp = out_path.with_suffix(out_path.suffix + ".tmp")
-    tmp.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), encoding="utf - 8")
     os.replace(tmp, out_path)
-    try:  # best-effort directory fsync
+    try:  # best - effort directory fsync
         dir_fd = os.open(str(out_path.parent), os.O_RDONLY)
         try:
             os.fsync(dir_fd)
@@ -292,13 +292,13 @@ def export_mapping(engine: Engine, out_path: Path) -> int:
     return len(mapping)
 
 
-# Back-compat alias for tests
+# Back - compat alias for tests
 def write_aliases_json(engine: Engine, out_path: Path) -> int:
     return export_mapping(engine, out_path)
 
 
 # --- Commands -------------------------------------------------------------
-@app.command("ensure-table")
+@app.command("ensure - table")
 def cmd_ensure_table(schema: Optional[str] = typer.Option(None, help="DB schema PUBLIC|PRIVATE")):
     """Create the artist_aliases table if missing."""
     eng = get_engine_from_env(schema)
@@ -312,7 +312,7 @@ def cmd_list(
     only_new: bool = typer.Option(False, help="Hide names already marked canonical"),
     schema: Optional[str] = typer.Option(None, help="DB schema PUBLIC|PRIVATE"),
 ):
-    """List candidate artist/channel names from your DB."""
+    """List candidate artist / channel names from your DB."""
     eng = get_engine_from_env(schema)
     items = fetch_candidates(eng, limit=limit)
     if only_new:
@@ -330,7 +330,7 @@ def cmd_add(
     canonical: str = typer.Option(..., "--canonical", "-c", help="Canonical artist name"),
     alias: List[str] = typer.Option([], "--alias", "-a", help="Alias (repeatable)"),
     interactive: bool = typer.Option(False, "--interactive", "-i", help="Pick from a menu"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Show plan; do not write"),
+    dry_run: bool = typer.Option(False, "--dry - run", help="Show plan; do not write"),
     yes: bool = typer.Option(False, "--yes", "-y", help="Apply without confirmation"),
     schema: Optional[str] = typer.Option(None, help="DB schema PUBLIC|PRIVATE"),
 ):
@@ -351,7 +351,7 @@ def cmd_add(
         ).execute()
         aliases += picked
 
-    # de-dupe + present plan
+    # de - dupe + present plan
     aliases = sorted({a.strip() for a in aliases if a.strip() and a.lower() != canonical.lower()})
     if not aliases:
         typer.echo("No aliases to add.")
@@ -363,7 +363,7 @@ def cmd_add(
         typer.echo(f"  {a}  →  {canonical}")
 
     if dry_run:
-        typer.echo("\n(dry-run) nothing written.")
+        typer.echo("\n(dry - run) nothing written.")
         raise typer.Exit(code=0)
 
     if not yes:
@@ -377,7 +377,7 @@ def cmd_add(
 
 @app.command("export")
 def cmd_export(
-    output: Path = typer.Option(Path("config/artist_aliases.json"), "--output", "-o", help="Output JSON path"),
+    output: Path = typer.Option(Path("config / artist_aliases.json"), "--output", "-o", help="Output JSON path"),
     schema: Optional[str] = typer.Option(None, help="DB schema PUBLIC|PRIVATE"),
 ):
     """Write alias→canonical JSON mapping."""

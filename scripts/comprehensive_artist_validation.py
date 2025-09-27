@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 🎤 COMPREHENSIVE ARTIST VALIDATION
 =================================
@@ -87,10 +87,10 @@ def check_csv_tables():
     print("=" * 40)
 
     csv_files = [
-        "music_analysis_tables/normalized_music_videos.csv",
-        "music_analysis_tables/artist_music_summary.csv",
-        "time_series_tracking/complete_time_series.csv",
-        "time_series_tracking/artist_performance_over_time.csv",
+        "music_analysis_tables / normalized_music_videos.csv",
+        "music_analysis_tables / artist_music_summary.csv",
+        "time_series_tracking / complete_time_series.csv",
+        "time_series_tracking / artist_performance_over_time.csv",
     ]
 
     all_passed = True
@@ -296,7 +296,7 @@ def main():
         return 0
     else:
         print(f"\n🚫 VALIDATION FAILED!")
-        print("❌ Some tables/charts are missing artists")
+        print("❌ Some tables / charts are missing artists")
         print("💡 Run ETL to refresh data or check configuration")
         return 1
 

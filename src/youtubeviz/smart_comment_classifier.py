@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Smart Comment Classification Assistant
 
-Uses machine learning to suggest positive/negative classifications based on
+Uses machine learning to suggest positive / negative classifications based on
 your existing classifications. Learns from your decisions and gets better over time.
 """
 
@@ -71,7 +71,7 @@ class CommentClassificationDB:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 comment_text TEXT NOT NULL,
                 classification TEXT NOT NULL,  -- 'positive' or 'negative'
-                confidence REAL,  -- Your confidence in the classification (0-1)
+                confidence REAL,  -- Your confidence in the classification (0 - 1)
                 source TEXT,  -- 'manual', 'imported', 'enhanced_dataset'
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 notes TEXT
@@ -128,7 +128,7 @@ class CommentClassificationDB:
         return df
 
     def get_training_data(self, min_confidence: float = 0.7) -> Tuple[List[str], List[str]]:
-        """Get high-confidence classifications for training."""
+        """Get high - confidence classifications for training."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -182,7 +182,7 @@ class CommentClassificationDB:
 
 
 class SmartCommentClassifier:
-    """ML-powered comment classifier that learns from your classifications."""
+    """ML - powered comment classifier that learns from your classifications."""
 
     def __init__(self, db_path: str = "comment_classifications.db", use_transformer: bool = False):
         self.db = CommentClassificationDB(db_path)
@@ -217,8 +217,8 @@ class SmartCommentClassifier:
         try:
             from youtubeviz.text_processing_helpers import create_music_text_processor
 
-            # Create music-aware text processor
-            self.transformer_processor = create_music_text_processor(model_name="distilbert-base-uncased")
+            # Create music - aware text processor
+            self.transformer_processor = create_music_text_processor(model_name="distilbert - base - uncased")
 
             print("✅ Transformer text processor initialized")
 
@@ -235,7 +235,7 @@ class SmartCommentClassifier:
             imported_count = 0
 
             for entry in dataset.entries:
-                # Convert sentiment labels to positive/negative
+                # Convert sentiment labels to positive / negative
                 if entry.sentiment.value == "positive":
                     classification = "positive"
                 elif entry.sentiment.value == "negative":
@@ -264,11 +264,12 @@ class SmartCommentClassifier:
         texts, labels = self.db.get_training_data(min_confidence)
 
         if len(texts) < 10:
-            print(f"⚠️  Need at least 10 high-confidence classifications to train. Have {len(texts)}.")
+            print(f"⚠️  Need at least 10 high - confidence classifications to train. Have {len(texts)}.")
             return False
 
         print(
-            f"🧠 Training {'transformer' if self.use_transformer else 'traditional'} model on {len(texts)} classifications..."
+            f"🧠 Training {'transformer' if self.use_transformer else 'traditional'} model on {
+                len(texts)} classifications..."
         )
 
         if self.use_transformer and self.transformer_processor:
@@ -277,7 +278,7 @@ class SmartCommentClassifier:
             return self._train_traditional_model(texts, labels)
 
     def _train_traditional_model(self, texts: List[str], labels: List[str]) -> bool:
-        """Train traditional TF-IDF + Logistic Regression model."""
+        """Train traditional TF - IDF + Logistic Regression model."""
         # Vectorize the text
         X = self.vectorizer.fit_transform(texts)
         y = np.array(labels)
@@ -298,16 +299,16 @@ class SmartCommentClassifier:
         return True
 
     def _train_transformer_model(self, texts: List[str], labels: List[str]) -> bool:
-        """Train transformer-based model with music-aware preprocessing."""
+        """Train transformer - based model with music - aware preprocessing."""
         try:
-            # Preprocess texts with music-aware processing
+            # Preprocess texts with music - aware processing
             processed_texts = []
             for text in texts:
                 processed = self.transformer_processor.preprocess_text(text)
                 processed_texts.append(processed)
 
-            # For now, use traditional model with transformer-preprocessed text
-            # In a full implementation, this would use actual transformer fine-tuning
+            # For now, use traditional model with transformer - preprocessed text
+            # In a full implementation, this would use actual transformer fine - tuning
             X = self.vectorizer.fit_transform(processed_texts)
             y = np.array(labels)
 
@@ -319,7 +320,7 @@ class SmartCommentClassifier:
             y_pred = self.model.predict(X)
             accuracy = accuracy_score(y, y_pred)
 
-            print(f"✅ Transformer-preprocessed model trained! Training accuracy: {accuracy:.3f}")
+            print(f"✅ Transformer - preprocessed model trained! Training accuracy: {accuracy:.3f}")
             print(f"   Music slang preservation: {self.transformer_processor.config.slang_preservation.value}")
             print(f"   Emoji handling: {self.transformer_processor.config.emoji_mode.value}")
 
@@ -437,7 +438,7 @@ class InteractiveClassifier:
         # Ask how many to classify
         while True:
             try:
-                target_count = input(f"\n🎯 How many comments would you like to classify? (1-100): ").strip()
+                target_count = input(f"\n🎯 How many comments would you like to classify? (1 - 100): ").strip()
                 if not target_count:
                     target_count = 10
                 else:
@@ -461,7 +462,7 @@ class InteractiveClassifier:
 
             if not comments:
                 print("❌ No unique unclassified comments available.")
-                print("Either all comments are classified/allocated or database is empty.")
+                print("Either all comments are classified / allocated or database is empty.")
                 return []
 
             print(f"✅ Allocated {len(comments)} UNIQUE comments for classification")
@@ -501,7 +502,7 @@ class InteractiveClassifier:
         # Get confidence
         while True:
             try:
-                conf_input = input("👤 Your confidence (1-5, or press Enter for 5): ").strip()
+                conf_input = input("👤 Your confidence (1 - 5, or press Enter for 5): ").strip()
                 if not conf_input:
                     confidence = 1.0
                 else:

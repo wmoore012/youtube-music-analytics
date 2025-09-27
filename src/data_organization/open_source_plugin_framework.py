@@ -1,5 +1,5 @@
 """
-Open-source plugin framework for music analytics scoring algorithms.
+Open - source plugin framework for music analytics scoring algorithms.
 
 This module provides a framework for music data researchers to create their own
 scoring algorithms for YouTube music analytics. It includes security validation,
@@ -163,7 +163,7 @@ class PluginMetadata:
 
 class OpenSourceScoringPlugin(ABC):
     """
-    Abstract base class for open-source music analytics scoring plugins.
+    Abstract base class for open - source music analytics scoring plugins.
 
     This class provides the interface that all music analytics plugins must implement.
     It's designed to be extended by researchers and developers in the music data community.
@@ -268,7 +268,7 @@ class OpenSourceScoringPlugin(ABC):
             output_path: Path to save results (optional)
         """
         if output_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y % m%d_ % H%M % S")
             output_path = f"{self.get_name()}_results_{timestamp}.{format}"
 
         if format.lower() == "csv":
@@ -444,7 +444,7 @@ class PluginSecurityChecker:
     Security validation for music analytics plugins.
 
     This class ensures that plugins don't contain malicious code and
-    follow security best practices for the open-source community.
+    follow security best practices for the open - source community.
     """
 
     def __init__(self):

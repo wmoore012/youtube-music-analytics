@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConfigurationError(Exception):
-    """Base exception for configuration-related errors."""
+    """Base exception for configuration - related errors."""
 
     pass
 
@@ -87,7 +87,7 @@ class ConfigChange:
 
 @dataclass
 class EnvironmentConfig:
-    """Environment-specific configuration settings."""
+    """Environment - specific configuration settings."""
 
     environment: str = "development"
     database_url: str = ""
@@ -148,7 +148,7 @@ class EnvironmentConfig:
         else:
             result.passed_items += 1
 
-        # Validate enabled/disabled fields
+        # Validate enabled / disabled fields
         valid_modes = ["enabled", "disabled"]
 
         if self.debug_mode not in valid_modes:
@@ -594,7 +594,7 @@ class ConfigurationManager:
 
 
 def _parse_enabled_disabled(value: str) -> str:
-    """Parse string value to enabled/disabled."""
+    """Parse string value to enabled / disabled."""
     if value.lower() in ("true", "1", "yes", "on", "enabled"):
         return "enabled"
     elif value.lower() in ("false", "0", "no", "off", "disabled"):
@@ -617,5 +617,5 @@ def _parse_parameter_value(value: str) -> Union[str, int, float]:
     except ValueError:
         pass
 
-    # Return as string (including enabled/disabled values)
+    # Return as string (including enabled / disabled values)
     return value

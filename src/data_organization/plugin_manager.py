@@ -165,7 +165,7 @@ class PluginManager:
         except ImportError as e:
             raise PluginLoadingError(f"Failed to import plugin module {module_path}: {e}")
         except (PluginLoadingError, PluginValidationError):
-            raise  # Re-raise these specific exceptions
+            raise  # Re - raise these specific exceptions
         except Exception as e:
             raise PluginLoadingError(f"Failed to load plugin {plugin_class_path}: {e}")
 

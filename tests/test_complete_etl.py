@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Test Suite for Complete ETL System
 
@@ -34,16 +34,16 @@ class TestExtractPhase:
     def test_extract_config_creation(self):
         """Test ExtractConfig creation with various parameters."""
         config = ExtractConfig(
-            youtube_playlists=["PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q"],
+            youtube_playlists=["PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q"],
             spotify_playlists=["37i9dQZF1DX..."],
-            tidal_playlists=["12345678-1234-1234-1234-123456789012"],
+            tidal_playlists=["12345678 - 1234 - 1234 - 1234 - 123456789012"],
             max_retries=5,
             retry_delay=10,
         )
 
-        assert config.youtube_playlists == ["PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q"]
+        assert config.youtube_playlists == ["PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q"]
         assert config.spotify_playlists == ["37i9dQZF1DX..."]
-        assert config.tidal_playlists == ["12345678-1234-1234-1234-123456789012"]
+        assert config.tidal_playlists == ["12345678 - 1234 - 1234 - 1234 - 123456789012"]
         assert config.max_retries == 5
         assert config.retry_delay == 10
 
@@ -162,7 +162,7 @@ class TestTransformPhase:
         transformer = CompleteTransformer(config)
 
         assert transformer.config == config
-        # Engine is lazy-loaded, so it should be None initially
+        # Engine is lazy - loaded, so it should be None initially
         assert transformer.engine is None
 
     @patch("web.etl_helpers.get_engine")
@@ -551,7 +551,7 @@ class TestNullValueHandling:
         """Test handling of null playlist IDs."""
         config = ExtractConfig(youtube_playlists=[None, ""])
 
-        # Should filter out null/empty playlist IDs
+        # Should filter out null / empty playlist IDs
         assert len(config.youtube_playlists) == 2
 
     def test_null_track_data_handling(self):

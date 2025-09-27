@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Data Quality Validation Framework
 
@@ -112,9 +112,10 @@ class DataQualityValidator:
         # YouTube video IDs contain only alphanumeric characters, hyphens, and underscores
         import re
 
-        if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
+        if not re.match(r"^[a - zA - Z0 - 9_-]{11}$", video_id):
             raise ValidationError(
-                f"YouTube video ID contains invalid characters: '{video_id}'. Must contain only letters, numbers, hyphens, and underscores",
+                f"YouTube video ID contains invalid characters: '{
+                    video_id}'. Must contain only letters, numbers, hyphens, and underscores",
                 field="video_id",
                 value=video_id,
                 context=context,
@@ -154,7 +155,7 @@ class DataQualityValidator:
             # Check if value is numeric
             if not isinstance(value, (int, float)) or value < 0:
                 raise DataQualityError(
-                    f"Metrics field '{field}' must be a non-negative number, got {type(value).__name__}: {value}",
+                    f"Metrics field '{field}' must be a non - negative number, got {type(value).__name__}: {value}",
                     column=field,
                     context=context,
                     severity=ErrorSeverity.HIGH,
@@ -177,7 +178,7 @@ class DataQualityValidator:
         if view_count > 0 and comment_count > view_count * 0.1:  # More than 10% comment rate is suspicious
             self.logger.warning(
                 f"Unusually high comment rate for video {video_id}: {comment_count:,} comments on {view_count:,} views "
-                f"({comment_count/view_count*100:.1f}%)"
+                f"({comment_count / view_count * 100:.1f}%)"
             )
 
     def validate_database_schema(self, table_name: str, expected_columns: List[str]) -> None:

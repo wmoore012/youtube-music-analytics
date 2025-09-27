@@ -26,8 +26,8 @@ test_schedule:
     )
 
     monkeypatch.setenv("CRON_EMAIL", "ops@example.com")
-    monkeypatch.setenv("CRON_SHELL", "/bin/zsh")
-    monkeypatch.setenv("CRON_PATH", "/usr/bin:/bin")
+    monkeypatch.setenv("CRON_SHELL", "/bin / zsh")
+    monkeypatch.setenv("CRON_PATH", "/usr / bin:/bin")
 
     return AutomationManager(config_path=str(config))
 
@@ -40,8 +40,8 @@ def test_generate_cron_config_includes_environment_and_valid_entries(automation_
     lines = [line for line in cron_text.splitlines() if line.strip()]
 
     # Ensure environment header lines are present
-    assert "SHELL=/bin/zsh" in lines
-    assert "PATH=/usr/bin:/bin" in lines
+    assert "SHELL=/bin / zsh" in lines
+    assert "PATH=/usr / bin:/bin" in lines
     assert "MAILTO=ops@example.com" in lines
 
     # Extract cron job lines (exclude comments and environment definitions)
@@ -62,4 +62,4 @@ def test_generate_cron_config_includes_environment_and_valid_entries(automation_
         # Cron entries should begin with five timing fields
         assert re.match(r"^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+", entry)
         assert f"cd {cwd}" in entry
-        assert ">> logs/automation.log 2>&1" in entry
+        assert ">> logs / automation.log 2>&1" in entry

@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Benchmark Database Storage
 
 Provides database storage for benchmark results alongside JSON files.
-Enables SQL queries, trend analysis, and better long-term storage.
+Enables SQL queries, trend analysis, and better long - term storage.
 """
 
 from dataclasses import asdict
@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 class BenchmarkDatabase:
     """Database storage for benchmark results."""
 
-    def __init__(self, db_path: str = "benchmark_results/benchmarks.db"):
+    def __init__(self, db_path: str = "benchmark_results / benchmarks.db"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
         self.init_database()

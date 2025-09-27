@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Environment Safety Checker - Repository Security Validation
 =========================================================
@@ -6,7 +6,7 @@ Environment Safety Checker - Repository Security Validation
 Ensures sensitive files (.env, credentials, etc.) are only committed to staging repository.
 Critical security check for preventing accidental exposure of secrets.
 
-Built by Grammy-nominated producer + M.S. Data Science student.
+Built by Grammy - nominated producer + M.S. Data Science student.
 """
 
 import json
@@ -21,7 +21,7 @@ class EnvironmentSafetyChecker:
     """Safety checker for environment files and sensitive data."""
 
     def __init__(self):
-        self.config_file = Path(".kiro/settings/repo_config.json")
+        self.config_file = Path(".kiro / settings / repo_config.json")
         self.sensitive_patterns = {
             ".env*",
             "*.key",
@@ -47,7 +47,7 @@ class EnvironmentSafetyChecker:
                 self.config = json.load(f)
         else:
             print("❌ Repository configuration not found!")
-            print("💡 Run: python scripts/repo_switcher.py status")
+            print("💡 Run: python scripts / repo_switcher.py status")
             sys.exit(1)
 
     def get_current_target(self) -> str:
@@ -58,7 +58,7 @@ class EnvironmentSafetyChecker:
         """Get list of files staged for commit."""
         try:
             result = subprocess.run(
-                ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, check=True
+                ["git", "diff", "--cached", "--name - only"], capture_output=True, text=True, check=True
             )
             return result.stdout.strip().split("\n") if result.stdout.strip() else []
         except subprocess.CalledProcessError:
@@ -129,7 +129,7 @@ class EnvironmentSafetyChecker:
         # Check if staging repository
         if current_target == "staging":
             print(f"\n✅ SAFE: Staging repository allows sensitive files")
-            print(f"   🔒 Private repository: https://github.com/wmoore012/staging_yt_analytics.git")
+            print(f"   🔒 Private repository: https://github.com / wmoore012 / staging_yt_analytics.git")
             print(f"   🤖 Agent collaboration: Full access to development files")
             return True
 
@@ -140,7 +140,7 @@ class EnvironmentSafetyChecker:
 
         print(f"\n🔧 REQUIRED ACTION:")
         print(f"   1. Switch to staging repository:")
-        print(f"      python scripts/repo_switcher.py switch staging")
+        print(f"      python scripts / repo_switcher.py switch staging")
         print(f"   2. Then commit your changes:")
         print(f"      git commit -m 'your message'")
         print(f"   3. Push to staging:")
@@ -209,7 +209,7 @@ class EnvironmentSafetyChecker:
 
         if sensitive_files and target != "staging":
             recommendations.append("Switch to staging repository before committing sensitive files")
-            recommendations.append("Use: python scripts/repo_switcher.py switch staging")
+            recommendations.append("Use: python scripts / repo_switcher.py switch staging")
 
         if target == "staging":
             recommendations.append("Staging repository active - full agent collaboration enabled")

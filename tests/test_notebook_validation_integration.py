@@ -311,7 +311,8 @@ class TestNotebookValidationIntegration:
                     "cell_type": "code",
                     "source": ["# Load analytics data", "df = pd.read_sql('SELECT * FROM artist_analytics', engine)"],
                     "outputs": [
-                        {"output_type": "execute_result", "data": {"text/html": ["<div>DataFrame with 100 rows</div>"]}}
+                        {"output_type": "execute_result", "data": {
+                            "text / html": ["<div>DataFrame with 100 rows</div>"]}}
                     ],
                 },
                 {

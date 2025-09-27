@@ -21,7 +21,7 @@ from ..data_organization.youtube_scoring_plugins import (
     EngagementScoringPlugin,
     GrowthPotentialScoringPlugin,
 )
-from .bulletproof import bulletproof_chart
+from .chart_contracts import ChartSpec, bulletproof_chart
 
 
 class ScoringAnalyzer:
@@ -135,7 +135,9 @@ class ScoringAnalyzer:
 # Chart Functions with Bulletproof Execution
 
 
-@bulletproof_chart("Artist Momentum Scores", ["entity_id", "score_value", "confidence"], timeout_sec=10.0)
+@bulletproof_chart(
+    ChartSpec(name="ArtistMomentumScores", required_columns=["entity_id", "score_value", "confidence"], timeout_sec=10)
+)
 def create_momentum_scores_chart(df: pd.DataFrame) -> go.Figure:
     """Create professional momentum scores visualization."""
     if df.empty:
@@ -194,7 +196,13 @@ def create_momentum_scores_chart(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-@bulletproof_chart("Engagement Score Distribution", ["entity_id", "score_value", "engagement_rate"], timeout_sec=10.0)
+@bulletproof_chart(
+    ChartSpec(
+        name="EngagementScoreDistribution",
+        required_columns=["entity_id", "score_value", "engagement_rate"],
+        timeout_sec=10,
+    )
+)
 def create_engagement_distribution_chart(df: pd.DataFrame) -> go.Figure:
     """Create professional engagement score distribution."""
     if df.empty:
@@ -237,7 +245,11 @@ def create_engagement_distribution_chart(df: pd.DataFrame) -> go.Figure:
 
 
 @bulletproof_chart(
-    "Scoring System Performance", ["algorithm_name", "total_runs", "overall_avg_score"], timeout_sec=10.0
+    ChartSpec(
+        name="ScoringSystemPerformance",
+        required_columns=["algorithm_name", "total_runs", "overall_avg_score"],
+        timeout_sec=10,
+    )
 )
 def create_scoring_performance_chart(df: pd.DataFrame) -> go.Figure:
     """Create scoring system performance dashboard."""
@@ -277,7 +289,7 @@ def create_scoring_performance_chart(df: pd.DataFrame) -> go.Figure:
             go.Scatter(
                 x=df["last_run"],
                 y=df["overall_avg_score"],
-                mode="markers+lines",
+                mode="markers + lines",
                 name="Score Trend",
                 marker_color="#AB63FA",
             ),
@@ -300,7 +312,9 @@ def create_scoring_performance_chart(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-@bulletproof_chart("Artist Score Comparison", ["entity_id", "score_value"], timeout_sec=10.0)
+@bulletproof_chart(
+    ChartSpec(name="Artist Score Comparison", required_columns=["entity_id", "score_value"], timeout_sec=10)
+)
 def create_artist_score_radar(df: pd.DataFrame) -> go.Figure:
     """Create radar chart comparing artist scores across different metrics."""
     if df.empty or len(df) == 0:
@@ -350,7 +364,7 @@ def get_scoring_insights(momentum_df: pd.DataFrame, engagement_df: pd.DataFrame)
         avg_momentum = momentum_df["score_value"].mean()
 
         insights["momentum_insights"] = {
-            "top_artist": top_momentum.iloc[0]["entity_id"] if len(top_momentum) > 0 else "N/A",
+            "top_artist": top_momentum.iloc[0]["entity_id"] if len(top_momentum) > 0 else "N / A",
             "top_score": top_momentum.iloc[0]["score_value"] if len(top_momentum) > 0 else 0,
             "average_score": avg_momentum,
             "total_artists": len(momentum_df),
@@ -369,7 +383,7 @@ def get_scoring_insights(momentum_df: pd.DataFrame, engagement_df: pd.DataFrame)
         avg_engagement = engagement_df["score_value"].mean()
 
         insights["engagement_insights"] = {
-            "top_video": top_engagement.iloc[0]["entity_id"] if len(top_engagement) > 0 else "N/A",
+            "top_video": top_engagement.iloc[0]["entity_id"] if len(top_engagement) > 0 else "N / A",
             "top_score": top_engagement.iloc[0]["score_value"] if len(top_engagement) > 0 else 0,
             "average_score": avg_engagement,
             "total_videos": len(engagement_df),

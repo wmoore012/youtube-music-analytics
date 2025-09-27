@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Proprietary Sentiment Enhancement Formula
 
-Advanced sentiment analysis enhancement using multi-layered contextual analysis,
+Advanced sentiment analysis enhancement using multi - layered contextual analysis,
 dynamic weighting, and music domain expertise. This is the "secret sauce" that
 provides competitive advantage in music industry sentiment analysis.
 
@@ -20,10 +20,10 @@ class ProprietarySentimentEnhancer:
     """
     Advanced sentiment enhancement using proprietary algorithms.
 
-    This class implements several cutting-edge techniques:
+    This class implements several cutting - edge techniques:
     1. Contextual Sentiment Amplification (CSA)
     2. Dynamic Emotional Resonance Weighting (DERW)
-    3. Multi-Modal Sentiment Fusion (MMSF)
+    3. Multi - Modal Sentiment Fusion (MMSF)
     4. Temporal Sentiment Decay Modeling (TSDM)
     """
 
@@ -70,7 +70,7 @@ class ProprietarySentimentEnhancer:
 
         This proprietary technique analyzes the surrounding context of sentiment
         expressions to amplify or dampen the base sentiment score based on
-        music industry-specific contextual cues.
+        music industry - specific contextual cues.
         """
 
         # Phase 1: Detect contextual sentiment patterns
@@ -143,7 +143,7 @@ class ProprietarySentimentEnhancer:
         # Apply contextual amplification with sigmoid smoothing
         amplified_score = base_score * context_multiplier
 
-        # Proprietary sigmoid normalization to prevent over-amplification
+        # Proprietary sigmoid normalization to prevent over - amplification
         normalized_score = 2 / (1 + math.exp(-2.5 * amplified_score)) - 1
 
         return max(-1.0, min(1.0, normalized_score))
@@ -166,7 +166,7 @@ class ProprietarySentimentEnhancer:
                 r"\b(can\'t|cannot)\b.*\b(stop|get enough|believe)\b",
                 r"[!]{2,}|[🔥💯⛽️]{1,}",
                 r"\b(the outfits?)\b[!]{1,}",  # Excitement about visuals
-                r"\b(gas|gas!)\b",  # Gas = fire/good
+                r"\b(gas|gas!)\b",  # Gas = fire / good
             ],
             "appreciation": [
                 r"\b(thank you|grateful|appreciate)\b",
@@ -224,7 +224,7 @@ class ProprietarySentimentEnhancer:
 
     def apply_multi_modal_sentiment_fusion(self, vader_score: float, textblob_score: float, text: str) -> float:
         """
-        Apply Multi-Modal Sentiment Fusion (MMSF) algorithm.
+        Apply Multi - Modal Sentiment Fusion (MMSF) algorithm.
 
         This proprietary technique fuses multiple sentiment analysis approaches
         using advanced weighting based on text characteristics and music domain
@@ -238,11 +238,11 @@ class ProprietarySentimentEnhancer:
 
         # Dynamic weight calculation based on text characteristics
         if slang_count > 0:
-            # VADER is better for slang-heavy text
+            # VADER is better for slang - heavy text
             vader_weight = 0.75 + (slang_count * 0.05)
             textblob_weight = 1.0 - vader_weight
         elif emoji_count > 2:
-            # Balanced approach for emoji-heavy text
+            # Balanced approach for emoji - heavy text
             vader_weight = 0.6
             textblob_weight = 0.4
         elif text_length > 20:
@@ -254,10 +254,10 @@ class ProprietarySentimentEnhancer:
             vader_weight = 0.55
             textblob_weight = 0.45
 
-        # Apply proprietary fusion algorithm with non-linear combination
+        # Apply proprietary fusion algorithm with non - linear combination
         linear_fusion = (vader_score * vader_weight) + (textblob_score * textblob_weight)
 
-        # Non-linear enhancement for extreme sentiments
+        # Non - linear enhancement for extreme sentiments
         if abs(linear_fusion) > 0.7:
             # Amplify strong sentiments
             nonlinear_factor = 1 + (abs(linear_fusion) - 0.7) * 0.3
@@ -299,7 +299,7 @@ class ProprietarySentimentEnhancer:
 
         temporal_modifier = 1.0
 
-        # Apply temporal decay/amplification
+        # Apply temporal decay / amplification
         for category, patterns in temporal_indicators.items():
             for pattern in patterns:
                 if re.search(pattern, text.lower()):
@@ -332,7 +332,7 @@ class ProprietarySentimentEnhancer:
             Tuple of (enhanced_score, enhanced_confidence)
         """
 
-        # Phase 1: Multi-modal fusion
+        # Phase 1: Multi - modal fusion
         fused_score = self.apply_multi_modal_sentiment_fusion(vader_score, textblob_score, text)
 
         # Phase 2: Contextual amplification

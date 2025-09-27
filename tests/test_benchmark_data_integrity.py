@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Test: Benchmark Data Integrity
 
 CRITICAL TEST: Ensures benchmark system never uses fake data.
 This test MUST pass before any benchmarking can occur.
 
-Run in CI/CD to guarantee data integrity.
+Run in CI / CD to guarantee data integrity.
 """
 
 import sys
@@ -46,7 +46,7 @@ class TestBenchmarkDataIntegrity:
 
         # Must have validation method
         assert hasattr(system, "_validate_real_data_only"), "Missing required data validation method"
-        assert hasattr(system, "_run_pre_benchmark_tests"), "Missing required pre-benchmark tests"
+        assert hasattr(system, "_run_pre_benchmark_tests"), "Missing required pre - benchmark tests"
 
     def test_synthetic_data_detection(self):
         """Test that synthetic data patterns are properly detected and rejected."""
@@ -70,7 +70,7 @@ class TestBenchmarkDataIntegrity:
             system._validate_real_data_only(fake_data)
 
     def test_real_data_validation_passes(self):
-        """Test that real-looking data passes validation."""
+        """Test that real - looking data passes validation."""
 
         import pandas as pd
 
@@ -109,20 +109,20 @@ class TestBenchmarkDataIntegrity:
                 system.run_benchmark(config)
 
     def test_pre_benchmark_tests_are_mandatory(self):
-        """Test that pre-benchmark tests always run and are mandatory."""
+        """Test that pre - benchmark tests always run and are mandatory."""
 
         system = ModelBenchmarkSystem()
         config = BenchmarkConfig(experiment_name="test_mandatory")
 
-        # Mock the pre-benchmark tests to fail
+        # Mock the pre - benchmark tests to fail
         with patch.object(system, "_run_pre_benchmark_tests") as mock_tests:
-            mock_tests.side_effect = ValueError("Pre-benchmark test failed")
+            mock_tests.side_effect = ValueError("Pre - benchmark test failed")
 
-            # Should fail immediately when pre-tests fail
-            with pytest.raises(ValueError, match="Pre-benchmark test failed"):
+            # Should fail immediately when pre - tests fail
+            with pytest.raises(ValueError, match="Pre - benchmark test failed"):
                 system.run_benchmark(config)
 
-            # Verify pre-tests were called
+            # Verify pre - tests were called
             mock_tests.assert_called_once()
 
     def test_no_fallback_to_synthetic_data(self):
@@ -140,12 +140,12 @@ class TestBenchmarkDataIntegrity:
         for pattern in forbidden_patterns:
             assert pattern.lower() not in source.lower(), f"FORBIDDEN: Found '{pattern}' in benchmark code"
 
-        # The word "synthetic" is OK if it's in validation/rejection context
+        # The word "synthetic" is OK if it's in validation / rejection context
         if "synthetic" in source.lower():
             # Should only appear in validation context
             assert (
                 "not synthetic" in source.lower() or "reject" in source.lower() or "invalid" in source.lower()
-            ), "Word 'synthetic' should only appear in validation/rejection context"
+            ), "Word 'synthetic' should only appear in validation / rejection context"
 
     def test_error_messages_mention_real_data_only(self):
         """Test that error messages explicitly mention real data requirement."""
@@ -154,7 +154,7 @@ class TestBenchmarkDataIntegrity:
 
         system = ModelBenchmarkSystem()
 
-        # Mock successful pre-tests but insufficient data
+        # Mock successful pre - tests but insufficient data
         with patch.object(system, "_run_pre_benchmark_tests") as mock_pre_tests:
             mock_pre_tests.return_value = True
 

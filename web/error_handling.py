@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Robust Error Handling Framework for YouTube ETL Pipeline
 
 This module provides:
 - Custom exception classes with clear error messages
-- Centralized error handling with fail-fast principles
+- Centralized error handling with fail - fast principles
 - Retry mechanisms with exponential backoff
 - Comprehensive error logging and context tracking
-- Pydantic-based error models for structured error handling
+- Pydantic - based error models for structured error handling
 
 Design Principles:
 - Fail loudly with clear, actionable error messages
@@ -76,7 +76,7 @@ class ErrorContext(BaseModel):
 
 
 class ETLError(Exception):
-    """Base exception class for all ETL-related errors."""
+    """Base exception class for all ETL - related errors."""
 
     def __init__(
         self,
@@ -116,7 +116,7 @@ class ETLError(Exception):
 
 
 class DatabaseError(ETLError):
-    """Database-related errors with connection and query context."""
+    """Database - related errors with connection and query context."""
 
     def __init__(self, message: str, query: Optional[str] = None, **kwargs):
         self.query = query
@@ -127,7 +127,7 @@ class DatabaseError(ETLError):
 
 
 class APIError(ETLError):
-    """API-related errors with request/response context."""
+    """API - related errors with request / response context."""
 
     def __init__(self, message: str, status_code: Optional[int] = None, endpoint: Optional[str] = None, **kwargs):
         self.status_code = status_code
@@ -142,7 +142,7 @@ class APIError(ETLError):
 
 
 class ValidationError(ETLError):
-    """Data validation errors with field-level details."""
+    """Data validation errors with field - level details."""
 
     def __init__(self, message: str, field: Optional[str] = None, value: Any = None, **kwargs):
         self.field = field
@@ -157,7 +157,7 @@ class ValidationError(ETLError):
 
 
 class ConfigurationError(ETLError):
-    """Configuration-related errors."""
+    """Configuration - related errors."""
 
     def __init__(self, message: str, config_key: Optional[str] = None, **kwargs):
         self.config_key = config_key
@@ -196,7 +196,7 @@ class ErrorHandler:
         Args:
             error: The error to handle
             context: Additional context for the error
-            should_raise: Whether to re-raise the error after handling
+            should_raise: Whether to re - raise the error after handling
         """
         # Convert to ETLError if needed
         if not isinstance(error, ETLError):
@@ -224,7 +224,7 @@ class ErrorHandler:
         error_key = f"{etl_error.category.value}_{etl_error.severity.value}"
         self.error_counts[error_key] = self.error_counts.get(error_key, 0) + 1
 
-        # Re-raise if requested and severity warrants it
+        # Re - raise if requested and severity warrants it
         if should_raise and etl_error.severity in [ErrorSeverity.CRITICAL, ErrorSeverity.HIGH]:
             raise etl_error
 
@@ -402,7 +402,8 @@ class PerformanceLogger:
     def log_throughput(self, operation: str, items_processed: int, duration_seconds: float):
         """Log throughput metrics."""
         rate = items_processed / duration_seconds if duration_seconds > 0 else 0
-        self.logger.info(f"📊 {operation}: {items_processed:,} items in {duration_seconds:.1f}s ({rate:.1f} items/sec)")
+        self.logger.info(f"📊 {operation}: {items_processed:,} items in {
+                         duration_seconds:.1f}s ({rate:.1f} items / sec)")
 
     def get_performance_summary(self) -> Dict[str, Dict[str, float]]:
         """Get performance summary statistics."""
@@ -448,7 +449,7 @@ class StructuredLogger:
 
             log_message = json.dumps(log_data)
         else:
-            # Human-readable format
+            # Human - readable format
             context_str = f" | Context: {context}" if context else ""
             perf_str = f" | Performance: {performance_data}" if performance_data else ""
             log_message = f"[{self.component}] {message}{context_str}{perf_str}"

@@ -1,6 +1,6 @@
 """
 Sentiment analysis functions for YouTube comments and fan feedback.
-Implements fact-based sentiment summarization with extractive approach.
+Implements fact - based sentiment summarization with extractive approach.
 """
 
 from __future__ import annotations
@@ -326,10 +326,10 @@ def _generate_model_explanation(accuracy: float, precision: float, recall: float
     - High recall means we don't miss positive fan feedback.
 
     **Why 95% accuracy isn't required for music industry:**
-    - Music sentiment is subjective and context-dependent
+    - Music sentiment is subjective and context - dependent
     - Slang and cultural references are constantly evolving
     - Fan emotions are complex (can love song but hate video quality)
-    - Our custom training on music slang makes domain-specific accuracy more valuable
+    - Our custom training on music slang makes domain - specific accuracy more valuable
     """
 
     return explanation.strip()

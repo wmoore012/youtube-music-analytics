@@ -1,7 +1,7 @@
 """
 TDD Tests for Notebook Guardian - Python File Support
 
-Test-driven development for validating .py files in addition to .ipynb files.
+Test - driven development for validating .py files in addition to .ipynb files.
 This ensures AI agents can validate any Python data science workflow.
 """
 
@@ -382,7 +382,7 @@ df_clean['feature_scaled'] = (df_clean['feature'] - df_clean['feature'].mean()) 
 df_clean['feature_squared'] = df_clean['feature'] ** 2
 df_clean['feature_log'] = np.log(df_clean['feature'] + 1)
 
-# Train-test split
+# Train - test split
 X = df_clean.drop('target', axis=1)
 y = df_clean['target']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -397,7 +397,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 
 class TestImportValidator:
-    """Test validation and auto-installation of imports."""
+    """Test validation and auto - installation of imports."""
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -436,7 +436,7 @@ arr = np.array([1, 2, 3])
         """Test automatic installation of missing packages."""
         mock_subprocess.return_value.returncode = 0
 
-        missing_packages = ["pandas", "scikit-learn", "matplotlib"]
+        missing_packages = ["pandas", "scikit - learn", "matplotlib"]
 
         result = self.validator.auto_install_packages(missing_packages)
 
@@ -517,7 +517,7 @@ def complete_ml_pipeline(data_path):
     X = df_clean.drop('target', axis=1)
     y = df_clean['target']
 
-    # Train-test split
+    # Train - test split
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     # Model training
@@ -579,7 +579,7 @@ df_clean = pd.get_dummies(df_clean)
 X = df_clean.drop('target', axis=1)
 y = df_clean['target']
 
-# 5. Train-Test Split
+# 5. Train - Test Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # 6. Model Training
@@ -680,10 +680,10 @@ df = pd.read_csv('data.csv')
 model = RandomForestClassifier()
 model.fit(df.drop('target', axis=1), df['target'])
 
-# No train-test split
+# No train - test split
 accuracy = model.score(df.drop('target', axis=1), df['target'])
 
-# No cross-validation
+# No cross - validation
 print(f"Accuracy: {accuracy}")
 """
 
@@ -702,7 +702,7 @@ class TestPythonValidationResult:
         """Test creation of validation results."""
         result = PythonValidationResult(
             is_valid=True,
-            file_path="/path/to/file.py",
+            file_path="/path / to / file.py",
             file_type="python",
             imports_found=["pandas", "numpy"],
             functions_found=["load_data", "train_model"],
@@ -719,7 +719,7 @@ class TestPythonValidationResult:
         """Test merging multiple validation results."""
         result1 = PythonValidationResult(
             is_valid=True,
-            file_path="/path/to/file1.py",
+            file_path="/path / to / file1.py",
             imports_found=["pandas"],
             functions_found=["func1"],
             patterns_detected={"data_loading": True},
@@ -727,7 +727,7 @@ class TestPythonValidationResult:
 
         result2 = PythonValidationResult(
             is_valid=True,
-            file_path="/path/to/file2.py",
+            file_path="/path / to / file2.py",
             imports_found=["numpy"],
             functions_found=["func2"],
             patterns_detected={"model_training": True},
@@ -745,7 +745,7 @@ class TestPythonValidationResult:
         """Test conversion of validation result to dictionary."""
         result = PythonValidationResult(
             is_valid=True,
-            file_path="/path/to/file.py",
+            file_path="/path / to / file.py",
             imports_found=["pandas"],
             functions_found=["load_data"],
             patterns_detected={"data_loading": True},
@@ -755,7 +755,7 @@ class TestPythonValidationResult:
 
         assert isinstance(result_dict, dict)
         assert result_dict["is_valid"] is True
-        assert result_dict["file_path"] == "/path/to/file.py"
+        assert result_dict["file_path"] == "/path / to / file.py"
         assert "pandas" in result_dict["imports_found"]
         assert "load_data" in result_dict["functions_found"]
 
@@ -770,11 +770,11 @@ class TestIntegrationWithSmartInstaller:
 
     @patch("subprocess.run")
     def test_validate_and_auto_install_workflow(self, mock_subprocess):
-        """Test complete workflow of validation and auto-installation."""
+        """Test complete workflow of validation and auto - installation."""
         mock_subprocess.return_value.returncode = 0
 
         python_code = """
-# Missing imports that should be auto-installed
+# Missing imports that should be auto - installed
 df = pd.DataFrame({'x': [1, 2, 3]})
 model = RandomForestClassifier()
 plt.plot([1, 2, 3])
@@ -790,7 +790,7 @@ plt.plot([1, 2, 3])
             assert result.is_valid is False
             assert len(result.missing_imports) > 0
 
-            # Auto-install missing packages
+            # Auto - install missing packages
             install_result = self.installer.install_missing_packages(result.missing_imports)
             assert install_result.is_valid is True
 

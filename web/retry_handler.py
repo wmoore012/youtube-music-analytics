@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Retry Handler with Exponential Backoff
 
@@ -71,7 +71,7 @@ class RetryHandler:
         Calculate delay for the given attempt number.
 
         Args:
-            attempt: Current attempt number (0-based)
+            attempt: Current attempt number (0 - based)
 
         Returns:
             Delay in seconds
@@ -151,7 +151,7 @@ class RetryHandler:
 
                 # Check if exception is retryable
                 if not self.is_retryable_exception(e):
-                    self.logger.error(f"Non-retryable exception in {operation_name}: {str(e)}")
+                    self.logger.error(f"Non - retryable exception in {operation_name}: {str(e)}")
                     break
 
                 # Calculate delay and wait
@@ -246,7 +246,7 @@ def retry_database_operation(
         base_delay: Base delay in seconds
 
     Returns:
-        Decorated function with database-specific retry logic
+        Decorated function with database - specific retry logic
     """
     return retry_with_backoff(
         max_attempts=max_attempts,
@@ -273,7 +273,7 @@ def retry_api_operation(
         base_delay: Base delay in seconds
 
     Returns:
-        Decorated function with API-specific retry logic
+        Decorated function with API - specific retry logic
     """
     return retry_with_backoff(
         max_attempts=max_attempts,
@@ -282,14 +282,14 @@ def retry_api_operation(
         retryable_exceptions=[
             ConnectionError,
             TimeoutError,
-            # Add HTTP-specific exceptions if using requests
+            # Add HTTP - specific exceptions if using requests
         ],
     )
 
 
-# Progress tracking for long-running operations
+# Progress tracking for long - running operations
 class ProgressTracker:
-    """Tracks progress of long-running operations with logging."""
+    """Tracks progress of long - running operations with logging."""
 
     def __init__(self, operation_name: str, total_items: int, log_interval: int = 100):
         self.operation_name = operation_name
@@ -322,12 +322,12 @@ class ProgressTracker:
 
                 self.logger.info(
                     f"{self.operation_name}: {self.processed_items:,}/{self.total_items:,} "
-                    f"({percentage:.1f}%) processed at {rate:.1f} items/sec{eta_str}"
+                    f"({percentage:.1f}%) processed at {rate:.1f} items / sec{eta_str}"
                 )
             else:
                 self.logger.info(
                     f"{self.operation_name}: Completed {self.total_items:,} items "
-                    f"in {elapsed_time:.1f}s ({rate:.1f} items/sec)"
+                    f"in {elapsed_time:.1f}s ({rate:.1f} items / sec)"
                 )
 
     def __enter__(self):
@@ -340,7 +340,7 @@ class ProgressTracker:
             rate = self.processed_items / elapsed_time if elapsed_time > 0 else 0
             self.logger.info(
                 f"Completed {self.operation_name}: {self.processed_items:,} items "
-                f"in {elapsed_time:.1f}s ({rate:.1f} items/sec)"
+                f"in {elapsed_time:.1f}s ({rate:.1f} items / sec)"
             )
         else:
             self.logger.error(f"Failed {self.operation_name} after processing {self.processed_items:,} items")

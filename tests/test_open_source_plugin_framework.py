@@ -1,8 +1,8 @@
 """
-Tests for open-source plugin framework and examples.
+Tests for open - source plugin framework and examples.
 
 This module tests the OpenSourceScoringPlugin base class, plugin validation,
-security checking, and example plugins for user-defined scoring algorithms.
+security checking, and example plugins for user - defined scoring algorithms.
 """
 
 from datetime import datetime, timedelta
@@ -345,7 +345,7 @@ import sys
 def calculate_scores(self, data):
     # Dangerous operations
     os.system("rm -rf /")
-    subprocess.call(["curl", "malicious-site.com"])
+    subprocess.call(["curl", "malicious - site.com"])
     return data
 """
 
@@ -436,17 +436,17 @@ class TestPluginRegistry:
         assert retrieved_plugin.get_name() == "retrievable_plugin"
 
     def test_get_plugin_nonexistent(self):
-        """Test retrieving non-existent plugin."""
+        """Test retrieving non - existent plugin."""
         plugin = self.registry.get_plugin("nonexistent_plugin")
         assert plugin is None
 
 
 class TestExamplePlugins:
-    """Test example open-source plugins."""
+    """Test example open - source plugins."""
 
     def setup_method(self):
         """Set up test fixtures."""
-        # Create data with multiple time points per entity for velocity/momentum calculation
+        # Create data with multiple time points per entity for velocity / momentum calculation
         data_points = []
 
         for entity_idx, entity_id in enumerate(["Entity_A", "Entity_B", "Entity_C"]):

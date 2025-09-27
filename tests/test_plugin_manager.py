@@ -71,9 +71,9 @@ class TestPluginManager:
             assert Path(temp_dir) in self.plugin_manager._search_paths
 
     def test_add_search_path_nonexistent(self):
-        """Test adding non-existent search path."""
+        """Test adding non - existent search path."""
         with pytest.raises(PluginDiscoveryError, match="does not exist"):
-            self.plugin_manager.add_search_path("/nonexistent/path")
+            self.plugin_manager.add_search_path("/nonexistent / path")
 
     def test_add_search_path_not_directory(self):
         """Test adding file as search path."""
@@ -122,16 +122,16 @@ class TestPluginManager:
             self.plugin_manager.load_plugin("invalid_path")
 
     def test_load_plugin_module_not_found(self):
-        """Test loading plugin with non-existent module."""
+        """Test loading plugin with non - existent module."""
         with patch("importlib.import_module", side_effect=ImportError("Module not found")):
             with pytest.raises(PluginLoadingError, match="Failed to import plugin module"):
                 self.plugin_manager.load_plugin("nonexistent.module.Plugin")
 
     def test_load_plugin_class_not_found(self):
-        """Test loading plugin with non-existent class."""
+        """Test loading plugin with non - existent class."""
         with patch("importlib.import_module") as mock_import:
             mock_module = MagicMock()
-            # Simulate hasattr returning False for non-existent class
+            # Simulate hasattr returning False for non - existent class
             mock_module.configure_mock(**{"NonExistentPlugin": None})
             del mock_module.NonExistentPlugin  # Remove the attribute
             mock_import.return_value = mock_module
@@ -198,7 +198,7 @@ class TestPluginManager:
         assert instance.get_name() == "test_plugin"
 
     def test_get_plugin_instance_not_loaded(self):
-        """Test getting instance of non-loaded plugin."""
+        """Test getting instance of non - loaded plugin."""
         with pytest.raises(PluginLoadingError, match="Plugin nonexistent not loaded"):
             self.plugin_manager.get_plugin_instance("nonexistent")
 
@@ -234,7 +234,7 @@ class TestPluginManager:
         assert "test_plugin" not in self.plugin_manager._plugin_instances
 
     def test_unload_plugin_nonexistent(self):
-        """Test unloading non-existent plugin."""
+        """Test unloading non - existent plugin."""
         # Should not raise error
         self.plugin_manager.unload_plugin("nonexistent")
 
@@ -256,7 +256,7 @@ class TestPluginManager:
                 assert "test_plugin" not in self.plugin_manager._plugin_instances
 
     def test_reload_plugin_not_loaded(self):
-        """Test reloading non-loaded plugin."""
+        """Test reloading non - loaded plugin."""
         with pytest.raises(PluginLoadingError, match="Plugin nonexistent not loaded"):
             self.plugin_manager.reload_plugin("nonexistent")
 

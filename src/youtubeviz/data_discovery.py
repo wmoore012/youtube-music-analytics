@@ -47,7 +47,7 @@ class DatabaseDiscovery:
         password = os.getenv("DB_PASSWORD") or os.getenv("DB_PASS", "")
         database = os.getenv("DB_NAME", "yt_proj")
 
-        return f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}"
+        return f"mysql + pymysql://{user}:{password}@{host}:{port}/{database}"
 
     def discover_tables(self) -> Dict[str, Any]:
         """Discover all tables and their structure."""
@@ -230,7 +230,7 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
                 END as content_type,
                 -- Add genre classification (simplified)
                 CASE
-                    WHEN channel_title LIKE '%hip%' OR channel_title LIKE '%rap%' THEN 'Hip-Hop'
+                    WHEN channel_title LIKE '%hip%' OR channel_title LIKE '%rap%' THEN 'Hip - Hop'
                     WHEN channel_title LIKE '%pop%' OR channel_title LIKE '%Pop%' THEN 'Pop'
                     WHEN channel_title LIKE '%rock%' OR channel_title LIKE '%Rock%' THEN 'Rock'
                     ELSE 'Alternative'
@@ -353,11 +353,11 @@ def create_chart_config(artists: List[str], data_summary: Dict[str, Any]) -> Dic
 
     # Adjust chart types based on available data
     if not data_summary.get("has_sentiment", False):
-        # Remove sentiment-dependent charts
+        # Remove sentiment - dependent charts
         config["chart_types"] = [ct for ct in config["chart_types"] if "sentiment" not in ct.lower()]
 
     if not data_summary.get("has_isrc", False):
-        # Remove ISRC-dependent charts
+        # Remove ISRC - dependent charts
         config["chart_types"] = [ct for ct in config["chart_types"] if "isrc" not in ct.lower()]
 
     return config

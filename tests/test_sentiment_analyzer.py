@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Tests for Enhanced Sentiment Analysis System
 
@@ -149,7 +149,7 @@ class TestSentimentAnalyzer:
         assert analyzer._validate_comment_text(long_text) is False
 
     def test_simple_sentiment_analysis(self):
-        """Test simple rule-based sentiment analysis."""
+        """Test simple rule - based sentiment analysis."""
         analyzer = SentimentAnalyzer()
 
         # Positive sentiment

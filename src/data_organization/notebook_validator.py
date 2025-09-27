@@ -292,7 +292,7 @@ class MetricExplainer:
     """
     Provides clear explanations for scoring metrics and generates tooltips.
 
-    This class creates human-readable explanations for various scoring metrics
+    This class creates human - readable explanations for various scoring metrics
     used in the analytics system, helping users understand what each score means.
     """
 
@@ -318,7 +318,7 @@ class MetricExplainer:
                     (0.0, 0.02): "Low engagement - audience not actively participating",
                     (0.02, 0.04): "Average engagement - typical for most content",
                     (0.04, 0.08): "High engagement - strong audience connection",
-                    (0.08, 1.0): "Exceptional engagement - viral-level interaction",
+                    (0.08, 1.0): "Exceptional engagement - viral - level interaction",
                 },
             },
             "growth_potential": {
@@ -342,7 +342,7 @@ class MetricExplainer:
             score: Momentum score value (0.0 to 1.0)
 
         Returns:
-            Human-readable explanation of the score
+            Human - readable explanation of the score
         """
         metric_info = self.metric_definitions["momentum_score"]
         interpretation = self._get_interpretation(score, metric_info["interpretation"])
@@ -361,7 +361,7 @@ class MetricExplainer:
             rate: Engagement rate value (typically 0.0 to 0.1)
 
         Returns:
-            Human-readable explanation of the rate
+            Human - readable explanation of the rate
         """
         metric_info = self.metric_definitions["engagement_rate"]
         interpretation = self._get_interpretation(rate, metric_info["interpretation"])
@@ -381,7 +381,7 @@ class MetricExplainer:
             potential: Growth potential score (0.0 to 1.0)
 
         Returns:
-            Human-readable explanation of the potential
+            Human - readable explanation of the potential
         """
         metric_info = self.metric_definitions["growth_potential"]
         interpretation = self._get_interpretation(potential, metric_info["interpretation"])
@@ -604,7 +604,7 @@ class NotebookValidator:
                 return result
 
             # Load and parse notebook
-            with open(notebook_path, "r", encoding="utf-8") as f:
+            with open(notebook_path, "r", encoding="utf - 8") as f:
                 notebook_content = json.load(f)
 
             # Basic notebook structure validation

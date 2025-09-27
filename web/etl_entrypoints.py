@@ -12,7 +12,7 @@ from .youtube_channel_etl import ETLSummary, YouTubeChannelETL
 
 
 def run_channel_etl(channel_url: str, limit: Optional[int] = None) -> ETLSummary:
-    """Module-level entrypoint to run ETL for a single channel.
+    """Module - level entrypoint to run ETL for a single channel.
 
     Construct the ETL from environment variables and execute run_for_channel.
     Kept simple and picklable for use with multiprocessing.
@@ -106,7 +106,7 @@ def run_sentiment_scoring(
         job, batch_size, loop, max_passes, max_seconds, start_time
     )
 
-    # Handle post-processing tasks
+    # Handle post - processing tasks
     summary_upserts = job.refresh_summary() if update_summary else 0
     snapshot_inserts = job.snapshot_daily_sentiment() if snapshot_daily else 0
 

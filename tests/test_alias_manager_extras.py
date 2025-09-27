@@ -16,7 +16,7 @@ from tools.alias_manager import (
 
 @pytest.fixture()
 def sqlite_engine(tmp_path: Path):
-    # Create a file-backed SQLite DB so all connections share state
+    # Create a file - backed SQLite DB so all connections share state
     from sqlalchemy import create_engine
 
     db_path = tmp_path / "test_aliases.db"
@@ -96,8 +96,8 @@ def test_upsert_aliases_idempotent_and_skip_canonical(sqlite_engine):
     """
     Ensures:
       - canonical row (alias='') is created once
-      - aliases are case-insensitive de-duped
-      - canonical-as-alias is ignored
+      - aliases are case - insensitive de - duped
+      - canonical - as - alias is ignored
     """
     ensure_alias_table(sqlite_engine)
 
@@ -129,9 +129,9 @@ def test_write_aliases_json_overwrite_valid(sqlite_engine, tmp_path: Path):
     upsert_aliases(sqlite_engine, "Enchanting", ["LuvEnchantingINC"])
 
     out = tmp_path / "artist_aliases.json"
-    out.write_text("{not: json", encoding="utf-8")
+    out.write_text("{not: json", encoding="utf - 8")
 
     total = write_aliases_json(sqlite_engine, out)
-    data = json.loads(out.read_text(encoding="utf-8"))
+    data = json.loads(out.read_text(encoding="utf - 8"))
     assert total == len(data) >= 1
     assert data["LuvEnchantingINC"] == "Enchanting"

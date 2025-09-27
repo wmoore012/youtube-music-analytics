@@ -28,7 +28,7 @@ def test_read_sql_safe_sqlite_raw_connection():
 
 
 def test_read_sql_safe_other_dialect_connection():
-    # Mock a non-SQLite engine
+    # Mock a non - SQLite engine
     mock_engine = MagicMock()
     mock_engine.dialect = MagicMock(name="dialect_mock")
     mock_engine.dialect.name = "mysql"

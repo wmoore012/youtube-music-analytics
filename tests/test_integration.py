@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Integration Tests for ETL Pipeline
 
 This module provides integration tests that verify:
-- End-to-end ETL pipeline functionality
+- End - to - end ETL pipeline functionality
 - Database operations and transactions
 - Component integration and data flow
-- Real-world scenarios and edge cases
+- Real - world scenarios and edge cases
 """
 
 from datetime import datetime, timedelta
@@ -49,7 +49,7 @@ class TestETLPipelineIntegration:
             {
                 "video_id": "oHg5SJYRHA0",
                 "title": "Valid Video 2",
-                "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
+                "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
                 "channel_title": "Test Channel 2",
                 "published_at": datetime.now() - timedelta(days=2),
                 "duration": "PT4M15S",
@@ -60,7 +60,7 @@ class TestETLPipelineIntegration:
             {
                 "video_id": "jNQXAC9IVRw",
                 "title": "Short Video - Will be filtered",
-                "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
+                "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
                 "channel_title": "Test Channel 3",
                 "published_at": datetime.now() - timedelta(days=3),
                 "duration": "PT15S",  # Too short - will be filtered
@@ -153,7 +153,7 @@ class TestETLPipelineIntegration:
         for comment_data in comments_data:
             assert assert_comment_in_database(test_engine, comment_data["comment_id"])
 
-        # Step 5: Verify comment-video relationship
+        # Step 5: Verify comment - video relationship
         with test_engine.connect() as conn:
             result = conn.execute(
                 text(
@@ -184,7 +184,7 @@ class TestETLPipelineIntegration:
             result = conn.execute(text("SELECT comment_id, comment_text FROM youtube_comments"))
 
             for row in result:
-                # Simulate sentiment analysis (simple rule-based for testing)
+                # Simulate sentiment analysis (simple rule - based for testing)
                 text_lower = row.comment_text.lower()
                 if any(word in text_lower for word in ["great", "love", "amazing", "good"]):
                     sentiment_score = 0.8

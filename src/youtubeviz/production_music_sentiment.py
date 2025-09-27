@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Production Music Industry Sentiment Analyzer
 
-A clean, production-ready sentiment analyzer that uses the centralized
+A clean, production - ready sentiment analyzer that uses the centralized
 music industry sentiment dataset for training and evaluation.
 
 This analyzer is designed for:
@@ -38,7 +38,7 @@ from datasets.music_industry_sentiment_dataset_v2 import (
 
 class ProductionMusicSentimentAnalyzer:
     """
-    Production-ready music industry sentiment analyzer.
+    Production - ready music industry sentiment analyzer.
 
     Uses the centralized music industry sentiment dataset for consistent,
     reproducible sentiment analysis optimized for music industry language.
@@ -160,11 +160,11 @@ class ProductionMusicSentimentAnalyzer:
         # Calculate total indicators for confidence
         total_indicators = phrase_matches + min(emoji_count, 3)
 
-        # Check if this is an emoji-only comment
+        # Check if this is an emoji - only comment
         is_emoji_only = len(original_comment.strip()) <= 10 and emoji_count > 0 and phrase_matches == 0
 
         if is_emoji_only:
-            # Special scoring for emoji-only comments
+            # Special scoring for emoji - only comments
             if "🔥" in original_comment:
                 sentiment_score = 0.8
             elif "🌊" in original_comment:
@@ -194,7 +194,7 @@ class ProductionMusicSentimentAnalyzer:
                     sentiment_score = sentiment_score / phrase_matches
 
                 elif emoji_count > 0:
-                    # Only emojis (but not emoji-only due to length)
+                    # Only emojis (but not emoji - only due to length)
                     sentiment_score = emoji_score / emoji_count
 
         # Normalize to [-1, 1] range
@@ -260,7 +260,7 @@ class ProductionMusicSentimentAnalyzer:
         if not self.dataset:
             return {"error": "No dataset loaded"}
 
-        # Get train/test split
+        # Get train / test split
         train_entries, test_entries = self.dataset.get_train_test_split(test_size, random_state)
 
         # Test on test set
@@ -308,7 +308,7 @@ class ProductionMusicSentimentAnalyzer:
 
 
 def get_production_analyzer() -> ProductionMusicSentimentAnalyzer:
-    """Get a production-ready music sentiment analyzer."""
+    """Get a production - ready music sentiment analyzer."""
     return ProductionMusicSentimentAnalyzer()
 
 

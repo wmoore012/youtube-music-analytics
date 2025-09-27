@@ -39,10 +39,10 @@ def _setup_engine():
         )
         conn.exec_driver_sql("INSERT INTO artist_aliases (alias, canonical_name) VALUES ('THE WEEKND', 'The Weeknd')")
         conn.exec_driver_sql(
-            "INSERT INTO youtube_videos (video_id, title, channel_title, published_at, isrc) VALUES ('v1', 'Blinding Lights', 'The weeknd', '2020-01-01', 'ISRC1')"
+            "INSERT INTO youtube_videos (video_id, title, channel_title, published_at, isrc) VALUES ('v1', 'Blinding Lights', 'The weeknd', '2020 - 01 - 01', 'ISRC1')"
         )
         conn.exec_driver_sql(
-            "INSERT INTO youtube_metrics (video_id, metrics_date, view_count, like_count, comment_count) VALUES ('v1', '2020-01-02', 1000, 50, 10)"
+            "INSERT INTO youtube_metrics (video_id, metrics_date, view_count, like_count, comment_count) VALUES ('v1', '2020 - 01 - 02', 1000, 50, 10)"
         )
     return engine
 

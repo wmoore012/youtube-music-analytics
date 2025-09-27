@@ -10,9 +10,9 @@ FRESH_TIDAL_PULL: bool = False
 
 
 def fetch_playlist_json(playlist_id: str, *, force_fresh: bool | None = None) -> Tuple[Dict[str, Any], bool]:
-    """Fetch Tidal playlist JSON with a 1-day on-disk cache.
+    """Fetch Tidal playlist JSON with a 1 - day on - disk cache.
 
-    Returns (data, used_cache). Updates module/global env flag FRESH_TIDAL_PULL.
+    Returns (data, used_cache). Updates module / global env flag FRESH_TIDAL_PULL.
 
     Environment overrides:
     - TIDAL_FORCE_FRESH=1 forces API pull (skip cache)

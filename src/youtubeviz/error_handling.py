@@ -130,7 +130,7 @@ class RecoverableError(ETLError):
 
 
 class DataError(ETLError):
-    """Data-related error that can be logged and processing continued."""
+    """Data - related error that can be logged and processing continued."""
 
     def __init__(
         self,
@@ -180,7 +180,7 @@ class ErrorHandler:
         Returns:
             ErrorAction: The action to take for this error
         """
-        # Handle ETL-specific errors
+        # Handle ETL - specific errors
         if isinstance(error, CriticalError):
             return ErrorAction.STOP_PIPELINE
         elif isinstance(error, RecoverableError):
@@ -363,7 +363,7 @@ class ErrorHandler:
 
             action = self.handle_error(last_exception, final_context)
 
-            # Re-raise the exception for critical errors
+            # Re - raise the exception for critical errors
             if action == ErrorAction.STOP_PIPELINE:
                 raise last_exception
 
@@ -445,7 +445,7 @@ def with_error_handling(component: str, operation: str, error_handler: Optional[
             except Exception as e:
                 action = handler.handle_error(e, context)
 
-                # Re-raise for critical errors
+                # Re - raise for critical errors
                 if action == ErrorAction.STOP_PIPELINE:
                     raise
 

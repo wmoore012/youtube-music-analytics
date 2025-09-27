@@ -1,5 +1,5 @@
 """
-Tests for data-science grade chart implementations.
+Tests for data - science grade chart implementations.
 """
 
 import os
@@ -117,7 +117,7 @@ class TestDivergingSentimentBars:
         assert fig.layout.xaxis.title.text == "Artist"
         assert fig.layout.yaxis.title.text == "Sentiment Rate"
 
-        # Check y-axis range includes negative values
+        # Check y - axis range includes negative values
         assert fig.layout.yaxis.range[0] <= -0.5
         assert fig.layout.yaxis.range[1] >= 0.5
 
@@ -201,7 +201,7 @@ class TestChartEnhancements:
         enhanced = enhance_chart_beauty(fig, theme="academic")
 
         assert isinstance(enhanced, go.Figure)
-        assert enhanced.layout.showlegend == True
+        assert enhanced.layout.showlegend is True
         assert "Times" in enhanced.layout.font.family
 
     def test_enhance_chart_beauty_presentation(self):
@@ -289,7 +289,7 @@ class TestIntegrationScenarios:
 
 
 class TestLollipopThemeCharts:
-    """Test lollipop charts for top 3 positive/negative themes (Charts #3-4)."""
+    """Test lollipop charts for top 3 positive / negative themes (Charts #3 - 4)."""
 
     @pytest.fixture
     def sample_theme_data(self):
@@ -301,7 +301,7 @@ class TestLollipopThemeCharts:
         data = []
         for artist in artists:
             for theme in themes:
-                # Create varying amounts of positive/negative comments per theme
+                # Create varying amounts of positive / negative comments per theme
                 n_positive = np.random.randint(5, 25)
                 n_negative = np.random.randint(2, 15)
 
@@ -380,7 +380,7 @@ class TestLollipopThemeCharts:
         assert isinstance(fig, go.Figure)
         assert len(fig.data) >= 1
 
-        # Should use red-orange diverging palette
+        # Should use red - orange diverging palette
         colors_used = []
         for trace in fig.data:
             if hasattr(trace, "marker") and hasattr(trace.marker, "color"):
@@ -410,7 +410,7 @@ class TestLollipopThemeCharts:
         # (This will be implemented to pass)
 
     def test_lollipop_overlapping_ci_collapse(self, sample_theme_data):
-        """Test visual collapse of near-ties (overlapping CIs)."""
+        """Test visual collapse of near - ties (overlapping CIs)."""
         from src.youtubeviz.advanced_charts import create_positive_theme_lollipops
 
         # Create data with very similar rates to test overlap detection
@@ -467,7 +467,7 @@ class TestThemeExtractionSystem:
         assert isinstance(top_themes, pd.DataFrame)
         assert len(top_themes) <= 4  # 2 artists × 2 themes max
 
-        # Should be sorted by frequency/rate
+        # Should be sorted by frequency / rate
         artist_a_themes = top_themes[top_themes["artist_name"] == "Artist A"]
         if len(artist_a_themes) > 1:
             # First theme should have higher or equal count than second
@@ -555,7 +555,7 @@ class TestStandoutVideosScatterPlot:
                     "positive_rate": positive_rate,
                     "positive_comments": positive_comments,
                     "total_comments": total_comments,
-                    "upload_date": pd.Timestamp("2024-01-01") + pd.Timedelta(days=i),
+                    "upload_date": pd.Timestamp("2024 - 01 - 01") + pd.Timedelta(days=i),
                 }
             )
 
@@ -599,7 +599,7 @@ class TestStandoutVideosScatterPlot:
         # Should highlight standout videos
         assert isinstance(fig, go.Figure)
 
-        # Check that some points are highlighted (different colors/sizes)
+        # Check that some points are highlighted (different colors / sizes)
         scatter_traces = [trace for trace in fig.data if isinstance(trace, go.Scatter) and trace.mode == "markers"]
         assert len(scatter_traces) >= 1
 
@@ -641,7 +641,7 @@ class TestStandoutVideosScatterPlot:
         assert "views" in fig.layout.xaxis.title.text.lower() or "log" in fig.layout.xaxis.title.text.lower()
         assert "positive" in fig.layout.yaxis.title.text.lower() or "rate" in fig.layout.yaxis.title.text.lower()
 
-        # Should use log scale for x-axis
+        # Should use log scale for x - axis
         assert fig.layout.xaxis.type == "log" or "log" in fig.layout.xaxis.title.text.lower()
 
 
@@ -704,7 +704,7 @@ class TestUpSetPlot:
         for i in range(n_videos):
             # Randomly assign features with different probabilities
             has_isrc = np.random.random() < 0.6  # 60% have ISRC
-            is_short_form = np.random.random() < 0.4  # 40% are short-form
+            is_short_form = np.random.random() < 0.4  # 40% are short - form
             is_visualizer = np.random.random() < 0.3  # 30% are visualizers
             has_teaser = np.random.random() < 0.2  # 20% have teasers
             is_music_video = np.random.random() < 0.5  # 50% are music videos
@@ -748,7 +748,7 @@ class TestUpSetPlot:
         assert len(fig.data) >= 1
 
     def test_upset_plot_ranking_by_views(self, sample_feature_data):
-        """Test UpSet plot ranking by views/engagement."""
+        """Test UpSet plot ranking by views / engagement."""
         from src.youtubeviz.advanced_charts import create_upset_plot
 
         feature_cols = ["has_isrc", "short_form", "visualizer"]
@@ -873,7 +873,7 @@ class TestUMAPClusteringChart:
             )
 
     def test_umap_data_validator_fails_on_spam_text(self):
-        """Test that validator catches spam-like text."""
+        """Test that validator catches spam - like text."""
         from src.youtubeviz.chart_models import UMAPClusteringData
 
         # This should fail - repetitive text
@@ -946,7 +946,7 @@ class TestUMAPClusteringImplementation:
 
 
 class TestContentAnalysisSuite:
-    """Test content analysis charts (Charts #8-11) - TDD approach."""
+    """Test content analysis charts (Charts #8 - 11) - TDD approach."""
 
     def test_isrc_balance_chart_not_implemented(self):
         """Test that ISRC balance chart doesn't exist yet (should fail)."""
@@ -968,7 +968,7 @@ class TestContentAnalysisSuite:
                 has_isrc=True,
                 content_type="music_video",
                 duration_seconds=180,
-                upload_date="2024-01-01",
+                upload_date="2024 - 01 - 01",
             )
 
     def test_content_data_validator_fails_on_invalid_duration(self):
@@ -986,7 +986,7 @@ class TestContentAnalysisSuite:
                 has_isrc=True,
                 content_type="music_video",
                 duration_seconds=7200,  # 2 hours - too long for music video
-                upload_date="2024-01-01",
+                upload_date="2024 - 01 - 01",
             )
 
     def test_dumbbell_chart_not_implemented(self):
@@ -1009,7 +1009,7 @@ class TestContentAnalysisValidation:
             from src.youtubeviz.advanced_charts import ContentAnalysisEngine
 
     def test_p_chart_control_limits_not_implemented(self):
-        """Test that p-chart control limits calculation doesn't exist yet."""
+        """Test that p - chart control limits calculation doesn't exist yet."""
         with pytest.raises(ImportError):
             from src.youtubeviz.advanced_charts import calculate_p_chart_control_limits
 

@@ -149,7 +149,7 @@ def record_operational_health_snapshot(
 ) -> None:
     """Persist an operational health snapshot for future reporting."""
     if not source or not source.strip():
-        raise ValueError("source must be a non-empty string")
+        raise ValueError("source must be a non - empty string")
 
     engine = engine or get_engine()
     recorded_ts = _coerce_to_utc(recorded_at)
@@ -273,7 +273,7 @@ def _build_operational_notes(
 ) -> List[str]:
     notes: List[str] = []
     if data_freshness_hours > 24.0:
-        notes.append("Data freshness exceeds 24 hours; schedule ETL catch-up run.")
+        notes.append("Data freshness exceeds 24 hours; schedule ETL catch - up run.")
     if coverage_ratio < 80.0:
         notes.append("Artist coverage below 80%; some channels may be missing from ingestion.")
     if not stale_artists.empty:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive System Tests
 
@@ -59,7 +59,7 @@ class TestEnhancedSentimentAnalysis:
         self.analyzer = WeakSupervisionSentimentAnalyzer()
 
     def test_music_slang_positive_detection(self):
-        """Test detection of music-specific positive slang."""
+        """Test detection of music - specific positive slang."""
         analyzer = WeakSupervisionSentimentAnalyzer()
 
         # Train on minimal data for testing
@@ -171,7 +171,7 @@ class TestBotDetectionVsFanEngagement:
             assert is_whitelisted, f"'{expression}' should be whitelisted as fan expression"
 
     def test_bot_pattern_detection(self):
-        """Test detection of bot-like patterns."""
+        """Test detection of bot - like patterns."""
         detector = EnhancedBotDetector()
 
         bot_patterns = [
@@ -227,7 +227,7 @@ class TestMomentumCalculation:
     def test_momentum_trend_analysis(self):
         """Test momentum trend analysis over time."""
         # Test momentum trends
-        dates = pd.date_range("2025-01-01", periods=5, freq="D")
+        dates = pd.date_range("2025 - 01 - 01", periods=5, freq="D")
         momentum_data = pd.DataFrame(
             {"date": dates, "momentum_score": [10, 15, 20, 18, 25], "artist_name": ["Test Artist"] * 5}
         )

@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Production ML Sentiment Analysis System
 
-Ready-to-deploy ML sentiment classifier that integrates with your existing
+Ready - to - deploy ML sentiment classifier that integrates with your existing
 ETL pipeline and database infrastructure.
 """
 
@@ -21,7 +21,7 @@ from web.etl_helpers import get_engine
 
 class ProductionMLSentiment:
     """
-    Production-ready ML sentiment analysis system.
+    Production - ready ML sentiment analysis system.
 
     Integrates with your existing database and ETL pipeline to provide
     superior sentiment analysis for music industry comments.
@@ -29,7 +29,7 @@ class ProductionMLSentiment:
 
     def __init__(self, model_path: Optional[str] = None):
         self.classifier = None
-        self.model_path = model_path or "models/music_sentiment_classifier.pkl"
+        self.model_path = model_path or "models / music_sentiment_classifier.pkl"
         self._engine = None
 
     @property
@@ -92,7 +92,7 @@ class ProductionMLSentiment:
             # ISRC pattern: 2 letters + 3 alphanumeric + 2 digits + 5 digits
             import re
 
-            isrc_pattern = r"[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}"
+            isrc_pattern = r"[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}"
 
             return bool(re.search(isrc_pattern, title.upper()))
 
@@ -136,7 +136,7 @@ class ProductionMLSentiment:
         }
 
     def _convert_to_compound_score(self, sentiment: str, confidence: float) -> float:
-        """Convert ML prediction to VADER-style compound score for compatibility."""
+        """Convert ML prediction to VADER - style compound score for compatibility."""
 
         if sentiment == "positive":
             return confidence * 0.8  # Scale to 0.0 to 0.8 range
@@ -232,20 +232,21 @@ class ProductionMLSentiment:
                 improvements += 1
 
         print(
-            f"📈 ML classifier found {improvements}/{len(ml_results)} comments are not neutral ({improvements/len(ml_results):.1%})"
+            f"📈 ML classifier found {
+                improvements}/{len(ml_results)} comments are not neutral ({improvements / len(ml_results):.1%})"
         )
 
         # Show examples of improvements
         print(f"\n🎯 Example improvements:")
         for i, (_, row) in enumerate(ml_results.head(5).iterrows()):
             if row["sentiment"] != "neutral":
-                comment_text_item = comments_df.iloc[i]["comment_text"]
+                _comment_text_item = comments_df.iloc[i]["comment_text"]
                 print(f"   \"{comment_text[:50]}...\" → {row['sentiment'].upper()} ({row['confidence']:.3f})")
 
         return ml_results
 
     def compare_with_existing_system(self, sample_size: int = 100):
-        """Compare ML classifier with existing VADER-based system."""
+        """Compare ML classifier with existing VADER - based system."""
 
         print(f"⚖️  Comparing ML classifier with existing system...")
 
@@ -278,7 +279,7 @@ class ProductionMLSentiment:
 
         for i, ml_result in ml_results.iterrows():
             vader_score = comments_df.iloc[i]["vader_score"] or 0.0
-            ml_score = ml_result["compound_score"]
+            _ml_score = ml_result["compound_score"]
 
             # Check agreement on sentiment direction
             vader_sentiment = "positive" if vader_score > 0.1 else "negative" if vader_score < -0.1 else "neutral"
@@ -329,7 +330,7 @@ def setup_production_ml_sentiment():
         print(f"   \"{comment}\" → {result['sentiment'].upper()} ({result['confidence']:.3f})")
 
     # Compare with existing system
-    comparison = ml_system.compare_with_existing_system(sample_size=50)
+    _comparison = ml_system.compare_with_existing_system(sample_size=50)
 
     print(f"\n✅ Production ML sentiment system is ready!")
     print(f"🎯 Use ml_system.analyze_comment() in your ETL pipeline")

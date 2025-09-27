@@ -1,4 +1,4 @@
-# web/db_guard.py
+# web / db_guard.py
 from __future__ import annotations
 
 from functools import wraps
@@ -32,11 +32,11 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
     return deco
 
 
-# ── Engine factory with kill-switch & RO mode ──────────────────────────────
+# ── Engine factory with kill - switch & RO mode ──────────────────────────────
 def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = False) -> Engine:
-    """Get database engine with kill-switch and optional read-only mode."""
+    """Get database engine with kill - switch and optional read - only mode."""
     schema_normalized = (schema or "").strip().lower()
-    # Best-effort load of .env from repo root if not already present in env
+    # Best - effort load of .env from repo root if not already present in env
     try:
         repo_root = Path(__file__).resolve().parents[1]
         load_dotenv(dotenv_path=repo_root / ".env", override=False)
@@ -66,7 +66,7 @@ def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = Fals
             # Allow explicit schema overrides when provided
             if schema_normalized and schema_normalized not in {"public", "icatalog_public"}:
                 db_name = schema
-            url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+            url = f"mysql + pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
     if ro:
         # Check if URL already has query parameters

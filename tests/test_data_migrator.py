@@ -1,5 +1,5 @@
 """
-Tests for data migration system that moves CSV/JSON files to database tables.
+Tests for data migration system that moves CSV / JSON files to database tables.
 """
 
 from datetime import datetime

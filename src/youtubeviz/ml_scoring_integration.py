@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 ML Scoring Integration
 
-Integrates ML-ready data collection with existing scoring plugins
+Integrates ML - ready data collection with existing scoring plugins
 for seamless data pipeline integration.
 """
 
@@ -26,7 +26,7 @@ except ImportError:
 
 
 class MLDataScoringPlugin(ScoringPlugin):
-    """Scoring plugin that provides ML-ready data collection capabilities."""
+    """Scoring plugin that provides ML - ready data collection capabilities."""
 
     def __init__(self):
         super().__init__()
@@ -113,7 +113,7 @@ class MLDataScoringPlugin(ScoringPlugin):
             # Create unique hash for comment
             import hashlib
 
-            comment_hash = hashlib.sha256(comment_text.encode("utf-8")).hexdigest()[:16]
+            comment_hash = hashlib.sha256(comment_text.encode("utf - 8")).hexdigest()[:16]
 
             results.append(
                 {
@@ -135,7 +135,7 @@ class MLDataScoringPlugin(ScoringPlugin):
         """Calculate how ready a comment is for ML training."""
         score = 0.0
 
-        # Length check (10-500 characters is ideal)
+        # Length check (10 - 500 characters is ideal)
         length = len(comment_text)
         if 10 <= length <= 500:
             score += 0.3
@@ -144,7 +144,7 @@ class MLDataScoringPlugin(ScoringPlugin):
         else:
             score += 0.2  # Too long but usable
 
-        # Contains meaningful content (not just emoji/punctuation)
+        # Contains meaningful content (not just emoji / punctuation)
         import re
 
         word_count = len(re.findall(r"\b\w+\b", comment_text))
@@ -205,7 +205,7 @@ class MLDataScoringPlugin(ScoringPlugin):
         return any(term in text_lower for term in slang_terms)
 
     def _contains_music_terms(self, comment_text: str) -> bool:
-        """Check if comment contains music-related terms."""
+        """Check if comment contains music - related terms."""
         text_lower = comment_text.lower()
         music_terms = [
             "song",
@@ -282,7 +282,7 @@ class MLDataPipelineIntegration:
             min_quality_score: Minimum quality score threshold
 
         Returns:
-            DataFrame with scored ML-ready comments or None if failed
+            DataFrame with scored ML - ready comments or None if failed
         """
         if not SCORING_AVAILABLE or not self.comment_manager:
             print("❌ Scoring integration not available")
@@ -316,7 +316,7 @@ class MLDataPipelineIntegration:
             # Limit to requested count
             final_df = high_quality.head(count)
 
-            print(f"✅ Collected {len(final_df)} high-quality ML training comments")
+            print(f"✅ Collected {len(final_df)} high - quality ML training comments")
             print(f"📊 Quality stats:")
             print(f"   Avg ML readiness: {final_df['ml_readiness_score'].mean():.3f}")
             print(f"   Avg data quality: {final_df['data_quality_score'].mean():.3f}")
@@ -338,7 +338,7 @@ class MLDataPipelineIntegration:
         min_quality_score: float = 0.7,
     ) -> bool:
         """
-        Export a complete scored ML dataset with train/val/test splits.
+        Export a complete scored ML dataset with train / val / test splits.
 
         Args:
             output_path: Path for output file
@@ -385,7 +385,7 @@ class MLDataPipelineIntegration:
             if output_path.endswith(".jsonl"):
                 import json
 
-                with open(output_path, "w", encoding="utf-8") as f:
+                with open(output_path, "w", encoding="utf - 8") as f:
                     for _, row in combined_df.iterrows():
                         f.write(json.dumps(row.to_dict(), ensure_ascii=False) + "\n")
             else:
@@ -414,7 +414,7 @@ def get_ml_pipeline_integration() -> Optional[MLDataPipelineIntegration]:
 
 
 def quick_ml_data_collection(count: int = 500) -> Optional[pd.DataFrame]:
-    """Quick collection of ML-ready data with scoring."""
+    """Quick collection of ML - ready data with scoring."""
     integration = get_ml_pipeline_integration()
     if integration:
         return integration.collect_ml_training_data_with_scoring(count=count)

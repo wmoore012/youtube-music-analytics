@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Professional Model Benchmarking System
 
 Comprehensive benchmarking system for sentiment analysis models with:
 - Professional random split testing for data science rigor
 - JSON logging for tracking performance over time
-- Resume-worthy metrics and comparisons
+- Resume - worthy metrics and comparisons
 - Open source model comparisons
 - Statistical significance testing
 """
@@ -65,7 +65,7 @@ class DatasetQualityMetrics:
     positive_percent: float
     negative_percent: float
     neutral_percent: float
-    balance_score: float  # 0-1, where 1 is perfectly balanced
+    balance_score: float  # 0 - 1, where 1 is perfectly balanced
     quality_level: str  # 'poor', 'acceptable', 'good', 'excellent'
     min_class_size: int
     max_class_size: int
@@ -126,11 +126,11 @@ class ModelBenchmarkSystem:
     Professional benchmarking system for sentiment analysis models.
 
     Features:
-    - Rigorous train/test splits with stratification
+    - Rigorous train / test splits with stratification
     - Multiple model comparison (proprietary vs open source)
     - Statistical significance testing
     - JSON logging for tracking over time
-    - Resume-worthy performance metrics
+    - Resume - worthy performance metrics
     """
 
     def __init__(self, results_dir: str = "benchmark_results", use_database: bool = True):
@@ -241,11 +241,12 @@ class ModelBenchmarkSystem:
                 else ("negative" if neg_count == min_class_size else "neutral")
             )
             recommendations.append(
-                f"Severe imbalance: {largest_class} class has {imbalance_ratio:.1f}x more samples than {smallest_class}."
+                f"Severe imbalance: {largest_class} class has {
+                    imbalance_ratio:.1f}x more samples than {smallest_class}."
             )
             recommendations.append(f"Add {max_class_size - min_class_size} more {smallest_class} examples to balance.")
 
-        # Add size-based recommendations
+        # Add size - based recommendations
         if min_class_size < 100:
             recommendations.append(
                 f"Smallest class has only {min_class_size} samples. Need minimum 100 per class for reliable ML."
@@ -277,7 +278,8 @@ class ModelBenchmarkSystem:
         quality_emoji = {"excellent": "🟢", "good": "🟡", "acceptable": "🟠", "poor": "🔴"}
 
         print(
-            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {quality_metrics.quality_level.upper()}"
+            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {
+                                                  quality_metrics.quality_level.upper()}"
         )
         print(f"Balance Score: {quality_metrics.balance_score:.3f} (1.0 = perfect)")
         print()
@@ -335,12 +337,12 @@ class ModelBenchmarkSystem:
                 self.models[f"transformer_{model_key}"] = {
                     "type": "transformer",
                     "name": f"Transformer {model_key.replace('_', ' ').title()}",
-                    "description": f"Music-enhanced transformer: {transformer.model_name}",
+                    "description": f"Music - enhanced transformer: {transformer.model_name}",
                     "scorer": lambda text, t=transformer: self._score_transformer(text, t),
                 }
 
             if transformer_models:
-                print(f"✅ Registered {len(transformer_models)} music-enhanced transformer models")
+                print(f"✅ Registered {len(transformer_models)} music - enhanced transformer models")
         except Exception as e:
             print(f"⚠️  Could not register transformer models: {e}")
 
@@ -349,11 +351,11 @@ class ModelBenchmarkSystem:
             from youtubeviz.music_ml_classifier import MusicSentimentTransformer
 
             # Create the main transformer model for benchmarking
-            main_transformer = MusicSentimentTransformer("cardiffnlp/twitter-roberta-base-sentiment-latest")
+            main_transformer = MusicSentimentTransformer("cardiffnlp / twitter - roberta - base - sentiment - latest")
             self.models["transformer_sentiment"] = {
                 "type": "transformer",
                 "name": "Music Sentiment Transformer",
-                "description": "Twitter RoBERTa fine-tuned for music domain sentiment",
+                "description": "Twitter RoBERTa fine - tuned for music domain sentiment",
                 "scorer": lambda text: self._score_transformer(text, main_transformer),
             }
             print(f"✅ Registered main transformer_sentiment model")
@@ -365,7 +367,7 @@ class ModelBenchmarkSystem:
             self.models["proprietary_enhanced"] = {
                 "type": "proprietary",
                 "name": "Proprietary Enhanced VADER",
-                "description": "Advanced multi-algorithm enhancement with CSA, DERW, MMSF, TSDM",
+                "description": "Advanced multi - algorithm enhancement with CSA, DERW, MMSF, TSDM",
                 "scorer": self._score_proprietary,
             }
 
@@ -579,7 +581,7 @@ class ModelBenchmarkSystem:
         """
         Strict validation to ensure we're using ONLY real database data.
 
-        Raises ValueError if any fake/synthetic data is detected.
+        Raises ValueError if any fake / synthetic data is detected.
         """
 
         # Check 1: Must have real comment IDs
@@ -601,7 +603,8 @@ class ModelBenchmarkSystem:
         total_comments = len(dataset)
         if unique_comments < total_comments * 0.8:  # Less than 80% unique suggests synthetic
             print(
-                f"⚠️  Warning: Only {unique_comments}/{total_comments} ({unique_comments/total_comments:.1%}) unique comments"
+                f"⚠️  Warning: Only {
+                    unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
             )
             print("   This might indicate synthetic data, but proceeding with real database validation")
 
@@ -714,12 +717,12 @@ class ModelBenchmarkSystem:
             return 0.0, 0.5
 
     def _convert_to_classification(self, scores: List[float]) -> List[str]:
-        """Convert continuous scores to classification labels."""
+        """Convert continuous scores to classification labels."""  # noqa: C901
         return ["positive" if score > 0.1 else "negative" if score < -0.1 else "neutral" for score in scores]
 
     def _run_pre_benchmark_tests(self) -> bool:
         """
-        MANDATORY pre-benchmark tests that run every time.
+        MANDATORY pre - benchmark tests that run every time.
 
         Tests that MUST pass before any benchmark can run:
         1. Database connection works
@@ -730,7 +733,7 @@ class ModelBenchmarkSystem:
         Raises ValueError if any test fails.
         """
 
-        print("🧪 RUNNING MANDATORY PRE-BENCHMARK TESTS")
+        print("🧪 RUNNING MANDATORY PRE - BENCHMARK TESTS")
         print("-" * 50)
 
         # Test 1: Database connection
@@ -834,7 +837,7 @@ class ModelBenchmarkSystem:
         except Exception as e:
             raise ValueError(f"Ground truth generation test failed: {e}")
 
-        print("🎉 ALL PRE-BENCHMARK TESTS PASSED")
+        print("🎉 ALL PRE - BENCHMARK TESTS PASSED")
         print("🔒 VERIFIED: Only real database data will be used")
         print("-" * 50)
         return True
@@ -843,7 +846,7 @@ class ModelBenchmarkSystem:
         """
         Run data integrity tests to ensure no synthetic data capabilities exist.
 
-        This runs the same tests as our CI/CD pipeline to guarantee data integrity.
+        This runs the same tests as our CI / CD pipeline to guarantee data integrity.
         """
 
         print("🔒 RUNNING DATA INTEGRITY TESTS")
@@ -903,7 +906,7 @@ class ModelBenchmarkSystem:
         """
         Run comprehensive benchmark with professional methodology.
 
-        MANDATORY: Runs pre-benchmark tests first to ensure data quality.
+        MANDATORY: Runs pre - benchmark tests first to ensure data quality.
 
         Args:
             config: Benchmark configuration
@@ -916,14 +919,14 @@ class ModelBenchmarkSystem:
         print(f"🚀 STARTING BENCHMARK: {config.experiment_name}")
         print("=" * 80)
 
-        # MANDATORY: Run pre-benchmark tests
+        # MANDATORY: Run pre - benchmark tests
         self._run_pre_benchmark_tests()
 
         # MANDATORY: Run data integrity tests
         self._run_data_integrity_tests()
 
         # Generate experiment ID
-        experiment_id = f"{config.experiment_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        experiment_id = f"{config.experiment_name}_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
 
         # Fetch dataset
         print("📊 Fetching benchmark dataset...")
@@ -931,7 +934,8 @@ class ModelBenchmarkSystem:
 
         if len(dataset) < config.min_samples_per_class * 3:
             raise ValueError(
-                f"Insufficient REAL database data: need at least {config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
+                f"Insufficient REAL database data: need at least {
+                    config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
             )
 
         # NEW: Dataset quality assessment
@@ -946,23 +950,25 @@ class ModelBenchmarkSystem:
             if dataset_quality.balance_score < config.min_balance_score:
                 if config.warn_on_imbalance:
                     print(
-                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({config.min_balance_score})"
+                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({
+                                                                config.min_balance_score})"
                     )
                     print("This may lead to biased model performance!")
 
-                    response = input("\nContinue anyway? (y/N): ").strip().lower()
+                    response = input("\nContinue anyway? (y / N): ").strip().lower()
                     if response != "y":
                         raise ValueError("Benchmark cancelled due to poor dataset quality")
                 else:
                     raise ValueError(
-                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {config.min_balance_score})"
+                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {
+                                                    config.min_balance_score})"
                     )
 
             print("✅ Dataset quality check passed!")
         print()
 
-        # Professional train/test split with stratification
-        print("🔀 Creating professional train/test split...")
+        # Professional train / test split with stratification
+        print("🔀 Creating professional train / test split...")
         X = dataset["comment_text"].values
         y = dataset["ground_truth"].values
 
@@ -1033,7 +1039,7 @@ class ModelBenchmarkSystem:
             results.append(result)
 
             print(f"   📈 Accuracy: {accuracy:.3f}")
-            print(f"   📈 F1-Score: {f1:.3f}")
+            print(f"   📈 F1 - Score: {f1:.3f}")
             print(f"   ⏱️  Time: {processing_time:.2f}s")
 
         # Statistical analysis
@@ -1192,7 +1198,7 @@ class ModelBenchmarkSystem:
         print(f"{'Rank':<4} {'Model Name':<35} {'What It Is':<45} {'F1':<6} {'Acc':<6} {'Speed':<8}")
         print("-" * 120)
 
-        # Human-readable model descriptions with training details
+        # Human - readable model descriptions with training details
         model_descriptions = {
             "transformer_distilbert_base_uncased": "DistilBERT - Fast AI (trained on Wikipedia + books)",
             "transformer_j_hartmann_emotion_english_distilroberta_base": "Emotion AI - Trained to detect 6 emotions + sentiment",
@@ -1201,7 +1207,7 @@ class ModelBenchmarkSystem:
             "transformer_cardiffnlp_twitter_roberta_base_sentiment_latest": "Twitter Sentiment AI - Trained on 124M tweets",
             "enhanced_vader_comprehensive": "Enhanced VADER - Rules + your music slang terms",
             "proprietary_enhanced": "Custom Algorithm - Your secret sauce formulas",
-            "stock_vader": "Basic VADER - Standard dictionary-based rules",
+            "stock_vader": "Basic VADER - Standard dictionary - based rules",
             "ml_classifier": "Music ML - Trained on your 267 classifications",
         }
 
@@ -1222,7 +1228,7 @@ class ModelBenchmarkSystem:
         print("-" * 40)
         print("Transformers are AI models (like ChatGPT) that understand language context.")
         print("They're trained on massive amounts of text to learn patterns in human language.")
-        print("Unlike rule-based systems, they 'learn' sentiment from examples, not hardcoded rules.")
+        print("Unlike rule - based systems, they 'learn' sentiment from examples, not hardcoded rules.")
         print()
 
         print(f"🎯 KEY INSIGHTS")
@@ -1230,14 +1236,14 @@ class ModelBenchmarkSystem:
 
         best = sorted_results[0]
         print(f"🥇 Best Model: {best.model_name}")
-        print(f"   F1-Score: {best.f1_score:.3f}")
+        print(f"   F1 - Score: {best.f1_score:.3f}")
         print(f"   Accuracy: {best.accuracy:.3f}")
         print(f"   Type: {best.model_type}")
 
         # Type comparison
         type_stats = benchmark_run.statistical_tests["type_comparison"]
         print(f"\n📈 Performance by Type:")
-        for model_type, stats in type_stats.items():
+        for model_type, stats in type_stats.items():  # noqa: C901
             print(f"   {model_type.title()}: {stats['mean_f1']:.3f} ± {stats['std_f1']:.3f}")
 
         print(f"\n💾 Results saved to: {self.results_dir}")
@@ -1254,22 +1260,22 @@ class ModelBenchmarkSystem:
         best = sorted_results[0]
         worst = sorted_results[-1]
 
-        # What is F1-Score? (Educational)
-        print(f"\n🤔 WHAT THE HECK IS AN F1-SCORE?")
+        # What is F1 - Score? (Educational)
+        print(f"\n🤔 WHAT THE HECK IS AN F1 - SCORE?")
         print("-" * 40)
-        print("Think of F1-Score like a report card grade for AI models:")
+        print("Think of F1 - Score like a report card grade for AI models:")
         print("• It combines two things: how often the model is RIGHT when it guesses")
         print("  (precision) and how often it FINDS the right answers (recall)")
         print("• 1.0 = Perfect (like getting 100% on every test)")
         print("• 0.8+ = Really good (A student)")
         print("• 0.6+ = Pretty good (B student)")
         print("• 0.4+ = Meh (C student)")
-        print("• Below 0.4 = Needs help (D/F student)")
+        print("• Below 0.4 = Needs help (D / F student)")
         print()
         print(f"🎯 Your best model got {best.f1_score:.3f} - that's like a C+ student!")
 
         # Practical Speed Analysis
-        print(f"\n⏱️  REAL-WORLD PROCESSING TIME")
+        print(f"\n⏱️  REAL - WORLD PROCESSING TIME")
         print("-" * 40)
         print("How long to analyze 1,000,000 comments with each model:")
         print()
@@ -1281,16 +1287,16 @@ class ModelBenchmarkSystem:
             if million_comment_time < 60:
                 time_display = f"{million_comment_time:.1f} seconds"
             elif million_comment_time < 3600:
-                time_display = f"{million_comment_time/60:.1f} minutes"
+                time_display = f"{million_comment_time / 60:.1f} minutes"
             elif million_comment_time < 86400:
-                time_display = f"{million_comment_time/3600:.1f} hours"
+                time_display = f"{million_comment_time / 3600:.1f} hours"
             else:
-                time_display = f"{million_comment_time/86400:.1f} days"
+                time_display = f"{million_comment_time / 86400:.1f} days"
 
             print(f"📊 {model.model_name}: {time_display}")
 
         print(f"\n💡 Reality Check: These are estimates based on {300} test comments.")
-        print("Real-world performance may vary with database load, network latency, etc.")
+        print("Real - world performance may vary with database load, network latency, etc.")
 
         # Why Your Enhanced Models Aren't Winning
         print(f"🤨 WHY YOUR ENHANCED MODELS AREN'T CRUSHING IT")
@@ -1312,7 +1318,7 @@ class ModelBenchmarkSystem:
             elif "aggressive" in model.model_name:
                 enhancement_level = "Comprehensive + boosted weights + experimental terms"
             elif "hybrid" in model.model_name:
-                enhancement_level = "Context-sensitive + cultural adjustments"
+                enhancement_level = "Context - sensitive + cultural adjustments"
             elif "proprietary" in model.model_name:
                 enhancement_level = "Your secret sauce with 4 algorithms (CSA, DERW, MMSF, TSDM)"
             else:
@@ -1326,7 +1332,7 @@ class ModelBenchmarkSystem:
         print("• The ground truth labeling might not match music slang patterns")
         print("• Class imbalance (79% neutral) is overwhelming the enhancements")
         print("• Your enhancements work great, but the test data doesn't have enough slang")
-        print("• TextBlob uses a completely different approach (not rule-based)")
+        print("• TextBlob uses a completely different approach (not rule - based)")
 
         # Dataset Reality Check
         class_dist = benchmark_run.dataset_info["class_distribution"]
@@ -1379,7 +1385,7 @@ class ModelBenchmarkSystem:
             print(f"   ❌ Couldn't fetch sample comments: {e}")
             print("   (This might explain why the models are struggling!)")
 
-        # AI-Powered Suggestions
+        # AI - Powered Suggestions
         print(f"\n🤖 AI SUGGESTIONS FOR IMPROVEMENT")
         print("-" * 40)
 
@@ -1399,8 +1405,8 @@ class ModelBenchmarkSystem:
         suggestions.extend(
             [
                 "📝 Check your ground truth labeling - maybe 'fire' comments are labeled as neutral?",
-                "🎵 Test on comments with more obvious music slang (not just engagement-based labels)",
-                "⚖️ Balance your dataset - get more positive/negative examples",
+                "🎵 Test on comments with more obvious music slang (not just engagement - based labels)",
+                "⚖️ Balance your dataset - get more positive / negative examples",
                 "🔍 Debug with specific examples: run your models on 'this song is fire' vs 'this is mid'",
                 "📊 Try different ground truth: use comment sentiment words instead of like counts",
             ]
@@ -1416,7 +1422,7 @@ class ModelBenchmarkSystem:
         print("• It's trained on movie reviews, not rules")
         print("• It doesn't rely on specific slang terms")
         print("• It looks at overall sentence structure and context")
-        print("• It's not confused by music-specific terms it doesn't know")
+        print("• It's not confused by music - specific terms it doesn't know")
         print(f"• It's {(worst.processing_time / best.processing_time):.0f}x faster!")
 
         # Next Steps
@@ -1425,18 +1431,18 @@ class ModelBenchmarkSystem:
         print("1. 🐛 Debug your enhancements with specific test cases")
         print("2. 📊 Create better ground truth labels (use actual sentiment words)")
         print("3. 🎵 Test on comments with obvious music slang")
-        print("4. ⚖️ Balance your dataset (more positive/negative examples)")
+        print("4. ⚖️ Balance your dataset (more positive / negative examples)")
         print("5. 🔍 Check if your proprietary algorithms are actually running")
 
-        # Resume-worthy highlights
+        # Resume - worthy highlights
         print(f"\n🎓 WHAT TO PUT ON YOUR RESUME")
         print("-" * 35)
         print("✅ 'Benchmarked 8 sentiment analysis models on real music industry data'")
         print("✅ 'Identified dataset challenges in music sentiment classification'")
         print("✅ 'Discovered class imbalance issues affecting model performance'")
-        print("✅ 'Applied rigorous train/test methodology with statistical validation'")
+        print("✅ 'Applied rigorous train / test methodology with statistical validation'")
         print("✅ 'Built proprietary sentiment enhancement system with 4 algorithms'")
-        print("✅ 'Analyzed processing time trade-offs for production deployment'")
+        print("✅ 'Analyzed processing time trade - offs for production deployment'")
 
         print(f"\n" + "=" * 80)
         print("🎵 Remember: This is music sentiment analysis - it's genuinely hard!")

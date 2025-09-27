@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Test Runner Script for ETL Pipeline
 
@@ -6,11 +6,11 @@ This script provides a convenient way to run the comprehensive test suite
 with various options and configurations.
 
 Usage:
-    python scripts/run_tests.py                    # Run all tests
-    python scripts/run_tests.py --unit             # Run only unit tests
-    python scripts/run_tests.py --integration      # Run only integration tests
-    python scripts/run_tests.py --coverage         # Run with coverage analysis
-    python scripts/run_tests.py --fast             # Run fast tests only
+    python scripts / run_tests.py                    # Run all tests
+    python scripts / run_tests.py --unit             # Run only unit tests
+    python scripts / run_tests.py --integration      # Run only integration tests
+    python scripts / run_tests.py --coverage         # Run with coverage analysis
+    python scripts / run_tests.py --fast             # Run fast tests only
 """
 
 import argparse
@@ -42,12 +42,12 @@ def main():
     # Test selection options
     parser.add_argument("--unit", action="store_true", help="Run only unit tests")
     parser.add_argument("--integration", action="store_true", help="Run only integration tests")
-    parser.add_argument("--video-filter", action="store_true", help="Run only video filter tests")
+    parser.add_argument("--video - filter", action="store_true", help="Run only video filter tests")
 
     # Coverage options
     parser.add_argument("--coverage", action="store_true", help="Run with coverage analysis")
-    parser.add_argument("--coverage-target", type=float, default=80.0, help="Coverage target percentage")
-    parser.add_argument("--coverage-fail", action="store_true", help="Fail if coverage below target")
+    parser.add_argument("--coverage - target", type=float, default=80.0, help="Coverage target percentage")
+    parser.add_argument("--coverage - fail", action="store_true", help="Fail if coverage below target")
 
     # Execution options
     parser.add_argument("--fast", action="store_true", help="Run fast tests only (skip slow integration tests)")
@@ -56,7 +56,7 @@ def main():
     parser.add_argument("--timeout", type=int, default=30, help="Test timeout in seconds")
 
     # Output options
-    parser.add_argument("--html-report", action="store_true", help="Generate HTML coverage report")
+    parser.add_argument("--html - report", action="store_true", help="Generate HTML coverage report")
     parser.add_argument("--junit", action="store_true", help="Generate JUnit XML report")
 
     args = parser.parse_args()
@@ -73,13 +73,13 @@ def main():
 
     # Add test selection
     if args.unit:
-        pytest_cmd.append("tests/test_etl_components.py")
+        pytest_cmd.append("tests / test_etl_components.py")
         print("📋 Running unit tests only")
     elif args.integration:
-        pytest_cmd.append("tests/test_integration.py")
+        pytest_cmd.append("tests / test_integration.py")
         print("📋 Running integration tests only")
     elif args.video_filter:
-        pytest_cmd.append("tests/test_video_filter.py")
+        pytest_cmd.append("tests / test_video_filter.py")
         print("📋 Running video filter tests only")
     else:
         pytest_cmd.append("tests/")
@@ -101,15 +101,15 @@ def main():
 
     # Add coverage options
     if args.coverage:
-        pytest_cmd.extend(["--cov=web", "--cov=src", "--cov-report=term-missing"])
+        pytest_cmd.extend(["--cov=web", "--cov=src", "--cov - report=term - missing"])
 
         if args.html_report:
-            pytest_cmd.append("--cov-report=html")
+            pytest_cmd.append("--cov - report=html")
             print("📄 HTML coverage report will be generated")
 
     # Add output options
     if args.junit:
-        pytest_cmd.extend(["--junit-xml", "test-results.xml"])
+        pytest_cmd.extend(["--junit - xml", "test - results.xml"])
         print("📊 JUnit XML report will be generated")
 
     # Run tests
@@ -122,10 +122,10 @@ def main():
     # Run coverage analysis if requested
     if args.coverage:
         print("\n" + "=" * 50)
-        coverage_cmd = [sys.executable, "tests/test_coverage.py", "--target", str(args.coverage_target)]
+        coverage_cmd = [sys.executable, "tests / test_coverage.py", "--target", str(args.coverage_target)]
 
         if args.coverage_fail:
-            coverage_cmd.append("--fail-under")
+            coverage_cmd.append("--fail - under")
 
         coverage_success = run_command(coverage_cmd, "Running coverage analysis")
 
@@ -138,10 +138,10 @@ def main():
     print("🎉 Test execution completed successfully!")
 
     if args.coverage and args.html_report:
-        print("📄 HTML coverage report: htmlcov/index.html")
+        print("📄 HTML coverage report: htmlcov / index.html")
 
     if args.junit:
-        print("📊 JUnit XML report: test-results.xml")
+        print("📊 JUnit XML report: test - results.xml")
 
     return 0
 

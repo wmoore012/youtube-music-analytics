@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Enhanced Sentiment Analysis Integration
 
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 class EnhancedSentimentPipeline:
     """
-    Production-ready sentiment analysis pipeline that integrates with existing infrastructure.
+    Production - ready sentiment analysis pipeline that integrates with existing infrastructure.
 
     Uses existing database helpers, statistical utilities, and configuration management
     while adding enhanced VADER capabilities.
@@ -356,7 +356,8 @@ class EnhancedSentimentPipeline:
         elif avg_agreement >= 0.75 and avg_correlation >= 0.5:
             recommendation = "deploy_with_monitoring"
             risk_level = "medium"
-            rationale = f"Good agreement ({avg_agreement:.2f}) and correlation ({avg_correlation:.2f}), deploy with close monitoring"
+            rationale = f"Good agreement ({avg_agreement:.2f}) and correlation ({
+                                          avg_correlation:.2f}), deploy with close monitoring"
         else:
             recommendation = "do_not_deploy"
             risk_level = "high"

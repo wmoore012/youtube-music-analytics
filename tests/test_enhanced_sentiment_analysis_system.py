@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Testing Suite for Enhanced Sentiment Analysis System
 
@@ -131,7 +131,7 @@ class TestDeterministicIDGeneration:
 
             # Should handle Unicode properly
             assert isinstance(norm1, str), "Normalized text should be string"
-            assert len(norm1) > 0 or len(comment.strip()) == 0, "Non-empty input should produce non-empty output"
+            assert len(norm1) > 0 or len(comment.strip()) == 0, "Non - empty input should produce non - empty output"
 
     def test_id_uniqueness_with_real_data(self):
         """Test that different inputs produce different IDs using real database values."""
@@ -293,7 +293,8 @@ class TestVADERVariantConsistency:
             significant_difference = any(abs(score - stock_score) > 0.05 for score in enhanced_scores)
             if not significant_difference:
                 print(
-                    f"⚠️  No significant enhancement for '{phrase}' - Stock: {stock_score:.3f}, Enhanced: {enhanced_scores}"
+                    f"⚠️  No significant enhancement for '{
+                        phrase}' - Stock: {stock_score:.3f}, Enhanced: {enhanced_scores}"
                 )
             # Note: This is informational - some phrases may not show enhancement in all variants
 
@@ -356,21 +357,21 @@ class TestEvaluationFrameworkWithRealData:
         # Model A: 80% accuracy
         predictions_a = (
             ["positive"] * 16
-            + ["negative"] * 4  # 16/20 correct positive
+            + ["negative"] * 4  # 16 / 20 correct positive
             + ["negative"] * 16
-            + ["positive"] * 4  # 16/20 correct negative
+            + ["positive"] * 4  # 16 / 20 correct negative
             + ["neutral"] * 8
-            + ["positive"] * 2  # 8/10 correct neutral
+            + ["positive"] * 2  # 8 / 10 correct neutral
         )
 
         # Model B: 70% accuracy with different error pattern
         predictions_b = (
             ["positive"] * 14
-            + ["neutral"] * 6  # 14/20 correct positive
+            + ["neutral"] * 6  # 14 / 20 correct positive
             + ["negative"] * 14
-            + ["neutral"] * 6  # 14/20 correct negative
+            + ["neutral"] * 6  # 14 / 20 correct negative
             + ["neutral"] * 7
-            + ["negative"] * 3  # 7/10 correct neutral
+            + ["negative"] * 3  # 7 / 10 correct neutral
         )
 
         result = self.framework.compute_mcnemar_test(true_labels, predictions_a, predictions_b)
@@ -386,7 +387,7 @@ class TestEvaluationFrameworkWithRealData:
 
     def test_bootstrap_confidence_intervals(self):
         """Test bootstrap confidence interval calculation."""
-        # Test with realistic F1 scores from cross-validation
+        # Test with realistic F1 scores from cross - validation
         cv_scores = [0.85, 0.82, 0.88, 0.84, 0.86, 0.83, 0.87, 0.85]
 
         ci = self.framework.bootstrap_confidence_intervals(cv_scores, confidence=0.95)
@@ -464,10 +465,10 @@ class TestEvaluationFrameworkWithRealData:
 
     def test_multiple_comparison_correction(self):
         """Test multiple comparison correction methods."""
-        # Test with realistic p-values from multiple tests
+        # Test with realistic p - values from multiple tests
         p_values = [0.001, 0.02, 0.04, 0.06, 0.08, 0.12, 0.15, 0.25, 0.45, 0.67]
 
-        # Test Benjamini-Hochberg correction
+        # Test Benjamini - Hochberg correction
         bh_results = self.framework.apply_multiple_comparison_correction(
             p_values, method="benjamini_hochberg", alpha=0.05
         )
@@ -527,7 +528,7 @@ class TestPerformanceAndMemoryUsage:
         fingerprint_time = time.time() - start_time
 
         assert fingerprint_time < 1.0, f"Fingerprint generation took too long: {fingerprint_time:.2f}s"
-        assert len(fingerprint1) == 64, "SHA-256 fingerprint should be 64 characters"
+        assert len(fingerprint1) == 64, "SHA - 256 fingerprint should be 64 characters"
 
         # Test fingerprint consistency
         fingerprint2 = dataset.fingerprint()
@@ -672,7 +673,7 @@ class TestStatisticalTestValidation:
 
         result = self.framework.compute_mcnemar_test(true_labels, identical_predictions, identical_predictions)
 
-        assert result.p_value == 1.0, "Identical models should have p-value = 1.0"
+        assert result.p_value == 1.0, "Identical models should have p - value = 1.0"
         assert not result.significant, "Identical models should not be significant"
 
         # Test case 2: Clearly different models
@@ -681,7 +682,7 @@ class TestStatisticalTestValidation:
 
         result = self.framework.compute_mcnemar_test(true_labels, perfect_predictions, random_predictions)
 
-        assert result.p_value < 0.001, "Clearly different models should have very low p-value"
+        assert result.p_value < 0.001, "Clearly different models should have very low p - value"
         assert result.significant, "Clearly different models should be significant"
 
     def test_bootstrap_confidence_interval_validity(self):
@@ -712,8 +713,8 @@ class TestStatisticalTestValidation:
         assert width_90 < width_95 < width_99, "Higher confidence should give wider intervals"
 
     def test_benjamini_hochberg_fdr_control(self):
-        """Test Benjamini-Hochberg FDR control implementation."""
-        # Test with known p-values
+        """Test Benjamini - Hochberg FDR control implementation."""
+        # Test with known p - values
         p_values = [0.001, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09]
 
         # Test different alpha levels
@@ -735,7 +736,7 @@ class TestStatisticalTestValidation:
         assert empty_result == [], "Empty input should return empty result"
 
         single_result = self.framework.apply_multiple_comparison_correction([0.03], alpha=0.05)
-        assert single_result == [True], "Single significant p-value should be rejected"
+        assert single_result == [True], "Single significant p - value should be rejected"
 
     def test_experiment_reproducibility(self):
         """Test experiment reproducibility with fixed seeds."""
@@ -820,8 +821,8 @@ class TestStatisticalTestValidation:
         labels_reordered = ["negative", "positive"]
         fingerprint4 = self.framework._compute_data_fingerprint(comments_reordered, labels_reordered)
 
-        # Should be same (order-independent due to sorting)
-        assert fingerprint1 == fingerprint4, "Fingerprint should be order-independent"
+        # Should be same (order - independent due to sorting)
+        assert fingerprint1 == fingerprint4, "Fingerprint should be order - independent"
 
 
 class TestIntegrationWithExistingSystem:
@@ -947,7 +948,7 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"❌ {method_name}: {e}")
 
-    print(f"\n🎯 Test Results: {passed_tests}/{total_tests} passed ({passed_tests/total_tests*100:.1f}%)")
+    print(f"\n🎯 Test Results: {passed_tests}/{total_tests} passed ({passed_tests / total_tests * 100:.1f}%)")
 
     if passed_tests == total_tests:
         print("🎉 All tests passed!")

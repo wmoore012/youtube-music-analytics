@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Tests for Music Industry Sentiment Dataset v2.0
 
-Tests the production-grade v2.0 dataset with proper validation,
-intent/sentiment separation, and model performance evaluation.
+Tests the production - grade v2.0 dataset with proper validation,
+intent / sentiment separation, and model performance evaluation.
 """
 
 import os
@@ -78,7 +78,7 @@ class TestMusicSentimentDatasetV2:
                 # Find the duplicate
                 duplicate_entries = [e for e in self.dataset.entries if e.norm_key() == norm_key]
 
-                # Duplicates are only allowed if they have different sentiment/intent/aspect
+                # Duplicates are only allowed if they have different sentiment / intent / aspect
                 if len(duplicate_entries) > 1:
                     for i, dup1 in enumerate(duplicate_entries):
                         for dup2 in duplicate_entries[i + 1 :]:
@@ -91,7 +91,7 @@ class TestMusicSentimentDatasetV2:
             normalized_keys.add(norm_key)
 
     def test_intent_sentiment_consistency(self):
-        """Test intent/sentiment separation follows SemEval guidelines."""
+        """Test intent / sentiment separation follows SemEval guidelines."""
 
         # All praise intent should be positive
         praise_entries = [e for e in self.dataset.entries if e.intent == Intent.PRAISE]
@@ -118,14 +118,14 @@ class TestMusicSentimentDatasetV2:
                     or "need this" in entry.phrase.lower()
                     or "already" in entry.phrase.lower()
                 )
-                assert has_opinion_cues, f"Request/Info without opinion cues should be neutral: '{entry.phrase}'"
+                assert has_opinion_cues, f"Request / Info without opinion cues should be neutral: '{entry.phrase}'"
 
     def test_beat_appreciation_consistency(self):
         """Test beat appreciation detection consistency."""
 
         beat_entries = [e for e in self.dataset.entries if e.beat_appreciation]
 
-        # Beat appreciation entries should have beat-related aspects or patterns
+        # Beat appreciation entries should have beat - related aspects or patterns
         for entry in beat_entries:
             has_beat_aspect = entry.aspect in [Aspect.BEAT, Aspect.MIX]
             has_beat_words = any(
@@ -135,7 +135,7 @@ class TestMusicSentimentDatasetV2:
 
             assert (
                 has_beat_aspect or has_beat_words
-            ), f"Beat appreciation entry should have beat-related content: '{entry.phrase}'"
+            ), f"Beat appreciation entry should have beat - related content: '{entry.phrase}'"
 
     def test_gen_z_slang_flagging(self):
         """Test Gen Z slang flagging accuracy."""
@@ -198,7 +198,7 @@ class TestMusicSentimentDatasetV2:
             has_gen_z_indicator = any(indicator in entry.phrase.lower() for indicator in gen_z_indicators)
             # Allow some flexibility for borderline cases
             if not has_gen_z_indicator:
-                print(f"⚠️ Potentially mis-flagged Gen Z: '{entry.phrase}'")
+                print(f"⚠️ Potentially mis - flagged Gen Z: '{entry.phrase}'")
 
     def test_toxicity_flagging(self):
         """Test toxicity flagging accuracy."""
@@ -219,7 +219,7 @@ class TestMusicSentimentDatasetV2:
             assert has_strong_indicator, f"Strong toxicity should contain strong language: '{entry.phrase}'"
 
     def test_train_test_split_quality(self):
-        """Test stratified train/test split maintains distribution."""
+        """Test stratified train / test split maintains distribution."""
 
         train_entries, test_entries = self.dataset.get_train_test_split(test_size=0.2, random_state=42)
 
@@ -292,7 +292,7 @@ class TestMusicSentimentDatasetV2:
         analyzer = ProductionMusicSentimentAnalyzer(use_dataset=True)
 
         model_info = analyzer.get_model_info()
-        assert model_info["dataset_loaded"] == True
+        assert model_info["dataset_loaded"] is True
         assert model_info["total_phrases"] == len(self.dataset.entries)
         assert model_info["positive_phrases"] > 0
         assert model_info["negative_phrases"] > 0
@@ -503,7 +503,7 @@ if __name__ == "__main__":
         print("✅ Deduplication quality test passed")
 
         test_suite.test_intent_sentiment_consistency()
-        print("✅ Intent/sentiment consistency test passed")
+        print("✅ Intent / sentiment consistency test passed")
 
         test_suite.test_beat_appreciation_consistency()
         print("✅ Beat appreciation consistency test passed")
@@ -515,7 +515,7 @@ if __name__ == "__main__":
         print("✅ Toxicity flagging test passed")
 
         test_suite.test_train_test_split_quality()
-        print("✅ Train/test split quality test passed")
+        print("✅ Train / test split quality test passed")
 
         test_suite.test_export_functionality()
         print("✅ Export functionality test passed")

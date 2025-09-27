@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Text Processing Helpers for Music Domain
 
 Provides specialized text processing utilities for music industry content,
-including music slang preservation, emoji handling, and transformer-ready preprocessing.
+including music slang preservation, emoji handling, and transformer - ready preprocessing.
 """
 
 from dataclasses import dataclass
@@ -47,14 +47,14 @@ class TextProcessingConfig:
     remove_extra_whitespace: bool = True
     normalize_unicode: bool = True
 
-    # Music-specific processing
+    # Music - specific processing
     slang_preservation: SlangPreservationLevel = SlangPreservationLevel.COMPREHENSIVE
     preserve_case_for_slang: bool = True
 
     # Emoji handling
     emoji_mode: EmojiHandlingMode = EmojiHandlingMode.PRESERVE
 
-    # Transformer-specific
+    # Transformer - specific
     max_length: Optional[int] = None
     add_special_tokens: bool = True
 
@@ -69,7 +69,7 @@ class MusicSlangPreserver:
 
     # Comprehensive music slang dictionary
     MUSIC_SLANG_TERMS = {
-        # Positive slang (case-sensitive preservation)
+        # Positive slang (case - sensitive preservation)
         "GOATED": {"variants": ["goated", "GOAT"], "sentiment": "positive", "preserve_case": True},
         "PERIODT": {"variants": ["periodt", "period"], "sentiment": "positive", "preserve_case": True},
         "SLAY": {"variants": ["slay", "slaying"], "sentiment": "positive", "preserve_case": True},
@@ -95,7 +95,7 @@ class MusicSlangPreserver:
         "mother": {"variants": ["MOTHER"], "sentiment": "positive", "preserve_case": False},
         "ate": {"variants": ["ate that"], "sentiment": "positive", "preserve_case": False},
         "served": {"variants": ["serve"], "sentiment": "positive", "preserve_case": False},
-        # Production/technical slang
+        # Production / technical slang
         "clean": {"variants": [], "sentiment": "positive", "preserve_case": False},
         "crisp": {"variants": [], "sentiment": "positive", "preserve_case": False},
         "tight": {"variants": [], "sentiment": "positive", "preserve_case": False},
@@ -121,7 +121,7 @@ class MusicSlangPreserver:
             pattern = r"\b(?:" + "|".join(escaped_terms) + r")\b"
 
             if self.preservation_level == SlangPreservationLevel.BASIC:
-                # Only preserve high-confidence positive/negative terms
+                # Only preserve high - confidence positive / negative terms
                 if info["sentiment"] in ["positive", "negative"]:
                     self.patterns[term] = {
                         "pattern": re.compile(pattern, re.IGNORECASE),
@@ -152,20 +152,20 @@ class MusicSlangPreserver:
                     # Keep original case
                     placeholder = f"__SLANG_{len(replacements)}__"
                     replacements[placeholder] = original
-                    preserved_text_item = preserved_text.replace(original, placeholder, 1)
+                    preserved_text = preserved_text.replace(original, placeholder, 1)
                 else:
                     # Normalize to lowercase but mark as slang
                     placeholder = f"__SLANG_{len(replacements)}__"
                     replacements[placeholder] = original.lower()
-                    preserved_text_item = preserved_text.replace(original, placeholder, 1)
+                    preserved_text = preserved_text.replace(original, placeholder, 1)
 
         return preserved_text, replacements
 
     def restore_slang_in_text(self, text: str, replacements: Dict[str, str]) -> str:
         """Restore preserved slang terms after processing."""
-        restored_text_item = text
+        restored_text = text
         for placeholder, original in replacements.items():
-            restored_text_item = restored_text.replace(placeholder, original)
+            restored_text = restored_text.replace(placeholder, original)
         return restored_text
 
     def identify_slang_terms(self, text: str) -> List[Dict[str, str]]:
@@ -191,7 +191,7 @@ class MusicSlangPreserver:
 class EmojiHandler:
     """Handles emoji processing for music domain text."""
 
-    # Music-related emoji mappings
+    # Music - related emoji mappings
     MUSIC_EMOJI_MAP = {
         "🔥": " fire ",
         "💯": " hundred ",
@@ -281,7 +281,7 @@ class EmojiHandler:
         return self.EMOJI_PATTERN.findall(text)
 
     def has_music_emoji(self, text: str) -> bool:
-        """Check if text contains music-related emoji."""
+        """Check if text contains music - related emoji."""
         for emoji in self.MUSIC_EMOJI_MAP.keys():
             if emoji in text:
                 return True
@@ -289,9 +289,9 @@ class EmojiHandler:
 
 
 class TransformerTextProcessor:
-    """Transformer-ready text processing with music domain awareness."""
+    """Transformer - ready text processing with music domain awareness."""
 
-    def __init__(self, model_name: str = "distilbert-base-uncased", config: Optional[TextProcessingConfig] = None):
+    def __init__(self, model_name: str = "distilbert - base - uncased", config: Optional[TextProcessingConfig] = None):
         self.model_name = model_name
         self.config = config or TextProcessingConfig()
 
@@ -410,7 +410,7 @@ class TransformerTextProcessor:
             "avg_word_length": sum(len(word) for word in processed.split()) / max(len(processed.split()), 1),
         }
 
-        # Music-specific features
+        # Music - specific features
         slang_terms = self.slang_preserver.identify_slang_terms(text)
         features.update(
             {
@@ -446,7 +446,7 @@ class TransformerTextProcessor:
 
 # Convenience functions
 def create_music_text_processor(
-    model_name: str = "distilbert-base-uncased",
+    model_name: str = "distilbert - base - uncased",
     slang_preservation: SlangPreservationLevel = SlangPreservationLevel.COMPREHENSIVE,
     emoji_mode: EmojiHandlingMode = EmojiHandlingMode.PRESERVE,
 ) -> TransformerTextProcessor:

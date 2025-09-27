@@ -1,8 +1,8 @@
 """
 Test suite for analytics queries schema alignment.
 
-This test validates that analytics queries use the correct ISRC-based schema
-instead of the non-existent songs table.
+This test validates that analytics queries use the correct ISRC - based schema
+instead of the non - existent songs table.
 """
 
 from unittest.mock import Mock, patch
@@ -211,7 +211,7 @@ class TestAnalyticsQueriesSchemaAlignment:
                 assert "songs" not in query_str.lower()
 
     def test_no_references_to_songs_table_in_queries(self):
-        """Test that no analytics functions reference the non-existent songs table."""
+        """Test that no analytics functions reference the non - existent songs table."""
         import inspect as py_inspect
 
         from src.youtubeviz import data
@@ -231,7 +231,7 @@ class TestAnalyticsQueriesSchemaAlignment:
                 assert "from songs" not in source.lower()
                 assert "join songs" not in source.lower()
             except (OSError, TypeError):
-                # Skip functions without source (built-ins, etc.)
+                # Skip functions without source (built - ins, etc.)
                 continue
 
 

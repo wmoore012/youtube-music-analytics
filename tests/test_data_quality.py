@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive data quality tests for the YouTube analytics system.
 Tests for duplicates, data consistency, and notebook data integrity.
@@ -72,7 +72,8 @@ class TestDataQuality:
                 ), f"Found {unexpected_duplicates} unexpected video duplicates on same dates"
             else:
                 print(
-                    f"\n✅ All {len(duplicate_video_ids)} video duplicates are expected metric updates across different dates"
+                    f"\n✅ All {len(duplicate_video_ids)
+                                   } video duplicates are expected metric updates across different dates"
                 )
         else:
             print(f"\n✅ NO DUPLICATE VIDEO IDS - Clean video data!")
@@ -139,7 +140,8 @@ class TestDataQuality:
             print(f"\n✅ GOOD: {len(legitimate_updates)} legitimate metric updates found (same video, different dates)")
 
         print(
-            f"\n📊 Summary: {len(legitimate_updates)} legitimate updates, {len(critical_duplicates)} potential versions to review"
+            f"\n📊 Summary: {len(legitimate_updates)} legitimate updates, {
+                                len(critical_duplicates)} potential versions to review"
         )
 
     def test_comment_duplicates(self, engine):
@@ -208,7 +210,7 @@ class TestDataQuality:
         if len(sample_data) == 0:
             pytest.skip("No data to test")
 
-        # Check for None/null artist names
+        # Check for None / null artist names
         null_artists = sample_data["artist_name"].isnull().sum()
         if null_artists > 0:
             print(f"\n⚠️  NULL ARTIST NAMES: {null_artists} records")
@@ -255,19 +257,19 @@ def test_notebook_data_cleaning():
         if "is_song" not in df.columns:
             df = identify_songs(df)
 
-        songs_data = df[df["is_song"] == True].copy()
+        songs_data = df[df["is_song"] is True].copy()
 
         if len(songs_data) == 0:
             return df
 
         # For duplicate songs by same artist, keep the one with most views
-        # (assuming higher views = more recent/accurate data)
+        # (assuming higher views = more recent / accurate data)
         songs_deduplicated = songs_data.sort_values("views", ascending=False).drop_duplicates(
             ["artist_name", "clean_song_title"], keep="first"
         )
 
-        # Combine with non-song data
-        other_data = df[df["is_song"] == False]
+        # Combine with non - song data
+        other_data = df[df["is_song"] is False]
         result = pd.concat([songs_deduplicated, other_data], ignore_index=True)
 
         return result
@@ -290,8 +292,8 @@ def test_notebook_data_cleaning():
     # Test deduplication
     deduplicated_data = deduplicate_songs(test_data.copy())
 
-    original_songs = identified_data[identified_data["is_song"] == True]
-    final_songs = deduplicated_data[deduplicated_data["is_song"] == True]
+    original_songs = identified_data[identified_data["is_song"] is True]
+    final_songs = deduplicated_data[deduplicated_data["is_song"] is True]
 
     duplicates_removed = len(original_songs) - len(final_songs)
     print(f"🧹 DUPLICATES REMOVED: {duplicates_removed}")

@@ -13,7 +13,7 @@ import src.youtubeviz.data as data_module
 
 @pytest.fixture
 def ci_runner() -> EnhancedCI:
-    """Create an EnhancedCI instance in report-only mode for isolated tests."""
+    """Create an EnhancedCI instance in report - only mode for isolated tests."""
 
     return EnhancedCI(report_only=True)
 

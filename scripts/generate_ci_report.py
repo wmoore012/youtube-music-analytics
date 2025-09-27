@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Generate comprehensive CI validation report.
 
@@ -35,8 +35,8 @@ class CIReportGenerator:
             # Get git info if available
             git_info = {}
             try:
-                git_branch = subprocess.check_output(["git", "branch", "--show-current"], text=True).strip()
-                git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()[:8]
+                git_branch = subprocess.check_output(["git", "branch", "--show - current"], text=True).strip()
+                git_commit = subprocess.check_output(["git", "rev - parse", "HEAD"], text=True).strip()[:8]
                 git_info = {"branch": git_branch, "commit": git_commit}
             except Exception:
                 git_info = {"branch": "unknown", "commit": "unknown"}
@@ -53,12 +53,12 @@ class CIReportGenerator:
     def check_code_quality(self) -> Dict[str, Any]:
         """Check code quality metrics."""
         quality_checks = {
-            "black_formatting": self.run_command(["black", "--check", "--line-length=120", "."]),
-            "isort_imports": self.run_command(["isort", "--check-only", "--profile", "black", "."]),
+            "black_formatting": self.run_command(["black", "--check", "--line - length=120", "."]),
+            "isort_imports": self.run_command(["isort", "--check - only", "--profile", "black", "."]),
             "flake8_linting": self.run_command(
-                ["flake8", "--max-line-length=120", "--exclude=.git,__pycache__,notebooks,venv,.venv"]
+                ["flake8", "--max - line - length=120", "--exclude=.git,__pycache__,notebooks,venv,.venv"]
             ),
-            "loc_limits": self.run_command(["python", "scripts/validate_loc_limits.py"]),
+            "loc_limits": self.run_command(["python", "scripts / validate_loc_limits.py"]),
         }
 
         # Count Python files
@@ -103,7 +103,7 @@ class CIReportGenerator:
                 return {
                     "connectivity": connectivity,
                     "tables": tables_info,
-                    "schema_validation": self.run_command(["python", "scripts/test_schema_alignment.py"]),
+                    "schema_validation": self.run_command(["python", "scripts / test_schema_alignment.py"]),
                 }
 
         except Exception as e:
@@ -117,8 +117,8 @@ class CIReportGenerator:
     def check_notebook_status(self) -> Dict[str, Any]:
         """Check notebook validation status."""
         notebook_checks = {
-            "syntax_validation": self.run_command(["python", "scripts/validate_notebooks.py"]),
-            "outputs_stripped": self.run_command(["python", "scripts/check_notebook_outputs.py"]),
+            "syntax_validation": self.run_command(["python", "scripts / validate_notebooks.py"]),
+            "outputs_stripped": self.run_command(["python", "scripts / check_notebook_outputs.py"]),
         }
 
         # Count notebooks
@@ -175,14 +175,15 @@ class CIReportGenerator:
         return self.report
 
     def print_summary(self):
-        """Print a human-readable summary of the report."""
+        """Print a human - readable summary of the report."""
         print("\\n" + "=" * 60)
         print("📋 CI VALIDATION REPORT")
         print("=" * 60)
 
         # System info
         sys_info = self.report["system_info"]
-        print(f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {sys_info.get('platform', 'unknown')}")
+        print(f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {
+              sys_info.get('platform', 'unknown')}")
         if "git_info" in sys_info:
             git = sys_info["git_info"]
             print(f"📝 Git: {git.get('branch', 'unknown')} @ {git.get('commit', 'unknown')}")

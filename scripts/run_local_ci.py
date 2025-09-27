@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-🚀 Local CI/CD Pipeline
+🚀 Local CI / CD Pipeline
 ======================
 
 Run comprehensive quality checks locally before committing.
 This prevents issues from reaching the repository.
 
 Usage:
-    python scripts/run_local_ci.py
-    python scripts/run_local_ci.py --fix-issues
+    python scripts / run_local_ci.py
+    python scripts / run_local_ci.py --fix - issues
 """
 
 import argparse
@@ -46,8 +46,8 @@ class LocalCI:
 
         # Check for notebooks in wrong locations
         problematic_notebooks = [
-            "notebooks/quality/03_appendix_data_quality.ipynb",
-            "notebooks/executed/03_appendix_data_quality-executed.ipynb",
+            "notebooks / quality / 03_appendix_data_quality.ipynb",
+            "notebooks / executed / 03_appendix_data_quality - executed.ipynb",
         ]
 
         for notebook in problematic_notebooks:
@@ -59,7 +59,7 @@ class LocalCI:
                     self.log_error(f"Duplicate notebook found: {notebook}")
 
         # Check for empty executed notebooks
-        executed_dir = Path("notebooks/executed")
+        executed_dir = Path("notebooks / executed")
         if executed_dir.exists():
             for notebook in executed_dir.glob("*.ipynb"):
                 if notebook.stat().st_size == 0:
@@ -211,7 +211,7 @@ except Exception as e:
 
         try:
             result = subprocess.run(
-                [sys.executable, "scripts/validate_artist_data.py"], capture_output=True, text=True, timeout=60
+                [sys.executable, "scripts / validate_artist_data.py"], capture_output=True, text=True, timeout=60
             )
 
             if result.returncode == 0:
@@ -246,9 +246,9 @@ except Exception as e:
                     sys.executable,
                     "-m",
                     "pytest",
-                    "tests/test_system_integration.py",
-                    "tests/test_data_quality.py",
-                    "tests/test_notebook_execution.py",
+                    "tests / test_system_integration.py",
+                    "tests / test_data_quality.py",
+                    "tests / test_notebook_execution.py",
                     "-v",
                     "--tb=short",
                 ],
@@ -270,7 +270,7 @@ except Exception as e:
     def generate_report(self):
         """Generate final report."""
         print("\n" + "=" * 60)
-        print("🏆 LOCAL CI/CD PIPELINE REPORT")
+        print("🏆 LOCAL CI / CD PIPELINE REPORT")
         print("=" * 60)
 
         if not self.errors and not self.warnings:
@@ -291,15 +291,15 @@ except Exception as e:
         if self.errors:
             print("\n🚫 DO NOT COMMIT - Fix errors first!")
             if not self.fix_issues:
-                print("💡 Run with --fix-issues to auto-fix some problems")
+                print("💡 Run with --fix - issues to auto - fix some problems")
             return False
         else:
             print("\n⚠️  WARNINGS ONLY - Safe to commit but consider fixing")
             return True
 
     def run_all_checks(self):
-        """Run all CI/CD checks."""
-        print("🚀 STARTING LOCAL CI/CD PIPELINE")
+        """Run all CI / CD checks."""
+        print("🚀 STARTING LOCAL CI / CD PIPELINE")
         print("=" * 50)
 
         start_time = time.time()
@@ -325,8 +325,8 @@ except Exception as e:
 
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Run local CI/CD pipeline")
-    parser.add_argument("--fix-issues", action="store_true", help="Automatically fix issues where possible")
+    parser = argparse.ArgumentParser(description="Run local CI / CD pipeline")
+    parser.add_argument("--fix - issues", action="store_true", help="Automatically fix issues where possible")
 
     args = parser.parse_args()
 

@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Quick setup for sentiment analysis if it's not working.
-This creates a basic VADER-based sentiment analyzer for benchmarking.
+This creates a basic VADER - based sentiment analyzer for benchmarking.
 """
 
 import os
@@ -12,7 +12,7 @@ import sys
 def create_basic_sentiment_analyzer():
     """Create a basic sentiment analyzer if none exists."""
 
-    sentiment_file = Path("src/youtubeviz/music_sentiment.py")
+    sentiment_file = Path("src / youtubeviz / music_sentiment.py")
 
     if sentiment_file.exists():
         print(f"✅ Sentiment analyzer already exists at {sentiment_file}")
@@ -23,7 +23,7 @@ def create_basic_sentiment_analyzer():
 
     # Basic sentiment analyzer using VADER
     sentiment_code = '''"""
-Basic music-aware sentiment analysis using VADER.
+Basic music - aware sentiment analysis using VADER.
 Created for benchmarking purposes.
 """
 
@@ -35,14 +35,14 @@ except ImportError:
     print("Warning: vaderSentiment not installed. Install with: pip install vaderSentiment")
 
 
-# Music-specific positive terms
+# Music - specific positive terms
 MUSIC_POSITIVE = {
     'fire': 2.0, 'slaps': 2.0, 'banger': 2.0, 'vibes': 1.5,
     'hits different': 2.0, 'goes hard': 2.0, 'chef kiss': 2.0,
     'no skip': 1.8, 'on repeat': 1.5, 'obsessed': 1.8
 }
 
-# Music-specific negative terms
+# Music - specific negative terms
 MUSIC_NEGATIVE = {
     'mid': -1.5, 'trash': -2.0, 'skip': -1.8, 'boring': -1.5,
     'overrated': -1.2, 'generic': -1.0
@@ -65,7 +65,7 @@ def analyze_comment(comment_text):
 
     analyzer = SentimentIntensityAnalyzer()
 
-    # Add music-specific terms to lexicon
+    # Add music - specific terms to lexicon
     for term, score in MUSIC_POSITIVE.items():
         analyzer.lexicon[term] = score
     for term, score in MUSIC_NEGATIVE.items():
@@ -100,7 +100,7 @@ def _basic_sentiment_fallback(comment_text):
     positive_score = sum(1 for term in MUSIC_POSITIVE if term in text_lower)
     negative_score = sum(1 for term in MUSIC_NEGATIVE if term in text_lower)
 
-    # Simple positive/negative words
+    # Simple positive / negative words
     basic_positive = ['good', 'great', 'love', 'amazing', 'awesome', 'best']
     basic_negative = ['bad', 'hate', 'terrible', 'worst', 'awful', 'sucks']
 

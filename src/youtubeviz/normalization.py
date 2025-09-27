@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Normalization helpers to populate music_videos_normalized and reduce nulls without full ETL.
 
 - Reads youtube_videos + youtube_metrics (latest per video)
-- Applies artist alias normalization from config/artist_aliases.json
+- Applies artist alias normalization from config / artist_aliases.json
 - Links ISRC when present; otherwise attempts a conservative parse using web.youtube_version_parser
-- Writes/updates rows in music_videos_normalized
+- Writes / updates rows in music_videos_normalized
 
-This module is intentionally light-weight to support quick iterative TDD cycles.
+This module is intentionally light - weight to support quick iterative TDD cycles.
 """
 from __future__ import annotations
 
@@ -38,9 +38,9 @@ class NormalizedVideo:
     est_revenue_usd: float
 
 
-def load_alias_map(path: str = "config/artist_aliases.json") -> Dict[str, str]:
+def load_alias_map(path: str = "config / artist_aliases.json") -> Dict[str, str]:
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf - 8") as f:
             data = json.load(f)
         return {k.strip(): v.strip() for k, v in data.items() if k and v}
     except FileNotFoundError:
@@ -90,7 +90,7 @@ def _load_vrl_map(engine: Engine) -> Dict[str, str]:
         pass
     # Optional overrides file
     try:
-        with open("config/video_isrc_overrides.json", "r", encoding="utf-8") as f:
+        with open("config / video_isrc_overrides.json", "r", encoding="utf - 8") as f:
             overrides = json.load(f) or {}
         # Normalize values
         for vid, isrc in overrides.items():
@@ -119,7 +119,7 @@ def build_normalized_rows(engine: Engine) -> Iterable[NormalizedVideo]:
 
         def _fill_isrc(row: PdSeries) -> Optional[str]:
             val = row.get("isrc")
-            # Treat NaN/None/blank as missing
+            # Treat NaN / None / blank as missing
             if pd.isna(val) or (str(val).strip() == ""):
                 return vrl_map.get(row["video_id"])
             return str(val).strip()
@@ -160,7 +160,7 @@ def build_normalized_rows(engine: Engine) -> Iterable[NormalizedVideo]:
         likes = int(row.get("total_likes") or 0)
         comments = int(row.get("total_comments") or 0)
         rev = compute_estimated_revenue(views)
-        # Normalize ISRC to None if blank/NaN
+        # Normalize ISRC to None if blank / NaN
         isrc_raw = row.get("isrc")
         isrc_val = None
         if pd.notna(isrc_raw) and str(isrc_raw).strip():

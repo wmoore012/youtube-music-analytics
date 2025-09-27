@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Validation Utilities for YouTube ETL Pipeline
 
 This module provides comprehensive validation functions using Pydantic models.
-All validation follows fail-fast principles with clear error messages.
+All validation follows fail - fast principles with clear error messages.
 
 Key Features:
 - Input validation at API boundaries
@@ -286,7 +286,7 @@ class DataValidator:
 
 
 class DatabaseValidator:
-    """Database-specific validation utilities."""
+    """Database - specific validation utilities."""
 
     def __init__(self):
         self.error_handler = get_error_handler()
@@ -305,9 +305,9 @@ class DatabaseValidator:
             ValidationError: If format is invalid
         """
         if not video_id or not isinstance(video_id, str):
-            raise ValidationError("Video ID must be a non-empty string", field="video_id", value=video_id)
+            raise ValidationError("Video ID must be a non - empty string", field="video_id", value=video_id)
 
-        if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
+        if not re.match(r"^[a - zA - Z0 - 9_-]{11}$", video_id):
             raise ValidationError(f"Invalid YouTube video ID format: {video_id}", field="video_id", value=video_id)
 
         return True
@@ -326,12 +326,12 @@ class DatabaseValidator:
             ValidationError: If format is invalid
         """
         if not isrc or not isinstance(isrc, str):
-            raise ValidationError("ISRC must be a non-empty string", field="isrc", value=isrc)
+            raise ValidationError("ISRC must be a non - empty string", field="isrc", value=isrc)
 
         isrc_upper = isrc.upper().strip()
-        if not re.match(r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$", isrc_upper):
+        if not re.match(r"^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$", isrc_upper):
             raise ValidationError(
-                f"Invalid ISRC format: {isrc}. Expected format: CC-XXX-YY-NNNNN", field="isrc", value=isrc
+                f"Invalid ISRC format: {isrc}. Expected format: CC - XXX - YY - NNNNN", field="isrc", value=isrc
             )
 
         return True
@@ -486,7 +486,7 @@ def validate_database_connection_string(connection_string: str) -> bool:
         )
 
     # Check for supported database schemes
-    supported_schemes = ["mysql+pymysql://", "postgresql://", "sqlite:///"]
+    supported_schemes = ["mysql + pymysql://", "postgresql://", "sqlite:///"]
 
     if not any(connection_string.startswith(scheme) for scheme in supported_schemes):
         raise ValidationError(
@@ -496,12 +496,12 @@ def validate_database_connection_string(connection_string: str) -> bool:
         )
 
     # Basic format validation for MySQL
-    if connection_string.startswith("mysql+pymysql://"):
-        # Expected format: mysql+pymysql://user:password@host:port/database
+    if connection_string.startswith("mysql + pymysql://"):
+        # Expected format: mysql + pymysql://user:password@host:port / database
         pattern = r"^mysql\+pymysql://[^:]+:[^@]+@[^:]+:\d+/[^/]+$"
         if not re.match(pattern, connection_string):
             raise ValidationError(
-                "Invalid MySQL connection string format. Expected: mysql+pymysql://user:password@host:port/database",
+                "Invalid MySQL connection string format. Expected: mysql + pymysql://user:password@host:port / database",
                 field="database_url",
                 value=connection_string,
             )

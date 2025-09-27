@@ -141,7 +141,7 @@ def _is_potential_typosquat(package_name: str) -> bool:
         "matplotlib",
         "seaborn",
         "plotly",
-        "scikit-learn",
+        "scikit - learn",
         "sklearn",
         "tensorflow",
         "torch",
@@ -200,10 +200,10 @@ class SecurityError(Exception):
 
 
 def warn_about_ai_generated_code() -> None:
-    """Show warning about AI-generated code risks."""
+    """Show warning about AI - generated code risks."""
     if get_security_config().show_security_warnings:
         warnings.warn(
-            "⚠️ SECURITY WARNING: Be cautious with AI-generated code. "
+            "⚠️ SECURITY WARNING: Be cautious with AI - generated code. "
             "AI models may suggest malicious or incorrect package names. "
             "Always verify dependencies before installation.",
             UserWarning,
@@ -249,7 +249,7 @@ def create_security_report(packages: List[str]) -> dict:
     return report
 
 
-# Environment-based security defaults
+# Environment - based security defaults
 def _load_security_from_environment():
     """Load security configuration from environment variables."""
     global _security_config

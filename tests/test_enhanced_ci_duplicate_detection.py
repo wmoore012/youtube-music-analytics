@@ -21,7 +21,7 @@ def _run_detection(monkeypatch: pytest.MonkeyPatch, tmp_path, contents: str):
 
 
 def test_duplicate_detection_flags_top_level(monkeypatch: pytest.MonkeyPatch, tmp_path):
-    """Module-level duplicates should be reported as errors."""
+    """Module - level duplicates should be reported as errors."""
     contents = """
     def helper():
         return 1
@@ -32,7 +32,7 @@ def test_duplicate_detection_flags_top_level(monkeypatch: pytest.MonkeyPatch, tm
     found, ci = _run_detection(monkeypatch, tmp_path, contents)
 
     assert found is True
-    assert any("Duplicate top-level function 'helper'" in msg for msg in ci.errors)
+    assert any("Duplicate top - level function 'helper'" in msg for msg in ci.errors)
 
 
 def test_duplicate_detection_ignores_class_methods(monkeypatch: pytest.MonkeyPatch, tmp_path):

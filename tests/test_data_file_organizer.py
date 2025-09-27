@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Tests for Data File Organizer - TDD Implementation
 
 Tests written FIRST to drive the design of the data file organization system.
-This focuses on the REAL problem: scattered CSV/JSON files throughout the codebase.
+This focuses on the REAL problem: scattered CSV / JSON files throughout the codebase.
 """
 
 import csv
@@ -75,7 +75,7 @@ class TestDataFileOrganizer:
         assert isinstance(file_organizer.file_categories, dict)
 
     def test_discover_files_finds_all_scattered_files(self, file_organizer, temp_workspace):
-        """Test that file discovery finds all CSV/JSON files in workspace."""
+        """Test that file discovery finds all CSV / JSON files in workspace."""
         # Act
         discovered_files = file_organizer.discover_files(temp_workspace)
 
@@ -240,7 +240,7 @@ class TestDataFileInfo:
     def test_data_file_info_initialization(self):
         """Test DataFileInfo initialization."""
         file_info = DataFileInfo(
-            path=Path("/test/file.json"),
+            path=Path("/test / file.json"),
             name="file.json",
             size_bytes=1024,
             file_type="json",
@@ -272,14 +272,14 @@ class TestDataFileInfo:
             content_hash = file_info.calculate_content_hash()
 
             assert content_hash is not None
-            assert len(content_hash) == 64  # SHA-256 hex digest length
+            assert len(content_hash) == 64  # SHA - 256 hex digest length
         finally:
             os.unlink(temp_path)
 
     def test_is_valid_file_format(self):
         """Test file format validation."""
         json_file = DataFileInfo(
-            path=Path("/test/file.json"),
+            path=Path("/test / file.json"),
             name="file.json",
             size_bytes=100,
             file_type="json",
@@ -288,7 +288,7 @@ class TestDataFileInfo:
         )
 
         csv_file = DataFileInfo(
-            path=Path("/test/file.csv"),
+            path=Path("/test / file.csv"),
             name="file.csv",
             size_bytes=100,
             file_type="csv",
@@ -316,8 +316,8 @@ class TestFileCategory:
     def test_categorize_by_path_patterns(self):
         """Test file categorization based on path patterns."""
         # This would test the logic for determining category from file path
-        config_path = Path("config/artist_aliases.json")
-        analysis_path = Path("music_analysis_tables/summary.csv")
+        config_path = Path("config / artist_aliases.json")
+        analysis_path = Path("music_analysis_tables / summary.csv")
         benchmark_path = Path("benchmarks.json")
 
         # The actual categorization logic would be in the DataFileOrganizer
@@ -355,7 +355,7 @@ class TestOrganizationResult:
         assert result_dict["files_moved"] == 5
 
     def test_generate_organization_report(self):
-        """Test generating human-readable organization report."""
+        """Test generating human - readable organization report."""
         result = OrganizationResult(
             success=True,
             files_moved=15,
@@ -378,7 +378,7 @@ class TestValidationResult:
     def test_validation_result_initialization(self):
         """Test ValidationResult initialization."""
         result = ValidationResult(
-            file_path=Path("/test/file.json"),
+            file_path=Path("/test / file.json"),
             is_valid=True,
             errors=[],
             warnings=["Minor warning"],
@@ -393,7 +393,7 @@ class TestValidationResult:
     def test_add_error_sets_invalid(self):
         """Test that adding an error sets is_valid to False."""
         result = ValidationResult(
-            file_path=Path("/test/file.json"), is_valid=True, errors=[], warnings=[], file_size_bytes=100
+            file_path=Path("/test / file.json"), is_valid=True, errors=[], warnings=[], file_size_bytes=100
         )
 
         result.add_error("Test error")

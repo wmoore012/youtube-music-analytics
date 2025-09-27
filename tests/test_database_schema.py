@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Test Suite for Database Schema Validation - TDD Implementation
 ============================================================
@@ -43,7 +43,7 @@ class TestDatabaseSchema(unittest.TestCase):
             "INVALID123",  # Too short
             "USRC1760783A",  # Invalid character in designation
             "usrc17607839",  # Lowercase (should be uppercase)
-            "US-RC17607839",  # Invalid format with dash
+            "US - RC17607839",  # Invalid format with dash
         ]
 
         # Test valid ISRCs
@@ -58,7 +58,7 @@ class TestDatabaseSchema(unittest.TestCase):
         """Validate ISRC format according to ISO 3901."""
         import re
 
-        pattern = r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$"
+        pattern = r"^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$"
         return bool(re.match(pattern, isrc))
 
     def test_artist_alias_normalization(self):
@@ -84,7 +84,7 @@ class TestDatabaseSchema(unittest.TestCase):
 
         patterns = [
             r"\s+(ft\.?|feat\.?|featuring)\s+.*$",
-            r"\s+x\s+.*$",  # collaborations with 'x'
+            r"\s + x\s+.*$",  # collaborations with 'x'
         ]
 
         normalized = artist_name
@@ -137,7 +137,7 @@ class TestDatabaseSchema(unittest.TestCase):
         if len(set(text.lower().split())) < len(text.split()) * 0.5:  # High repetition
             risk_score += 0.3
 
-        # Check for bot-like username patterns
+        # Check for bot - like username patterns
         if any(pattern in author.lower() for pattern in ["bot", "123", "user_"]):
             risk_score += 0.3
 
@@ -157,7 +157,7 @@ class TestDatabaseSchema(unittest.TestCase):
             return "LOW"
 
     def test_video_recording_link_confidence(self):
-        """Test confidence scoring for video-to-recording matching."""
+        """Test confidence scoring for video - to - recording matching."""
         test_matches = [
             {"method": "explicit_isrc", "title_similarity": 1.0, "expected_confidence": 1.0},
             {"method": "title_parse", "title_similarity": 0.9, "expected_confidence": 0.63},  # 0.7 * 0.9
@@ -169,7 +169,7 @@ class TestDatabaseSchema(unittest.TestCase):
             self.assertAlmostEqual(confidence, match["expected_confidence"], places=2)
 
     def _calculate_match_confidence(self, method: str, title_similarity: float) -> float:
-        """Calculate confidence score for video-recording matching."""
+        """Calculate confidence score for video - recording matching."""
         base_confidence = {
             "explicit_isrc": 1.0,
             "catalog_api": 0.95,
@@ -193,13 +193,13 @@ class TestDatabaseSchema(unittest.TestCase):
                 "views": 1000000,
                 "likes": 50000,
                 "comments": 5000,
-                "expected_revenue_range": (1000, 5000),  # $1-5k for 1M views
+                "expected_revenue_range": (1000, 5000),  # $1 - 5k for 1M views
             },
             {
                 "views": 100000,
                 "likes": 5000,
                 "comments": 500,
-                "expected_revenue_range": (100, 500),  # $100-500 for 100k views
+                "expected_revenue_range": (100, 500),  # $100 - 500 for 100k views
             },
         ]
 
@@ -212,7 +212,7 @@ class TestDatabaseSchema(unittest.TestCase):
 
     def _estimate_revenue(self, views: int, likes: int, comments: int) -> float:
         """Estimate revenue based on engagement metrics."""
-        # Basic CPM calculation (YouTube typically $1-5 per 1000 views)
+        # Basic CPM calculation (YouTube typically $1 - 5 per 1000 views)
         base_cpm = 2.5  # $2.50 per 1000 views
         base_revenue = (views / 1000) * base_cpm
 
@@ -287,7 +287,7 @@ class TestDatabaseIntegration(unittest.TestCase):
             "isrc": "USRC17607839",
             "title": "Test Song",
             "artist_primary": "Test Artist",
-            "release_date": "2023-01-01",
+            "release_date": "2023 - 01 - 01",
         }
 
         # Mock successful insertion

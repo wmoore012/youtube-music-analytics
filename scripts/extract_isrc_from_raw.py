@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Extract ISRC codes from youtube_videos_raw.raw_data JSON and create safe links:
-- Parse description/title fields for strict ISRC pattern
+- Parse description / title fields for strict ISRC pattern
 - Insert into isrc_recordings if missing
 - Insert into video_recording_link (match_method='raw_isrc') if not present
 - Optionally update youtube_videos.isrc when currently blank (flag)
 
-Idempotent and local-only (no external calls).
+Idempotent and local - only (no external calls).
 """
 from __future__ import annotations
 
@@ -21,9 +21,9 @@ from sqlalchemy import text
 
 from web.db_guard import get_engine
 
-# Match standard ISRC with optional separators: CC-XXX-YY-NNNNN or without separators
+# Match standard ISRC with optional separators: CC - XXX - YY - NNNNN or without separators
 ISRC_FLEX_RE = re.compile(
-    r"\b([A-Z]{2})[\s\-]?([A-Z0-9]{3})[\s\-]?(\d{2})[\s\-]?(\d{5})\b",
+    r"\b([A - Z]{2})[\s\-]?([A - Z0 - 9]{3})[\s\-]?(\d{2})[\s\-]?(\d{5})\b",
     re.IGNORECASE,
 )
 
@@ -54,7 +54,7 @@ def run(update_youtube_videos: bool = False) -> int:
         """
     )
 
-    df = pd.read_sql(sql, eng)  # type: ignore[call-overload]
+    df = pd.read_sql(sql, eng)  # type: ignore[call - overload]
     if df.empty:
         return 0
 
@@ -116,7 +116,7 @@ def run(update_youtube_videos: bool = False) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--update-youtube-videos", action="store_true", help="Also set youtube_videos.isrc when blank")
+    p.add_argument("--update - youtube - videos", action="store_true", help="Also set youtube_videos.isrc when blank")
     args = p.parse_args()
     n = run(update_youtube_videos=args.update_youtube_videos)
     print(f"ISRC extraction complete. Links inserted: {n}")

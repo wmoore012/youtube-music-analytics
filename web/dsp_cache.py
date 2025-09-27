@@ -11,7 +11,7 @@ def _cache_root() -> Path:
     root = os.getenv("ICATALOG_CACHE_DIR")
     if root:
         return Path(root)
-    # default: repo_root/cache
+    # default: repo_root / cache
     here = Path(__file__).resolve().parents[1]
     return here / "cache"
 

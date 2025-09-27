@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Advanced Music Industry Sentiment Analysis - Level 2
 
 Implements the enhanced sentiment analysis improvements:
 1. Tighter label policy with intensity cues
-2. Multi-task: Sentiment + Intent + Aspect
-3. Booster features (ALL-CAPS, elongation, emoji, !!!)
+2. Multi - task: Sentiment + Intent + Aspect
+3. Booster features (ALL - CAPS, elongation, emoji, !!!)
 4. Proper handling of requests with enthusiasm
-5. Cultural sensitivity for AAVE and in-group praise
+5. Cultural sensitivity for AAVE and in - group praise
 6. Calibrated confidence scoring
 
 Based on expert feedback for improving music industry sentiment analysis.
@@ -36,10 +36,10 @@ class IntentLabel(Enum):
 
 
 class AspectLabel(Enum):
-    ARTIST = "artist"  # About the artist/performer
-    BEAT = "beat"  # About production/beat
-    LYRICS = "lyrics"  # About lyrics/words
-    ROLLOUT = "rollout"  # About release/marketing
+    ARTIST = "artist"  # About the artist / performer
+    BEAT = "beat"  # About production / beat
+    LYRICS = "lyrics"  # About lyrics / words
+    ROLLOUT = "rollout"  # About release / marketing
     GENERAL = "general"  # General comment
 
 
@@ -56,13 +56,13 @@ class AnalysisResult:
 
 class AdvancedMusicSentimentAnalyzer:
     """
-    Advanced sentiment analyzer with multi-task prediction and booster features.
+    Advanced sentiment analyzer with multi - task prediction and booster features.
 
     Key improvements:
     - Requests with enthusiasm = POSITIVE
     - Intensity cues detection (caps, elongation, emoji, !!!)
-    - Multi-task prediction (sentiment + intent + aspect)
-    - Cultural sensitivity for AAVE and in-group praise
+    - Multi - task prediction (sentiment + intent + aspect)
+    - Cultural sensitivity for AAVE and in - group praise
     - Calibrated confidence scoring
     """
 
@@ -92,7 +92,7 @@ class AdvancedMusicSentimentAnalyzer:
             "chef's kiss",
             "you slid",
             "sheeeesh",
-            # AAVE and in-group praise
+            # AAVE and in - group praise
             "snapped",
             "went off",
             "ate",
@@ -103,7 +103,7 @@ class AdvancedMusicSentimentAnalyzer:
             "this nigga",
             "bro snapped",
             "sis ate",
-            # Music-specific praise
+            # Music - specific praise
             "bop",
             "anthem",
             "vibe",
@@ -126,30 +126,30 @@ class AdvancedMusicSentimentAnalyzer:
         }
 
         self.request_patterns = {
-            # Album/release requests
+            # Album / release requests
             r"\b(drop|release|put out)\s+(the\s+)?(album|ep|mixtape|single)",
             r"\b(we\s+)?(need|want|waiting for)\s+(the\s+)?(album|new music)",
             r"\bwhen\s+(is\s+)?(the\s+)?(album|ep|new music)",
             # Content requests
             r"\b(drop|post|upload)\s+(the\s+)?(visuals?|video|mv)",
             r"\b(need|want)\s+(the\s+)?(lyrics|instrumental|clean version)",
-            r"\bwho\s+(produced|mixed|made)\s+this",
-            r"\bwhat\'?s\s+the\s+sample",
+            r"\bwho\s+(produced|mixed|made)\s + this",
+            r"\bwhat\'?s\s + the\s + sample",
             # Performance requests
-            r"\b(come\s+to|tour|concert|show)\s+\w+",
-            r"\bplease\s+come\s+to\s+\w+",
+            r"\b(come\s + to|tour|concert|show)\s+\w+",
+            r"\bplease\s + come\s + to\s+\w+",
             # Enhanced request patterns
-            r"\bvisuals?\s+when",
-            r"\bthese\s+lyrics",
-            r"\bpost\s+the\s+link",
+            r"\bvisuals?\s + when",
+            r"\bthese\s + lyrics",
+            r"\bpost\s + the\s + link",
             r"\bdrop.*already",
             r"\bneed.*now",
         }
 
         self.intensity_patterns = {
             "exclamation": r"!{2,}",  # Multiple exclamations
-            "elongation": r"([a-z])\1{2,}",  # Repeated letters
-            "caps_words": r"\b[A-Z]{2,}\b",  # ALL-CAPS words
+            "elongation": r"([a - z])\1{2,}",  # Repeated letters
+            "caps_words": r"\b[A - Z]{2,}\b",  # ALL - CAPS words
             "fire_emoji": r"🔥+",  # Fire emojis
             "urgency": r"\b(now|already|asap|please{2,})\b",
         }
@@ -182,9 +182,9 @@ class AdvancedMusicSentimentAnalyzer:
         # Detect elongation (repeated letters)
         elongations = re.findall(self.intensity_patterns["elongation"], text_lower)
         features["elongation_count"] = len(elongations)
-        features["max_elongation"] = max([len(match) for match in re.findall(r"([a-z])\1+", text_lower)] + [0])
+        features["max_elongation"] = max([len(match) for match in re.findall(r"([a - z])\1+", text_lower)] + [0])
 
-        # Count ALL-CAPS words
+        # Count ALL - CAPS words
         caps_words = re.findall(self.intensity_patterns["caps_words"], text)
         features["caps_word_count"] = len(caps_words)
         features["caps_ratio"] = len(caps_words) / max(len(text.split()), 1)
@@ -236,7 +236,7 @@ class AdvancedMusicSentimentAnalyzer:
         if any(word in text_lower for word in engagement_words):
             return IntentLabel.ENGAGEMENT
 
-        # Check for info-seeking
+        # Check for info - seeking
         info_patterns = [r"\bwho\s+", r"\bwhat\s+", r"\bhow\s+", r"\bwhere\s+", r"\bwhen\s+"]
         if any(re.search(pattern, text_lower) for pattern in info_patterns):
             return IntentLabel.INFO
@@ -248,7 +248,7 @@ class AdvancedMusicSentimentAnalyzer:
         """Detect what aspect of the music the comment is about."""
         text_lower = text.lower()
 
-        # Beat/production aspects
+        # Beat / production aspects
         beat_words = ["beat", "production", "produced", "mixed", "sample", "instrumental", "bass", "drums"]
         if any(word in text_lower for word in beat_words):
             return AspectLabel.BEAT
@@ -258,7 +258,7 @@ class AdvancedMusicSentimentAnalyzer:
         if any(word in text_lower for word in lyric_words):
             return AspectLabel.LYRICS
 
-        # Rollout/release aspects
+        # Rollout / release aspects
         rollout_words = ["album", "drop", "release", "tour", "concert", "video", "visual"]
         if any(word in text_lower for word in rollout_words):
             return AspectLabel.ROLLOUT
@@ -277,7 +277,7 @@ class AdvancedMusicSentimentAnalyzer:
         Calculate sentiment with ENHANCED label policy:
         - Requests with enthusiasm = POSITIVE
         - Requests with no affect = NEUTRAL
-        - AAVE/in-group praise = POSITIVE (don't let toxicity filters override)
+        - AAVE / in - group praise = POSITIVE (don't let toxicity filters override)
         - Apply intensive booster features
         """
         text_lower = text.lower()
@@ -285,7 +285,7 @@ class AdvancedMusicSentimentAnalyzer:
         # Base sentiment score
         sentiment_score = 0.0
 
-        # CRITICAL: Handle AAVE and in-group praise FIRST (before negative checks)
+        # CRITICAL: Handle AAVE and in - group praise FIRST (before negative checks)
         aave_praise_patterns = [
             "snapped",
             "ate",
@@ -319,7 +319,7 @@ class AdvancedMusicSentimentAnalyzer:
         booster_boost = features["booster_score"] * 0.6  # Increased from 0.4
         sentiment_score += booster_boost
 
-        # Intent-based adjustments with new policy
+        # Intent - based adjustments with new policy
         if intent == IntentLabel.REQUEST:
             # NEW POLICY: Requests with ANY boosters = POSITIVE
             if features["booster_score"] > 0.1:  # Lower threshold
@@ -345,7 +345,7 @@ class AdvancedMusicSentimentAnalyzer:
 
     def analyze_comment(self, text: str) -> AnalysisResult:
         """
-        Perform comprehensive multi-task analysis of a comment.
+        Perform comprehensive multi - task analysis of a comment.
 
         Returns sentiment, intent, aspect, confidence, and explanation.
         """
@@ -415,7 +415,7 @@ def test_advanced_analyzer():
         ("went double wood", SentimentLabel.NEGATIVE),
         ("mid", SentimentLabel.NEGATIVE),
         ("overrated", SentimentLabel.NEGATIVE),
-        # AAVE and in-group praise (should be POSITIVE)
+        # AAVE and in - group praise (should be POSITIVE)
         ("my nigga snapped 🔥🔥🔥", SentimentLabel.POSITIVE),
         ("bro this crazy", SentimentLabel.POSITIVE),
         ("she ate that", SentimentLabel.POSITIVE),

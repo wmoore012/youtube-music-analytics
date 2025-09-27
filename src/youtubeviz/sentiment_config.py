@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Enhanced Sentiment Analysis Configuration Management
 
 Professional configuration system for sentiment analysis parameters with
-privacy controls and environment-based secret management.
+privacy controls and environment - based secret management.
 """
 
 from dataclasses import dataclass, field

@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-TDD for YouTube Bot Detection — Real-world behaviors baked in.
+TDD for YouTube Bot Detection — Real - world behaviors baked in.
 
 Ground rules this suite enforces:
-- Normal hype ≠ bot: fire-emoji spam, a single wave 👋, "Hey <artist>", "CRAZY!!" are *often legit fan energy*.
-- Bot red flags: WhatsApp/Telegram lures, phone-number obfuscations, timestamp+link bait, URL shorteners,
-  bursty near-duplicates across users/videos, Unicode tricks (homoglyphs, zero-width chars).
-- Scores are trend-based: we compare groups (benign vs bot-pattern) instead of pinning exact thresholds.
+- Normal hype ≠ bot: fire - emoji spam, a single wave 👋, "Hey <artist>", "CRAZY!!" are *often legit fan energy*.
+- Bot red flags: WhatsApp / Telegram lures, phone - number obfuscations, timestamp + link bait, URL shorteners,
+  bursty near - duplicates across users / videos, Unicode tricks (homoglyphs, zero - width chars).
+- Scores are trend - based: we compare groups (benign vs bot - pattern) instead of pinning exact thresholds.
 
 Red → Green → Refactor.
 """
@@ -36,7 +36,7 @@ from src.youtubeviz.bot_detection import (
 
 class TestTextUtilsRealWorld:
     def test_normalize_and_strip_handles_zero_width_and_case(self):
-        # Zero-width space between letters (adversarial obfuscation)
+        # Zero - width space between letters (adversarial obfuscation)
         zws = "\u200b"
         s = f"W{zws}h{zws}a{zws}t{zws}s{zws}A{zws}p{zws}p"
         norm = _normalize_text(s)
@@ -97,10 +97,10 @@ def df_realistic():
     Build a mixed bag of legit fan comments and classic bot lures.
     Notes:
     - "CRAZY!!" all caps is common legit hype.
-    - One wave emoji/Hey <artist> is benign.
-    - Fire-emoji floods are common on music; shouldn't be auto-botty.
-    - Timestamp spam + links, WhatsApp/Telegram lures, phone #'s → strong bot signals.
-    - Duplicate/generic praise across users in a short burst → suspicious.
+    - One wave emoji / Hey <artist> is benign.
+    - Fire - emoji floods are common on music; shouldn't be auto - botty.
+    - Timestamp spam + links, WhatsApp / Telegram lures, phone #'s → strong bot signals.
+    - Duplicate / generic praise across users in a short burst → suspicious.
     """
     zws = "\u200b"
     rows = [
@@ -110,15 +110,15 @@ def df_realistic():
         ("c3", "v2", "temazo 🔥🔥🔥", "fan_es", 3, _now(30)),
         ("c4", "v2", "fire fire fire", "fan_3", 0, _now(40)),
         ("c5", "v3", "First!", "fan_4", 0, _now(50)),
-        # ---- Generic praise near-duplicate but not coordinated (spread out) ----
+        # ---- Generic praise near - duplicate but not coordinated (spread out) ----
         ("c6", "v4", "amazing track", "fan_5", 0, _now(4000)),
         ("c7", "v5", "amazing track", "fan_6", 1, _now(3200)),
-        # ---- Bot patterns: timestamp bait + link/shortener ----
-        ("c8", "v6", "0:59 this part tho https://bit.ly/xyz", "susp_1", 0, _now(5)),
-        # ---- WhatsApp/Telegram lure with number obfuscation + ZWSP ----
-        ("c9", "v6", f"DM me on What{zws}sApp +1(415)-555-0199 for promo", "imp_1", 0, _now(4)),
+        # ---- Bot patterns: timestamp bait + link / shortener ----
+        ("c8", "v6", "0:59 this part tho https://bit.ly / xyz", "susp_1", 0, _now(5)),
+        # ---- WhatsApp / Telegram lure with number obfuscation + ZWSP ----
+        ("c9", "v6", f"DM me on What{zws}sApp +1(415)-555 - 0199 for promo", "imp_1", 0, _now(4)),
         ("c10", "v6", "PROMOTE IT ON @tеlegram  @ChannelPromo", "imp_2", 0, _now(3)),  # note homoglyph 'e'
-        # ---- Burst duplicates across users/videos within short window ----
+        # ---- Burst duplicates across users / videos within short window ----
         ("c11", "v7", "check my channel for free beats", "bot_a", 0, _now(12)),
         ("c12", "v8", "check my channel for free beats", "bot_b", 0, _now(13)),
         ("c13", "v9", "check my channel for free beats", "bot_c", 0, _now(14)),
@@ -144,12 +144,12 @@ def test_benign_hype_not_overpenalized(detector, df_realistic):
     out = detector.analyze_comments(df_realistic)
     benign = out[out["comment_id"].isin({"c1", "c2", "c3", "c4", "c5"})]
     assert len(benign) == 5
-    # Trend: benign hype tends toward lower scores than bot-lure cohort
+    # Trend: benign hype tends toward lower scores than bot - lure cohort
     bots = out[out["comment_id"].isin({"c8", "c9", "c10", "c11", "c12", "c13"})]
     assert benign["bot_score"].mean() <= bots["bot_score"].mean() - 10  # meaningful gap
     # Fire emoji flood should NOT push to High on its own
     assert (benign.loc[benign["comment_id"] == "c3", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
-    # "CRAZY!!" should not be flagged purely for caps/punctuation
+    # "CRAZY!!" should not be flagged purely for caps / punctuation
     assert (benign.loc[benign["comment_id"] == "c1", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
 
 
@@ -251,7 +251,7 @@ class TestEdgeAndPerf:
         )
         out = detector.analyze_comments(df)
         assert len(out) == 3
-        # Pure emoji praise shouldn't auto-trigger High
+        # Pure emoji praise shouldn't auto - trigger High
         assert (out.loc[out["comment_id"] == "e2", "bot_risk_level"].iloc[0]) in {"Low", "Medium"}
 
     def test_scale_reasonably(self, detector):
@@ -259,16 +259,16 @@ class TestEdgeAndPerf:
         df = pd.DataFrame(
             {
                 "comment_id": [f"c{i}" for i in range(n)],
-                "video_id": [f"v{i//20}" for i in range(n)],
+                "video_id": [f"v{i //20}" for i in range(n)],
                 "comment_text": ["amazing track"] * (n // 2) + [f"unique {i}" for i in range(n - n // 2)],
-                "author_name": [f"user{i//5}" for i in range(n)],
+                "author_name": [f"user{i //5}" for i in range(n)],
                 "like_count": [0] * n,
                 "published_at": [datetime.now(timezone.utc) - timedelta(seconds=i) for i in range(n)],
             }
         )
         out = detector.analyze_comments(df)
         assert len(out) == n
-        # Heavy duplicate half should lift average above a pure-unique baseline
+        # Heavy duplicate half should lift average above a pure - unique baseline
         assert out[out["comment_text"] == "amazing track"]["bot_score"].mean() >= out["bot_score"].mean() - 5
 
 

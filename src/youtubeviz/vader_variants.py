@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 VADER Enhancement Variants for Music Domain
 
 Implements multiple VADER enhancement approaches using VADER's official extension points:
-- Lexicon: word/phrase → valence on −4…+4 scale
-- SPECIAL_CASE_IDIOMS: multi-word phrases scored as units
-- BOOSTER_DICT: intensifiers/dampeners using VADER's B_INCR = 0.293
+- Lexicon: word / phrase → valence on −4…+4 scale
+- SPECIAL_CASE_IDIOMS: multi - word phrases scored as units
+- BOOSTER_DICT: intensifiers / dampeners using VADER's B_INCR = 0.293
 
 Based on expert analysis of music YouTube comments and VADER's documented extension patterns.
 """
@@ -74,7 +74,7 @@ class VADERVariantManager:
         return variants
 
     def _apply_minimal_enhancements(self, analyzer: SentimentIntensityAnalyzer) -> None:
-        """Apply minimal, high-confidence enhancements only."""
+        """Apply minimal, high - confidence enhancements only."""
 
         # Only the most obvious music slang terms
         analyzer.lexicon.update(
@@ -88,7 +88,7 @@ class VADERVariantManager:
             }
         )
 
-        # Essential boosters - modify the module-level BOOSTER_DICT
+        # Essential boosters - modify the module - level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293  # VADER's official booster increment
@@ -142,7 +142,7 @@ class VADERVariantManager:
             }
         )
 
-        # Modern boosters - modify the module-level BOOSTER_DICT
+        # Modern boosters - modify the module - level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -159,7 +159,7 @@ class VADERVariantManager:
             }
         )
 
-        # Key multi-word idioms - add to lexicon as underscored phrases
+        # Key multi - word idioms - add to lexicon as underscored phrases
         analyzer.lexicon.update(
             {
                 "this_is_sick": 2.3,
@@ -183,7 +183,7 @@ class VADERVariantManager:
                 "goated": 2.9,
                 "bussin": 2.6,
                 "fire": 2.7,
-                "gas": 2.7,  # Gas = fire/good, often with ⛽️
+                "gas": 2.7,  # Gas = fire / good, often with ⛽️
                 "iconic": 2.1,
                 "anthem": 2.1,
                 "goes_hard": 2.6,
@@ -243,12 +243,12 @@ class VADERVariantManager:
                 "💀": 1.2,
                 "🥵": 1.4,
                 "😍": 2.0,
-                "⛽️": 2.7,  # Gas emoji = fire/good
+                "⛽️": 2.7,  # Gas emoji = fire / good
                 "❤️": 1.8,  # Heart emoji for "I relate to this so much ❤️"
             }
         )
 
-        # Full booster set - modify the module-level BOOSTER_DICT
+        # Full booster set - modify the module - level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -340,7 +340,7 @@ class VADERVariantManager:
             }
         )
 
-        # Stronger boosters - modify the module-level BOOSTER_DICT
+        # Stronger boosters - modify the module - level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -354,12 +354,12 @@ class VADERVariantManager:
         )
 
     def _apply_hybrid_enhancements(self, analyzer: SentimentIntensityAnalyzer) -> None:
-        """Apply hybrid approach combining rule-based and contextual adjustments."""
+        """Apply hybrid approach combining rule - based and contextual adjustments."""
 
         # Start with moderate base
         self._apply_moderate_enhancements(analyzer)
 
-        # Add context-sensitive terms (positive in music, negative elsewhere)
+        # Add context - sensitive terms (positive in music, negative elsewhere)
         analyzer.lexicon.update(
             {
                 "sick": 2.3,  # Override VADER's negative in music context
@@ -381,54 +381,54 @@ class VADERVariantManager:
 
 
 class MusicVADERNormalizer:
-    """Normalizes text for music-domain VADER analysis."""
+    """Normalizes text for music - domain VADER analysis."""
 
     def __init__(self):
-        # Multi-word phrase patterns to join before VADER processing
+        # Multi - word phrase patterns to join before VADER processing
         self.phrase_patterns = [
-            (re.compile(r"\bthis\s+is\s+sick\b", re.I), "this_is_sick"),
-            (re.compile(r"\bthis\s+slaps\b", re.I), "this_slaps"),
-            (re.compile(r"\bstraight\s+fire\b", re.I), "straight_fire"),
-            (re.compile(r"\bfuck\s+it\s+up\b", re.I), "fuck_it_up"),
-            (re.compile(r"\bbad\s+bish\b", re.I), "bad_bish"),
-            (re.compile(r"\bgo\s+off\b", re.I), "go_off"),
-            (re.compile(r"\bno\s+cap\b", re.I), "no_cap"),
-            (re.compile(r"\bno\s+cap\s+this\s+slaps\b", re.I), "no_cap_this_slaps"),
-            (re.compile(r"\bi'?m\s+obsessed\b", re.I), "im_obsessed"),
-            (re.compile(r"\blowkey\s+fire\b", re.I), "lowkey_fire"),
-            (re.compile(r"\bhighkey\s+obsessed\b", re.I), "highkey_obsessed"),
-            (re.compile(r"\b(the\s+)?vocals\s+are\s+insane\b", re.I), "vocals_are_insane"),
-            (re.compile(r"\bthis\s+song\s+is\s+unmatched\b", re.I), "this_song_is_unmatched"),
-            (re.compile(r"\bthe\s+way\s+i\s+screamed\b", re.I), "the_way_i_screamed"),
-            (re.compile(r"\bit'?s\s+giv(?:in+g|in')\b", re.I), "its_giving"),
-            (re.compile(r"\bbitch[,!]?\s+it'?s\s+giv(?:in+g|in')\b", re.I), "bitch_its_giving"),
-            (re.compile(r"\bleft\s+no\s+crumbs\b", re.I), "left_no_crumbs"),
-            (re.compile(r"\bate\s+and\s+left\s+no\s+crumbs\b", re.I), "ate_and_left_no_crumbs"),
-            (re.compile(r"\bno\s+skips\b", re.I), "no_skips"),
-            (re.compile(r"\bon\s+repeat\b", re.I), "on_repeat"),
-            (re.compile(r"\bgoes\s+hard\b", re.I), "goes_hard"),
-            (re.compile(r"\bmix\s+is\s+clean\b", re.I), "mix_is_clean"),
-            (re.compile(r"\bproduction\s+is\s+clean\b", re.I), "production_is_clean"),
-            (re.compile(r"\bthis\s+ain'?t\s+it\b", re.I), "this_aint_it"),
-            (re.compile(r"\bfell\s+off\b", re.I), "fell_off"),
-            (re.compile(r"\bmix\s+is\s+muddy\b", re.I), "mix_is_muddy"),
+            (re.compile(r"\bthis\s + is\s + sick\b", re.I), "this_is_sick"),
+            (re.compile(r"\bthis\s + slaps\b", re.I), "this_slaps"),
+            (re.compile(r"\bstraight\s + fire\b", re.I), "straight_fire"),
+            (re.compile(r"\bfuck\s + it\s + up\b", re.I), "fuck_it_up"),
+            (re.compile(r"\bbad\s + bish\b", re.I), "bad_bish"),
+            (re.compile(r"\bgo\s + off\b", re.I), "go_off"),
+            (re.compile(r"\bno\s + cap\b", re.I), "no_cap"),
+            (re.compile(r"\bno\s + cap\s + this\s + slaps\b", re.I), "no_cap_this_slaps"),
+            (re.compile(r"\bi'?m\s + obsessed\b", re.I), "im_obsessed"),
+            (re.compile(r"\blowkey\s + fire\b", re.I), "lowkey_fire"),
+            (re.compile(r"\bhighkey\s + obsessed\b", re.I), "highkey_obsessed"),
+            (re.compile(r"\b(the\s+)?vocals\s + are\s + insane\b", re.I), "vocals_are_insane"),
+            (re.compile(r"\bthis\s + song\s + is\s + unmatched\b", re.I), "this_song_is_unmatched"),
+            (re.compile(r"\bthe\s + way\s + i\s + screamed\b", re.I), "the_way_i_screamed"),
+            (re.compile(r"\bit'?s\s + giv(?:in + g|in')\b", re.I), "its_giving"),
+            (re.compile(r"\bbitch[,!]?\s + it'?s\s + giv(?:in + g|in')\b", re.I), "bitch_its_giving"),
+            (re.compile(r"\bleft\s + no\s + crumbs\b", re.I), "left_no_crumbs"),
+            (re.compile(r"\bate\s + and\s + left\s + no\s + crumbs\b", re.I), "ate_and_left_no_crumbs"),
+            (re.compile(r"\bno\s + skips\b", re.I), "no_skips"),
+            (re.compile(r"\bon\s + repeat\b", re.I), "on_repeat"),
+            (re.compile(r"\bgoes\s + hard\b", re.I), "goes_hard"),
+            (re.compile(r"\bmix\s + is\s + clean\b", re.I), "mix_is_clean"),
+            (re.compile(r"\bproduction\s + is\s + clean\b", re.I), "production_is_clean"),
+            (re.compile(r"\bthis\s + ain'?t\s + it\b", re.I), "this_aint_it"),
+            (re.compile(r"\bfell\s + off\b", re.I), "fell_off"),
+            (re.compile(r"\bmix\s + is\s + muddy\b", re.I), "mix_is_muddy"),
             # New patterns based on your feedback
-            (re.compile(r"\bget\s+(my\s+)?son\s+on\s+trending\b", re.I), "get_my_son_on_trending"),
-            (re.compile(r"\bi\s+relate\s+to\s+this\b", re.I), "i_relate_to_this"),
-            (re.compile(r"\bdopest\s+artists?\s+out\b", re.I), "dopest_artists_out"),
-            (re.compile(r"\bmodern\s+beauty\b", re.I), "modern_beauty"),
-            (re.compile(r"\bvintage\s+voice\b", re.I), "vintage_voice"),
-            (re.compile(r"\bperfect\s+balance\b", re.I), "perfect_balance"),
-            (re.compile(r"\bwhy\s+.*not\s+on\s+spotify\b", re.I), "why_not_on_spotify"),
-            (re.compile(r"\bwhere\s+can\s+i\s+listen\b", re.I), "where_can_i_listen"),
-            (re.compile(r"\bthe\s+outfits?\b", re.I), "the_outfits"),
+            (re.compile(r"\bget\s+(my\s+)?son\s + on\s + trending\b", re.I), "get_my_son_on_trending"),
+            (re.compile(r"\bi\s + relate\s + to\s + this\b", re.I), "i_relate_to_this"),
+            (re.compile(r"\bdopest\s + artists?\s + out\b", re.I), "dopest_artists_out"),
+            (re.compile(r"\bmodern\s + beauty\b", re.I), "modern_beauty"),
+            (re.compile(r"\bvintage\s + voice\b", re.I), "vintage_voice"),
+            (re.compile(r"\bperfect\s + balance\b", re.I), "perfect_balance"),
+            (re.compile(r"\bwhy\s+.*not\s + on\s + spotify\b", re.I), "why_not_on_spotify"),
+            (re.compile(r"\bwhere\s + can\s + i\s + listen\b", re.I), "where_can_i_listen"),
+            (re.compile(r"\bthe\s + outfits?\b", re.I), "the_outfits"),
         ]
 
     def normalize_for_vader(self, text: str) -> str:
         """Normalize text for VADER processing."""
 
         # Handle elongated words (givinnnng -> giving)
-        text = re.sub(r"\bgivin+n+g\b", "giving", text, flags=re.I)
+        text = re.sub(r"\bgivin + n+g\b", "giving", text, flags=re.I)
         text = re.sub(r"\bslaaaaaps\b", "slaps", text, flags=re.I)
         text = re.sub(r"\bfiiiire\b", "fire", text, flags=re.I)
 
@@ -451,7 +451,7 @@ def create_music_vader(
     variant_type: VariantType = VariantType.COMPREHENSIVE,
 ) -> Tuple[SentimentIntensityAnalyzer, MusicVADERNormalizer, str]:
     """
-    Create music-enhanced VADER analyzer with normalizer.
+    Create music - enhanced VADER analyzer with normalizer.
 
     Returns:
         Tuple of (analyzer, normalizer, patch_id)
@@ -469,7 +469,7 @@ def create_music_vader(
 
 
 def score_with_music_vader(text: str, variant_type: VariantType = VariantType.COMPREHENSIVE) -> Dict:
-    """Score text with music-enhanced VADER."""
+    """Score text with music - enhanced VADER."""
 
     analyzer, normalizer, patch_id = create_music_vader(variant_type)
     normalized_text = normalizer.normalize_for_vader(text)

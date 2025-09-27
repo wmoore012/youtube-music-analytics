@@ -1,25 +1,25 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Music Industry Sentiment Analysis Dataset v2.0
 
-A production-grade, scientifically classified dataset of music industry language
+A production - grade, scientifically classified dataset of music industry language
 with proper schema validation, intent separation, and deduplication.
 
 Key Improvements in v2.0:
 - Pydantic schema validation with runtime checks
 - Separate intent and sentiment labels (following SemEval guidelines)
-- Aspect-based sentiment analysis support
+- Aspect - based sentiment analysis support
 - Toxicity and NSFW flagging
 - Deduplication and normalization guardrails
 - Stable IDs for version tracking
-- Proper neutral handling for requests/questions
+- Proper neutral handling for requests / questions
 
 Dataset Statistics:
 - 250+ classified phrases (expanded from v1.0)
-- Intent/Sentiment separation following Twitter/SemEval standards
+- Intent / Sentiment separation following Twitter / SemEval standards
 - 11 semantic categories + 6 intent types + 8 aspect types
 - Confidence scores and cultural context annotations
-- Toxicity flagging for real-world content
+- Toxicity flagging for real - world content
 
 License: MIT (when published)
 Authors: Music Analytics Research Team
@@ -51,10 +51,10 @@ class SentimentLabel(str, Enum):
 class Intent(str, Enum):
     """Intent classification separate from sentiment."""
 
-    PRAISE = "praise"  # Expressing admiration/approval
-    REQUEST = "request"  # Asking for content/action
+    PRAISE = "praise"  # Expressing admiration / approval
+    REQUEST = "request"  # Asking for content / action
     INFO = "info"  # Seeking information
-    CRITIQUE = "critique"  # Providing criticism/feedback
+    CRITIQUE = "critique"  # Providing criticism / feedback
     ANTICIPATION = "anticipation"  # Expressing excitement for future content
     NEUTRAL = "neutral"  # No clear intent
 
@@ -76,7 +76,7 @@ class SlangCategory(str, Enum):
 
 
 class Aspect(str, Enum):
-    """Aspect-based sentiment analysis categories."""
+    """Aspect - based sentiment analysis categories."""
 
     GENERAL = "general"
     ARTIST = "artist"
@@ -118,7 +118,7 @@ class _EntryModel(BaseModel):
     def _phrase_nonempty(cls, v: str) -> str:
         v2 = v.strip()
         if not v2:
-            raise ValueError("phrase must be non-empty")
+            raise ValueError("phrase must be non - empty")
         if len(v2) > 200:
             raise ValueError("phrase too long (max 200 chars)")
         return v2
@@ -188,10 +188,10 @@ class MusicSlangEntry:
 
 class MusicIndustrySentimentDatasetV2:
     """
-    Production-grade Music Industry Sentiment Dataset v2.0
+    Production - grade Music Industry Sentiment Dataset v2.0
 
-    Implements proper validation, intent/sentiment separation,
-    and follows SemEval/Twitter annotation standards.
+    Implements proper validation, intent / sentiment separation,
+    and follows SemEval / Twitter annotation standards.
     """
 
     dataset_version = "2.0"
@@ -247,7 +247,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_PRODUCTION,
                     Aspect.BEAT,
                     0.95,
-                    "'Sick' applied to beat/production",
+                    "'Sick' applied to beat / production",
                     beat_appreciation=True,
                 ),
                 MusicSlangEntry(
@@ -275,7 +275,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.95,
-                    "Song/beat hits hard emotionally",
+                    "Song / beat hits hard emotionally",
                 ),
                 MusicSlangEntry(
                     "hard af",
@@ -361,7 +361,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.90,
-                    "Song hits hard/sounds great",
+                    "Song hits hard / sounds great",
                 ),
                 MusicSlangEntry(
                     "this slaps",
@@ -398,7 +398,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Uniquely good/special",
+                    "Uniquely good / special",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -408,7 +408,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.90,
-                    "Perfect/excellent",
+                    "Perfect / excellent",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -418,12 +418,12 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Legendary/memorable",
+                    "Legendary / memorable",
                 ),
             ]
         )
 
-        # PRAISE PERFORMANCE - Artist-specific praise
+        # PRAISE PERFORMANCE - Artist - specific praise
         entries.extend(
             [
                 MusicSlangEntry(
@@ -553,7 +553,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_PRODUCTION,
                     Aspect.BEAT,
                     0.95,
-                    "Appreciation for beat/production",
+                    "Appreciation for beat / production",
                     beat_appreciation=True,
                 ),
                 MusicSlangEntry(
@@ -586,7 +586,7 @@ class MusicIndustrySentimentDatasetV2:
                     "Beat hits hard",
                     beat_appreciation=True,
                 ),
-                # Context-dependent production praise
+                # Context - dependent production praise
                 MusicSlangEntry(
                     "this will go crazy in the club",
                     SentimentLabel.POSITIVE,
@@ -629,7 +629,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.80,
-                    "Excitement/surprise",
+                    "Excitement / surprise",
                 ),
                 MusicSlangEntry(
                     "fuck it up",
@@ -667,7 +667,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.80,
-                    "No lie/for real - agreement",
+                    "No lie / for real - agreement",
                     gen_z_slang=True,
                 ),
             ]
@@ -793,7 +793,7 @@ class MusicIndustrySentimentDatasetV2:
             ]
         )
 
-        # ===== NEUTRAL SENTIMENT WITH REQUEST/INFO INTENT =====
+        # ===== NEUTRAL SENTIMENT WITH REQUEST / INFO INTENT =====
 
         # Pure requests without opinion cues (following SemEval guidelines)
         entries.extend(
@@ -931,7 +931,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.CRITICISM_NEGATIVE,
                     Aspect.GENERAL,
                     0.90,
-                    "Mediocre/average in bad way",
+                    "Mediocre / average in bad way",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -951,7 +951,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.CRITICISM_NEGATIVE,
                     Aspect.GENERAL,
                     0.90,
-                    "Commercial/artistic failure",
+                    "Commercial / artistic failure",
                 ),
                 MusicSlangEntry(
                     "overrated",
@@ -1067,7 +1067,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.80,
-                    "This is fire/excellent",
+                    "This is fire / excellent",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1077,7 +1077,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "Very funny/entertaining",
+                    "Very funny / entertaining",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1096,11 +1096,11 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Perfect/complete satisfaction",
+                    "Perfect / complete satisfaction",
                 ),
                 # Ratings and awards
                 MusicSlangEntry(
-                    "10/10",
+                    "10 / 10",
                     SentimentLabel.POSITIVE,
                     Intent.PRAISE,
                     SlangCategory.PRAISE_GENERAL,
@@ -1231,7 +1231,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "It's providing/delivering vibes",
+                    "It's providing / delivering vibes",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1281,7 +1281,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "Very funny/entertaining",
+                    "Very funny / entertaining",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1291,7 +1291,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.70,
-                    "Made me laugh/react strongly",
+                    "Made me laugh / react strongly",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1321,7 +1321,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Song that represents/inspires",
+                    "Song that represents / inspires",
                 ),
                 MusicSlangEntry(
                     "summer anthem",
@@ -1339,7 +1339,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.75,
-                    "Good feeling/mood",
+                    "Good feeling / mood",
                 ),
                 MusicSlangEntry(
                     "vibes",
@@ -1348,7 +1348,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.75,
-                    "Good feelings/mood",
+                    "Good feelings / mood",
                 ),
                 MusicSlangEntry(
                     "mood",
@@ -1506,7 +1506,7 @@ class MusicIndustrySentimentDatasetV2:
                 ),
                 # More ratings
                 MusicSlangEntry(
-                    "100/10",
+                    "100 / 10",
                     SentimentLabel.POSITIVE,
                     Intent.PRAISE,
                     SlangCategory.PRAISE_GENERAL,
@@ -1515,7 +1515,7 @@ class MusicIndustrySentimentDatasetV2:
                     "Beyond perfect score",
                 ),
                 MusicSlangEntry(
-                    "11/10",
+                    "11 / 10",
                     SentimentLabel.POSITIVE,
                     Intent.PRAISE,
                     SlangCategory.PRAISE_GENERAL,
@@ -1530,7 +1530,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.90,
-                    "Perfect/complete approval",
+                    "Perfect / complete approval",
                 ),
                 # ===== EXPANDED NEGATIVE EXPRESSIONS =====
                 MusicSlangEntry(
@@ -1561,13 +1561,13 @@ class MusicIndustrySentimentDatasetV2:
                     "Lack of variety criticism",
                 ),
                 MusicSlangEntry(
-                    "this ain't real hip-hop",
+                    "this ain't real hip - hop",
                     SentimentLabel.NEGATIVE,
                     Intent.CRITIQUE,
                     SlangCategory.CRITICISM_NEGATIVE,
                     Aspect.GENERAL,
                     0.70,
-                    "Gatekeeping/authenticity criticism",
+                    "Gatekeeping / authenticity criticism",
                 ),
                 MusicSlangEntry(
                     "who asked for this remix",
@@ -1664,13 +1664,13 @@ class MusicIndustrySentimentDatasetV2:
                     "Request for link",
                 ),
                 MusicSlangEntry(
-                    "pre-save link?",
+                    "pre - save link?",
                     SentimentLabel.NEUTRAL,
                     Intent.REQUEST,
                     SlangCategory.NEUTRAL_REQUESTS,
                     Aspect.MARKETING,
                     0.80,
-                    "Pre-save request",
+                    "Pre - save request",
                 ),
                 MusicSlangEntry(
                     "upload to SoundCloud pls",
@@ -1761,7 +1761,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.NEUTRAL_QUESTIONS,
                     Aspect.BEAT,
                     0.85,
-                    "Legal/sample clearance question",
+                    "Legal / sample clearance question",
                     beat_appreciation=True,
                 ),
                 MusicSlangEntry(
@@ -1863,7 +1863,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "Excitement/anticipation expression",
+                    "Excitement / anticipation expression",
                     nsfw=True,
                 ),
                 MusicSlangEntry(
@@ -1883,7 +1883,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.60,
-                    "For real - agreement/emphasis",
+                    "For real - agreement / emphasis",
                     gen_z_slang=True,
                 ),
                 # ===== ADDITIONAL VARIATIONS FOR ROBUSTNESS =====
@@ -1914,7 +1914,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Very amazing/impressive",
+                    "Very amazing / impressive",
                 ),
                 MusicSlangEntry(
                     "absolutely fire",
@@ -1961,7 +1961,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.CULTURAL_IDENTITY,
                     Aspect.ARTIST,
                     0.75,
-                    "Friend/supportive term",
+                    "Friend / supportive term",
                     gen_z_slang=True,
                 ),
                 # More engagement
@@ -1981,7 +1981,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Award-worthy quality",
+                    "Award - worthy quality",
                 ),
                 MusicSlangEntry(
                     "artist of the year",
@@ -2027,7 +2027,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Without equal/superior",
+                    "Without equal / superior",
                 ),
                 # More cultural
                 MusicSlangEntry(
@@ -2037,7 +2037,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.CULTURAL_IDENTITY,
                     Aspect.ARTIST,
                     0.80,
-                    "Support/love this artist",
+                    "Support / love this artist",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2057,7 +2057,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Epic/historic quality",
+                    "Epic / historic quality",
                 ),
                 # ===== FINAL ADDITIONS TO REACH 250+ =====
                 # More Gen Z expressions
@@ -2108,7 +2108,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_PERFORMANCE,
                     Aspect.ARTIST,
                     0.85,
-                    "Uniquely made/talented",
+                    "Uniquely made / talented",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2118,7 +2118,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "Perfect summary/agreement",
+                    "Perfect summary / agreement",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2128,7 +2128,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.70,
-                    "I'm convinced/agree",
+                    "I'm convinced / agree",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2138,7 +2138,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.65,
-                    "Agreement/approval",
+                    "Agreement / approval",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2148,7 +2148,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.70,
-                    "Truth/agreement",
+                    "Truth / agreement",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2169,7 +2169,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Excellent/fire",
+                    "Excellent / fire",
                 ),
                 MusicSlangEntry(
                     "this is a whole vibe",
@@ -2178,7 +2178,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.80,
-                    "Complete mood/feeling",
+                    "Complete mood / feeling",
                 ),
                 MusicSlangEntry(
                     "adding to my playlist",
@@ -2196,7 +2196,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.ENGAGEMENT_BEHAVIORAL,
                     Aspect.GENERAL,
                     0.75,
-                    "Year-end listening stats reference",
+                    "Year - end listening stats reference",
                 ),
                 MusicSlangEntry(
                     "this is bussin",
@@ -2225,7 +2225,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.70,
-                    "Laughing/positive reaction",
+                    "Laughing / positive reaction",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -2605,7 +2605,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.85,
-                    "Is amazing/wild",
+                    "Is amazing / wild",
                 ),
                 MusicSlangEntry(
                     "absolutely insane",
@@ -2669,7 +2669,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.80,
-                    "This is good/impactful",
+                    "This is good / impactful",
                 ),
                 MusicSlangEntry(
                     "straight banger",
@@ -2687,7 +2687,7 @@ class MusicIndustrySentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.80,
-                    "This is the one/perfect",
+                    "This is the one / perfect",
                 ),
                 MusicSlangEntry(
                     "we need more",
@@ -2745,10 +2745,10 @@ class MusicIndustrySentimentDatasetV2:
                 raise ValueError(f"Duplicate ID found: {entry.id}")
             seen_ids.add(entry.id)
 
-            # Check for near-duplicate phrases
+            # Check for near - duplicate phrases
             norm_key = entry.norm_key()
             if norm_key in seen_normalized:
-                # Allow duplicates only if they have different sentiment/intent/aspect
+                # Allow duplicates only if they have different sentiment / intent / aspect
                 existing = seen_normalized[norm_key]
                 if (
                     existing.sentiment == entry.sentiment
@@ -2756,12 +2756,12 @@ class MusicIndustrySentimentDatasetV2:
                     and existing.aspect == entry.aspect
                 ):
                     raise ValueError(
-                        f"Near-duplicate phrase detected: '{entry.phrase}' "
-                        f"(similar to '{existing.phrase}') with same sentiment/intent/aspect"
+                        f"Near - duplicate phrase detected: '{entry.phrase}' "
+                        f"(similar to '{existing.phrase}') with same sentiment / intent / aspect"
                     )
             seen_normalized[norm_key] = entry
 
-        # Validate sentiment/intent consistency
+        # Validate sentiment / intent consistency
         inconsistent = []
         for entry in self.entries:
             # Requests and info seeking should generally be neutral
@@ -2787,7 +2787,7 @@ class MusicIndustrySentimentDatasetV2:
     def get_train_test_split(
         self, test_size: float = 0.2, random_state: int = 42
     ) -> Tuple[List[MusicSlangEntry], List[MusicSlangEntry]]:
-        """Get stratified train/test split maintaining sentiment distribution."""
+        """Get stratified train / test split maintaining sentiment distribution."""
         import random
 
         random.seed(random_state)
@@ -2910,7 +2910,7 @@ class MusicIndustrySentimentDatasetV2:
 
 
 def get_music_industry_dataset_v2() -> MusicIndustrySentimentDatasetV2:
-    """Get the production-grade music industry sentiment dataset v2.0."""
+    """Get the production - grade music industry sentiment dataset v2.0."""
     return MusicIndustrySentimentDatasetV2()
 
 
@@ -2924,14 +2924,14 @@ if __name__ == "__main__":
     # Show sample entries
     print(f"\n📝 Sample Entries:")
     for i, entry in enumerate(dataset.entries[:5]):
-        print(f"  {i+1}. '{entry.phrase}' → {entry.sentiment.value}/{entry.intent.value} ({entry.category.value})")
+        print(f"  {i + 1}. '{entry.phrase}' → {entry.sentiment.value}/{entry.intent.value} ({entry.category.value})")
 
     # Export files
     dataset.export_to_csv()
     dataset.export_to_jsonl()
 
-    # Show train/test split
+    # Show train / test split
     train, test = dataset.get_train_test_split(test_size=0.2)
-    print(f"\n🔄 Stratified Train/Test Split:")
+    print(f"\n🔄 Stratified Train / Test Split:")
     print(f"  Training set: {len(train)} phrases")
     print(f"  Test set: {len(test)} phrases")

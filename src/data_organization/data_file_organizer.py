@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Data File Organizer - TDD Implementation
 
-Organizes scattered CSV/JSON files throughout the codebase into a structured system.
+Organizes scattered CSV / JSON files throughout the codebase into a structured system.
 This addresses the real problem of data files scattered in root, config/,
 music_analysis_tables/, and other directories.
 """
@@ -52,7 +52,7 @@ class DataFileInfo:
     content_hash: Optional[str] = None
 
     def calculate_content_hash(self) -> str:
-        """Calculate SHA-256 hash of file content for duplicate detection."""
+        """Calculate SHA - 256 hash of file content for duplicate detection."""
         if self.content_hash is not None:
             return self.content_hash
 
@@ -124,7 +124,7 @@ class OrganizationResult:
         }
 
     def generate_report(self) -> str:
-        """Generate human-readable report."""
+        """Generate human - readable report."""
         status = "SUCCESS" if self.success else "FAILED"
         report = f"Organization {status}\n"
         report += f"Files moved: {self.files_moved}\n"
@@ -168,7 +168,7 @@ class DuplicateGroup:
 
 class DataFileOrganizer:
     """
-    Organizes scattered CSV/JSON files throughout the codebase.
+    Organizes scattered CSV / JSON files throughout the codebase.
 
     Discovers, categorizes, validates, and organizes data files into
     a structured directory system.
@@ -307,7 +307,7 @@ class DataFileOrganizer:
                 # Try to read and validate content
                 try:
                     if file_info.file_type == "json":
-                        with open(file_info.path, "r", encoding="utf-8") as f:
+                        with open(file_info.path, "r", encoding="utf - 8") as f:
                             json.load(f)
                     elif file_info.file_type == "csv":
                         # Try to read with pandas to validate CSV format
@@ -538,7 +538,7 @@ class DataFileOrganizer:
         """
         try:
             # Create backup directory with timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y % m%d_ % H%M % S")
             backup_dir = workspace_root / f"data_backup_{timestamp}"
             backup_dir.mkdir(exist_ok=True)
 

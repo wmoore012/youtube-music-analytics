@@ -207,7 +207,7 @@ class TestScoringEngine:
         assert result.metadata["parameters"] == parameters
 
     def test_execute_scoring_algorithm_not_found(self):
-        """Test scoring execution with non-existent algorithm."""
+        """Test scoring execution with non - existent algorithm."""
         test_data = pd.DataFrame({"column1": [1, 2, 3]})
 
         with pytest.raises(AlgorithmNotFoundError, match="Algorithm 'nonexistent' not found"):
@@ -301,7 +301,7 @@ class TestScoringEngine:
         assert metadata["parameters"] == {"param1": "value1"}
 
     def test_get_plugin_metadata_not_found(self):
-        """Test getting metadata for non-existent plugin."""
+        """Test getting metadata for non - existent plugin."""
         with pytest.raises(AlgorithmNotFoundError, match="Algorithm 'nonexistent' not found"):
             self.engine.get_plugin_metadata("nonexistent")
 

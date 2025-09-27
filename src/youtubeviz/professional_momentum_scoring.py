@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Professional Momentum Scoring System
 
 Mathematically sound momentum scoring algorithms that provide interpretable,
-statistically valid results for music industry decision-making.
+statistically valid results for music industry decision - making.
 
 Key Features:
 - Statistical significance testing
 - Confidence intervals for all scores
-- Normalized scoring (0-1 scale) with clear interpretation
+- Normalized scoring (0 - 1 scale) with clear interpretation
 - Robust handling of outliers and missing data
-- Industry-relevant momentum categories
+- Industry - relevant momentum categories
 """
 
 from dataclasses import dataclass
@@ -30,12 +30,12 @@ class MomentumScore:
     """Professional momentum score with statistical validation."""
 
     artist_name: str
-    score_value: float  # 0-1 normalized score
-    confidence: float  # Statistical confidence (0-1)
-    category: str  # Human-readable category
-    statistical_significance: float  # p-value for trend test
+    score_value: float  # 0 - 1 normalized score
+    confidence: float  # Statistical confidence (0 - 1)
+    category: str  # Human - readable category
+    statistical_significance: float  # p - value for trend test
 
-    # Component scores (all 0-1 normalized)
+    # Component scores (all 0 - 1 normalized)
     growth_score: float
     engagement_score: float
     consistency_score: float
@@ -61,7 +61,7 @@ class MomentumAnalysisConfig:
     min_videos_required: int = 3  # Minimum videos for reliable analysis
     min_data_points: int = 5  # Minimum data points for trend analysis
     confidence_level: float = 0.95  # Statistical confidence level
-    outlier_threshold: float = 3.0  # Z-score threshold for outlier detection
+    outlier_threshold: float = 3.0  # Z - score threshold for outlier detection
 
 
 class ProfessionalMomentumScorer:
@@ -69,7 +69,7 @@ class ProfessionalMomentumScorer:
     Professional momentum scoring system with statistical rigor.
 
     Provides mathematically sound momentum analysis for music industry
-    decision-making with proper confidence intervals and significance testing.
+    decision - making with proper confidence intervals and significance testing.
     """
 
     def __init__(self, config: Optional[MomentumAnalysisConfig] = None):
@@ -192,7 +192,7 @@ class ProfessionalMomentumScorer:
         )
 
     def _remove_outliers(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Remove statistical outliers using Z-score method."""
+        """Remove statistical outliers using Z - score method."""
         numeric_columns = ["views", "likes", "comments"]
 
         for col in numeric_columns:
@@ -231,7 +231,7 @@ class ProfessionalMomentumScorer:
             else:
                 growth_rate_pct = 0.0
 
-            # Normalize growth score to 0-1 scale
+            # Normalize growth score to 0 - 1 scale
             # Use sigmoid function to handle extreme values
             normalized_score = 1 / (1 + np.exp(-growth_rate_pct / 50))  # 50% growth = 0.5 score
 
@@ -260,8 +260,8 @@ class ProfessionalMomentumScorer:
         # Weight comments higher than likes (comments show deeper engagement)
         engagement_rate = like_rate * 0.3 + comment_rate * 0.7
 
-        # Normalize to 0-1 scale using industry benchmarks
-        # Typical music video engagement rates: 2-5% likes, 0.1-0.5% comments
+        # Normalize to 0 - 1 scale using industry benchmarks
+        # Typical music video engagement rates: 2 - 5% likes, 0.1 - 0.5% comments
         normalized_like_score = min(1.0, like_rate / 0.05)  # 5% like rate = max score
         normalized_comment_score = min(1.0, comment_rate / 0.005)  # 0.5% comment rate = max score
 
@@ -288,7 +288,7 @@ class ProfessionalMomentumScorer:
 
         cv = std_interval / mean_interval
 
-        # Convert to consistency score (0-1, higher = more consistent)
+        # Convert to consistency score (0 - 1, higher = more consistent)
         # CV of 0.5 or less = high consistency
         consistency_score = max(0.0, 1.0 - cv / 0.5)
 
@@ -356,7 +356,7 @@ class ProfessionalMomentumScorer:
         return lower, upper
 
     def _categorize_momentum(self, score: float, confidence: float) -> str:
-        """Categorize momentum into human-readable categories."""
+        """Categorize momentum into human - readable categories."""
         # Adjust thresholds based on confidence
         high_threshold = 0.7 if confidence > 0.8 else 0.75
         medium_threshold = 0.4 if confidence > 0.8 else 0.45
@@ -438,14 +438,14 @@ def display_momentum_analysis_results(momentum_scores: List[MomentumScore]) -> N
     print(f"🎓 UNDERSTANDING MOMENTUM SCORES")
     print("-" * 40)
     print("💡 Score Interpretation:")
-    print("   • 0.70-1.00: High Momentum - Strong growth trajectory")
-    print("   • 0.40-0.69: Moderate Momentum - Steady progress")
-    print("   • 0.20-0.39: Low Momentum - Limited growth")
-    print("   • 0.00-0.19: Declining - Negative or stagnant trends")
+    print("   • 0.70 - 1.00: High Momentum - Strong growth trajectory")
+    print("   • 0.40 - 0.69: Moderate Momentum - Steady progress")
+    print("   • 0.20 - 0.39: Low Momentum - Limited growth")
+    print("   • 0.00 - 0.19: Declining - Negative or stagnant trends")
 
     print("\n🔍 Confidence Indicators:")
     print("   🟢 High (0.8+): Statistically reliable, sufficient data")
-    print("   🟡 Medium (0.5-0.8): Moderately reliable, some uncertainty")
+    print("   🟡 Medium (0.5 - 0.8): Moderately reliable, some uncertainty")
     print("   🔴 Low (<0.5): Limited reliability, insufficient data")
 
     print("\n📈 Business Applications:")

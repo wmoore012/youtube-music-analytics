@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Data Quality CI/CD Integration Script
+Data Quality CI / CD Integration Script
 
-This script runs comprehensive data quality checks and can be integrated into CI/CD pipelines.
+This script runs comprehensive data quality checks and can be integrated into CI / CD pipelines.
 It validates data integrity, checks for duplicates, and ensures notebooks will work correctly.
 
 Usage:
-    python scripts/run_data_quality_checks.py [--fail-on-duplicates] [--output-format json|text]
+    python scripts / run_data_quality_checks.py [--fail - on - duplicates] [--output - format json|text]
 """
 
 import argparse
@@ -38,7 +38,7 @@ def run_quality_checks(fail_on_duplicates=False, output_format="text"):
         sample_data = load_recent_window_days(days=90, engine=engine)
 
         if output_format == "text":
-            print("🧪 RUNNING DATA QUALITY CI/CD CHECKS")
+            print("🧪 RUNNING DATA QUALITY CI / CD CHECKS")
             print("=" * 50)
             print(f"📊 Loaded {len(sample_data):,} records for testing")
 
@@ -150,9 +150,9 @@ def run_quality_checks(fail_on_duplicates=False, output_format="text"):
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(description="Run data quality checks for CI/CD")
-    parser.add_argument("--fail-on-duplicates", action="store_true", help="Fail the build if duplicates are found")
-    parser.add_argument("--output-format", choices=["text", "json"], default="text", help="Output format for results")
+    parser = argparse.ArgumentParser(description="Run data quality checks for CI / CD")
+    parser.add_argument("--fail - on - duplicates", action="store_true", help="Fail the build if duplicates are found")
+    parser.add_argument("--output - format", choices=["text", "json"], default="text", help="Output format for results")
 
     args = parser.parse_args()
 

@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Production-Ready Enhanced VADER for Music Domain
+Production - Ready Enhanced VADER for Music Domain
 
 Based on comprehensive evaluation showing 7% improvement in positive detection
 on real YouTube music comments. Uses the comprehensive variant as the best
@@ -22,7 +22,7 @@ except ImportError:
 
 class ProductionMusicVADER:
     """
-    Production-ready VADER enhanced for music domain sentiment analysis.
+    Production - ready VADER enhanced for music domain sentiment analysis.
 
     Improvements validated on 300+ real YouTube comments:
     - Stock VADER: 51.3% positive detection
@@ -104,7 +104,7 @@ class ProductionMusicVADER:
                 "💀": 1.2,
                 "🥵": 1.4,
                 "😍": 2.0,
-                # Multi-word idioms (as underscored tokens)
+                # Multi - word idioms (as underscored tokens)
                 "this_is_sick": 2.3,
                 "this_slaps": 2.6,
                 "straight_fire": 2.7,
@@ -160,7 +160,7 @@ class ProductionMusicVADER:
 
     def analyze_sentiment(self, text: str) -> Dict:
         """
-        Analyze sentiment of text using enhanced music-domain VADER.
+        Analyze sentiment of text using enhanced music - domain VADER.
 
         Args:
             text: Input text to analyze
@@ -205,49 +205,49 @@ class ProductionMusicVADER:
 
 
 class MusicTextNormalizer:
-    """Normalizes text for music-domain VADER analysis."""
+    """Normalizes text for music - domain VADER analysis."""
 
     def __init__(self):
-        # Multi-word phrase patterns (validated on real comments)
+        # Multi - word phrase patterns (validated on real comments)
         self.phrase_patterns = [
-            (re.compile(r"\bthis\s+is\s+sick\b", re.I), "this_is_sick"),
-            (re.compile(r"\bthis\s+slaps\b", re.I), "this_slaps"),
-            (re.compile(r"\bstraight\s+fire\b", re.I), "straight_fire"),
-            (re.compile(r"\bfuck\s+it\s+up\b", re.I), "fuck_it_up"),
-            (re.compile(r"\bbad\s+bish\b", re.I), "bad_bish"),
-            (re.compile(r"\bgo\s+off\b", re.I), "go_off"),
-            (re.compile(r"\bno\s+cap\b", re.I), "no_cap"),
-            (re.compile(r"\bno\s+cap\s+this\s+slaps\b", re.I), "no_cap_this_slaps"),
-            (re.compile(r"\bi'?m\s+obsessed\b", re.I), "im_obsessed"),
-            (re.compile(r"\blowkey\s+fire\b", re.I), "lowkey_fire"),
-            (re.compile(r"\bhighkey\s+obsessed\b", re.I), "highkey_obsessed"),
-            (re.compile(r"\b(the\s+)?vocals\s+are\s+insane\b", re.I), "vocals_are_insane"),
-            (re.compile(r"\bthis\s+song\s+is\s+unmatched\b", re.I), "this_song_is_unmatched"),
-            (re.compile(r"\bthe\s+way\s+i\s+screamed\b", re.I), "the_way_i_screamed"),
-            (re.compile(r"\bit'?s\s+giv(?:in+g|in')\b", re.I), "its_giving"),
-            (re.compile(r"\bbitch[,!]?\s+it'?s\s+giv(?:in+g|in')\b", re.I), "bitch_its_giving"),
-            (re.compile(r"\bleft\s+no\s+crumbs\b", re.I), "left_no_crumbs"),
-            (re.compile(r"\bate\s+and\s+left\s+no\s+crumbs\b", re.I), "ate_and_left_no_crumbs"),
-            (re.compile(r"\bno\s+skips\b", re.I), "no_skips"),
-            (re.compile(r"\bon\s+repeat\b", re.I), "on_repeat"),
-            (re.compile(r"\bgoes\s+hard\b", re.I), "goes_hard"),
-            (re.compile(r"\bmix\s+is\s+clean\b", re.I), "mix_is_clean"),
-            (re.compile(r"\bproduction\s+is\s+clean\b", re.I), "production_is_clean"),
-            (re.compile(r"\bthis\s+ain'?t\s+it\b", re.I), "this_aint_it"),
-            (re.compile(r"\bfell\s+off\b", re.I), "fell_off"),
-            (re.compile(r"\bmix\s+is\s+muddy\b", re.I), "mix_is_muddy"),
+            (re.compile(r"\bthis\s + is\s + sick\b", re.I), "this_is_sick"),
+            (re.compile(r"\bthis\s + slaps\b", re.I), "this_slaps"),
+            (re.compile(r"\bstraight\s + fire\b", re.I), "straight_fire"),
+            (re.compile(r"\bfuck\s + it\s + up\b", re.I), "fuck_it_up"),
+            (re.compile(r"\bbad\s + bish\b", re.I), "bad_bish"),
+            (re.compile(r"\bgo\s + off\b", re.I), "go_off"),
+            (re.compile(r"\bno\s + cap\b", re.I), "no_cap"),
+            (re.compile(r"\bno\s + cap\s + this\s + slaps\b", re.I), "no_cap_this_slaps"),
+            (re.compile(r"\bi'?m\s + obsessed\b", re.I), "im_obsessed"),
+            (re.compile(r"\blowkey\s + fire\b", re.I), "lowkey_fire"),
+            (re.compile(r"\bhighkey\s + obsessed\b", re.I), "highkey_obsessed"),
+            (re.compile(r"\b(the\s+)?vocals\s + are\s + insane\b", re.I), "vocals_are_insane"),
+            (re.compile(r"\bthis\s + song\s + is\s + unmatched\b", re.I), "this_song_is_unmatched"),
+            (re.compile(r"\bthe\s + way\s + i\s + screamed\b", re.I), "the_way_i_screamed"),
+            (re.compile(r"\bit'?s\s + giv(?:in + g|in')\b", re.I), "its_giving"),
+            (re.compile(r"\bbitch[,!]?\s + it'?s\s + giv(?:in + g|in')\b", re.I), "bitch_its_giving"),
+            (re.compile(r"\bleft\s + no\s + crumbs\b", re.I), "left_no_crumbs"),
+            (re.compile(r"\bate\s + and\s + left\s + no\s + crumbs\b", re.I), "ate_and_left_no_crumbs"),
+            (re.compile(r"\bno\s + skips\b", re.I), "no_skips"),
+            (re.compile(r"\bon\s + repeat\b", re.I), "on_repeat"),
+            (re.compile(r"\bgoes\s + hard\b", re.I), "goes_hard"),
+            (re.compile(r"\bmix\s + is\s + clean\b", re.I), "mix_is_clean"),
+            (re.compile(r"\bproduction\s + is\s + clean\b", re.I), "production_is_clean"),
+            (re.compile(r"\bthis\s + ain'?t\s + it\b", re.I), "this_aint_it"),
+            (re.compile(r"\bfell\s + off\b", re.I), "fell_off"),
+            (re.compile(r"\bmix\s + is\s + muddy\b", re.I), "mix_is_muddy"),
         ]
 
     def normalize(self, text: str) -> str:
         """Normalize text for VADER processing."""
 
         # Handle elongated words
-        text = re.sub(r"\bgivin+n+g\b", "giving", text, flags=re.I)
+        text = re.sub(r"\bgivin + n+g\b", "giving", text, flags=re.I)
         text = re.sub(r"\bslaaaaaps\b", "slaps", text, flags=re.I)
         text = re.sub(r"\bfiiiire\b", "fire", text, flags=re.I)
         text = re.sub(r"\bobsessssed\b", "obsessed", text, flags=re.I)
 
-        # Apply phrase joining (key for multi-word idioms)
+        # Apply phrase joining (key for multi - word idioms)
         for pattern, replacement in self.phrase_patterns:
             text = pattern.sub(replacement, text)
 

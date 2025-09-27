@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Example: Video Filtering Integration in ETL Pipeline
 
@@ -10,7 +10,7 @@ Key Features Demonstrated:
 - Applying video filters before database insertion
 - Logging filtering decisions
 - Handling personal issue videos
-- Configuration-driven filtering
+- Configuration - driven filtering
 """
 
 from datetime import datetime
@@ -49,7 +49,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "oHg5SJYRHA0",  # Valid video
             "title": "RickRoll'D",
-            "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
+            "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
             "channel_title": "Music Channel",
             "published_at": datetime(2020, 1, 1),
             "duration": "PT4M15S",
@@ -60,7 +60,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "kJQP7kiw5Fk",  # Valid video
             "title": "Great Music Video",
-            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
+            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
             "channel_title": "Artist Channel",
             "published_at": datetime(2021, 6, 15),
             "duration": "PT3M45S",
@@ -71,7 +71,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "jNQXAC9IVRw",  # This will be filtered as too short
             "title": "Short Clip",
-            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
+            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
             "channel_title": "Artist Channel",
             "published_at": datetime(2022, 3, 10),
             "duration": "PT15S",  # 15 seconds - too short
@@ -82,7 +82,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "ScMzIvxBSi4",  # This will be filtered by title pattern
             "title": "SPAM CONTENT - Click Here for Free Money!!!",
-            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
+            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
             "channel_title": "Spam Channel",
             "published_at": datetime(2023, 1, 1),
             "duration": "PT2M30S",
@@ -243,7 +243,7 @@ This approach:
         f"""
 🔧 Configuration:
 Personal issue videos can be configured in multiple ways:
-1. config/personal_issue_videos.json file (recommended)
+1. config / personal_issue_videos.json file (recommended)
 2. PERSONAL_ISSUE_VIDEO_IDS environment variable
 3. Default fallback list in code
 
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     demonstrate_personal_issue_handling()
 
     print(f"\n💡 Next Steps:")
-    print(f"   1. Update config/personal_issue_videos.json with actual problematic video IDs")
+    print(f"   1. Update config / personal_issue_videos.json with actual problematic video IDs")
     print(f"   2. Configure additional filter rules in .env file")
     print(f"   3. Integrate filter_videos_at_api_level() into your ETL pipeline")
     print(f"   4. Monitor filtering statistics and adjust rules as needed")

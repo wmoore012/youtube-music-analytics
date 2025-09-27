@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Unit Tests for ETL Components
 
@@ -98,7 +98,7 @@ class TestDataValidation:
             {
                 "video_id": "oHg5SJYRHA0",
                 "title": "Valid Video 2",
-                "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
+                "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
                 "channel_title": "Test Channel 2",
                 "published_at": datetime.now(),
                 "view_count": 2000,
@@ -264,7 +264,7 @@ class TestVideoFiltering:
             YouTubeVideo(
                 video_id="oHg5SJYRHA0",  # Will pass
                 title="Valid Video",
-                channel_id="UC-9-kyTW8ZkZNDHQJ6FgpwQ",
+                channel_id="UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
                 channel_title="Test Channel 2",
                 published_at=datetime.now(),
                 view_count=2000,
@@ -487,7 +487,7 @@ class TestPerformanceAndScaling:
             "9bZkp7q19f0",
             "fC7oUOUEEi4",
             "YQHsXMglC9A",
-            "3tmd-ClpJxA",
+            "3tmd - ClpJxA",
             "dQw4w9WgXcR",
         ]
 

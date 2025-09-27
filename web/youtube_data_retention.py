@@ -5,13 +5,13 @@ This module ensures compliance with YouTube API Terms of Service regarding data 
 Implements automatic cleanup of YouTube data based on configurable retention periods.
 
 IMPORTANT: Always review current YouTube API Terms of Service for your use case:
-- Academic/Research: 30 days typical
+- Academic / Research: 30 days typical
 - Educational: Up to 180 days may be acceptable
 - Commercial: Check current ToS requirements
 
 References:
-- YouTube API Terms of Service: https://developers.google.com/youtube/terms/api-services-terms-of-service
-- YouTube Data API Policy: https://developers.google.com/youtube/terms/developer-policies
+- YouTube API Terms of Service: https://developers.google.com / youtube / terms / api - services - terms - of - service
+- YouTube Data API Policy: https://developers.google.com / youtube / terms / developer - policies
 """
 
 from datetime import datetime, timedelta
@@ -86,7 +86,7 @@ class YouTubeDataRetentionManager:
             comment_cutoff = datetime.now() - timedelta(days=self.comment_retention_days)
 
             with conn.cursor() as cur:
-                # 1. Clean up comments (user-generated content - most strict)
+                # 1. Clean up comments (user - generated content - most strict)
                 if dry_run:
                     cur.execute(
                         "SELECT COUNT(*) as count FROM youtube_comments WHERE published_at < %s",
@@ -259,5 +259,6 @@ if __name__ == "__main__":
 
     print("\nTo actually perform cleanup, set dry_run=False")
     print(
-        f"Current retention policy: {manager.data_retention_days} days (data), {manager.comment_retention_days} days (comments)"
+        f"Current retention policy: {manager.data_retention_days} days (data), {
+                                                                        manager.comment_retention_days} days (comments)"
     )

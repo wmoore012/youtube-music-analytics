@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Video Filtering System for YouTube ETL Pipeline
 
 This module provides comprehensive video filtering at the API level to prevent
-problematic videos from entering the database. It implements configuration-driven
+problematic videos from entering the database. It implements configuration - driven
 filtering rules and logs all filtering decisions with clear reasoning.
 
 Key Features:
-- Filter videos before database insertion (fail-fast approach)
-- Configuration-driven filtering rules from .env and config files
+- Filter videos before database insertion (fail - fast approach)
+- Configuration - driven filtering rules from .env and config files
 - Comprehensive logging of filtering decisions
 - Support for multiple filtering criteria (video IDs, channel IDs, patterns, etc.)
 - Personal issue handling (as mentioned in requirements)
@@ -152,7 +152,7 @@ class VideoFilterEngine:
             "kJQP7kiw5Fk",  # Example - replace with actual problematic video IDs
             "fC7oUOUEEi4",  # Example - replace with actual problematic video IDs
         }
-        print(f"⚠️ Using default personal issue video IDs - configure actual IDs in config/personal_issue_videos.json")
+        print(f"⚠️ Using default personal issue video IDs - configure actual IDs in config / personal_issue_videos.json")
         return default_ids
 
     def _load_personal_issue_videos(self) -> Set[str]:
@@ -166,7 +166,7 @@ class VideoFilterEngine:
             Set of video IDs to filter out
         """
         # Try config file first
-        config_file = "config/personal_issue_videos.json"
+        config_file = "config / personal_issue_videos.json"
         video_ids = self._load_from_config_file(config_file)
         if video_ids:
             return video_ids
@@ -486,7 +486,7 @@ def load_filter_config() -> VideoFilter:
         config_data = _load_config_from_env()
 
         # Merge additional configuration from file
-        _merge_file_config(config_data, "config/video_filter.json")
+        _merge_file_config(config_data, "config / video_filter.json")
 
         # Create and validate configuration
         return VideoFilter(**config_data)

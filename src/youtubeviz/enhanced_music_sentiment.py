@@ -1,7 +1,7 @@
 """
 Enhanced Music Industry Sentiment Analysis - Comprehensive Gen Z Edition
 
-This module provides the most comprehensive music industry-specific sentiment analysis
+This module provides the most comprehensive music industry - specific sentiment analysis
 that understands modern slang, AAVE, Gen Z language, and cultural context in music fan comments.
 """
 
@@ -21,7 +21,7 @@ class ComprehensiveMusicSentimentAnalyzer:
     - AAVE and cultural expressions
     - Emoji patterns and multipliers
     - Beat appreciation detection
-    - Context-aware sentiment scoring
+    - Context - aware sentiment scoring
     """
 
     def __init__(self):
@@ -58,7 +58,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             "absolutely crazy": 0.8,
             "way crazy": 0.8,
             "too crazy": 0.8,
-            # Queen/King praise and variations
+            # Queen / King praise and variations
             "queen": 0.7,
             "fucking queen": 0.9,
             "yes queen": 0.8,
@@ -103,12 +103,12 @@ class ComprehensiveMusicSentimentAnalyzer:
             "bitch it's giving": 0.9,
             "it's giving": 0.7,
             # Ratings and numbers
-            "10/10": 0.9,
+            "10 / 10": 0.9,
             "100": 0.8,
-            "100/10": 0.9,
-            "11/10": 0.9,
+            "100 / 10": 0.9,
+            "11 / 10": 0.9,
             "100!": 0.8,
-            # Need/want expressions (positive engagement)
+            # Need / want expressions (positive engagement)
             "need the lyrics": 0.7,
             "i need the lyrics": 0.7,
             "need this": 0.7,
@@ -231,7 +231,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             "where are the lyrics": 0.6,
             "SOTY": 0.9,  # Song of the year
             "AOTY": 0.9,  # Album of the year
-            "mom": 0.7,  # Mother/mom as praise
+            "mom": 0.7,  # Mother / mom as praise
             "summer anthem": 0.7,
             "this will go crazy in the club": 0.8,
             "we need the album now": 0.7,
@@ -256,7 +256,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             "mix sounds chaotic": -0.5,
             "who asked for this remix": -0.6,
             "album rollout ain't rollouting": -0.4,
-            "this ain't real hip-hop": -0.5,
+            "this ain't real hip - hop": -0.5,
             "sounds the same every track": -0.5,
         }
 
@@ -275,8 +275,8 @@ class ComprehensiveMusicSentimentAnalyzer:
             "👏": 0.6,
             "😖": 0.5,  # Can be positive in music context (emotional response)
             "😚": 0.7,  # Kiss emoji - positive
-            "💕": 0.8,  # Love/hearts - positive
-            "🤞": 0.6,  # Crossed fingers - hopeful/positive
+            "💕": 0.8,  # Love / hearts - positive
+            "🤞": 0.6,  # Crossed fingers - hopeful / positive
             "🎤": 0.6,  # Microphone - music positive
             "🎧": 0.6,  # Headphones - music positive
             "🔊": 0.6,  # Speaker - music positive
@@ -348,11 +348,11 @@ class ComprehensiveMusicSentimentAnalyzer:
         # Calculate total indicators for confidence
         total_indicators = phrase_matches + min(emoji_count, 3)
 
-        # Check if this is an emoji-only comment
+        # Check if this is an emoji - only comment
         is_emoji_only = len(original_comment.strip()) <= 10 and emoji_count > 0 and phrase_matches == 0
 
         if is_emoji_only:
-            # Special scoring for emoji-only comments
+            # Special scoring for emoji - only comments
             if "🔥" in original_comment:
                 sentiment_score = 0.8
             elif "🌊" in original_comment:
@@ -364,7 +364,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             elif "😍" in original_comment:
                 sentiment_score = 0.8
             else:
-                # Use regular emoji scoring for other emoji-only comments
+                # Use regular emoji scoring for other emoji - only comments
                 sentiment_score = emoji_score / emoji_count if emoji_count > 0 else 0
         else:
             # Combine phrase and emoji scores for mixed content
@@ -384,7 +384,7 @@ class ComprehensiveMusicSentimentAnalyzer:
                     sentiment_score = sentiment_score / phrase_matches
 
                 elif emoji_count > 0:
-                    # Only emojis (but not emoji-only due to length)
+                    # Only emojis (but not emoji - only due to length)
                     sentiment_score = emoji_score / emoji_count
 
         # Normalize to [-1, 1] range
@@ -432,9 +432,9 @@ class ComprehensiveMusicSentimentAnalyzer:
             "I need the lyrics",
             "yessir!",
             "yessuh",
-            "10/10",
+            "10 / 10",
             "100!",
-            "100/10",
+            "100 / 10",
             "queen",
             "hot bish",
             "bad bish",
@@ -473,7 +473,7 @@ class ComprehensiveMusicSentimentAnalyzer:
                 status = "✅ POSITIVE"
                 correct += 1
             else:
-                status = "❌ NEGATIVE/NEUTRAL"
+                status = "❌ NEGATIVE / NEUTRAL"
 
             beat_emoji = "🎵" if beat_love else "⚪"
             print(f"{comment:35} | {status} | {score:+.2f} | conf: {confidence:.2f} | {beat_emoji}")

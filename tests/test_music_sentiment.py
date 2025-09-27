@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Tests for enhanced music industry sentiment analysis
 """
@@ -51,8 +51,8 @@ class TestMusicIndustrySentimentAnalyzer:
             ("fuck it up", True, "encouragement"),
             ("I need the lyrics", True, "engagement"),
             ("yessir!", True, "affirmation"),
-            ("10/10", True, "rating"),
-            ("100/10", True, "high rating"),
+            ("10 / 10", True, "rating"),
+            ("100 / 10", True, "high rating"),
             ("queen", True, "royalty reference"),
             ("hot bish", True, "compliment"),
             ("bad bish", True, "compliment"),
@@ -150,7 +150,7 @@ class TestMusicIndustrySentimentAnalyzer:
         assert results_df.iloc[3]["sentiment_score"] > 0  # "fire track 🔥"
 
         # Check beat appreciation detection
-        assert results_df.iloc[4]["beat_appreciation"] == True  # "the beat is crazy"
+        assert results_df.iloc[4]["beat_appreciation"] is True  # "the beat is crazy"
 
         print("✅ Batch analysis working correctly")
 
@@ -161,7 +161,7 @@ class TestMusicIndustrySentimentAnalyzer:
             "",
             "   ",  # Whitespace only
             pd.NA,
-            123,  # Non-string input
+            123,  # Non - string input
         ]
 
         for case in edge_cases:
@@ -170,7 +170,7 @@ class TestMusicIndustrySentimentAnalyzer:
                 # Should return default values for invalid input
                 assert result["sentiment_score"] == 0.0
                 assert result["confidence"] == 0.0
-                assert result["beat_appreciation"] == False
+                assert result["beat_appreciation"] is False
             except Exception as e:
                 pytest.fail(f"Analyzer failed on edge case {case}: {e}")
 

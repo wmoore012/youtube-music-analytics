@@ -1,7 +1,7 @@
 """
 Integration tests for the complete data migration system.
 
-These tests verify the end-to-end functionality of migrating CSV/JSON files
+These tests verify the end - to - end functionality of migrating CSV / JSON files
 to database tables with validation, backup, and archiving capabilities.
 """
 

@@ -1,4 +1,4 @@
-"""Multiprocessing bullet-proof wrapper for notebook cells."""
+"""Multiprocessing bullet - proof wrapper for notebook cells."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ class CellExecutionResult:
 
 # ────────────────────────────────────────────────────────────────────────────
 def _target(fn: Callable[[], Any], q: mp.Queue[CellExecutionResult], mem_mb: int) -> None:  # pragma: no cover
-    """Child process: run *fn*, stream result/error back, enforce RSS cap."""
+    """Child process: run *fn*, stream result / error back, enforce RSS cap."""
     import resource
     import sys
 

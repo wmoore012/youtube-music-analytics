@@ -21,13 +21,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         analysis = repo_root / "notebooks" / "analysis"
         quality = repo_root / "notebooks" / "quality"
         nbs = sorted(analysis.glob("*.ipynb")) + sorted(quality.glob("*.ipynb"))
-        source = "analysis+quality"
+        source = "analysis + quality"
 
     if not nbs:
         # Fallback to legacy root location
         legacy = repo_root / "notebooks"
         nbs = [p for p in sorted(legacy.glob("*.ipynb")) if not p.name.endswith("-executed.ipynb")]
-        source = "legacy-root"
+        source = "legacy - root"
 
     if not nbs:
         print("No notebooks found.")

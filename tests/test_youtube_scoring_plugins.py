@@ -433,7 +433,7 @@ class TestGrowthPotentialScoringPlugin:
 
         # Should detect negative growth or stability
         assert scores.iloc[0]["trend_direction"] in ["declining", "stagnant", "stable"]
-        assert scores.iloc[0]["score_value"] < 0.8  # Should be lower than high-growth scenarios
+        assert scores.iloc[0]["score_value"] < 0.8  # Should be lower than high - growth scenarios
 
     def test_insufficient_historical_data(self):
         """Test behavior with insufficient historical data."""

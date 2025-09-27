@@ -50,7 +50,7 @@ class YouTubeVizPluginManager:
             # Set up default search paths
             self._setup_default_search_paths()
 
-            # Auto-discover and load plugins if requested
+            # Auto - discover and load plugins if requested
             if auto_discover:
                 self._load_default_plugins()
 
@@ -94,7 +94,7 @@ class YouTubeVizPluginManager:
             # Discover and load plugins
             results = self.scoring_engine.discover_and_load_plugins([])
 
-            # Register built-in plugins manually if discovery fails
+            # Register built - in plugins manually if discovery fails
             self._register_builtin_plugins()
 
             self._default_plugins_loaded = True
@@ -104,7 +104,7 @@ class YouTubeVizPluginManager:
 
         except Exception as e:
             self._logger.error(f"Failed to load default plugins: {e}")
-            # Try to register built-in plugins as fallback
+            # Try to register built - in plugins as fallback
             try:
                 self._register_builtin_plugins()
                 self._default_plugins_loaded = True
@@ -114,7 +114,7 @@ class YouTubeVizPluginManager:
                 raise PluginIntegrationError(f"Failed to load any plugins: {e}")
 
     def _register_builtin_plugins(self) -> None:
-        """Register built-in plugins directly."""
+        """Register built - in plugins directly."""
         try:
             # Import and register example plugins
             from src.data_organization.example_plugins import (
@@ -129,12 +129,12 @@ class YouTubeVizPluginManager:
             for plugin in plugins:
                 try:
                     self.scoring_engine.register_plugin(plugin)
-                    self._logger.info(f"Registered built-in plugin: {plugin.get_name()}")
+                    self._logger.info(f"Registered built - in plugin: {plugin.get_name()}")
                 except Exception as e:
                     self._logger.warning(f"Failed to register plugin {plugin.get_name()}: {e}")
 
         except ImportError as e:
-            self._logger.warning(f"Could not import built-in plugins: {e}")
+            self._logger.warning(f"Could not import built - in plugins: {e}")
 
     def execute_scoring(
         self,

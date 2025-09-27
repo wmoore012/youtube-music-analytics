@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX - License - Identifier: GPL - 3.0 - or - later
 """
 YouTube Version Parser
 
@@ -7,15 +7,15 @@ from YouTube video titles and channel names. It helps identify the artists and
 versions in YouTube videos, which can be used to link them to the appropriate
 songs and artists in the database.
 
-*New in 2025-07-10:* If the **RapidFuzz** package is installed, the parser automatically uses its C-accelerated fuzzy-matching routines for faster and more accurate similarity checks.
+*New in 2025 - 07 - 10:* If the **RapidFuzz** package is installed, the parser automatically uses its C - accelerated fuzzy - matching routines for faster and more accurate similarity checks.
 
-*New in 2025-07-14:* Improved title parsing algorithm to better handle:
+*New in 2025 - 07 - 14:* Improved title parsing algorithm to better handle:
 1. Titles containing "with" as part of the title (e.g., "Sleep With The Light On")
 2. Multiple artists in titles (e.g., "Rapper Big Pooh & Nottz - Preach")
 3. Various formats of featuring indicators (e.g., "ft.", "feat.", "featuring")
 4. Better artist name identification using channel information
 
-*New in 2025-07-15:* Further improvements to the title parsing algorithm:
+*New in 2025 - 07 - 15:* Further improvements to the title parsing algorithm:
 1. Added support for possessive forms (e.g., "Ryan Destiny's song The Same")
 2. Added support for titles with "with the label" phrases (e.g., "Ezri's song apostles with the label mass appeal")
 3. Better handling of artist names in complex title formats
@@ -161,7 +161,7 @@ MEANINGLESS_DESCRIPTORS = [
     r"\(8K\)",
     r"\(Explicit\)",
     r"\(Clean\)",
-    r"\([0-9]+[Kk]\)",  # Resolution like (4K)
+    r"\([0 - 9]+[Kk]\)",  # Resolution like (4K)
     r"\(.*?[Rr]epost.*?\)",
     r"\(.*?[Pp]remiere.*?\)",
     r"\(.*?[Ee]xclusive.*?\)",
@@ -170,7 +170,7 @@ MEANINGLESS_DESCRIPTORS = [
     r"\(.*?[Hh]igh.*?[Qq]uality.*?\)",
 ]
 
-# Known ripper/unofficial channel patterns - UPDATED with validation results + broadcaster detection
+# Known ripper / unofficial channel patterns - UPDATED with validation results + broadcaster detection
 RIPPER_CHANNEL_PATTERNS = [
     r".*[Ll]yrics?.*",
     r"Cardinal Music",  # Confirmed ripper (user's Side B example)
@@ -269,9 +269,9 @@ def clean_text(text: str) -> str:
     # Normalize the text first
     text = _norm(text)
 
-    # Remove common YouTube-specific suffixes
-    text = re.sub(r"\s*\(\s*Official\s+Video\s*\)\s*$", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s*\[\s*Official\s+Video\s*\]\s*$", "", text, flags=re.IGNORECASE)
+    # Remove common YouTube - specific suffixes
+    text = re.sub(r"\s*\(\s * Official\s + Video\s*\)\s*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*\[\s * Official\s + Video\s*\]\s*$", "", text, flags=re.IGNORECASE)
 
     return text
 
@@ -344,7 +344,7 @@ def extract_artists_from_title(title: str, channel_name: str = None) -> Tuple[Li
     title = clean_text(title)
 
     # Special case for "On The Radar Performance" and similar formats
-    radar_match = re.search(r"([^|]+)\s*\|\s*On The Radar Performance", title, re.IGNORECASE)
+    radar_match = re.search(r"([^|]+)\s*\|\s * On The Radar Performance", title, re.IGNORECASE)
     if radar_match:
         artist_and_title = radar_match.group(1).strip()
         # Check if the title is in quotes
@@ -406,7 +406,7 @@ def extract_artists_from_title(title: str, channel_name: str = None) -> Tuple[Li
         if not m:
             return title_text, []
         main, rest = m.group("prefix"), m.group("rest")
-        featured = re.split(r",\s*|\s+&\s+|\s+and\s+", rest)
+        featured = re.split(r",\s*|\s+&\s+|\s + and\s+", rest)
         return main.strip(" -"), [a.strip() for a in featured if a.strip()]
 
     # Apply the feat splitting
@@ -459,7 +459,7 @@ def split_if_csv(text: str) -> tuple[str | None, str | None, str]:
     """
     try:
         vid, isrc, title = next(csv.reader([text]))
-        if re.fullmatch(r"[A-Za-z0-9_-]{11}", vid) and len(isrc) == 12:
+        if re.fullmatch(r"[A - Za - z0 - 9_-]{11}", vid) and len(isrc) == 12:
             return vid, isrc, title
     except Exception:
         pass
@@ -477,20 +477,20 @@ _RX_BRACKETS = re.compile(r"\s*[\[\(].*?(official|audio|video|hq|mv|lyric).*?[\]
 _RX_FEAT_CLAUSE = re.compile(r"(?:\(|\[|\s+)(?:ft\.?|feat\.?|featuring|ft|feat)\s+([^)\]]+)(?:\)|\])?", re.I)
 # Only match "with" when it's in parentheses or brackets, or preceded by a dash
 # This helps avoid splitting titles like "Sleep With The Light On"
-_RX_WITH_CLAUSE = re.compile(r"(?:[\(\[]|\s-\s)\s*with\s+([^)\]]+)", re.I)
+_RX_WITH_CLAUSE = re.compile(r"(?:[\(\[]|\s-\s)\s * with\s+([^)\]]+)", re.I)
 # Pattern to detect possessive forms like "Ryan Destiny's song"
 _RX_POSSESSIVE = re.compile(
-    r"^([A-Za-z0-9\s&.']+)'s\s+(?:song|track|tune|single|record|release|video)\s+(.+)$",
+    r"^([A - Za - z0 - 9\s&.']+)'s\s+(?:song|track|tune|single|record|release|video)\s+(.+)$",
     re.I,
 )
 # Pattern to detect "with the label" phrases
-_RX_LABEL = re.compile(r"(.+?)\s+with\s+the\s+label\s+(.+)$", re.I)
+_RX_LABEL = re.compile(r"(.+?)\s + with\s + the\s + label\s+(.+)$", re.I)
 
 _DELIMITERS = re.compile(r"\s*(?:,|&| and | x |/)\s*", re.I)
 
 
 def _split_primary_block(block: str) -> List[str]:
-    """Enhanced multi-artist detection with better handling of complex artist combinations."""
+    """Enhanced multi - artist detection with better handling of complex artist combinations."""
     if not block or not block.strip():
         return []
 
@@ -517,7 +517,7 @@ def _split_primary_block(block: str) -> List[str]:
     # Standard delimiter splitting
     parts = [p.strip() for p in _DELIMITERS.split(cleaned_block) if p.strip()]
 
-    # Filter out obvious non-artist parts
+    # Filter out obvious non - artist parts
     filtered_parts = []
     for part in parts:
         # Skip parts that are clearly not artist names
@@ -533,7 +533,7 @@ def _split_primary_block(block: str) -> List[str]:
 
 
 def _extract_collaboration_clauses(title: str) -> Tuple[str, List[str]]:
-    """Remove featuring/with clauses and collect collaborator names.
+    """Remove featuring / with clauses and collect collaborator names.
 
     The parser previously redefined a tiny `_extract` helper in several
     conditional branches. This consolidated helper ensures those branches stay
@@ -583,7 +583,7 @@ def _extract_collaboration_clauses(title: str) -> Tuple[str, List[str]]:
 
 def _is_ripper_channel(channel_name: str) -> bool:
     """
-    Check if a channel name matches patterns of ripper/unofficial channels.
+    Check if a channel name matches patterns of ripper / unofficial channels.
     Updated with validation results to exclude legitimate artist channels.
     """
     if not channel_name:
@@ -610,7 +610,7 @@ def _remove_meaningless_descriptors(title: str) -> str:
     for pattern in MEANINGLESS_DESCRIPTORS:
         cleaned_title = re.sub(pattern, "", cleaned_title, flags=re.IGNORECASE)
 
-    # Clean up extra spaces and empty parentheses/brackets
+    # Clean up extra spaces and empty parentheses / brackets
     cleaned_title = re.sub(r"\s+", " ", cleaned_title).strip()
     cleaned_title = re.sub(r"\(\s*\)", "", cleaned_title)  # Empty parentheses
     cleaned_title = re.sub(r"\[\s*\]", "", cleaned_title)  # Empty brackets
@@ -625,7 +625,7 @@ def _extract_artist_from_title_start(title: str, channel_name: str = None) -> tu
     """
     # First try the more specific pattern for "Artist1, Artist2 Title"
     comma_pattern = (
-        r'^([A-Za-z0-9\s&.\']{1,15}),\s+([A-Za-z0-9\s&.\']{1,15})\s+([A-Za-z0-9\s\'"]{3,})(?:\s+[Ll]yrics?)?$'
+        r'^([A - Za - z0 - 9\s&.\']{1,15}),\s+([A - Za - z0 - 9\s&.\']{1,15})\s+([A - Za - z0 - 9\s\'"]{3,})(?:\s+[Ll]yrics?)?$'
     )
     comma_match = re.match(comma_pattern, title)
 
@@ -645,7 +645,7 @@ def _extract_artist_from_title_start(title: str, channel_name: str = None) -> tu
             return [artist1, artist2], song_title
 
     # Then try the more general pattern for multiple artists separated by various delimiters
-    artist_pattern = r'^([A-Za-z0-9\s&.,\']+?)(\s+)([A-Z][A-Za-z0-9\s\'"]+?)(?:\s+[Ll]yrics?)?$'
+    artist_pattern = r'^([A - Za - z0 - 9\s&.,\']+?)(\s+)([A - Z][A - Za - z0 - 9\s\'"]+?)(?:\s+[Ll]yrics?)?$'
     match = re.match(artist_pattern, title)
 
     if match:
@@ -667,7 +667,7 @@ def _extract_artist_from_title_start(title: str, channel_name: str = None) -> tu
 
 def _detect_multi_song_performance(title: str) -> Dict:
     """
-    Detect if a title represents multiple songs performed together (medley/setlist).
+    Detect if a title represents multiple songs performed together (medley / setlist).
     Returns information about detected songs for special handling.
     """
     result = {
@@ -700,7 +700,7 @@ def _detect_multi_song_performance(title: str) -> Dict:
             elif re.search(r"\bmedley\b", title, re.IGNORECASE):
                 result["performance_type"] = "Medley"
             else:
-                result["performance_type"] = "Multi-Song Performance"
+                result["performance_type"] = "Multi - Song Performance"
 
     return result
 
@@ -717,7 +717,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
     # 0.1️⃣ Remove meaningless descriptors
     cleaned = _remove_meaningless_descriptors(cleaned)
 
-    # 0.2️⃣ Check for multi-song performances (e.g., Lute "Eye to Eye, 100 & GED")
+    # 0.2️⃣ Check for multi - song performances (e.g., Lute "Eye to Eye, 100 & GED")
     multi_song_info = _detect_multi_song_performance(cleaned)
     if multi_song_info["is_multi_song"]:
         # Handle as primary song + featured songs with special version
@@ -740,7 +740,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
     # 0.3️⃣ Check for live performance broadcasts (e.g., "Lute — GED | LIVE Performance | SiriusXM")
     if channel_title and _is_ripper_channel(channel_title):
         # Pattern: "Artist — Song | LIVE Performance | Broadcaster"
-        live_pattern = r"^([A-Za-z\s&.\']+)\s*[—-]\s*([^|]+)(?:\s*\|\s*LIVE\s*Performance)?(?:\s*\|\s*(.+))?$"
+        live_pattern = r"^([A - Za - z\s&.\']+)\s*[—-]\s*([^|]+)(?:\s*\|\s * LIVE\s * Performance)?(?:\s*\|\s*(.+))?$"
         live_match = re.match(live_pattern, cleaned)
 
         if live_match:
@@ -749,7 +749,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
             broadcaster = live_match.group(3).strip() if live_match.group(3) else channel_title
 
             # Clean up the song part
-            song_part = re.sub(r"\s*\|\s*LIVE\s*Performance.*$", "", song_part, flags=re.IGNORECASE)
+            song_part = re.sub(r"\s*\|\s * LIVE\s * Performance.*$", "", song_part, flags=re.IGNORECASE)
 
             return {
                 "title": song_part.strip(),
@@ -790,7 +790,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
         if "'" in song_info and "song" in song_info.lower():
             # This is likely a possessive form like "Ezri's song apostles"
             artist_song_match = re.match(
-                r"([A-Za-z0-9\s&.']+)'s\s+(?:song|track|tune|single)\s+(.+)$",
+                r"([A - Za - z0 - 9\s&.']+)'s\s+(?:song|track|tune|single)\s+(.+)$",
                 song_info,
                 re.I,
             )
@@ -827,7 +827,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
         }
 
     # 0.8️⃣ Handle quoted titles like 'LUTE "GED (Gettin Every Dolla)" (7.7.24)'
-    quoted_pattern = r'^([A-Za-z0-9\s&.\']+?)\s*["\']([^"\']+)["\']'
+    quoted_pattern = r'^([A - Za - z0 - 9\s&.\']+?)\s*["\']([^"\']+)["\']'
     quoted_match = re.match(quoted_pattern, cleaned)
     if quoted_match:
         potential_artist = quoted_match.group(1).strip()
@@ -929,7 +929,7 @@ def parse_youtube_title(video_title: str, channel_title: str) -> Dict[str, List[
 
     return {
         "title": title_part,
-        "primary": list(dict.fromkeys(primary_artists)),  # de-dupe order-preserved
+        "primary": list(dict.fromkeys(primary_artists)),  # de - dupe order - preserved
         "featured": list(dict.fromkeys(featured)),
     }
 
@@ -982,7 +982,7 @@ def is_official_video(title: str, channel_name: str = None) -> bool:
         "official video",
         "official music video",
         "official mv",
-        "official m/v",
+        "official m / v",
     ]
     for indicator in official_indicators:
         if indicator.lower() in title.lower():
@@ -1066,7 +1066,7 @@ def match_youtube_to_song(video_data: Dict[str, any], songs: List[Dict[str, any]
         if not song_title or parsed_title not in song_title and song_title not in parsed_title:
             continue
 
-        # Calculate title similarity (0-100)
+        # Calculate title similarity (0 - 100)
         title_similarity = calculate_similarity(parsed_title, song_title)
 
         # Calculate artist similarity if we have artist information
@@ -1101,16 +1101,16 @@ def calculate_similarity(str1: str, str2: str) -> float:
     The similarity score algorithm works as follows:
     1. If RapidFuzz is available, it uses token_set_ratio which:
        - Tokenizes both strings (splits into words)
-       - Creates three sets: intersection, str1-only, str2-only
+       - Creates three sets: intersection, str1 - only, str2 - only
        - Sorts and joins each set
        - Computes the Levenshtein ratio between the resulting strings
        - This is tolerant to word order and duplicates
-       - Returns a score from 0-100
+       - Returns a score from 0 - 100
 
     2. If RapidFuzz is not available, it falls back to:
        - Computing the Levenshtein distance between the strings
        - Normalizing by the length of the longer string
-       - Converting to a similarity score (0-100)
+       - Converting to a similarity score (0 - 100)
 
     This approach handles cases where titles might have slight variations
     or different word orders but still refer to the same song.
@@ -1175,7 +1175,7 @@ def calculate_artist_similarity(artists1: List[str], artists2: List[str]) -> flo
        - This approach is less accurate but still provides a reasonable fallback
 
     This approach handles cases where artist names might be spelled differently or have
-    different formats (e.g., "J. Cole" vs "J Cole" or "Jay-Z" vs "JAY Z").
+    different formats (e.g., "J. Cole" vs "J Cole" or "Jay - Z" vs "JAY Z").
     """
     if not artists1 or not artists2:
         return 0.0
@@ -1203,7 +1203,7 @@ def calculate_artist_similarity(artists1: List[str], artists2: List[str]) -> flo
 def extract_version_type(title: str, channel_name: str = None) -> Optional[str]:
     """
     Extract the version type from a YouTube title and channel name.
-    Enhanced with unicode slowed/reverb detection.
+    Enhanced with unicode slowed / reverb detection.
 
     Args:
         title (str): The YouTube video title
@@ -1212,11 +1212,11 @@ def extract_version_type(title: str, channel_name: str = None) -> Optional[str]:
     Returns:
         Optional[str]: The version type or None if not found
     """
-    # First check for unicode slowed/reverb patterns (Chopped & Screwed)
+    # First check for unicode slowed / reverb patterns (Chopped & Screwed)
     unicode_patterns = [
-        r"[𝕊-𝟿]+.*[𝕊-𝟿]+",  # Mathematical script characters
-        r"[ℂ-ℝ]+.*[ℂ-ℝ]+",  # Double-struck characters
-        r"[𝒜-𝓏]+.*[𝒜-𝓏]+",  # Script characters
+        r"[𝕊 - 𝟿]+.*[𝕊 - 𝟿]+",  # Mathematical script characters
+        r"[ℂ - ℝ]+.*[ℂ - ℝ]+",  # Double - struck characters
+        r"[𝒜 - 𝓏]+.*[𝒜 - 𝓏]+",  # Script characters
     ]
 
     for pattern in unicode_patterns:

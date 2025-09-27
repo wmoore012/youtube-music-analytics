@@ -1,5 +1,5 @@
 """
-Data migration system for moving CSV/JSON files to database tables.
+Data migration system for moving CSV / JSON files to database tables.
 
 This module provides functionality to migrate scattered data files into
 organized database tables while maintaining data integrity and providing
@@ -76,7 +76,7 @@ class MigrationResult:
         }
 
     def generate_report(self) -> str:
-        """Generate human-readable migration report."""
+        """Generate human - readable migration report."""
         status = "SUCCESS" if self.success else "FAILED"
         report = f"""
 Migration Report - {status}
@@ -142,7 +142,7 @@ class ValidationResult:
 
 class DataMigrator:
     """
-    Migrates CSV/JSON files to database tables with validation and backup.
+    Migrates CSV / JSON files to database tables with validation and backup.
 
     This class handles the migration of scattered data files into organized
     database tables while ensuring data integrity and providing rollback
@@ -349,7 +349,7 @@ class DataMigrator:
                     validation_result.add_error(f"Missing record with keys: {key_values}")
                     continue
 
-                # Compare data values (excluding auto-generated columns)
+                # Compare data values (excluding auto - generated columns)
                 for col in source_data.columns:
                     if col in migrated_row.columns:
                         source_val = source_row[col]
@@ -391,7 +391,7 @@ class DataMigrator:
 
         try:
             # Create backup directory with timestamp and unique identifier
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y % m%d_ % H%M % S")
             import uuid
 
             unique_id = str(uuid.uuid4())[:8]
@@ -598,7 +598,7 @@ class DataMigrator:
 
         if transform_type == "key_value_pairs":
             if not isinstance(json_data, dict):
-                result.add_error("Expected JSON object for key-value transformation")
+                result.add_error("Expected JSON object for key - value transformation")
             elif len(json_data) == 0:
                 result.add_warning("JSON object is empty")
 
@@ -622,7 +622,7 @@ class DataMigrator:
         transform_type = mapping.get("transform", "direct")
 
         if transform_type == "key_value_pairs":
-            # Convert key-value pairs to DataFrame
+            # Convert key - value pairs to DataFrame
             key_column = mapping.get("key_column", "key")
             value_column = mapping.get("value_column", "value")
 

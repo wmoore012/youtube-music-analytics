@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Comprehensive Tests for Enhanced Music Sentiment Analysis
 
@@ -46,7 +46,7 @@ class TestEnhancedMusicSentiment:
         assert isinstance(result["confidence"], float)
         assert isinstance(result["beat_appreciation"], bool)
 
-        # Test empty/null comments
+        # Test empty / null comments
         assert self.analyzer.analyze_comment("")["sentiment_score"] == 0.0
         assert self.analyzer.analyze_comment(None)["sentiment_score"] == 0.0
 
@@ -160,9 +160,9 @@ class TestEnhancedMusicSentiment:
             "I need the lyrics",
             "yessir!",
             "yessuh",
-            "10/10",
+            "10 / 10",
             "100!",
-            "100/10",
+            "100 / 10",
             "queen",
             "hot bish",
             "bad bish",
@@ -214,7 +214,7 @@ class TestEnhancedMusicSentiment:
             ("love the lyrics", False),
             ("great song overall", False),
             ("amazing vocals", False),
-            ("this is fire", False),  # Fire but not beat-specific
+            ("this is fire", False),  # Fire but not beat - specific
         ]
 
         # Test beat detection
@@ -224,7 +224,7 @@ class TestEnhancedMusicSentiment:
             if result["beat_appreciation"] == should_detect_beat:
                 beat_correct += 1
 
-        # Test non-beat detection
+        # Test non - beat detection
         non_beat_correct = 0
         for comment, should_detect_beat in non_beat_comments:
             result = self.analyzer.analyze_comment(comment)
@@ -235,16 +235,16 @@ class TestEnhancedMusicSentiment:
         non_beat_accuracy = non_beat_correct / len(non_beat_comments)
 
         assert beat_accuracy >= 0.8, f"Beat detection accuracy too low: {beat_accuracy:.1%}"
-        assert non_beat_accuracy >= 0.8, f"Non-beat detection accuracy too low: {non_beat_accuracy:.1%}"
+        assert non_beat_accuracy >= 0.8, f"Non - beat detection accuracy too low: {non_beat_accuracy:.1%}"
 
     def test_emoji_sentiment_analysis(self):
         """Test emoji sentiment analysis including multipliers."""
 
         emoji_tests = [
-            ("🔥🔥🔥", True, True),  # Should be positive, emoji-only
-            ("🌊🌊🌊🌊", True, True),  # Should be positive, emoji-only
-            ("💯💯💯", True, True),  # Should be positive, emoji-only
-            ("😍", True, True),  # Should be positive, emoji-only
+            ("🔥🔥🔥", True, True),  # Should be positive, emoji - only
+            ("🌊🌊🌊🌊", True, True),  # Should be positive, emoji - only
+            ("💯💯💯", True, True),  # Should be positive, emoji - only
+            ("😍", True, True),  # Should be positive, emoji - only
             ("this is fire 🔥", True, False),  # Positive with emoji
             ("amazing 😍😍", True, False),  # Positive with multiple emojis
         ]
@@ -257,11 +257,11 @@ class TestEnhancedMusicSentiment:
                 is_positive == should_be_positive
             ), f"'{emoji_comment}' should be {'positive' if should_be_positive else 'negative'}"
 
-            # Emoji-only comments should have good scores
+            # Emoji - only comments should have good scores
             if is_emoji_only and should_be_positive:
                 assert (
                     result["sentiment_score"] > 0.5
-                ), f"Emoji-only comment '{emoji_comment}' should have strong positive score"
+                ), f"Emoji - only comment '{emoji_comment}' should have strong positive score"
 
     def test_confidence_scoring(self):
         """Test confidence scoring mechanism."""
@@ -313,7 +313,7 @@ class TestEnhancedMusicSentiment:
 
         accuracy = self.analyzer.test_real_comments()
 
-        # Should achieve near-perfect accuracy
+        # Should achieve near - perfect accuracy
         assert accuracy >= 95.0, f"Comprehensive test accuracy too low: {accuracy:.1f}%"
 
         print(f"✅ Comprehensive accuracy test passed: {accuracy:.1f}%")
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         print("✅ Music slang recognition test passed")
 
         test_suite.test_hard_crazy_positive_context()
-        print("✅ Hard/crazy positive context test passed")
+        print("✅ Hard / crazy positive context test passed")
 
         test_suite.test_gen_z_slang_comprehensive()
         print("✅ Gen Z slang comprehensive test passed")

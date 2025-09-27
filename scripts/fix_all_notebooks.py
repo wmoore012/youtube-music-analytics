@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 🔧 Fix All Notebooks - Comprehensive Notebook Repair Tool
 ========================================================
 
 This script fixes all notebook issues:
-1. Removes duplicate/conflicting notebooks
+1. Removes duplicate / conflicting notebooks
 2. Regenerates broken executed notebooks
 3. Fixes import errors and missing functions
 4. Ensures all notebooks run successfully
@@ -23,13 +23,13 @@ def cleanup_duplicate_notebooks():
     print("🧹 Cleaning up duplicate notebooks...")
 
     # Remove the problematic quality notebook in wrong location
-    quality_notebook = "notebooks/quality/03_appendix_data_quality.ipynb"
+    quality_notebook = "notebooks / quality / 03_appendix_data_quality.ipynb"
     if os.path.exists(quality_notebook):
         print(f"   Removing duplicate: {quality_notebook}")
         os.remove(quality_notebook)
 
     # Remove empty executed notebooks
-    executed_dir = "notebooks/executed"
+    executed_dir = "notebooks / executed"
     for file in os.listdir(executed_dir):
         if file.endswith(".ipynb"):
             filepath = os.path.join(executed_dir, file)
@@ -210,7 +210,7 @@ def fix_data_quality_notebook():
             "language_info": {
                 "codemirror_mode": {"name": "ipython", "version": 3},
                 "file_extension": ".py",
-                "mimetype": "text/x-python",
+                "mimetype": "text / x - python",
                 "name": "python",
                 "nbconvert_exporter": "python",
                 "pygments_lexer": "ipython3",
@@ -222,7 +222,7 @@ def fix_data_quality_notebook():
     }
 
     # Write the fixed notebook
-    notebook_path = "notebooks/editable/03_appendix_data_quality_clean.ipynb"
+    notebook_path = "notebooks / editable / 03_appendix_data_quality_clean.ipynb"
     with open(notebook_path, "w") as f:
         json.dump(notebook_content, f, indent=2)
 

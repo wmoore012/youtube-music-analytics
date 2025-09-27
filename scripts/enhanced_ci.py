@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-🚀 Enhanced CI/CD Pipeline – Production-Ready Checks
+🚀 Enhanced CI / CD Pipeline – Production - Ready Checks
 ===================================================
 
 Comprehensive quality validation system for reliable, shareable code.
@@ -8,16 +8,16 @@ Designed to enforce the repository's operational requirements across
 linting, testing, and data validation.
 
 Features:
-- Production-ready code quality standards
+- Production - ready code quality standards
 - Extensive commenting validation
 - Database integrity checks
 - AI agent intelligence reporting
 - Music industry context validation
 
 Usage:
-    python scripts/enhanced_ci.py
-    python scripts/enhanced_ci.py --fix-issues
-    python scripts/enhanced_ci.py --report-only
+    python scripts / enhanced_ci.py
+    python scripts / enhanced_ci.py --fix - issues
+    python scripts / enhanced_ci.py --report - only
 """
 
 import argparse
@@ -48,15 +48,15 @@ from src.youtubeviz.operations_monitor import (
 
 @dataclass
 class CodeQualityMetrics:
-    """Code quality assessment results for production-ready reviews."""
+    """Code quality assessment results for production - ready reviews."""
 
-    formatting_score: float = 0.0  # 0-100
+    formatting_score: float = 0.0  # 0 - 100
     linting_issues: int = 0
-    type_coverage: float = 0.0  # 0-100
+    type_coverage: float = 0.0  # 0 - 100
     security_vulnerabilities: int = 0
-    complexity_score: float = 0.0  # 0-100
-    documentation_coverage: float = 0.0  # 0-100
-    comment_quality_score: float = 0.0  # 0-100
+    complexity_score: float = 0.0  # 0 - 100
+    documentation_coverage: float = 0.0  # 0 - 100
+    comment_quality_score: float = 0.0  # 0 - 100
     loc_compliance: bool = True
     duplicate_code_detected: bool = False
 
@@ -80,7 +80,7 @@ class DatabaseIntegrityResults:
 
     schema_consistency: bool = True
     referential_integrity: bool = True
-    data_quality_score: float = 0.0  # 0-100
+    data_quality_score: float = 0.0  # 0 - 100
     performance_metrics: Dict[str, float] = field(default_factory=dict)
     record_counts: Dict[str, int] = field(default_factory=dict)
     anomaly_detection: List[str] = field(default_factory=list)
@@ -120,9 +120,9 @@ class CIValidationResult:
 
 class EnhancedCI:
     """
-    High-confidence CI/CD pipeline with comprehensive validation.
+    High - confidence CI / CD pipeline with comprehensive validation.
 
-    Designed for this repository to demonstrate production-ready
+    Designed for this repository to demonstrate production - ready
     engineering practices and reproducible analytics.
     """
 
@@ -133,7 +133,7 @@ class EnhancedCI:
         self.warnings: List[str] = []
         self.results = CIValidationResult()
 
-        # Production-ready standards configuration
+        # Production - ready standards configuration
         self.max_line_length = 120
         self.min_comment_ratio = 0.15  # 15% of lines should be comments
         self.max_function_loc = 50  # Maximum lines per function
@@ -163,7 +163,7 @@ class EnhancedCI:
 
         try:
             result = subprocess.run(
-                ["python", "scripts/env_safety_checker.py"], capture_output=True, text=True, timeout=30
+                ["python", "scripts / env_safety_checker.py"], capture_output=True, text=True, timeout=30
             )
 
             if result.returncode == 0:
@@ -209,9 +209,9 @@ class EnhancedCI:
                     "tests/",
                     "--cov=src",
                     "--cov=web",
-                    "--cov-report=term-missing",
-                    "--cov-report=xml",
-                    "--cov-fail-under=80",
+                    "--cov - report=term - missing",
+                    "--cov - report=xml",
+                    "--cov - fail - under=80",
                     "--tb=short",
                     "-v",
                 ],
@@ -262,7 +262,7 @@ class EnhancedCI:
 
     def validate_code_quality(self) -> CodeQualityMetrics:
         """
-        Comprehensive code quality validation with production-ready standards.
+        Comprehensive code quality validation with production - ready standards.
 
         Validates:
         - Code formatting and style consistency
@@ -271,7 +271,7 @@ class EnhancedCI:
         - Type hint coverage
         - Documentation completeness
         """
-        print("\n🔍 VALIDATING CODE QUALITY (Production-Ready Standards)")
+        print("\n🔍 VALIDATING CODE QUALITY (Production - Ready Standards)")
         print("=" * 60)
 
         metrics = CodeQualityMetrics()
@@ -280,7 +280,7 @@ class EnhancedCI:
         self.log_info("Checking code formatting with Black...")
         try:
             result = subprocess.run(
-                ["black", "--check", "--line-length", str(self.max_line_length), "."],
+                ["black", "--check", "--line - length", str(self.max_line_length), "."],
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -297,20 +297,20 @@ class EnhancedCI:
                     metrics.formatting_score = 50.0
 
                 if self.fix_issues:
-                    self.log_info(f"Auto-fixing {formatting_issues} formatting issues...")
+                    self.log_info(f"Auto - fixing {formatting_issues} formatting issues...")
                     fix_result = subprocess.run(
-                        ["black", "--line-length", str(self.max_line_length), "."],
+                        ["black", "--line - length", str(self.max_line_length), "."],
                         capture_output=True,
                         text=True,
                         timeout=120,
                     )
                     if fix_result.returncode == 0:
-                        self.log_success("Auto-fixed formatting issues")
+                        self.log_success("Auto - fixed formatting issues")
                         metrics.formatting_score = 100.0
                     else:
-                        self.log_error("Failed to auto-fix some formatting issues")
+                        self.log_error("Failed to auto - fix some formatting issues")
                 else:
-                    self.log_warning(f"Found {formatting_issues} formatting issues - run with --fix-issues")
+                    self.log_warning(f"Found {formatting_issues} formatting issues - run with --fix - issues")
                     # Show first few files that need formatting
                     lines = result.stdout.split("\n")[:5]
                     for line in lines:
@@ -325,8 +325,8 @@ class EnhancedCI:
             result = subprocess.run(
                 [
                     "flake8",
-                    f"--max-line-length={self.max_line_length}",
-                    "--exclude=.venv,__pycache__,tools/archive",
+                    f"--max - line - length={self.max_line_length}",
+                    "--exclude=.venv,__pycache__,tools / archive",
                     "--statistics",
                     ".",
                 ],
@@ -401,8 +401,8 @@ class EnhancedCI:
         self.log_info("Detecting duplicate code patterns...")
         metrics.duplicate_code_detected = self._detect_duplicate_code()
 
-        # 5. Detect AI-generated patterns and functions to combine
-        self.log_info("Analyzing for AI-generated patterns and combinable functions...")
+        # 5. Detect AI - generated patterns and functions to combine
+        self.log_info("Analyzing for AI - generated patterns and combinable functions...")
         ai_patterns = self._detect_ai_generated_patterns()
         if ai_patterns:
             self.log_warning(f"Found {len(ai_patterns)} potential AI patterns or combinable functions")
@@ -505,7 +505,7 @@ class EnhancedCI:
         for notebook_path in notebook_files:
             try:
                 # Try to load as JSON first
-                with open(notebook_path, "r", encoding="utf-8") as f:
+                with open(notebook_path, "r", encoding="utf - 8") as f:
                     content = f.read().strip()
 
                 if not content:
@@ -519,7 +519,7 @@ class EnhancedCI:
                         notebook_path.rename(backup_path)
 
                     # Write minimal structure
-                    with open(notebook_path, "w", encoding="utf-8") as f:
+                    with open(notebook_path, "w", encoding="utf - 8") as f:
                         json.dump(minimal_notebook, f, indent=2)
 
                     repaired_notebooks.append(str(notebook_path))
@@ -555,7 +555,7 @@ class EnhancedCI:
                     backup_path = notebook_path.with_suffix(".ipynb.backup")
                     notebook_path.rename(backup_path)
 
-                    with open(notebook_path, "w", encoding="utf-8") as f:
+                    with open(notebook_path, "w", encoding="utf - 8") as f:
                         json.dump(notebook_data, f, indent=2)
 
                     repaired_notebooks.append(str(notebook_path))
@@ -586,7 +586,7 @@ class EnhancedCI:
 
     def validate_database_operations(self) -> bool:
         """
-        Validate database operations with human-readable SQL formatting.
+        Validate database operations with human - readable SQL formatting.
 
         Checks for:
         - Proper SQL formatting with line breaks
@@ -620,21 +620,21 @@ class EnhancedCI:
         return all_compliant
 
     def _check_sql_formatting(self) -> List[str]:
-        """Check for human-readable SQL formatting with proper line breaks."""
+        """Check for human - readable SQL formatting with proper line breaks."""
         issues = []
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     content = f.read()
                     lines = content.split("\n")
 
                 # Look for SQL queries
                 in_sql = False
-                sql_start_line = 0
+                _sql_start_line = 0
 
                 for i, line in enumerate(lines):
                     # Detect SQL query start
@@ -644,7 +644,7 @@ class EnhancedCI:
                     ):
                         if '"""' in line or "'''" in line or "text(" in line:
                             in_sql = True
-                            sql_start_line = i + 1
+                            _sql_start_line = i + 1
 
                     # Check SQL formatting issues
                     if in_sql:
@@ -652,12 +652,12 @@ class EnhancedCI:
                         if len(line.strip()) > 120 and any(
                             keyword in line.upper() for keyword in ["SELECT", "FROM", "WHERE", "JOIN"]
                         ):
-                            issues.append(f"{py_file}:{i+1} - SQL line too long, needs line breaks for readability")
+                            issues.append(f"{py_file}:{i + 1} - SQL line too long, needs line breaks for readability")
 
                         # Check for missing indentation
                         if line.strip().upper().startswith(("FROM", "WHERE", "JOIN", "ORDER BY", "GROUP BY")):
                             if not line.startswith("    ") and not line.startswith("\t"):
-                                issues.append(f"{py_file}:{i+1} - SQL clause should be indented for readability")
+                                issues.append(f"{py_file}:{i + 1} - SQL clause should be indented for readability")
 
                         # End of SQL block
                         if '"""' in line or "'''" in line or ")" in line:
@@ -750,11 +750,11 @@ except Exception as e:
         dq_files_found = 0
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     content = f.read().lower()
 
                 if any(pattern in content for pattern in dq_patterns):
@@ -772,7 +772,7 @@ except Exception as e:
 
     def _validate_commenting(self) -> float:
         """
-        Validate extensive commenting requirements for production-ready code.
+        Validate extensive commenting requirements for production - ready code.
 
         Checks for:
         - Minimum comment ratio (15% of lines)
@@ -785,11 +785,11 @@ except Exception as e:
 
         # Check Python files for comment quality
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     lines = f.readlines()
 
                 total_lines = len(lines)
@@ -824,7 +824,7 @@ except Exception as e:
     def _count_docstring_lines(self, file_path: Path) -> int:
         """Count lines in docstrings for documentation coverage."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, "r", encoding="utf - 8") as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -855,11 +855,11 @@ except Exception as e:
         duplicate_functions = {}  # Track duplicates for recommendations
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     content = f.read()
 
                 tree = ast.parse(content)
@@ -873,7 +873,8 @@ except Exception as e:
                     if len(lines) > 1:
                         duplicates_found = True
                         for duplicate_line in lines[1:]:
-                            self.log_error(f"{py_file}: Duplicate top-level function '{name}' at line {duplicate_line}")
+                            self.log_error(
+                                f"{py_file}: Duplicate top - level function '{name}' at line {duplicate_line}")
 
                         duplicate_functions.setdefault(str(py_file), []).append({"name": name, "lines": lines})
 
@@ -896,7 +897,7 @@ except Exception as e:
 
     def _detect_ai_generated_patterns(self) -> List[str]:
         """
-        Detect bulky AI-generated code patterns and functions that should be combined.
+        Detect bulky AI - generated code patterns and functions that should be combined.
 
         Creates a list of functions that should be analyzed for potential combination
         based on common AI code generation patterns.
@@ -904,11 +905,11 @@ except Exception as e:
         ai_patterns = []
         functions_to_combine = []
 
-        # Common AI-generated patterns to detect
+        # Common AI - generated patterns to detect
         ai_indicators = [
-            "# AI-generated",
+            "# AI - generated",
             "# Generated by",
-            "# Auto-generated",
+            "# Auto - generated",
             "def helper_function_",
             "def utility_function_",
             "def process_data_step_",
@@ -926,19 +927,19 @@ except Exception as e:
         ]
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     content = f.read()
                     lines = content.split("\n")
 
-                # Check for AI-generated indicators
+                # Check for AI - generated indicators
                 for i, line in enumerate(lines):
                     for indicator in ai_indicators:
                         if indicator.lower() in line.lower():
-                            ai_patterns.append(f"{py_file}:{i+1} - Possible AI-generated code: {line.strip()}")
+                            ai_patterns.append(f"{py_file}:{i + 1} - Possible AI - generated code: {line.strip()}")
 
                 # Parse AST to find functions
                 tree = ast.parse(content)
@@ -981,14 +982,14 @@ except Exception as e:
 
         # Report findings with enhanced recommendations
         if ai_patterns:
-            self.log_warning("Detected potential AI-generated patterns:")
+            self.log_warning("Detected potential AI - generated patterns:")
             for pattern in ai_patterns[:10]:  # Limit output
                 print(f"   {pattern}")
             if len(ai_patterns) > 10:
                 print(f"   ... and {len(ai_patterns) - 10} more")
 
             print("\n   🤖 AI PATTERN RECOMMENDATIONS:")
-            print("     • Break down functions >100 lines into focused, single-purpose functions")
+            print("     • Break down functions >100 lines into focused, single - purpose functions")
             print("     • Extract common patterns into reusable helper functions")
             print("     • Add comprehensive comments explaining business logic")
             print("     • Consider using composition over large monolithic functions")
@@ -1064,14 +1065,14 @@ except Exception as e:
                 file_analysis["recommendations"].extend(
                     [
                         "Create ChartEnhancer class to consolidate enhancement functions",
-                        "Implement ColorSchemeManager for color-related functions",
+                        "Implement ColorSchemeManager for color - related functions",
                         "Extract annotation logic into AnnotationBuilder class",
                     ]
                 )
             elif "test_" in file_path:
                 file_analysis["recommendations"].extend(
                     [
-                        "Create test base classes for common setup/teardown",
+                        "Create test base classes for common setup / teardown",
                         "Extract validation helpers into test utilities",
                         "Use parameterized tests to reduce duplicate test functions",
                     ]
@@ -1172,7 +1173,7 @@ except Exception as e:
                 health_metrics["critical_issues"].append("Operational reliability critically low")
                 critical_systems.append("operations")
             elif reliability < 75:
-                health_metrics["warnings"].append("Operational reliability requires follow-up")
+                health_metrics["warnings"].append("Operational reliability requires follow - up")
                 warning_systems.append("operations")
             else:
                 healthy_systems.append("operations")
@@ -1204,17 +1205,6 @@ except Exception as e:
 
         return health_metrics
 
-        if validation["validation_failed"] > 0:
-            validation["issues_found"].append(
-                {
-                    "type": "unexecuted_notebooks",
-                    "count": validation["validation_failed"],
-                    "recommendation": "Execute notebooks to validate outputs",
-                }
-            )
-
-        return validation
-
     def _analyze_failure_patterns(self) -> Dict[str, Any]:
         """Analyze failure patterns for predictive insights."""
         patterns = {
@@ -1226,7 +1216,7 @@ except Exception as e:
         # Categorize current issues
         if self.results.code_quality.duplicate_code_detected:
             patterns["failure_categories"]["code_quality"] += 1
-            patterns["recurring_issues"].append("Duplicate code pattern suggests copy-paste development")
+            patterns["recurring_issues"].append("Duplicate code pattern suggests copy - paste development")
 
         if self.results.test_results.failed_tests > 0:
             patterns["failure_categories"]["testing"] += 1
@@ -1295,11 +1285,11 @@ except Exception as e:
         all_compliant = True
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8") as f:
+                with open(py_file, "r", encoding="utf - 8") as f:
                     lines = f.readlines()
 
                 tree = ast.parse("".join(lines))
@@ -1403,8 +1393,8 @@ except Exception as e:
                 "--tb=short",
                 "--cov=src",
                 "--cov=web",
-                "--cov-report=term-missing",
-                "--cov-report=json:coverage.json",
+                "--cov - report=term - missing",
+                "--cov - report=json:coverage.json",
                 "--timeout=30",
             ]
 
@@ -1788,12 +1778,12 @@ except Exception as e:
 
     def generate_final_report(self) -> bool:
         """
-        Generate comprehensive final report with production-ready analysis.
+        Generate comprehensive final report with production - ready analysis.
 
         Returns True if all checks pass, False otherwise.
         """
         print("\n" + "=" * 80)
-        print("🏆 ENHANCED CI/CD PIPELINE REPORT - SENIOR LEVEL STANDARDS")
+        print("🏆 ENHANCED CI / CD PIPELINE REPORT - SENIOR LEVEL STANDARDS")
         print("=" * 80)
 
         # Overall success determination
@@ -1808,11 +1798,11 @@ except Exception as e:
         self.results.success = all(success_criteria)
 
         if self.results.success:
-            print("🎉 ALL SENIOR-LEVEL CHECKS PASSED!")
+            print("🎉 ALL SENIOR - LEVEL CHECKS PASSED!")
             print("✅ Ready for production deployment")
             print("✅ Meets repository quality standards")
         else:
-            print("❌ SENIOR-LEVEL STANDARDS NOT MET")
+            print("❌ SENIOR - LEVEL STANDARDS NOT MET")
             print("🚫 Address issues before deployment")
 
         # Detailed metrics
@@ -1849,20 +1839,20 @@ except Exception as e:
         if not self.results.success:
             print("\n🔧 NEXT STEPS:")
             if not self.fix_issues:
-                print("   1. Run with --fix-issues to auto-fix some problems")
+                print("   1. Run with --fix - issues to auto - fix some problems")
             print("   2. Address errors and warnings manually")
-            print("   3. Re-run CI pipeline to validate fixes")
+            print("   3. Re - run CI pipeline to validate fixes")
             print("   4. Review AI agent report for detailed analysis")
 
         return self.results.success
 
     def run_all_checks(self) -> bool:
         """
-        Execute the complete enhanced CI/CD pipeline.
+        Execute the complete enhanced CI / CD pipeline.
 
         Returns True if all checks pass, False otherwise.
         """
-        print("🚀 STARTING ENHANCED CI/CD PIPELINE - PRODUCTION-READY MODE")
+        print("🚀 STARTING ENHANCED CI / CD PIPELINE - PRODUCTION - READY MODE")
         print("Repository quality standards")
         print("=" * 80)
 
@@ -1879,13 +1869,13 @@ except Exception as e:
             self.results.test_results = self.run_comprehensive_test_suite()
 
             # 2. Notebook Repair (before validation)
-            notebook_repair_success = self.repair_corrupted_notebooks()
+            _notebook_repair_success = self.repair_corrupted_notebooks()
 
             # 3. Code Quality Validation
             self.results.code_quality = self.validate_code_quality()
 
             # 4. Database Operations Validation
-            database_ops_valid = self.validate_database_operations()
+            _database_ops_valid = self.validate_database_operations()
 
             # 3. Comprehensive Testing
             self.results.test_results = self.run_comprehensive_tests()
@@ -1907,21 +1897,21 @@ except Exception as e:
 
 
 def main():
-    """Main function with production-ready argument parsing."""
+    """Main function with production - ready argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Enhanced CI/CD Pipeline - Production-Ready Checks",
+        description="Enhanced CI / CD Pipeline - Production - Ready Checks",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/enhanced_ci.py                    # Full validation
-  python scripts/enhanced_ci.py --fix-issues      # Auto-fix issues
-  python scripts/enhanced_ci.py --report-only     # Generate reports only
+  python scripts / enhanced_ci.py                    # Full validation
+  python scripts / enhanced_ci.py --fix - issues      # Auto - fix issues
+  python scripts / enhanced_ci.py --report - only     # Generate reports only
         """,
     )
 
-    parser.add_argument("--fix-issues", action="store_true", help="Automatically fix issues where possible")
+    parser.add_argument("--fix - issues", action="store_true", help="Automatically fix issues where possible")
     parser.add_argument(
-        "--report-only", action="store_true", help="Generate AI agent reports without running full validation"
+        "--report - only", action="store_true", help="Generate AI agent reports without running full validation"
     )
 
     args = parser.parse_args()

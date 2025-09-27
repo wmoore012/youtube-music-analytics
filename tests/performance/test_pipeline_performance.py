@@ -32,11 +32,11 @@ def _prepare_engine(rows: int) -> object:
             vid = f"v{idx}"
             conn.exec_driver_sql(
                 "INSERT INTO youtube_videos (video_id, title, channel_title, published_at, isrc) VALUES (?, ?, ?, ?, ?)",
-                (vid, f"Song {idx}", "Artist", "2020-01-01", f"ISRC{idx}"),
+                (vid, f"Song {idx}", "Artist", "2020 - 01 - 01", f"ISRC{idx}"),
             )
             conn.exec_driver_sql(
                 "INSERT INTO youtube_metrics (video_id, metrics_date, view_count, like_count, comment_count) VALUES (?, ?, ?, ?, ?)",
-                (vid, "2020-01-02", 1000 + idx, 10, 1),
+                (vid, "2020 - 01 - 02", 1000 + idx, 10, 1),
             )
     return engine
 

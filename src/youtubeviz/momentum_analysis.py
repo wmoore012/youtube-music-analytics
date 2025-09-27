@@ -34,7 +34,7 @@ class MomentumConfig:
     # Minimum data points required for reliable calculation
     min_data_points: int = 3
 
-    # Smoothing factor for velocity calculations (0-1)
+    # Smoothing factor for velocity calculations (0 - 1)
     smoothing_factor: float = 0.3
 
 
@@ -121,7 +121,7 @@ class ArtistMomentumAnalyzer:
             daily_data: DataFrame with columns ['date', 'views']
 
         Returns:
-            Consistency score (0-1, higher = more consistent)
+            Consistency score (0 - 1, higher = more consistent)
         """
         if len(daily_data) < self.config.min_data_points:
             return 0.0
@@ -134,7 +134,7 @@ class ArtistMomentumAnalyzer:
         # Calculate coefficient of variation (lower = more consistent)
         cv = views.std() / views.mean()
 
-        # Convert to consistency score (0-1 scale)
+        # Convert to consistency score (0 - 1 scale)
         # Use exponential decay to map CV to consistency
         consistency = np.exp(-cv)
 
@@ -145,10 +145,10 @@ class ArtistMomentumAnalyzer:
         Calculate viral coefficient based on view distribution.
 
         Args:
-            video_data: DataFrame with video-level data
+            video_data: DataFrame with video - level data
 
         Returns:
-            Viral coefficient (0-100, higher = more viral potential)
+            Viral coefficient (0 - 100, higher = more viral potential)
         """
         if len(video_data) == 0:
             return 0.0
@@ -201,7 +201,7 @@ class ArtistMomentumAnalyzer:
         momentum_score = (
             (view_velocity * self.config.view_velocity_weight)
             + (engagement_growth * self.config.engagement_growth_weight)
-            + (consistency * 100 * self.config.consistency_weight)  # Scale consistency to 0-100
+            + (consistency * 100 * self.config.consistency_weight)  # Scale consistency to 0 - 100
         )
 
         # Classify momentum level
@@ -231,7 +231,7 @@ class ArtistMomentumAnalyzer:
         Analyze momentum for all artists in a portfolio.
 
         Args:
-            portfolio_data: DataFrame with multi-artist performance data
+            portfolio_data: DataFrame with multi - artist performance data
 
         Returns:
             DataFrame with momentum analysis for each artist
@@ -300,7 +300,7 @@ def create_momentum_report(portfolio_data: pd.DataFrame, config: MomentumConfig 
     # Get investment recommendations
     recommendations = analyzer.get_investment_recommendations(momentum_df)
 
-    # Calculate portfolio-level metrics
+    # Calculate portfolio - level metrics
     portfolio_metrics = {
         "total_artists": len(momentum_df),
         "high_momentum_artists": len(momentum_df[momentum_df["momentum_level"] == "HIGH"]),

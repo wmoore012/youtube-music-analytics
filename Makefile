@@ -94,6 +94,11 @@ test: ## Run comprehensive test suite
 	python -m pytest tests/ -v --tb=short
 	@echo "✅ Tests complete"
 
+smoke: ## Run chart smoke tests (soundcheck before the show)
+	@echo "🎵 Running chart smoke tests..."
+	python -m pytest tests/test_charts_smoke.py -v --tb=short
+	@echo "✅ Chart smoke tests complete"
+
 test-notebooks: ## Run notebook validation tests
 	@echo "📓 Running notebook validation tests..."
 	python -m pytest tests/test_notebook_validation.py tests/test_notebook_execution.py -v
@@ -101,8 +106,23 @@ test-notebooks: ## Run notebook validation tests
 
 test-notebook-execution: ## Run comprehensive notebook execution tests
 	@echo "🧪 Running comprehensive notebook execution tests..."
-	python -m pytest tests/test_notebook_execution.py -v
+	python -m pytest tests/test_notebook_execution_robust.py tests/test_post_archive_notebook_validation.py tests/test_notebook_integration_comprehensive.py -v
 	@echo "✅ Notebook execution tests complete"
+
+test-notebooks-robust: ## Run robust notebook testing with validation
+	@echo "📓 Running robust notebook tests..."
+	python scripts/run_robust_notebook_tests.py --quick
+	@echo "✅ Robust notebook tests complete"
+
+test-notebooks-comprehensive: ## Run comprehensive notebook test suite
+	@echo "🚀 Running comprehensive notebook test suite..."
+	python scripts/run_robust_notebook_tests.py --comprehensive
+	@echo "✅ Comprehensive notebook tests complete"
+
+test-notebooks-post-archive: ## Run post-archive notebook validation
+	@echo "🔍 Running post-archive notebook validation..."
+	python scripts/run_robust_notebook_tests.py --post-archive
+	@echo "✅ Post-archive validation complete"
 
 test-enterprise: ## Run enterprise test suite with coverage and benchmarks
 	@echo "🏢 Running enterprise test suite..."
@@ -159,6 +179,31 @@ run-notebooks: ## Generate analytics notebooks
 	@echo "📊 Generating analytics notebooks..."
 	python tools/run_notebooks.py
 	@echo "✅ Notebooks generated"
+
+create-dashboard: ## Create fresh dashboard with bulletproof toolchain
+	@echo "🚀 Creating Professional Dashboard (Bulletproof Edition)..."
+	python notebooks/🚀_CREATE_DASHBOARD.py
+	@echo "✅ Dashboard created"
+
+create-dashboard-sample: ## Create dashboard with sample data for testing
+	@echo "🧪 Creating dashboard with sample data..."
+	python notebooks/🚀_CREATE_DASHBOARD.py --sample
+	@echo "✅ Sample dashboard created"
+
+create-dashboard-execute: ## Create and execute dashboard with papermill
+	@echo "⚡ Creating and executing dashboard..."
+	python notebooks/🚀_CREATE_DASHBOARD.py --execute
+	@echo "✅ Dashboard created and executed"
+
+nbclean: ## Clear notebook outputs using nbconvert
+	@echo "🧹 Clearing notebook outputs..."
+	find notebooks/ -name "*.ipynb" -not -path "*/archive/*" -exec jupyter nbconvert --clear-output --inplace {} \;
+	@echo "✅ Notebook outputs cleared"
+
+nbstrip: ## Apply nbstripout to all notebooks
+	@echo "🧹 Applying nbstripout to notebooks..."
+	find notebooks/ -name "*.ipynb" -not -path "*/archive/*" -exec nbstripout {} \;
+	@echo "✅ nbstripout applied"
 
 run-production: ## Execute full production pipeline
 	@echo "🏭 Running production pipeline..."

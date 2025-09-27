@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Backfill ISRC-related links using only existing local tables (no external backfill):
+Backfill ISRC - related links using only existing local tables (no external backfill):
 - Ensure isrc_recordings contains all ISRCs from songs and youtube_videos
 - Create video_recording_link rows for explicit ISRCs from youtube_videos
-- Create conservative title/artist exact-match links from youtube_videos to songs
+- Create conservative title / artist exact - match links from youtube_videos to songs
 - Then you can run normalize to reduce nulls in music_videos_normalized
 
-This is idempotent and safe to re-run.
+This is idempotent and safe to re - run.
 """
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def backfill_isrc() -> int:
         WHERE uv.isrc IS NOT NULL AND vrl.video_id IS NULL
         """
 
-        # 4) Conservative exact match on title+artist to songs
+        # 4) Conservative exact match on title + artist to songs
         #    Use normalized lowercase trimmed strings for equality
         stmt4 = """
         INSERT INTO video_recording_link (video_id, isrc, match_method, confidence)
@@ -86,7 +86,7 @@ def backfill_isrc() -> int:
                 affected += n
             except Exception:
                 pass
-    # Phase 2: Conservative Python-side parsed matches (title + artist)
+    # Phase 2: Conservative Python - side parsed matches (title + artist)
     # - Use youtube_version_parser to extract artist + cleaned title
     # - Canonicalize artist via alias map
     # - Join to songs on exact cleaned title + canonical artist (lowercased)
@@ -94,7 +94,7 @@ def backfill_isrc() -> int:
     aliases = load_alias_map()
     with engine.connect() as conn:
         # Load YT rows with missing ISRC
-        yt = pd.read_sql(  # type: ignore[call-overload]
+        yt = pd.read_sql(  # type: ignore[call - overload]
             """
             SELECT video_id, title, channel_title AS artist_name
             FROM youtube_videos
@@ -117,7 +117,7 @@ def backfill_isrc() -> int:
             yt["title_key"] = cleaned_titles
 
             # Load songs
-            songs = pd.read_sql(  # type: ignore[call-overload]
+            songs = pd.read_sql(  # type: ignore[call - overload]
                 "SELECT isrc, title, artist FROM songs",
                 conn,
             )
@@ -139,13 +139,14 @@ def backfill_isrc() -> int:
                 # Deduplicate exact pairs
                 pairs = (
                     m[["video_id", "isrc"]]
-                    .dropna()  # type: ignore[call-overload]
+                    .dropna()  # type: ignore[call - overload]
                     .drop_duplicates()
                     .itertuples(index=False, name=None)
                 )
 
                 # Fetch existing VRL pairs to keep idempotent
-                existing = pd.read_sql("SELECT video_id, isrc FROM video_recording_link", conn)  # type: ignore[call-overload]
+                existing = pd.read_sql("SELECT video_id, isrc FROM video_recording_link",
+                                       conn)  # type: ignore[call - overload]
                 existing_set: Set[Tuple[str, str]] = (
                     set((str(r[0]), str(r[1])) for r in existing.itertuples(index=False, name=None))
                     if not existing.empty

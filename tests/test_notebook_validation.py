@@ -17,7 +17,7 @@ class TestNotebookStructure:
     def notebook_paths(self):
         """Get all notebook paths for testing."""
         return [
-            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks / 2025 - 09 - 16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
 
     def test_notebook_json_validity(self, notebook_paths):
@@ -87,7 +87,7 @@ class TestNotebookCodeSyntax:
     def notebook_paths(self):
         """Get all notebook paths for testing."""
         return [
-            "notebooks/2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks / 2025 - 09 - 16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
 
     def test_code_cell_syntax(self, notebook_paths):

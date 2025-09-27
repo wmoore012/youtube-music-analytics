@@ -7,7 +7,7 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     executed = repo_root / "notebooks" / "executed"
     if not executed.exists():
-        print("No executed notebooks found. Run tools/2_run_notebooks.py first.")
+        print("No executed notebooks found. Run tools / 2_run_notebooks.py first.")
         return
     for p in sorted(executed.glob("*-executed.ipynb")):
         print(p)

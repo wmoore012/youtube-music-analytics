@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Validate Lines of Code (LOC) limits for maintainability.
 
@@ -26,7 +26,7 @@ class LOCValidator:
     def count_effective_lines(self, file_path: Path) -> int:
         """Count lines excluding comments, docstrings, and blank lines."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, "r", encoding="utf - 8") as f:
                 lines = f.readlines()
 
             effective_lines = 0
@@ -65,7 +65,7 @@ class LOCValidator:
     def get_function_lines(self, file_path: Path) -> List[Tuple[str, int, int]]:
         """Get function names with their line counts."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, "r", encoding="utf - 8") as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -111,7 +111,8 @@ class LOCValidator:
                 result["function_violations"].append(violation)
                 result["valid"] = False
                 self.violations.append(
-                    f"Function {func_name} in {file_path}:{start_line}: {line_count} lines (max: {self.max_function_lines})"
+                    f"Function {func_name} in {file_path}:{start_line}: {
+                        line_count} lines (max: {self.max_function_lines})"
                 )
 
         return result
@@ -181,7 +182,7 @@ def main():
         print("🎉 All files are within LOC limits!")
         return 0
     else:
-        print("⚠️  LOC violations found. Please refactor large modules/functions.")
+        print("⚠️  LOC violations found. Please refactor large modules / functions.")
         print("\n💡 Tips:")
         print("   • Extract helper functions from large functions")
         print("   • Split large modules into smaller, focused modules")

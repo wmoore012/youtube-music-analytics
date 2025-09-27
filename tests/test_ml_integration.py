@@ -62,7 +62,7 @@ class TestMLIntegration:
                     "engagement_rate": (likes + comments) / views,
                     "subscriber_growth": np.random.normal(50, 20),
                     "has_isrc": content_type in ["Music Video", "Lyric Video"],
-                    "genre": np.random.choice(["Hip-Hop", "R&B", "Pop"]),
+                    "genre": np.random.choice(["Hip - Hop", "R&B", "Pop"]),
                     "duration_seconds": np.random.randint(120, 300),
                 }
             )
@@ -143,7 +143,7 @@ class TestMLIntegration:
         # Integrate with YouTube helpers
         enhanced_df = integrate_with_youtube_helpers(df, title_col="title", channel_col="channel_title")
 
-        # Should have additional ML-derived features
+        # Should have additional ML - derived features
         expected_features = ["title_length", "title_word_count", "has_version_info"]
 
         for feature in expected_features:

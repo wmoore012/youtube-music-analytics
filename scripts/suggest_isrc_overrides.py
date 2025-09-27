@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Generate a CSV of videos missing ISRC to help create config/video_isrc_overrides.json.
+Generate a CSV of videos missing ISRC to help create config / video_isrc_overrides.json.
 
 Outputs: video_id,title,channel_title,published_at
-Usage: python scripts/suggest_isrc_overrides.py > missing_isrc_candidates.csv
-Then fill config/video_isrc_overrides.json with mappings: { "<video_id>": "<ISRC>" }
+Usage: python scripts / suggest_isrc_overrides.py > missing_isrc_candidates.csv
+Then fill config / video_isrc_overrides.json with mappings: { "<video_id>": "<ISRC>" }
 """
 from __future__ import annotations
 

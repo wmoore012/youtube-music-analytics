@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .dsp_cache import read_daily_json, write_daily_json
 
@@ -64,7 +64,7 @@ def _extract_track_data(playlist_response: Dict[str, Any]) -> List[Dict[str, Any
 
 
 def fetch_playlist_json(playlist_id: str, *, force_fresh: bool | None = None) -> Tuple[Dict[str, Any], bool]:
-    """Fetch Spotify playlist JSON with a 1-day on-disk cache.
+    """Fetch Spotify playlist JSON with a 1 - day on - disk cache.
 
     Returns (data, used_cache).
 

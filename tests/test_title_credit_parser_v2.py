@@ -1,4 +1,4 @@
-# tests/icatalog_public/oss/test_title_credit_parser_v2.py
+# tests / icatalog_public / oss / test_title_credit_parser_v2.py
 
 import pytest
 
@@ -139,7 +139,7 @@ def test_feat_and_version_and_noise():
 
 
 def test_multi_main_artists_in_title_string_is_left_intact():
-    # This parser does not split main artists from title; it only cleans the title/credits.
+    # This parser does not split main artists from title; it only cleans the title / credits.
     t = "Artist A & Artist B - Shared Song (feat. C, D) (Visualizer)"
     got = parse_title_and_credits(t, normalize_youtube_noise=True)
     # The "artist" key is intentionally blank (consistent with your existing tests)
@@ -215,7 +215,7 @@ def test_feat_and_version_and_noise():
 
 
 def test_multi_main_artists_in_title_string_is_left_intact():
-    # This parser does not split main artists from title; it only cleans the title/credits.
+    # This parser does not split main artists from title; it only cleans the title / credits.
     t = "Artist A & Artist B - Shared Song (feat. C, D) (Visualizer)"
     got = parse_title_and_credits(t, normalize_youtube_noise=True)
     # The "artist" key is intentionally blank (consistent with existing behavior)

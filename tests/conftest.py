@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Pytest Configuration and Fixtures for ETL Testing
 
@@ -231,18 +231,18 @@ class TestDataFactory:
             "9bZkp7q19f0",
             "fC7oUOUEEi4",
             "YQHsXMglC9A",
-            "3tmd-ClpJxA",
+            "3tmd - ClpJxA",
             "dQw4w9WgXcR",
         ]
 
-        channel_ids = ["UCuAXFkgsw1L7xaCfnd5JJOw", "UC-9-kyTW8ZkZNDHQJ6FgpwQ", "UCsT0YIqwnpJCM-mx7-gSA4Q"]
+        channel_ids = ["UCuAXFkgsw1L7xaCfnd5JJOw", "UC - 9-kyTW8ZkZNDHQJ6FgpwQ", "UCsT0YIqwnpJCM - mx7 - gSA4Q"]
 
         for i in range(min(count, len(video_ids))):
             video = TestDataFactory.create_youtube_video(
                 video_id=video_ids[i],
-                title=f"Test Video {i+1}",
+                title=f"Test Video {i + 1}",
                 channel_id=channel_ids[i % len(channel_ids)],
-                channel_title=f"Test Channel {i+1}",
+                channel_title=f"Test Channel {i + 1}",
                 published_at=datetime.now() - timedelta(days=i + 1),
                 view_count=1000 * (i + 1),
                 like_count=100 * (i + 1),
@@ -272,9 +272,9 @@ class TestDataFactory:
 
         for i in range(count):
             comment = TestDataFactory.create_youtube_comment(
-                comment_id=f"test_comment_{video_id}_{i+1}",
+                comment_id=f"test_comment_{video_id}_{i + 1}",
                 video_id=video_id,
-                author_name=f"TestUser{i+1}",
+                author_name=f"TestUser{i + 1}",
                 comment_text=comment_texts[i % len(comment_texts)],
                 like_count=i + 1,
                 published_at=datetime.now() - timedelta(minutes=i * 10),
@@ -313,7 +313,7 @@ class TestDataFactory:
 
 @pytest.fixture(scope="session")
 def test_db_manager():
-    """Session-scoped test database manager."""
+    """Session - scoped test database manager."""
     manager = TestDatabaseManager()
     yield manager
     manager.cleanup_test_database()
@@ -382,7 +382,7 @@ def mock_youtube_api():
                     "title": "Test Video",
                     "channelId": "UCuAXFkgsw1L7xaCfnd5JJOw",
                     "channelTitle": "Test Channel",
-                    "publishedAt": "2023-01-01T00:00:00Z",
+                    "publishedAt": "2023 - 01 - 01T00:00:00Z",
                     "description": "Test video description",
                 },
                 "contentDetails": {"duration": "PT3M33S"},
@@ -403,7 +403,7 @@ def mock_youtube_api():
                             "textDisplay": "Great video!",
                             "authorDisplayName": "Test User",
                             "likeCount": 5,
-                            "publishedAt": "2023-01-01T01:00:00Z",
+                            "publishedAt": "2023 - 01 - 01T01:00:00Z",
                         },
                     }
                 },

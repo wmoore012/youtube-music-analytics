@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
 Unique Comment Integration System
 
@@ -265,7 +265,7 @@ def scan_for_fake_data(df: pd.DataFrame, context: str = "unknown") -> pd.DataFra
 
     removed_count = original_count - len(cleaned_df)
     if removed_count > 0:
-        print(f"✅ Removed {removed_count} fake/suspicious entries from {context}")
+        print(f"✅ Removed {removed_count} fake / suspicious entries from {context}")
     else:
         print(f"✅ No fake data detected in {context}")
 

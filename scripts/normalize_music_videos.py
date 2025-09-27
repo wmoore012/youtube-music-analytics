@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-Populate/refresh music_videos_normalized from existing youtube tables quickly.
+Populate / refresh music_videos_normalized from existing youtube tables quickly.
 
 Usage:
-  python scripts/normalize_music_videos.py [--dry-run]
+  python scripts / normalize_music_videos.py [--dry - run]
 
 This avoids running the full ETL and reduces nulls by applying aliases and simple revenue estimation.
 """
@@ -21,7 +21,7 @@ def main() -> int:
     # Load environment variables from .env if present
     load_dotenv()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dry-run", action="store_true", help="Plan only (no DB writes)")
+    parser.add_argument("--dry - run", action="store_true", help="Plan only (no DB writes)")
     args = parser.parse_args()
 
     if args.dry_run:

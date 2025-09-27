@@ -1,16 +1,16 @@
 """
 Smart dependency installer for AI agents and data scientists.
 
-Ultra-fast, intelligent package installation with zero friction.
+Ultra - fast, intelligent package installation with zero friction.
 Perfect for AI agents who forget to install dependencies.
 
 Key Features:
-- 🚀 Lightning-fast dependency detection (regex + AST)
-- 🧠 Smart package mapping (pd -> pandas, sklearn -> scikit-learn)
+- 🚀 Lightning - fast dependency detection (regex + AST)
+- 🧠 Smart package mapping (pd -> pandas, sklearn -> scikit - learn)
 - 🔧 Parallel installation for maximum speed
 - 🛡️ Bulletproof error handling and recovery
 - 📦 Works with .py files, .ipynb notebooks, and code strings
-- 🎯 Zero-config setup - just works out of the box
+- 🎯 Zero - config setup - just works out of the box
 """
 
 import ast
@@ -80,13 +80,13 @@ class InstallationResult:
 
 class FastDependencyDetector:
     """
-    Ultra-fast dependency detection using optimized algorithms.
+    Ultra - fast dependency detection using optimized algorithms.
 
     Combines regex, AST analysis, and string matching for maximum speed.
     """
 
     def __init__(self):
-        # Pre-compiled regex patterns for lightning-fast detection
+        # Pre - compiled regex patterns for lightning - fast detection
         self._import_patterns = {
             "pandas": [
                 re.compile(r"\bpd\.", re.MULTILINE),
@@ -108,7 +108,7 @@ class FastDependencyDetector:
                 re.compile(r"import seaborn", re.MULTILINE),
                 re.compile(r"from seaborn", re.MULTILINE),
             ],
-            "scikit-learn": [
+            "scikit - learn": [
                 re.compile(r"from sklearn", re.MULTILINE),
                 re.compile(r"import sklearn", re.MULTILINE),
                 re.compile(r"RandomForestClassifier|LogisticRegression|SVC|LinearRegression", re.MULTILINE),
@@ -156,15 +156,15 @@ class FastDependencyDetector:
             ],
         }
 
-        # Common alias mappings for ultra-fast lookup
+        # Common alias mappings for ultra - fast lookup
         self._alias_mapping = {
             "pd": "pandas",
             "np": "numpy",
             "plt": "matplotlib",
             "sns": "seaborn",
             "tf": "tensorflow",
-            "sk": "scikit-learn",
-            "sklearn": "scikit-learn",
+            "sk": "scikit - learn",
+            "sklearn": "scikit - learn",
         }
 
         # Cache for performance
@@ -173,7 +173,7 @@ class FastDependencyDetector:
 
     def detect_dependencies(self, code: str, file_type: str = "python") -> Set[str]:
         """
-        Ultra-fast dependency detection using multiple strategies.
+        Ultra - fast dependency detection using multiple strategies.
 
         Args:
             code: Source code to analyze
@@ -189,17 +189,17 @@ class FastDependencyDetector:
 
         dependencies = set()
 
-        # Strategy 1: Fast regex-based detection (fastest)
+        # Strategy 1: Fast regex - based detection (fastest)
         dependencies.update(self._regex_detection(code))
 
-        # Strategy 2: AST-based detection (more accurate)
+        # Strategy 2: AST - based detection (more accurate)
         try:
             dependencies.update(self._ast_detection(code))
         except SyntaxError:
-            # Fallback to regex-only for syntax errors
+            # Fallback to regex - only for syntax errors
             pass
 
-        # Strategy 3: Notebook-specific detection
+        # Strategy 3: Notebook - specific detection
         if file_type == "notebook":
             dependencies.update(self._notebook_detection(code))
 
@@ -210,7 +210,7 @@ class FastDependencyDetector:
         return dependencies
 
     def _regex_detection(self, code: str) -> Set[str]:
-        """Lightning-fast regex-based dependency detection."""
+        """Lightning - fast regex - based dependency detection."""
         found_packages = set()
 
         for package, patterns in self._import_patterns.items():
@@ -222,7 +222,7 @@ class FastDependencyDetector:
         return found_packages
 
     def _ast_detection(self, code: str) -> Set[str]:
-        """AST-based detection for more accurate results."""
+        """AST - based detection for more accurate results."""
         found_packages = set()
 
         try:
@@ -281,9 +281,9 @@ class FastDependencyDetector:
 
     def _normalize_package_name(self, import_name: str) -> Optional[str]:
         """Normalize import names to actual package names."""
-        # Handle submodules (e.g., sklearn.ensemble -> scikit-learn)
+        # Handle submodules (e.g., sklearn.ensemble -> scikit - learn)
         if import_name.startswith("sklearn"):
-            return "scikit-learn"
+            return "scikit - learn"
         elif import_name.startswith("tensorflow"):
             return "tensorflow"
         elif import_name.startswith("torch"):
@@ -298,7 +298,7 @@ class FastDependencyDetector:
 
 class ParallelInstaller:
     """
-    High-speed parallel package installer with intelligent error handling.
+    High - speed parallel package installer with intelligent error handling.
 
     Uses thread pools and optimized subprocess calls for maximum speed.
     """
@@ -362,7 +362,7 @@ class ParallelInstaller:
         for package in packages:
             try:
                 # Try to import the package
-                if package == "scikit-learn":
+                if package == "scikit - learn":
                     importlib.import_module("sklearn")
                 else:
                     importlib.import_module(package.replace("-", "_"))
@@ -381,7 +381,7 @@ class ParallelInstaller:
         """
         try:
             # Use optimized pip command
-            cmd = [sys.executable, "-m", "pip", "install", package, "--quiet", "--no-warn-script-location"]
+            cmd = [sys.executable, "-m", "pip", "install", package, "--quiet", "--no - warn - script - location"]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout, check=True)
 
@@ -403,13 +403,13 @@ class SmartInstaller:
 
     ⚠️ SECURITY WARNING: This class can automatically install packages
     without user confirmation when auto_install=True. Use with caution,
-    especially with AI-generated or untrusted code.
+    especially with AI - generated or untrusted code.
 
     Security Best Practices:
     - Set auto_install=False in production environments
     - Always review dependencies before installation
     - Use virtual environments to isolate installations
-    - Audit AI-generated code for malicious dependencies
+    - Audit AI - generated code for malicious dependencies
     """
 
     def __init__(self, auto_install: bool = True, max_workers: int = 3):
@@ -441,7 +441,7 @@ class SmartInstaller:
                 return result
 
             # Read file content
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, "r", encoding="utf - 8", errors="ignore") as f:
                 content = f.read()
 
             # Detect file type
@@ -612,7 +612,7 @@ def check_dependencies(code_or_file: str) -> Set[str]:
 
     if Path(code_or_file).exists():
         # It's a file path
-        with open(code_or_file, "r", encoding="utf-8", errors="ignore") as f:
+        with open(code_or_file, "r", encoding="utf - 8", errors="ignore") as f:
             content = f.read()
         file_type = "notebook" if code_or_file.endswith(".ipynb") else "python"
     else:

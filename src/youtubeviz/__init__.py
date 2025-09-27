@@ -13,7 +13,7 @@ Public API:
 import logging
 
 
-# Configure notebook-safe logging
+# Configure notebook - safe logging
 def _setup_package_logger():
     """Set up package logger that won't duplicate in notebooks."""
     logger = logging.getLogger("youtubeviz")
@@ -85,7 +85,7 @@ __all__ = [
     # Bulletproof execution
     "bulletproof_chart",
     "safe_chart_execution",
-    # Lazy-loaded modules (access via youtubeviz.charts, etc.)
+    # Lazy - loaded modules (access via youtubeviz.charts, etc.)
     "charts",
     "data",
     "content",

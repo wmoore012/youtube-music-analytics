@@ -25,12 +25,12 @@ class ETLSummary:
 
 
 class YouTubeChannelETL:
-    """YouTube channel ETL with batch raw insert and daily-max metrics upsert.
+    """YouTube channel ETL with batch raw insert and daily - max metrics upsert.
 
     Minimal deps (requests + pymysql), no googleapiclient required.
     """
 
-    # Global logging noise toggle (set via env YT_ETL_LOG_LEVEL=DEBUG/INFO/WARN)
+    # Global logging noise toggle (set via env YT_ETL_LOG_LEVEL=DEBUG / INFO / WARN)
     LOG_LEVEL = os.getenv("YT_ETL_LOG_LEVEL", "INFO").upper()
     logger = logging.getLogger(__name__)
     logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
@@ -49,7 +49,7 @@ class YouTubeChannelETL:
         db_pass: str,
         db_name: str,
         session: Optional[requests.Session] = None,
-        api_base_url: str = "https://www.googleapis.com/youtube/v3",
+        api_base_url: str = "https://www.googleapis.com / youtube / v3",
     ) -> None:
         if not api_key:
             raise ValueError("YOUTUBE_API_KEY is required")
@@ -83,9 +83,9 @@ class YouTubeChannelETL:
         return p.path.rstrip("/").split("/")[-1]
 
     def resolve_channel_id(self, channel_url: str) -> Optional[str]:
-        """Return UC... id for /channel/UC..., /@handle, or /user/ style URLs."""
+        """Return UC... id for /channel / UC..., /@handle, or /user/ style URLs."""
         path = urlparse(channel_url).path.rstrip("/")
-        m = re.match(r"^/channel/(UC[0-9A-Za-z_-]{20,})$", path)
+        m = re.match(r"^/channel/(UC[0 - 9A - Za - z_-]{20,})$", path)
         if m:
             return m.group(1)
 
@@ -148,7 +148,7 @@ class YouTubeChannelETL:
         )
 
     def iter_video_comments(self, video_id: str, max_comments: int = 0) -> Iterator[Dict[str, Any]]:
-        """Yield top-level comments (commentThreads) for a video, newest first.
+        """Yield top - level comments (commentThreads) for a video, newest first.
 
         max_comments: 0 to skip, otherwise limit number of comments.
         """
@@ -211,14 +211,14 @@ class YouTubeChannelETL:
         except Exception:
             v = 0
         try:
-            l = int(stats.get("likeCount") or 0)
+            line_item = int(stats.get("likeCount") or 0)
         except Exception:
-            l = 0
+            line_item = 0
         try:
             c = int(stats.get("commentCount") or 0)
         except Exception:
             c = 0
-        return v, l, c
+        return v, line_item, c
 
     def _batch_upsert_raw(self, conn: Any, rows: List[Tuple[str, Optional[str], str]]) -> int:
         if not rows:
@@ -296,7 +296,7 @@ class YouTubeChannelETL:
             cur.executemany(sql, rows)
         return cur.rowcount or 0
 
-    def _upsert_daily_metrics(self, conn: Any, video_id: str, v: int, l: int, c: int) -> None:
+    def _upsert_daily_metrics(self, conn: Any, video_id: str, v: int, like_count: int, c: int) -> None:
         sql = (
             "INSERT INTO youtube_metrics (video_id, view_count, like_count, dislike_count, comment_count, "
             "subscriber_count, metrics_date, fetched_at) "
@@ -308,11 +308,11 @@ class YouTubeChannelETL:
             "fetched_at = NOW()"
         )
         with conn.cursor() as cur:
-            cur.execute(sql, (video_id, v, l, 0, c))
+            cur.execute(sql, (video_id, v, like_count, 0, c))
 
     # --------------------- Run lock helpers ---------------------
     def _acquire_daily_lock(self, conn: Any, channel_id: str) -> bool:
-        """Try to acquire a per-channel per-day run lock.
+        """Try to acquire a per - channel per - day run lock.
 
         Returns True if lock acquired, False if already exists for today.
         """
@@ -379,7 +379,7 @@ class YouTubeChannelETL:
             out.append((vid, vv, ll, cc, json.dumps(v)))
         return out
 
-    def load(self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str]]) -> Tuple[int, int]:
+    def load(self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str]]) -> Tuple[int, int]:  # noqa: C901
         """Load: batch upsert raw and daily metrics.
 
         Returns (raw_upserts_count, metrics_upserts_count)
@@ -418,11 +418,11 @@ class YouTubeChannelETL:
             content: Dict[str, Any] = cast(Dict[str, Any], obj.get("contentDetails", {}))
             title = cast(Optional[str], snippet.get("title"))
             channel_title = cast(Optional[str], snippet.get("channelTitle"))
-            published_at = cast(Optional[str], snippet.get("publishedAt"))  # e.g., 2020-01-01T12:34:56Z
+            published_at = cast(Optional[str], snippet.get("publishedAt"))  # e.g., 2020 - 01 - 01T12:34:56Z
             published_at_sql: Optional[str] = None
             if isinstance(published_at, str):
                 try:
-                    dt = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
+                    dt = datetime.strptime(published_at, "%Y-%m-%dT % H:%M:%SZ")
                     published_at_sql = dt.strftime("%Y-%m-%d %H:%M:%S")
                 except Exception:
                     published_at_sql = None
@@ -443,7 +443,7 @@ class YouTubeChannelETL:
                         published_at_sql_c: Optional[str] = None
                         if isinstance(published_at_c, str):
                             try:
-                                dtc = datetime.strptime(published_at_c, "%Y-%m-%dT%H:%M:%SZ")
+                                dtc = datetime.strptime(published_at_c, "%Y-%m-%dT % H:%M:%SZ")
                                 published_at_sql_c = dtc.strftime("%Y-%m-%d %H:%M:%S")
                             except Exception:
                                 published_at_sql_c = None
@@ -455,7 +455,7 @@ class YouTubeChannelETL:
 
         # Upsert videos summary (youtube_videos)
         # We also need duration; compute from raw contentDetails above if present.
-        # Modify summary rows to include duration by re-parsing raw to keep code simple.
+        # Modify summary rows to include duration by re - parsing raw to keep code simple.
         videos_rows_with_duration: List[
             Tuple[
                 str,

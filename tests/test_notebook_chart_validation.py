@@ -1,11 +1,11 @@
 """
-TDD tests for bulletproof notebook CI/CD chart validation.
+TDD tests for bulletproof notebook CI / CD chart validation.
 
 This module ensures that:
 1. All charts from both notebooks are preserved and working
-2. Charts work with real data (not fake/sample data)
+2. Charts work with real data (not fake / sample data)
 3. Automatic validation of chart count and success rate
-4. CI/CD can detect when charts break or data is missing
+4. CI / CD can detect when charts break or data is missing
 """
 
 import os
@@ -32,7 +32,7 @@ from src.youtubeviz.sentiment import extract_top_negative_comments_with_percenta
 
 
 class TestNotebookChartValidation:
-    """Test comprehensive chart validation for CI/CD bulletproofing."""
+    """Test comprehensive chart validation for CI / CD bulletproofing."""
 
     def test_expected_chart_count_matches_notebooks(self):
         """Test that we expect exactly 15 charts as specified in requirements."""
@@ -44,19 +44,19 @@ class TestNotebookChartValidation:
             "Chart #5: Standout Videos Scatter Plot",
             "Chart #6: Tour Compatibility Analysis (UMAP + Similarity Matrix)",
             "Chart #7: UpSet Plot for Feature Intersections",
-            "Chart #8: ISRC vs Non-ISRC Content Analysis",
-            "Chart #9: Short-form vs Long-form Video Analysis",
-            "Chart #10: Content Type Breakdown (MV/Lyric/Visualizer)",
+            "Chart #8: ISRC vs Non - ISRC Content Analysis",
+            "Chart #9: Short - form vs Long - form Video Analysis",
+            "Chart #10: Content Type Breakdown (MV / Lyric / Visualizer)",
             "Chart #11: Total Views by Category Over Time",
             "Chart #12: Genre Context Heatmap",
             "Chart #13: Artist Rank Bump Chart",
             "Chart #14: Comment Polarity Ridgeline Plots",
-            "Chart #15: A/B Test Uplift Analysis",
+            "Chart #15: A / B Test Uplift Analysis",
         ]
 
         assert len(expected_charts) == 15, "Must have exactly 15 charts as per requirements"
 
-        # This test ensures CI/CD knows the expected chart count
+        # This test ensures CI / CD knows the expected chart count
         print(f"✅ Expected chart count: {len(expected_charts)}")
 
     def test_real_data_availability_for_charts(self):
@@ -221,18 +221,18 @@ class TestNotebookChartValidation:
         print("✅ Chart validation system works correctly")
 
     def test_ci_cd_chart_success_threshold(self):
-        """Test CI/CD success thresholds for chart validation."""
+        """Test CI / CD success thresholds for chart validation."""
 
-        # Define success criteria for CI/CD
+        # Define success criteria for CI / CD
         def evaluate_chart_health(real_charts, total_charts):
-            """Evaluate if chart health meets CI/CD standards."""
+            """Evaluate if chart health meets CI / CD standards."""
             success_rate = real_charts / total_charts if total_charts > 0 else 0
 
             if success_rate >= 0.8:  # 80% or more charts working
                 return "PASS", "Excellent chart health"
-            elif success_rate >= 0.6:  # 60-79% charts working
+            elif success_rate >= 0.6:  # 60 - 79% charts working
                 return "WARNING", "Acceptable chart health but needs improvement"
-            elif success_rate >= 0.3:  # 30-59% charts working
+            elif success_rate >= 0.3:  # 30 - 59% charts working
                 return "FAIL", "Poor chart health - major issues"
             else:  # Less than 30% working
                 return "CRITICAL", "Critical chart failure - immediate attention needed"
@@ -253,7 +253,7 @@ class TestNotebookChartValidation:
         status5, msg5 = evaluate_chart_health(0, 15)  # 0% - Critical
         assert status5 == "CRITICAL"
 
-        print("✅ CI/CD success thresholds defined and tested")
+        print("✅ CI / CD success thresholds defined and tested")
 
 
 class TestNotebookIntegration:

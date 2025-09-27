@@ -31,13 +31,13 @@ def test_resolve_channel_id_uses_custom_base_url():
         db_pass="pass",
         db_name="yt",
         session=session,
-        api_base_url="https://example.test/api",
+        api_base_url="https://example.test / api",
     )
 
     channel_id = etl.resolve_channel_id("https://youtube.com/@artist")
 
     assert channel_id == "UC123"
     url, params, timeout = session.calls[0]
-    assert url == "https://example.test/api/search"
+    assert url == "https://example.test / api / search"
     assert params["q"] == "@artist"
     assert timeout == 30

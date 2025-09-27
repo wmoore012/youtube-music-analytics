@@ -1,17 +1,17 @@
-#!/usr/bin/env python3
+#!/usr / bin / env python3
 """
-🔒 Pre-Commit Hook
+🔒 Pre - Commit Hook
 =================
 
-Comprehensive pre-commit validation that prevents bad code from being committed.
+Comprehensive pre - commit validation that prevents bad code from being committed.
 This runs automatically before each commit to ensure code quality.
 
 Usage:
     # Install as git hook
-    ln -sf ../../scripts/pre_commit_hook.py .git/hooks/pre-commit
+    ln -sf ../../scripts / pre_commit_hook.py .git / hooks / pre - commit
 
     # Run manually
-    python scripts/pre_commit_hook.py
+    python scripts / pre_commit_hook.py
 """
 
 import os
@@ -47,9 +47,9 @@ def run_command(cmd, description, timeout=120):
 
 
 def main():
-    """Main pre-commit validation with zero tolerance quality gates."""
+    """Main pre - commit validation with zero tolerance quality gates."""
 
-    print("🔒 ENHANCED PRE-COMMIT VALIDATION (Zero Tolerance)")
+    print("🔒 ENHANCED PRE - COMMIT VALIDATION (Zero Tolerance)")
     print("=" * 60)
 
     # Change to repository root
@@ -59,13 +59,13 @@ def main():
     # Zero tolerance quality checks - all must pass
     checks = [
         # Code quality (zero tolerance)
-        ("black --check --line-length=120 .", "Code Formatting (Black)", 60),
-        ("isort --check-only --profile black .", "Import Sorting (isort)", 30),
-        ("flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive .", "Linting (flake8)", 60),
-        ("mypy --ignore-missing-imports --exclude tools/archive .", "Type Checking (mypy)", 90),
+        ("black --check --line - length=120 .", "Code Formatting (Black)", 60),
+        ("isort --check - only --profile black .", "Import Sorting (isort)", 30),
+        ("flake8 --max - line - length=120 --exclude=.venv,__pycache__,tools / archive .", "Linting (flake8)", 60),
+        ("mypy --ignore - missing - imports --exclude tools / archive .", "Type Checking (mypy)", 90),
         # Test coverage (minimum 80%)
         (
-            "python -m pytest tests/ -x --cov=src --cov=web --cov-fail-under=80 --tb=short",
+            "python -m pytest tests/ -x --cov=src --cov=web --cov - fail - under=80 --tb=short",
             "Test Coverage (80% minimum)",
             120,
         ),
@@ -75,13 +75,13 @@ def main():
             "Notebook Structure Validation",
             30,
         ),
-        ("python scripts/check_notebook_outputs.py", "Notebook Output Validation", 30),
-        ("python scripts/validate_notebooks.py", "Notebook Syntax Validation", 60),
+        ("python scripts / check_notebook_outputs.py", "Notebook Output Validation", 30),
+        ("python scripts / validate_notebooks.py", "Notebook Syntax Validation", 60),
         # Security and quality gates
-        ("python scripts/validate_loc_limits.py", "LOC Limits Validation", 30),
-        ("python scripts/enhanced_ci.py --report-only", "Enhanced CI Quality Gates", 180),
+        ("python scripts / validate_loc_limits.py", "LOC Limits Validation", 30),
+        ("python scripts / enhanced_ci.py --report - only", "Enhanced CI Quality Gates", 180),
         # Database integrity (if available)
-        ("python scripts/test_schema_alignment.py", "Database Schema Validation", 60),
+        ("python scripts / test_schema_alignment.py", "Database Schema Validation", 60),
     ]
 
     failed_checks = []
@@ -92,13 +92,13 @@ def main():
 
     # Final report
     print("\n" + "=" * 60)
-    print("🏆 PRE-COMMIT VALIDATION REPORT")
+    print("🏆 PRE - COMMIT VALIDATION REPORT")
     print("=" * 60)
 
     if not failed_checks:
         print("🎉 ALL QUALITY GATES PASSED!")
         print("✅ Zero tolerance standards met - Ready to commit")
-        print("\n💡 Your code meets production-ready quality standards!")
+        print("\n💡 Your code meets production - ready quality standards!")
         return 0
     else:
         print("🚫 COMMIT BLOCKED - ZERO TOLERANCE POLICY!")
@@ -107,10 +107,10 @@ def main():
             print(f"   - {check}")
 
         print("\n🔧 MANDATORY FIXES REQUIRED:")
-        print("1. Code formatting: black --line-length=120 .")
+        print("1. Code formatting: black --line - length=120 .")
         print("2. Import sorting: isort --profile black .")
-        print("3. Fix linting: flake8 --max-line-length=120 .")
-        print("4. Type checking: mypy --ignore-missing-imports .")
+        print("3. Fix linting: flake8 --max - line - length=120 .")
+        print("4. Type checking: mypy --ignore - missing - imports .")
         print("5. Test coverage: python -m pytest --cov=src --cov=web")
         print("6. Notebook cleanup: nbstripout notebooks/**/*.ipynb")
         print("\n⚠️  All issues must be resolved before commit is allowed")

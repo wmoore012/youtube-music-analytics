@@ -85,7 +85,7 @@ class FeatureData(BaseModel):
 
     # Feature flags
     has_isrc: bool = Field(..., description="Whether video has ISRC code")
-    short_form: bool = Field(..., description="Whether video is short-form content")
+    short_form: bool = Field(..., description="Whether video is short - form content")
     visualizer: bool = Field(..., description="Whether video is a visualizer")
     teaser: bool = Field(..., description="Whether video is a teaser")
     music_video: bool = Field(..., description="Whether video is a music video")
@@ -119,7 +119,7 @@ class UMAPClusteringData(BaseModel):
 
 
 class ContentAnalysisData(BaseModel):
-    """Validated content analysis data for Charts #8-11."""
+    """Validated content analysis data for Charts #8 - 11."""
 
     video_id: str = Field(..., min_length=1)
     artist_name: str = Field(..., min_length=1)
@@ -129,10 +129,10 @@ class ContentAnalysisData(BaseModel):
         ..., description="Content type classification"
     )
     duration_seconds: int = Field(..., ge=1, le=3600, description="Duration in seconds (max 1 hour)")
-    upload_date: str = Field(..., description="Upload date in YYYY-MM-DD format")
+    upload_date: str = Field(..., description="Upload date in YYYY - MM - DD format")
 
     # Optional fields for enhanced analysis
-    short_form: Optional[bool] = Field(default=None, description="Whether video is short-form (<60s)")
+    short_form: Optional[bool] = Field(default=None, description="Whether video is short - form (<60s)")
     engagement_rate: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
     @validator("duration_seconds")
@@ -141,23 +141,23 @@ class ContentAnalysisData(BaseModel):
         if "content_type" in values:
             content_type = values["content_type"]
 
-            # Music videos typically 2-6 minutes
+            # Music videos typically 2 - 6 minutes
             if content_type == "music_video" and (v < 30 or v > 600):
-                raise ValueError(f"Duration {v}s seems unrealistic for music video (expect 30-600s)")
+                raise ValueError(f"Duration {v}s seems unrealistic for music video (expect 30 - 600s)")
 
             # Lyric videos can be longer
             if content_type == "lyric_video" and (v < 60 or v > 900):
-                raise ValueError(f"Duration {v}s seems unrealistic for lyric video (expect 60-900s)")
+                raise ValueError(f"Duration {v}s seems unrealistic for lyric video (expect 60 - 900s)")
 
             # Visualizers are typically shorter
             if content_type == "visualizer" and (v < 15 or v > 300):
-                raise ValueError(f"Duration {v}s seems unrealistic for visualizer (expect 15-300s)")
+                raise ValueError(f"Duration {v}s seems unrealistic for visualizer (expect 15 - 300s)")
 
         return v
 
     @validator("short_form", always=True)
     def auto_detect_short_form(cls, v, values):
-        """Auto-detect short form based on duration if not provided."""
+        """Auto - detect short form based on duration if not provided."""
         if v is None and "duration_seconds" in values:
             return values["duration_seconds"] < 60
         return v
@@ -168,7 +168,7 @@ class ContentAnalysisData(BaseModel):
         try:
             datetime.strptime(v, "%Y-%m-%d")
         except ValueError:
-            raise ValueError(f"Upload date must be in YYYY-MM-DD format, got: {v}")
+            raise ValueError(f"Upload date must be in YYYY - MM - DD format, got: {v}")
         return v
 
 
@@ -197,7 +197,7 @@ class ChartConfiguration(BaseModel):
     max_items_displayed: int = Field(default=20, ge=5, le=50, description="Maximum items to display")
 
     # Interactive options
-    enable_cross_filtering: bool = Field(default=True, description="Enable cross-chart filtering")
+    enable_cross_filtering: bool = Field(default=True, description="Enable cross - chart filtering")
     include_hover_details: bool = Field(default=True, description="Include detailed hover information")
 
 

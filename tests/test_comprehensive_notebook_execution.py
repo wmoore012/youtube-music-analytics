@@ -1,6 +1,6 @@
 """
 Tests for comprehensive notebook execution with strategic chart ordering.
-Implements TDD approach for notebook flow, visual hierarchy, and data-to-ink ratio optimization.
+Implements TDD approach for notebook flow, visual hierarchy, and data - to - ink ratio optimization.
 """
 
 from unittest.mock import MagicMock, patch
@@ -114,7 +114,7 @@ class TestComprehensiveNotebookExecution:
         assert content_chart is not None, "Content chart should execute successfully"
 
     def test_chart_visual_hierarchy_attributes(self, sample_notebook_data):
-        """Test charts use proper pre-attentive attributes for visual hierarchy."""
+        """Test charts use proper pre - attentive attributes for visual hierarchy."""
         from src.youtubeviz.charts import enhance_chart_beauty, views_over_time_plotly
 
         # Create a chart and enhance it
@@ -165,7 +165,7 @@ class TestComprehensiveNotebookExecution:
             assert chart.layout.title.text is not None, "Chart should have clear title for enclosure"
 
     def test_data_to_ink_ratio_optimization(self, sample_notebook_data):
-        """Test that charts maximize data-to-ink ratio (minimize chartjunk)."""
+        """Test that charts maximize data - to - ink ratio (minimize chartjunk)."""
         from src.youtubeviz.charts import enhance_chart_beauty, views_over_time_plotly
 
         chart = views_over_time_plotly(
