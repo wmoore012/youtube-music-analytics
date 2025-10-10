@@ -298,7 +298,7 @@ class StorageMigrator(ToolBase):
                 self.log_progress(f"Applied column mapping: {column_mapping}")
 
             # Import data to database
-            _records_imported = df.to_sql(table_name, engine, if_exists="append", index=False, method="multi")
+            records_imported = df.to_sql(table_name, engine, if_exists="append", index=False, method="multi")
 
             results["records_imported"] = len(df)
             results["columns_imported"] = list(df.columns)
@@ -425,14 +425,13 @@ class StorageMigrator(ToolBase):
                             {
                                 "check": "record_count",
                                 "status": "FAIL",
-                                "message": f"Record count mismatch: expected {expected
-                                                                              _records}"}"}, found {actual_records}",
-                        }  # noqa: E999
+                                "message": f"Record count mismatch: expected {expected_records}, found {actual_records}",
+                            }
                         )
-                            results["overall_success"] = False
+                        results["overall_success"] = False
 
-                        # Log validation
-                        self.migration_log["validations_run"].append(
+            # Log validation
+            self.migration_log["validations_run"].append(
                 {
                     "migration_id": migration_id,
                     "timestamp": datetime.now().isoformat(),
@@ -440,23 +439,23 @@ class StorageMigrator(ToolBase):
                 }
             )
 
-                status = "✅ PASSED" if results["overall_success"] else "❌ FAILED"
-                self.log_progress(f"Validation {status} for migration {migration_id}")
+            status = "✅ PASSED" if results["overall_success"] else "❌ FAILED"
+            self.log_progress(f"Validation {status} for migration {migration_id}")
 
-                return results
+            return results
 
-            except Exception as e:
+        except Exception as e:
             self.handle_error(e, "migration validation")
             return {
-               "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now().isoformat(),
                 "operation": "validate_migration",
                 "migration_id": migration_id,
                 "status": "ERROR",
                 "error": str(e),
             }
 
-            def rollback_migration(self, migration_id: str) -> Dict[str, Any]:
-            """
+    def rollback_migration(self, migration_id: str) -> Dict[str, Any]:
+        """
         Rollback a migration using backup data.
 
         Args:
@@ -465,81 +464,81 @@ class StorageMigrator(ToolBase):
         Returns:
             Dictionary with rollback results
         """
-            self.log_progress(f"🔄 Rolling back migration {migration_id}")
+        self.log_progress(f"🔄 Rolling back migration {migration_id}")
 
-            try:
+        try:
             # Find migration and backup
             migration_record = None
             for migration in self.migration_log["migrations_performed"]:
-            if migration["migration_id"] == migration_id:
-            migration_record = migration
+                if migration["migration_id"] == migration_id:
+                    migration_record = migration
                     break
 
             if not migration_record:
-            raise ValidationError(f"Migration {migration_id} not found in session log")
+                raise ValidationError(f"Migration {migration_id} not found in session log")
 
             results = {
-               "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now().isoformat(),
                 "operation": "rollback_migration",
                 "migration_id": migration_id,
                 "rollback_success": False,
             }
 
-                migration_details = migration_record["details"]
+            migration_details = migration_record["details"]
 
-                # Handle rollback based on migration type
-                if migration_record["type"] == "file_to_db":
+            # Handle rollback based on migration type
+            if migration_record["type"] == "file_to_db":
                 # For file - to - db, restore from backup
-            backup_path = migration_details.get("backup_path")
+                backup_path = migration_details.get("backup_path")
                 table_name = migration_details.get("table_name")
 
                 if backup_path and Path(backup_path).exists() and table_name:
-            rollback_result = self._restore_table_from_backup(table_name, backup_path)
+                    rollback_result = self._restore_table_from_backup(table_name, backup_path)
                     results["rollback_success"] = rollback_result["success"]
                     results["rollback_details"] = rollback_result
                 else:
-            raise ExecutionError(f"Backup not found for migration {migration_id}")
+                    raise ExecutionError(f"Backup not found for migration {migration_id}")
 
-                elif migration_record["type"] == "db_to_file":
+            elif migration_record["type"] == "db_to_file":
                 # For db - to - file, just delete the exported file
-            file_path = migration_details.get("file_path")
+                file_path = migration_details.get("file_path")
                 if file_path and Path(file_path).exists():
-            Path(file_path).unlink()
+                    Path(file_path).unlink()
                     results["rollback_success"] = True
                     results["rollback_details"] = {"file_deleted": file_path}
                 else:
-            self.log_progress("⚠️ Export file not found, nothing to rollback", level="WARNING")
+                    self.log_progress("⚠️ Export file not found, nothing to rollback", level="WARNING")
                     results["rollback_success"] = True
 
-                status = "✅ SUCCESS" if results["rollback_success"] else "❌ FAILED"
-                self.log_progress(f"Rollback {status} for migration {migration_id}")
+            status = "✅ SUCCESS" if results["rollback_success"] else "❌ FAILED"
+            self.log_progress(f"Rollback {status} for migration {migration_id}")
 
-                return results
+            return results
 
-            except Exception as e:
+        except Exception as e:
             self.handle_error(e, "migration rollback")
             return {
-               "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now().isoformat(),
                 "operation": "rollback_migration",
                 "migration_id": migration_id,
                 "status": "ERROR",
                 "error": str(e),
             }
 
-            def get_migration_status(self) -> Dict[str, Any]:
-            """Get current migration session status."""
-            return {
+    def get_migration_status(self) -> Dict[str, Any]:
+        """Get current migration session status."""
+        return {
             "migration_session": self.migration_session_id,
             "migration_log": self.migration_log.copy(),
             "timestamp": datetime.now().isoformat(),
         }
 
-        # Helper methods for migration operations
+    # Helper methods for migration operations
 
-        def _create_table_backup(self, table_name: str, migration_id: str) -> Dict[str, Any]:
+    def _create_table_backup(self, table_name: str, migration_id: str) -> Dict[str, Any]:
         """Create backup of table before migration."""
         try:
-        from sqlalchemy import text
+            from sqlalchemy import text
 
             from web.etl_helpers import get_engine
 
@@ -551,33 +550,33 @@ class StorageMigrator(ToolBase):
 
             with engine.begin() as conn:
                 # Create backup table
-        conn.execute(text(f"CREATE TABLE {backup_table} AS SELECT * FROM {table_name}"))
+                conn.execute(text(f"CREATE TABLE {backup_table} AS SELECT * FROM {table_name}"))
 
                 # Also export to file as additional backup
                 backup_file = backup_dir / f"{backup_table}.sql"
                 conn.execute(text(f"SELECT * FROM {backup_table} INTO OUTFILE '{backup_file}'"))
 
             backup_info = {
-               "success": True,
+                "success": True,
                 "backup_table": backup_table,
                 "backup_path": str(backup_file),
                 "migration_id": migration_id,
                 "timestamp": datetime.now().isoformat(),
             }
 
-                self.migration_log["backups_created"].append(backup_info)
+            self.migration_log["backups_created"].append(backup_info)
 
-                return backup_info
+            return backup_info
 
-            except Exception as e:
+        except Exception as e:
             return {
-               "success": False,
+                "success": False,
                 "error": str(e),
             }
 
-            def _restore_table_from_backup(self, table_name: str, backup_path: str) -> Dict[str, Any]:
-            """Restore table from backup."""
-            try:
+    def _restore_table_from_backup(self, table_name: str, backup_path: str) -> Dict[str, Any]:
+        """Restore table from backup."""
+        try:
             from sqlalchemy import text
 
             from web.etl_helpers import get_engine
@@ -586,37 +585,37 @@ class StorageMigrator(ToolBase):
 
             with engine.begin() as conn:
                 # Clear current table
-            conn.execute(text(f"DELETE FROM {table_name}"))
+                conn.execute(text(f"DELETE FROM {table_name}"))
 
                 # Restore from backup file
                 conn.execute(text(f"LOAD DATA INFILE '{backup_path}' INTO TABLE {table_name}"))
 
             return {
-               "success": True,
+                "success": True,
                 "message": f"Table {table_name} restored from {backup_path}",
             }
 
-            except Exception as e:
+        except Exception as e:
             return {
-               "success": False,
+                "success": False,
                 "error": str(e),
             }
 
-            def _validate_migration(self, migration_id: str, table_name: str, expected_records: int) -> Dict[str, Any]:
-            """Validate migration by checking record counts."""
-            try:
+    def _validate_migration(self, migration_id: str, table_name: str, expected_records: int) -> Dict[str, Any]:
+        """Validate migration by checking record counts."""
+        try:
             actual_records = self._count_table_records(table_name)
 
             return {
-               "success": actual_records >= expected_records,
+                "success": actual_records >= expected_records,
                 "expected_records": expected_records,
                 "actual_records": actual_records,
                 "table_name": table_name,
             }
 
-            except Exception as e:
+        except Exception as e:
             return {
-               "success": False,
+                "success": False,
                 "error": str(e),
             }
 
@@ -637,13 +636,13 @@ class StorageMigrator(ToolBase):
         self.migration_log["end_time"] = datetime.now().isoformat()
         self.log_progress(f"Migration session {self.migration_session_id} completed")
 
-  # noqa: C901
+
 def main():
     """Main entry point for the storage migrator tool."""
     parser = argparse.ArgumentParser(
-        description = "Unified Storage Migration Tool",
-        formatter_class = argparse.RawDescriptionHelpFormatter,
-        epilog = """
+        description="Unified Storage Migration Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
 Examples:
   python tools / specialized / migration / storage_migrator.py --db - to - file --table youtube_videos --format csv
   python tools / specialized / migration / storage_migrator.py --file - to - db --source data / export.csv --table youtube_videos
@@ -652,128 +651,128 @@ Examples:
         """,
     )
 
-        # Migration operations
-        parser.add_argument("--db - to - file", action="store_true", help="Migrate database table to file")
-        parser.add_argument("--file - to - db", action="store_true", help="Migrate file to database table")
-        parser.add_argument("--validate", action="store_true", help="Validate a migration")
-        parser.add_argument("--rollback", action="store_true", help="Rollback a migration")
-        parser.add_argument("--status", action="store_true", help="Show migration session status")
+    # Migration operations
+    parser.add_argument("--db - to - file", action="store_true", help="Migrate database table to file")
+    parser.add_argument("--file - to - db", action="store_true", help="Migrate file to database table")
+    parser.add_argument("--validate", action="store_true", help="Validate a migration")
+    parser.add_argument("--rollback", action="store_true", help="Rollback a migration")
+    parser.add_argument("--status", action="store_true", help="Show migration session status")
 
-        # Parameters
-        parser.add_argument("--table", type=str, help="Database table name")
-        parser.add_argument("--source", type=str, help="Source file path for file - to - db migration")
-        parser.add_argument(
-       "--format", choices = ["csv", "json", "parquet"], default = "csv", help = "File format for db - to - file migration"
+    # Parameters
+    parser.add_argument("--table", type=str, help="Database table name")
+    parser.add_argument("--source", type=str, help="Source file path for file - to - db migration")
+    parser.add_argument(
+        "--format", choices=["csv", "json", "parquet"], default="csv", help="File format for db - to - file migration"
     )
-        parser.add_argument(
-       "--output - dir", type = str, default = "data / exports", help = "Output directory for db - to - file migration"
+    parser.add_argument(
+        "--output - dir", type=str, default="data / exports", help="Output directory for db - to - file migration"
     )
-        parser.add_argument("--migration - id", type=str, help="Migration ID for validation or rollback")
-        parser.add_argument("--where", type=str, help="WHERE clause for db - to - file migration")
-        parser.add_argument("--limit", type=int, help="Limit number of records for db - to - file migration")
-        parser.add_argument("--no - backup", action="store_true", help="Skip backup creation for file - to - db migration")
-        parser.add_argument("--no - validate", action="store_true", help="Skip validation after file - to - db migration")
+    parser.add_argument("--migration - id", type=str, help="Migration ID for validation or rollback")
+    parser.add_argument("--where", type=str, help="WHERE clause for db - to - file migration")
+    parser.add_argument("--limit", type=int, help="Limit number of records for db - to - file migration")
+    parser.add_argument("--no - backup", action="store_true", help="Skip backup creation for file - to - db migration")
+    parser.add_argument("--no - validate", action="store_true", help="Skip validation after file - to - db migration")
 
-        # Options
-        parser.add_argument("--json", action="store_true", help="Output results in JSON format")
-        parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    # Options
+    parser.add_argument("--json", action="store_true", help="Output results in JSON format")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
-        args = parser.parse_args()
+    args = parser.parse_args()
 
-        # Create storage migrator instance
-        with StorageMigrator() as migrator:
-    try:
-    if args.status:
-    status = migrator.get_migration_status()
+    # Create storage migrator instance
+    with StorageMigrator() as migrator:
+        try:
+            if args.status:
+                status = migrator.get_migration_status()
                 if args.json:
-    print(json.dumps(status, indent=2))
+                    print(json.dumps(status, indent=2))
                 else:
-    print(f"Migration Session: {status['migration_session']}")
+                    print(f"Migration Session: {status['migration_session']}")
                     print(f"Migrations Performed: {len(status['migration_log']['migrations_performed'])}")
                     print(f"Backups Created: {len(status['migration_log']['backups_created'])}")
                 return 0
             elif args.db_to_file:
-    if not args.table:
-    print("❌ --table is required for db - to - file migration")
+                if not args.table:
+                    print("❌ --table is required for db - to - file migration")
                     return 1
 
-                result= migrator.migrate_db_to_file(
-                   table_name = args.table,
-                    output_format = args.format,
-                    output_dir = args.output_dir,
-                    where_clause = args.where,
-                    limit = args.limit,
+                result = migrator.migrate_db_to_file(
+                    table_name=args.table,
+                    output_format=args.format,
+                    output_dir=args.output_dir,
+                    where_clause=args.where,
+                    limit=args.limit,
                 )
-
-                    if args.json:
-                print(json.dumps(result, indent=2))
-                    else:
-                if result.get("records_exported", 0) > 0:
-                print(f"✅ Exported {result['records_exported']:,} records to {result['file_path']}")
-                    else:
-                print("⚠️ No records exported")
-                    return 0
-                elif args.file_to_db:
-                if not args.source or not args.table:
-                print("❌ --source and --table are required for file - to - db migration")
-                    return 1
-
-                result= migrator.migrate_file_to_db(
-                   source_path = args.source,
-                    table_name = args.table,
-                    create_backup = not args.no_backup,
-                    validate_after = not args.no_validate,
-                )
-
-                    if args.json:
-                print(json.dumps(result, indent=2))
-                    else:
-                if result.get("records_imported", 0) > 0:
-                print(f"✅ Imported {result['records_imported']:,} records to {result['table_name']}")
-                        if result.get("validation_passed"):
-                print("✅ Migration validation passed")
-                    else:
-                print("⚠️ No records imported")
-                    return 0
-                elif args.validate:
-                if not args.migration_id:
-                print("❌ --migration - id is required for validation")
-                    return 1
-
-                result= migrator.validate_migration(args.migration_id)
 
                 if args.json:
-                print(json.dumps(result, indent=2))
+                    print(json.dumps(result, indent=2))
                 else:
-                status = "✅ PASSED" if result.get("overall_success") else "❌ FAILED"
+                    if result.get("records_exported", 0) > 0:
+                        print(f"✅ Exported {result['records_exported']:,} records to {result['file_path']}")
+                    else:
+                        print("⚠️ No records exported")
+                return 0
+            elif args.file_to_db:
+                if not args.source or not args.table:
+                    print("❌ --source and --table are required for file - to - db migration")
+                    return 1
+
+                result = migrator.migrate_file_to_db(
+                    source_path=args.source,
+                    table_name=args.table,
+                    create_backup=not args.no_backup,
+                    validate_after=not args.no_validate,
+                )
+
+                if args.json:
+                    print(json.dumps(result, indent=2))
+                else:
+                    if result.get("records_imported", 0) > 0:
+                        print(f"✅ Imported {result['records_imported']:,} records to {result['table_name']}")
+                        if result.get("validation_passed"):
+                            print("✅ Migration validation passed")
+                    else:
+                        print("⚠️ No records imported")
+                return 0
+            elif args.validate:
+                if not args.migration_id:
+                    print("❌ --migration - id is required for validation")
+                    return 1
+
+                result = migrator.validate_migration(args.migration_id)
+
+                if args.json:
+                    print(json.dumps(result, indent=2))
+                else:
+                    status = "✅ PASSED" if result.get("overall_success") else "❌ FAILED"
                     print(f"Validation {status} for migration {args.migration_id}")
                     for check in result.get("validation_checks", []):
-                print(f"  {check['status']}: {check['message']}")
+                        print(f"  {check['status']}: {check['message']}")
                 return 0
-                elif args.rollback:
+            elif args.rollback:
                 if not args.migration_id:
-                print("❌ --migration - id is required for rollback")
+                    print("❌ --migration - id is required for rollback")
                     return 1
 
-                result= migrator.rollback_migration(args.migration_id)
+                result = migrator.rollback_migration(args.migration_id)
 
                 if args.json:
-                print(json.dumps(result, indent=2))
+                    print(json.dumps(result, indent=2))
                 else:
-                status = "✅ SUCCESS" if result.get("rollback_success") else "❌ FAILED"
+                    status = "✅ SUCCESS" if result.get("rollback_success") else "❌ FAILED"
                     print(f"Rollback {status} for migration {args.migration_id}")
                 return 0
-                else:
+            else:
                 print("❌ Please specify an operation: --db - to - file, --file - to - db, --validate, --rollback, or --status")
                 return 1
 
-                except KeyboardInterrupt:
-                migrator.log_progress("Migration cancelled by user")
-                return 1
-                except Exception as e:
-                migrator.handle_error(e, "main execution")
-                return 1
+        except KeyboardInterrupt:
+            migrator.log_progress("Migration cancelled by user")
+            return 1
+        except Exception as e:
+            migrator.handle_error(e, "main execution")
+            return 1
 
 
-                if __name__ == "__main__":
-                sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

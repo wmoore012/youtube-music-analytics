@@ -3,7 +3,7 @@
 🧠 Sentiment Analysis Tool for YouTube Comments
 
 Consolidated sentiment analysis tool that provides:
-- Multiple sentiment analysis methods (TextBlob, VADER, rule - based)
+- Multiple sentiment analysis methods (TextBlob, VADER, rule-based)
 - Batch processing of comments
 - Comprehensive sentiment statistics and reporting
 - Integration with the YouTube analytics pipeline
@@ -42,7 +42,7 @@ class SentimentAnalysisTool(ToolBase):
     Unified sentiment analysis tool for YouTube comments.
 
     This tool provides comprehensive sentiment analysis capabilities:
-    - Multiple analysis methods (TextBlob, VADER, rule - based fallback)
+    - Multiple analysis methods (TextBlob, VADER, rule-based fallback)
     - Batch processing with progress tracking
     - Sentiment statistics and reporting
     - Integration with ETL pipeline logging
@@ -50,7 +50,7 @@ class SentimentAnalysisTool(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="sentiment - analysis", version="1.0.0")
+        super().__init__(name="sentiment-analysis", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -71,7 +71,7 @@ class SentimentAnalysisTool(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="sentiment - analysis",
+            name="sentiment-analysis",
             version="1.0.0",
             description="Unified sentiment analysis tool for YouTube comments",
             dependencies=[
@@ -96,7 +96,7 @@ class SentimentAnalysisTool(ToolBase):
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly, use specific analysis methods."""
+        """Main execution method-should not be called directly, use specific analysis methods."""
         self.log_progress("Use specific analysis methods like process_comments() or get_statistics()")
 
     def _check_available_methods(self) -> Dict[str, bool]:
@@ -160,7 +160,7 @@ class SentimentAnalysisTool(ToolBase):
             else:
                 raise ValidationError(f"Unknown or unavailable sentiment method: {method}")
 
-        _exc_ept Exc_eption as _e:  # noqa: E999
+        except Exception as e:
             self.log_progress(f"Sentiment analysis failed for method {method}, falling back to simple", level="WARNING")
             return self._analyze_simple(text_clean)
 
@@ -184,7 +184,7 @@ class SentimentAnalysisTool(ToolBase):
         return sentiment, confidence
 
     def _analyze_simple(self, text: str) -> Tuple[float, float]:
-        """Simple rule - based sentiment analysis as fallback."""
+        """Simple rule-based sentiment analysis as fallback."""
         if not text:
             return 0.0, 0.0
 
@@ -343,7 +343,7 @@ class SentimentAnalysisTool(ToolBase):
                         if (i + 1) % 50 == 0:
                             self.log_progress(f"  📊 Processed {i + 1}/{len(comments)} comments")
 
-                    _exc_ept Exc_eption as _e:
+                    except Exception as e:
                         self.log_progress(f"❌ Error processing comment {comment.comment_id}: {e}", level="ERROR")
                         results["error_count"] += 1
                         self.processing_stats["error_count"] += 1
@@ -360,7 +360,7 @@ class SentimentAnalysisTool(ToolBase):
 
             return results
 
-        _exc_ept Exc_eption as _e:
+        except Exception as e:
             self.handle_error(e, "comment processing")
             return {
                 "timestamp": datetime.now().isoformat(),
@@ -495,7 +495,7 @@ class SentimentAnalysisTool(ToolBase):
 
             return results
 
-        _exc_ept Exc_eption as _e:
+        except Exception as e:
             self.handle_error(e, "statistics generation")
             return {
                 "timestamp": datetime.now().isoformat(),
@@ -587,7 +587,7 @@ class SentimentAnalysisTool(ToolBase):
             self.log_progress(f"✅ Created {results['created_count']} sample comments")
             return results
 
-        _exc_ept Exc_eption as _e:
+        except Exception as e:
             self.handle_error(e, "sample data creation")
             return {
                 "timestamp": datetime.now().isoformat(),
@@ -619,14 +619,14 @@ Examples:
     # Analysis operations
     parser.add_argument("--process", action="store_true", help="Process comments for sentiment analysis")
     parser.add_argument("--stats", action="store_true", help="Show sentiment analysis statistics")
-    parser.add_argument("--create - samples", action="store_true", help="Create sample comments for testing")
+    parser.add_argument("--create-samples", action="store_true", help="Create sample comments for testing")
 
     # Options
     parser.add_argument("--limit", type=int, help="Maximum number of comments to process")
     parser.add_argument(
         "--method", choices=["textblob", "vader", "simple", "auto"], default="auto", help="Sentiment analysis method"
     )
-    parser.add_argument("--sample - count", type=int, default=10, help="Number of sample comments to create")
+    parser.add_argument("--sample-count", type=int, default=10, help="Number of sample comments to create")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
@@ -683,7 +683,7 @@ Examples:
         except KeyboardInterrupt:
             sentiment_tool.log_progress("Sentiment analysis cancelled by user")
             return 1
-        _exc_ept Exc_eption as _e:
+        except Exception as e:
             sentiment_tool.handle_error(e, "main execution")
             return 1
 
