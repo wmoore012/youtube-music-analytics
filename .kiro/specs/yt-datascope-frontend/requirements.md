@@ -142,7 +142,7 @@ The frontend will serve as the primary interface to the existing YouTube ETL & S
 #### Acceptance Criteria
 
 1. WHEN I visit the application THEN the system SHALL display a "Connect with me on LinkedIn" link to linkedin.com/in/wiltonmoore
-2. WHEN I view the apps page THEN the system SHALL prominently feature links to "Perday Music" and "Perday CatalogLAB" applications
+2. WHEN I view the apps page THEN the system SHALL prominently feature links to "Music" and "CatalogLAB" applications
 3. WHEN I see the cross-promotion section THEN the system SHALL include the tagline "for people who love music stats"
 4. IF I'm interested in the technical implementation THEN the system SHALL provide links to the GitHub repository showcasing the underlying code
 5. WHEN I access these promotional elements THEN the system SHALL open external links in new tabs to maintain user session

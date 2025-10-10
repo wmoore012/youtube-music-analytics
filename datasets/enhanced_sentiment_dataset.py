@@ -2,25 +2,25 @@
 """
 Enhanced Music Industry Sentiment Dataset with Deterministic Generation
 
-Production - grade dataset with:
-- Deterministic UUID - 5 IDs for reproducibility
-- Unicode - aware text normalization
-- SemEval - aligned quality controls
+Production-grade dataset with:
+- Deterministic UUID-5 IDs for reproducibility
+- Unicode-aware text normalization
+- SemEval-aligned quality controls
 - Pydantic v2 schema validation
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum
-from functools import cached_property
-from hashlib import sha256
 import json
 import re
 import sys
 import threading
-from typing import Dict, Iterable, List, Optional, Tuple
 import unicodedata
+from dataclasses import field
+from enum import Enum
+from functools import cached_property
+from hashlib import sha256
+from typing import Dict, Iterable, List, Optional, Tuple
 from uuid import NAMESPACE_URL, uuid5
 
 import pandas as pd
@@ -31,10 +31,10 @@ from pydantic.dataclasses import dataclass as pyd_dataclass
 
 SCHEMA_VERSION = "2.1"
 DATASET_VERSION = "2.1"
-_NAMESPACE = uuid5(NAMESPACE_URL, f"https://perday.music / sentiment/{SCHEMA_VERSION}")
+_NAMESPACE = uuid5(NAMESPACE_URL, f"https://project.local/sentiment/{SCHEMA_VERSION}")
 
 
-# --------------------------- SemEval - aligned enums ---------------------------
+# --------------------------- SemEval-aligned enums ---------------------------
 
 
 class SentimentLabel(str, Enum):
@@ -83,9 +83,9 @@ class Toxicity(str, Enum):
     STRONG = "strong"
 
 
-# --------------------------- Opinion Boosters (SemEval - style) ---------------------------
+# --------------------------- Opinion Boosters (SemEval-style) ---------------------------
 
-# Opinion boosters for SemEval - style "not - neutral" cues for requests / info
+# Opinion boosters for SemEval-style "not-neutral" cues for requests / info
 OPINION_BOOSTERS: Tuple[str, ...] = (
     "!",
     "🔥",
@@ -117,7 +117,7 @@ _WS = re.compile(r"\s+")
 
 def normalize_text_for_key(text: str) -> str:
     """
-    Unicode - aware normalization for dedup keys & stable IDs.
+    Unicode-aware normalization for dedup keys & stable IDs.
     - NFKC normalize
     - casefold
     - strip emoji subset
@@ -177,7 +177,7 @@ def normalize_text_for_transformer(text: str, preserve_emoji: bool = True) -> st
 
 
 def generate_stable_id(phrase: str, sentiment: SentimentLabel, intent: Intent, aspect: Aspect) -> str:
-    """Generate deterministic UUID - 5 based ID for reproducible joins."""
+    """Generate deterministic UUID-5 based ID for reproducible joins."""
     normalized_phrase = normalize_text_for_key(phrase)
     name = f"{normalized_phrase}|{sentiment.value}|{intent.value}|{aspect.value}"
     return str(uuid5(_NAMESPACE, name))
@@ -209,7 +209,7 @@ class _EntryModel(BaseModel):
     def _phrase_nonempty(cls, v: str) -> str:
         v2 = v.strip()
         if not v2:
-            raise ValueError("phrase must be non - empty")
+            raise ValueError("phrase must be non-empty")
         if len(v2) > 200:
             raise ValueError("phrase too long (max 200 chars)")
         return v2
@@ -261,7 +261,7 @@ class EnhancedMusicSlangEntry:
             raise ValueError(f"Invalid entry '{self.phrase}': {e}")
 
     def norm_key(self) -> str:
-        """Normalized key for deduplication using Unicode - aware normalization."""
+        """Normalized key for deduplication using Unicode-aware normalization."""
         return normalize_text_for_key(self.phrase)
 
     def to_dict(self) -> Dict[str, object]:
@@ -287,7 +287,7 @@ class EnhancedMusicSlangEntry:
 
 class EnhancedMusicSentimentDatasetV2:
     """
-    Production - grade dataset with deterministic generation, quality controls,
+    Production-grade dataset with deterministic generation, quality controls,
     and comprehensive validation following SemEval standards.
     """
 
@@ -371,7 +371,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.PRAISE_GENERAL,
                     Aspect.GENERAL,
                     0.90,
-                    "Gas / gas! means fire / excellent - often with ⛽️ emoji",
+                    "Gas / gas! means fire / excellent-often with ⛽️ emoji",
                     gen_z_slang=True,
                 ),
                 EnhancedMusicSlangEntry(
@@ -381,7 +381,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.CULTURAL_IDENTITY,
                     Aspect.ARTIST,
                     0.85,
-                    "Playful support - calling favorite artist 'son' while rooting for success",
+                    "Playful support-calling favorite artist 'son' while rooting for success",
                 ),
                 EnhancedMusicSlangEntry(
                     "I relate to this so much",
@@ -426,7 +426,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.75,
-                    "Excitement about visual presentation - often with multiple exclamation marks",
+                    "Excitement about visual presentation-often with multiple exclamation marks",
                 ),
             ]
         )
@@ -441,7 +441,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.90,
-                    "No lie, this is excellent - Gen Z enthusiasm",
+                    "No lie, this is excellent-Gen Z enthusiasm",
                     gen_z_slang=True,
                 ),
                 EnhancedMusicSlangEntry(
@@ -451,7 +451,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.85,
-                    "Period with emphasis - end of discussion, strong agreement",
+                    "Period with emphasis-end of discussion, strong agreement",
                     gen_z_slang=True,
                 ),
                 EnhancedMusicSlangEntry(
@@ -481,7 +481,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.85,
-                    "Strong positive attachment - Gen Z usage",
+                    "Strong positive attachment-Gen Z usage",
                     gen_z_slang=True,
                 ),
             ]
@@ -535,7 +535,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.CULTURAL_IDENTITY,
                     Aspect.ARTIST,
                     0.85,
-                    "Playful endearment for favorite artist - shows protective support",
+                    "Playful endearment for favorite artist-shows protective support",
                 ),
                 EnhancedMusicSlangEntry(
                     "get him on trending",
@@ -589,7 +589,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.HYPE_EXCITEMENT,
                     Aspect.GENERAL,
                     0.85,
-                    "Openly / obviously obsessed - strong positive",
+                    "Openly / obviously obsessed-strong positive",
                     gen_z_slang=True,
                 ),
             ]
@@ -614,7 +614,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.PRAISE_PRODUCTION,
                     Aspect.MIX,
                     0.85,
-                    "High - quality production / mixing",
+                    "High-quality production / mixing",
                     beat_appreciation=True,
                 ),
                 EnhancedMusicSlangEntry(
@@ -708,7 +708,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.CRITICISM_NEGATIVE,
                     Aspect.GENERAL,
                     0.80,
-                    "Extremely boring - Gen Z expression",
+                    "Extremely boring-Gen Z expression",
                     gen_z_slang=True,
                 ),
                 EnhancedMusicSlangEntry(
@@ -823,7 +823,7 @@ class EnhancedMusicSentimentDatasetV2:
                     gen_z_slang=True,
                 ),
                 EnhancedMusicSlangEntry(
-                    "off - key",
+                    "off-key",
                     SentimentLabel.NEGATIVE,
                     Intent.CRITIQUE,
                     SlangCategory.CRITICISM_NEGATIVE,
@@ -964,7 +964,7 @@ class EnhancedMusicSentimentDatasetV2:
                     SlangCategory.NEUTRAL_REQUESTS,
                     Aspect.LYRICS,
                     0.90,
-                    "Request without opinion markers - neutral per SemEval",
+                    "Request without opinion markers-neutral per SemEval",
                 ),
                 EnhancedMusicSlangEntry(
                     "who produced this",
@@ -1281,7 +1281,7 @@ class EnhancedMusicSentimentDatasetV2:
         """Stable build fingerprint for CI provenance."""
         h = sha256()
         for e in sorted(self.entries, key=lambda x: x.id):
-            h.update(json.dumps(e.to_dict(), sort_keys=True, ensure_ascii=False).encode("utf - 8"))
+            h.update(json.dumps(e.to_dict(), sort_keys=True, ensure_ascii=False).encode("utf-8"))
         return h.hexdigest()
 
     @staticmethod
@@ -1291,7 +1291,7 @@ class EnhancedMusicSentimentDatasetV2:
 
     def export_json_schema(self, path: str = "enhanced_music_slang_entry.schema.json") -> None:
         """Export JSON Schema for downstream validation."""
-        with open(path, "w", encoding="utf - 8") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(self.json_schema(), f, ensure_ascii=False, indent=2)
         print(f"🧾 JSON Schema written: {path}")
 
@@ -1309,7 +1309,7 @@ class EnhancedMusicSentimentDatasetV2:
             # IDs unique and deterministic
             expected_id = generate_stable_id(e.phrase, e.sentiment, e.intent, e.aspect)
             if e.id != expected_id:
-                raise AssertionError(f"Non - deterministic ID for '{e.phrase}': {e.id} != {expected_id}")
+                raise AssertionError(f"Non-deterministic ID for '{e.phrase}': {e.id} != {expected_id}")
             if e.id in seen_ids:
                 raise AssertionError(f"Duplicate ID found: {e.id}")
             seen_ids.add(e.id)
@@ -1320,7 +1320,7 @@ class EnhancedMusicSentimentDatasetV2:
                 prev = seen_norm[nk]
                 if (prev.sentiment, prev.intent, prev.aspect) == (e.sentiment, e.intent, e.aspect):
                     raise AssertionError(
-                        f"Near - duplicate phrase detected: '{e.phrase}' ~ '{prev.phrase}' "
+                        f"Near-duplicate phrase detected: '{e.phrase}' ~ '{prev.phrase}' "
                         f"with same sentiment / intent / aspect"
                     )
             else:
@@ -1380,7 +1380,7 @@ class EnhancedMusicSentimentDatasetV2:
         """Export to JSONL with timeout control."""
 
         def _dump() -> None:
-            with open(filename, "w", encoding="utf - 8") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 for e in self.entries:
                     f.write(json.dumps(e.to_dict(), ensure_ascii=False) + "\n")
 
@@ -1390,10 +1390,10 @@ class EnhancedMusicSentimentDatasetV2:
     def export_transformer_format(
         self,
         filename: str = "enhanced_music_sentiment_transformer.jsonl",
-        model_name: str = "distilbert - base - uncased",
+        model_name: str = "distilbert-base-uncased",
         timeout_s: Optional[int] = None,
     ) -> None:
-        """Export in transformer - compatible format with preprocessing."""
+        """Export in transformer-compatible format with preprocessing."""
 
         def _dump_transformer() -> None:
             try:
@@ -1402,16 +1402,16 @@ class EnhancedMusicSentimentDatasetV2:
 
                 processor = create_music_text_processor(model_name=model_name)
 
-                with open(filename, "w", encoding="utf - 8") as f:
+                with open(filename, "w", encoding="utf-8") as f:
                     for e in self.entries:
-                        # Create transformer - ready entry
+                        # Create transformer-ready entry
                         transformer_entry = {
                             "id": e.id,
                             "text": e.phrase,
                             "processed_text": processor.preprocess_text(e.phrase),
                             "label": e.sentiment.value,
                             "confidence": e.confidence,
-                            # Transformer - specific fields
+                            # Transformer-specific fields
                             "features": processor.analyze_text_features(e.phrase),
                             # Original metadata
                             "intent": e.intent.value,
@@ -1431,7 +1431,7 @@ class EnhancedMusicSentimentDatasetV2:
             except ImportError:
                 print("⚠️  Text processing helpers not available, using basic format")
                 # Fallback to basic format
-                with open(filename, "w", encoding="utf - 8") as f:
+                with open(filename, "w", encoding="utf-8") as f:
                     for e in self.entries:
                         basic_entry = {
                             "id": e.id,
@@ -1488,7 +1488,7 @@ class EnhancedMusicSentimentDatasetV2:
 
             for split_name, split_data in splits:
                 split_file = os.path.join(output_dir, f"{split_name}.jsonl")
-                with open(split_file, "w", encoding="utf - 8") as f:
+                with open(split_file, "w", encoding="utf-8") as f:
                     for item in split_data:
                         f.write(json.dumps(item, ensure_ascii=False) + "\n")
                 print(f"   {split_name}: {len(split_data)} samples")
@@ -1509,15 +1509,15 @@ class EnhancedMusicSentimentDatasetV2:
         self._with_timeout(_dump_hf, timeout_s)
         print(f"💾 HuggingFace format exported: {output_dir}/")
 
-    def create_transformer_training_config(self, model_name: str = "distilbert - base - uncased") -> Dict[str, any]:
-        """Create training configuration for transformer fine - tuning."""
+    def create_transformer_training_config(self, model_name: str = "distilbert-base-uncased") -> Dict[str, any]:
+        """Create training configuration for transformer fine-tuning."""
 
         # Analyze dataset characteristics
         stats = self.get_statistics()
 
         config = {
             "model_name": model_name,
-            "task": "text - classification",
+            "task": "text-classification",
             "num_labels": len(stats["sentiment_distribution"]),
             "label2id": {label: i for i, label in enumerate(stats["sentiment_distribution"].keys())},
             "id2label": {i: label for i, label in enumerate(stats["sentiment_distribution"].keys())},
@@ -1529,7 +1529,7 @@ class EnhancedMusicSentimentDatasetV2:
             "warmup_steps": 500,
             "weight_decay": 0.01,
             "logging_dir": "./logs",
-            # Music - specific settings
+            # Music-specific settings
             "max_length": 128,  # Music comments are typically short
             "truncation": True,
             "padding": "max_length",
@@ -1558,13 +1558,13 @@ def get_enhanced_music_dataset() -> EnhancedMusicSentimentDatasetV2:
 
 
 def _cli(argv: Optional[Iterable[str]] = None) -> int:
-    """Command - line interface for dataset operations."""
+    """Command-line interface for dataset operations."""
     import argparse
 
     p = argparse.ArgumentParser(description="Enhanced Music Industry Sentiment Dataset v2.1")
     p.add_argument("--stats", action="store_true", help="print dataset stats")
-    p.add_argument("--export - csv", metavar="PATH", help="export CSV to PATH")
-    p.add_argument("--export - jsonl", metavar="PATH", help="export JSONL to PATH")
+    p.add_argument("--export-csv", metavar="PATH", help="export CSV to PATH")
+    p.add_argument("--export-jsonl", metavar="PATH", help="export JSONL to PATH")
     p.add_argument("--schema", metavar="PATH", help="export JSON Schema to PATH")
     p.add_argument("--timeout", type=int, default=None, help="timeout seconds for exports")
     args = p.parse_args(list(argv) if argv is not None else None)
