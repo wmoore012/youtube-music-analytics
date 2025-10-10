@@ -1,4 +1,4 @@
-# SPDX - License - Identifier: GPL - 3.0 - or - later
+
 """
 YouTube Version Parser
 
@@ -7,12 +7,12 @@ from YouTube video titles and channel names. It helps identify the artists and
 versions in YouTube videos, which can be used to link them to the appropriate
 songs and artists in the database.
 
-*New in 2025 - 07 - 10:* If the **RapidFuzz** package is installed, the parser automatically uses its C - accelerated fuzzy - matching routines for faster and more accurate similarity checks.  # noqa: E501
+*New in 2025-07-10:* If the **RapidFuzz** package is installed, the parser automatically uses its C-accelerated fuzzy-matching routines for faster and more accurate similarity checks.  # noqa: E501
 
-*New in 2025 - 07 - 14:* Improved title parsing algorithm to better handle: 1. Titles containing "with" as part of the title (e.g., "Sleep With The Light On") 2. Multiple artists in titles (e.g., "Rapper Big Pooh & Nottz - Preach") 3. Various formats of featuring indicators (e.g., "ft.", "feat.", "featuring")
+*New in 2025-07-14:* Improved title parsing algorithm to better handle: 1. Titles containing "with" as part of the title (e.g., "Sleep With The Light On") 2. Multiple artists in titles (e.g., "Rapper Big Pooh & Nottz-Preach") 3. Various formats of featuring indicators (e.g., "ft.", "feat.", "featuring")
 4. Better artist name identification using channel information
 
-*New in 2025 - 07 - 15:* Further improvements to the title parsing algorithm: 1. Added support for possessive forms (e.g., "Ryan Destiny's song The Same") 2. Added support for titles with "with the label" phrases (e.g., "Ezri's song apostles with the label mass appeal")
+*New in 2025-07-15:* Further improvements to the title parsing algorithm: 1. Added support for possessive forms (e.g., "Ryan Destiny's song The Same") 2. Added support for titles with "with the label" phrases (e.g., "Ezri's song apostles with the label mass appeal")
 3. Better handling of artist names in complex title formats
 
 The parser now uses a more selective approach to identify featuring indicators and avoids splitting titles at common words like "with" when they're part of the title.
@@ -52,10 +52,10 @@ VERSION_TYPES = ["Official Video", "Official Music Video", "Official Audio", "Au
                   ]
 
 # Patterns to detect and remove meaningless descriptors
-MEANINGLESS_DESCRIPTORS = [r"\(ASOHH Standout Track\)", r"\(ASOHH\s+[^)]*\)", r"\(\d{1,2}\.\d{1,2}\.\d{2,4}\)",  # Date patterns like (7.7.24) r"\(\d{4}\)",  # Year patterns like (2024) r"\(HD\)", r"\(HQ\)", r"\(4K\)", r"\(8K\)", r"\(Explicit\)", r"\(Clean\)", r"\([0 - 9]+[Kk]\)",  # Resolution like (4K) r"\(.*?[Rr]epost.*?\)", r"\(.*?[Pp]remiere.*?\)", r"\(.*?[Ee]xclusive.*?\)", r"\(.*?[Ss]tandout.*?\)",  # Standout track patterns r"\[.*?[Ss]tandout.*?\]", r"\(.*?[Hh]igh.*?[Qq]uality.*?\)",
+MEANINGLESS_DESCRIPTORS = [r"\(ASOHH Standout Track\)", r"\(ASOHH\s+[^)]*\)", r"\(\d{1,2}\.\d{1,2}\.\d{2,4}\)",  # Date patterns like (7.7.24) r"\(\d{4}\)",  # Year patterns like (2024) r"\(HD\)", r"\(HQ\)", r"\(4K\)", r"\(8K\)", r"\(Explicit\)", r"\(Clean\)", r"\([0-9]+[Kk]\)",  # Resolution like (4K) r"\(.*?[Rr]epost.*?\)", r"\(.*?[Pp]remiere.*?\)", r"\(.*?[Ee]xclusive.*?\)", r"\(.*?[Ss]tandout.*?\)",  # Standout track patterns r"\[.*?[Ss]tandout.*?\]", r"\(.*?[Hh]igh.*?[Qq]uality.*?\)",
                             ]
 
-# Known ripper / unofficial channel patterns - UPDATED with validation results + broadcaster detection
+# Known ripper / unofficial channel patterns-UPDATED with validation results + broadcaster detection
 RIPPER_CHANNEL_PATTERNS = [r".*[Ll]yrics?.*", r"Cardinal Music",  # Confirmed ripper (user's Side B example) r"Old For This",  # Confirmed ripper (user's Side A Freestyle example) r"Bleakk TV",  # Validated as ripper r"MaxxMusic",  # Validated as ripper r"FUSION MUSIC",  # Validated as ripper r"ALPHA MUSIC",  # Validated as ripper r"Joann Media",  # Validated as ripper r"Baby Demon Lyrics.*",  # Validated as ripper r"DepthofSoundTV",  # Validated as ripper
                             # Broadcaster patterns (radio stations, media companies) r"SiriusXM", r"iHeartRadio", r"BBC Radio.*", r"NPR.*", r"Hot 97", r"Power 105", r".*Radio.*Station.*", r".*FM$", r".*AM$", r".*Broadcasting.*",
                             # Generic patterns r".*TV$", r".*Beats$", r".*Sounds$", r".*Audio$",
@@ -118,7 +118,7 @@ if not text: return ""
 # Normalize the text first
 text = _norm(text)
 
-# Remove common YouTube - specific suffixes text = re.sub(r"\s*\(\s *
+# Remove common YouTube-specific suffixes text = re.sub(r"\s*\(\s *
 # Official\s + Video\s*\)\s*$", "", text, flags=re.IGNORECASE) text =
 # re.sub(r"\s*\[\s * Official\s + Video\s*\]\s*$", "", text,
 # flags=re.IGNORECASE)
@@ -281,7 +281,7 @@ return artists, title
 
 
 def split_if_csv(text: str) -> tuple[str | None, str | None, str]: """
-Split a text string if it's in CSV format, handling embedded commas properly.  # noqa: E999
+Split a text string if it's in CSV format, handling embedded commas properly.  "  # Fixed incomplete string"
 
 Args:
         text (str): The text to check and potentially split
@@ -289,7 +289,7 @@ Args:
 Returns:
         tuple[str | None, str | None, str]: A tuple of (video_id, isrc, title) or (None, None, original_text) """
 try:
-        vid, isrc, title = next(csv.reader([text])) if re.fullmatch(r"[A - Za - z0 - 9_-]{11}", vid) and len(isrc) == 12:
+        vid, isrc, title = next(csv.reader([text])) if re.fullmatch(r"[A-Za-z0-9_-]{11}", vid) and len(isrc) == 12:
             return vid, isrc, title
 except Exception:
         pass
@@ -302,13 +302,13 @@ return None, None, text
 # part of the canonical song title. The logic downstream originally duplicated
 # these extraction steps in multiple branches; they now funnel through a single
 # helper so future tweaks only need to be made in one place. _RX_FEAT_CLAUSE = re.compile(r"(?:\(|\[|\s+)(?:ft\.?|feat\.?|featuring|ft|feat)\s+([^)\]]+)(?:\)|\])?", re.I) # Only match "with" when it's in parentheses or brackets, or preceded by a dash # This helps avoid splitting titles like "Sleep With The Light On" _RX_WITH_CLAUSE = re.compile(r"(?:[\(\[]|\s-\s)\s * with\s+([^)\]]+)", re.I) # Pattern to detect possessive forms like "Ryan Destiny's song"
-_RX_POSSESSIVE = re.compile( r"^([A - Za - z0 - 9\s&.']+)'s\s+(?:song|track|tune|single|record|release|video)\s+(.+)$",
+_RX_POSSESSIVE = re.compile( r"^([A-Za-z0-9\s&.']+)'s\s+(?:song|track|tune|single|record|release|video)\s+(.+)$",
 re.I,
 ) # Pattern to detect "with the label" phrases _RX_LABEL = re.compile(r"(.+?)\s + with\s + the\s + label\s+(.+)$", re.I)
  _DELIMITERS = re.compile(r"\s*(?:,|&| and | x |/)\s*", re.I)
 
 
-def _split_primary_block(block: str) -> List[str]: """Enhanced multi - artist detection with better handling of complex artist combinations."""
+def _split_primary_block(block: str) -> List[str]: """Enhanced multi-artist detection with better handling of complex artist combinations."""
 if not block or not block.strip():
         return []
 
@@ -333,7 +333,7 @@ if featuring_match:
 # Standard delimiter splitting
 parts = [p.strip() for p in _DELIMITERS.split(cleaned_block) if p.strip()]
 
-# Filter out obvious non - artist parts
+# Filter out obvious non-artist parts
 filtered_parts = []
 for part in parts:
         # Skip parts that are clearly not artist names
@@ -473,7 +473,7 @@ if quoted_match:
         if len(songs) > 1:  # Multiple songs detected result["is_multi_song"] = True result["songs"] = songs result["artist"] = artist
 
             # Detect performance type if re.search(r"\blive\b", title, re.IGNORECASE): result["performance_type"] = "Live Performance" elif re.search(r"\bmedley\b", title, re.IGNORECASE): result["performance_type"] = "Medley"
-            else: result["performance_type"] = "Multi - Song Performance"
+            else: result["performance_type"] = "Multi-Song Performance"
   # noqa: C901
 return result
 
@@ -486,7 +486,7 @@ raw_title = video_title
 
 # 0.1️⃣ Remove meaningless descriptors
 cleaned = _remove_meaningless_descriptors(cleaned)
- # 0.2️⃣ Check for multi - song performances (e.g., Lute "Eye to Eye, 100 & GED")
+ # 0.2️⃣ Check for multi-song performances (e.g., Lute "Eye to Eye, 100 & GED")
 multi_song_info = _detect_multi_song_performance(cleaned) if multi_song_info["is_multi_song"]:
         # Handle as primary song + featured songs with special version primary_song = multi_song_info["songs"][0]  # First song as primary featured_songs = multi_song_info["songs"][1:]  # Rest as "featured"
 
@@ -498,7 +498,7 @@ multi_song_info = _detect_multi_song_performance(cleaned) if multi_song_info["is
         return { "title": title_part, "primary": [multi_song_info["artist"]] if multi_song_info["artist"] else [], "featured": [], "version_type": multi_song_info["performance_type"],
         }
  # 0.3️⃣ Check for live performance broadcasts (e.g., "Lute — GED | LIVE Performance | SiriusXM")
-if channel_title and _is_ripper_channel(channel_title): # Pattern: "Artist — Song | LIVE Performance | Broadcaster" live_pattern = r"^([A - Za - z\s&.\']+)\s*[—-]\s*([^|]+)(?:\s*\|\s * LIVE\s * Performance)?(?:\s*\|\s*(.+))?$"
+if channel_title and _is_ripper_channel(channel_title): # Pattern: "Artist — Song | LIVE Performance | Broadcaster" live_pattern = r"^([A-Za-z\s&.\']+)\s*[—-]\s*([^|]+)(?:\s*\|\s * LIVE\s * Performance)?(?:\s*\|\s*(.+))?$"
         live_match = re.match(live_pattern, cleaned)
 
         if live_match:
@@ -533,7 +533,7 @@ if label_match:
         song_info, label_name = label_match.groups()
 
         # Check if song_info contains artist information if "'" in song_info and "song" in song_info.lower(): # This is likely a possessive form like "Ezri's song apostles"
-            artist_song_match = re.match( r"([A - Za - z0 - 9\s&.']+)'s\s+(?:song|track|tune|single)\s+(.+)$",
+            artist_song_match = re.match( r"([A-Za-z0-9\s&.']+)'s\s+(?:song|track|tune|single)\s+(.+)$",
                 song_info,
                 re.I,
             )
@@ -541,7 +541,7 @@ if label_match:
                 artist_name, song_title = artist_song_match.groups()
                 primary_artists = _split_primary_block(artist_name)
 
-                # Return early with the parsed information - just use the song title
+                # Return early with the parsed information-just use the song title
                 return { "title": song_title.strip(" \"'"), " + ""primary": list(dict.fromkeys(primary_artists)), "featured": [],
                 }
  # If no artist information found but we have a "with the label" phrase,
@@ -559,7 +559,7 @@ if extracted_artists:
         # Return early with extracted artists
         return { "title": title_part.strip(" \"'"), " + ""primary": list(dict.fromkeys(primary_artists)), "featured": featured,
         }
- # 0.8️⃣ Handle quoted titles like 'LUTE "GED (Gettin Every Dolla)" (7.7.24)' quoted_pattern = r'^([A - Za - z0 - 9\s&.\']+?)\s*["\']([^"\']+)["\']'
+ # 0.8️⃣ Handle quoted titles like 'LUTE "GED (Gettin Every Dolla)" (7.7.24)' quoted_pattern = r'^([A-Za-z0-9\s&.\']+?)\s*["\']([^"\']+)["\']'
 quoted_match = re.match(quoted_pattern, cleaned)
 if quoted_match:
         potential_artist = quoted_match.group(1).strip()
@@ -587,7 +587,7 @@ topic_artist = None if channel_title and channel_title.lower().endswith(" - topi
             title_part = cleaned
             primary_artists = []
         else:
-            # Check if what we think is the artist part might actually be part of the title # This helps with cases like "RIVER - We'll Be Together (feat. Lute)"
+            # Check if what we think is the artist part might actually be part of the title # This helps with cases like "RIVER-We'll Be Together (feat. Lute)"
             if any(word.lower() in artist_part.lower() for word in TITLE_WORDS):
                 # If the artist part contains common title words, check if it's a single word
                 # Single words are more likely to be artist names than title fragments
@@ -606,7 +606,7 @@ topic_artist = None if channel_title and channel_title.lower().endswith(" - topi
                         title_part = cleaned
                         primary_artists = []
             else:
-                # Normal case - artist part doesn't contain title words
+                # Normal case-artist part doesn't contain title words
                 primary_artists = _split_primary_block(artist_part)
 else:
         # fallback: treat whole string as title; artist comes from channel or later feat./with
@@ -641,7 +641,7 @@ if not primary_artists and channel_title and not _is_ripper_channel(channel_titl
 
 # 5️⃣ final title cleanup – single spaces, trim quotes title_part = re.sub(r"\s{2,}", " ", title_part).strip(" \"'")
 
-return { "title": title_part, "primary": list(dict.fromkeys(primary_artists)),  # de - dupe order - preserved "featured": list(dict.fromkeys(featured)),
+return { "title": title_part, "primary": list(dict.fromkeys(primary_artists)),  # de-dupe order-preserved "featured": list(dict.fromkeys(featured)),
 }
 
 
@@ -749,7 +749,7 @@ for song in songs: song_title = song.get("song_title", "").lower()
         if not song_title or parsed_title not in song_title and song_title not in parsed_title:
             continue
 
-        # Calculate title similarity (0 - 100)
+        # Calculate title similarity (0-100)
         title_similarity = calculate_similarity(parsed_title, song_title)
 
         # Calculate artist similarity if we have artist information
@@ -781,16 +781,16 @@ package is not installed.
 The similarity score algorithm works as follows:
 1. If RapidFuzz is available, it uses token_set_ratio which:
        - Tokenizes both strings (splits into words)
-       - Creates three sets: intersection, str1 - only, str2 - only
+       - Creates three sets: intersection, str1-only, str2-only
        - Sorts and joins each set
        - Computes the Levenshtein ratio between the resulting strings
        - This is tolerant to word order and duplicates
-       - Returns a score from 0 - 100
+       - Returns a score from 0-100
 
 2. If RapidFuzz is not available, it falls back to:
        - Computing the Levenshtein distance between the strings
        - Normalizing by the length of the longer string
-       - Converting to a similarity score (0 - 100)
+       - Converting to a similarity score (0-100)
 
 This approach handles cases where titles might have slight variations
 or different word orders but still refer to the same song.
@@ -822,11 +822,11 @@ for j in range(len2 + 1):
         matrix[0][j] = j
 for i in range(1, len1 + 1):
         for j in range(1, len2 + 1):
-            cost = 0 if str1[i - 1] == str2[j - 1] else 1
+            cost = 0 if str1[i-1] == str2[j-1] else 1
             matrix[i][j] = min(
-                matrix[i - 1][j] + 1,
-                matrix[i][j - 1] + 1,
-                matrix[i - 1][j - 1] + cost,
+                matrix[i-1][j] + 1,
+                matrix[i][j-1] + 1,
+                matrix[i-1][j-1] + cost,
             )
 distance = matrix[len1][len2]
 return (1 - (distance / max(len1, len2))) * 100.0
@@ -850,7 +850,7 @@ The artist similarity algorithm works as follows:
        - Calculate the percentage of artists that have matches
        - This approach is less accurate but still provides a reasonable fallback
 
-This approach handles cases where artist names might be spelled differently or have different formats (e.g., "J. Cole" vs "J Cole" or "Jay - Z" vs "JAY Z"). """
+This approach handles cases where artist names might be spelled differently or have different formats (e.g., "J. Cole" vs "J Cole" or "Jay-Z" vs "JAY Z"). """
 if not artists1 or not artists2:
         return 0.0
 
@@ -885,7 +885,7 @@ Args:
 Returns:
         Optional[str]: The version type or None if not found """
 # First check for unicode slowed / reverb patterns (Chopped & Screwed)
-unicode_patterns = [ r"[𝕊 - 𝟿]+.*[𝕊 - 𝟿]+",  # Mathematical script characters r"[ℂ - ℝ]+.*[ℂ - ℝ]+",  # Double - struck characters r"[𝒜 - 𝓏]+.*[𝒜 - 𝓏]+",  # Script characters
+unicode_patterns = [ r"[𝕊-𝟿]+.*[𝕊-𝟿]+",  # Mathematical script characters r"[ℂ-ℝ]+.*[ℂ-ℝ]+",  # Double-struck characters r"[𝒜-𝓏]+.*[𝒜-𝓏]+",  # Script characters
 ]
 
 for pattern in unicode_patterns:
@@ -909,11 +909,11 @@ for pattern, label in VERSION_MAP.items():
 
  if __name__ == "__main__":
 # Test the functions with some example YouTube titles
-test_titles = [ "Lute - Eye to Eye ft. Cozz [Official Video]", "RIVER - We'll Be Together (feat. Lute)", "Cantrell, Stro, 070 Phi, Liana Bank$ - When Morning Comes [HQ Audio]", "Ryan Destiny - Do You (Quarantine Video)", "Lute - Amen featuring Little Brother (Official Audio)", "Lute - Flossin' featuring WESTSIDE BOOGIE (Official Audio)", "Rapper Big Pooh - LS400", "Rapper Big Pooh & Nottz - Preach", "Emanny - Don't Give Up (Audio)", "Rapper Big Pooh - Dreaming In Color ft. J.Smash of The Nukez", "Rapper Big Pooh - Changing Again", "Black Magic (feat. Akilz Amari)", "Lute - Outta Sight (Official Audio)", "Spice Girls - Stop (Official Music Video)", "Cantrell, Ezri, 070 Phi - 6 Rings (Official Video)", "Lute - Changes ft. BJ The Chicago Kid [Official Video]", "Type Of Day", "Rapper Big Pooh - Gold Chain", "Rapper Big Pooh - Thoughts & Prayers (Interlude)", "Rapper Big Pooh - In Surround Sound ft. Tre'mar",
-        # Additional test cases for special formats "Miss Kaniyah 'Sassy' | On The Radar Performance", 'BravoTheBagChaser - "Juggin" Official Video Shot By @StopSignPros', "Edward Sharpe & The Magnetic Zeros - Home (Official Video)", 'SE4URxm5Wjc,QZLL92532644,"Miss Kaniyah "Sassy" | On The Radar Performance"',
+test_titles = [ "Lute-Eye to Eye ft. Cozz [Official Video]", "RIVER-We'll Be Together (feat. Lute)", "Cantrell, Stro, 070 Phi, Liana Bank$ - When Morning Comes [HQ Audio]", "Ryan Destiny-Do You (Quarantine Video)", "Lute-Amen featuring Little Brother (Official Audio)", "Lute-Flossin' featuring WESTSIDE BOOGIE (Official Audio)", "Rapper Big Pooh-LS400", "Rapper Big Pooh & Nottz-Preach", "Emanny-Don't Give Up (Audio)", "Rapper Big Pooh-Dreaming In Color ft. J.Smash of The Nukez", "Rapper Big Pooh-Changing Again", "Black Magic (feat. Akilz Amari)", "Lute-Outta Sight (Official Audio)", "Spice Girls-Stop (Official Music Video)", "Cantrell, Ezri, 070 Phi-6 Rings (Official Video)", "Lute-Changes ft. BJ The Chicago Kid [Official Video]", "Type Of Day", "Rapper Big Pooh-Gold Chain", "Rapper Big Pooh-Thoughts & Prayers (Interlude)", "Rapper Big Pooh-In Surround Sound ft. Tre'mar",
+        # Additional test cases for special formats "Miss Kaniyah 'Sassy' | On The Radar Performance", 'BravoTheBagChaser - "Juggin" Official Video Shot By @StopSignPros', "Edward Sharpe & The Magnetic Zeros-Home (Official Video)", 'SE4URxm5Wjc,QZLL92532644,"Miss Kaniyah "Sassy" | On The Radar Performance"',
 ]
 
-test_channels = [ "LuteVEVO", "R&B Nation", "Mass Appeal Records", "RYAN DESTINY", "LuteVEVO", "LuteVEVO", "rapperbigpoohVEVO", "Tha Realness", "Emanny Music", "rapperbigpoohVEVO", "rapperbigpoohVEVO", "Steve Roxx - Topic", "LuteVEVO", "SpiceGirlsVEVO", "Mass Appeal", "LuteVEVO", "B.J. The Chicago Kid - Topic", "rapperbigpoohVEVO", "rapperbigpoohVEVO", "rapperbigpoohVEVO",
+test_channels = [ "LuteVEVO", "R&B Nation", "Mass Appeal Records", "RYAN DESTINY", "LuteVEVO", "LuteVEVO", "rapperbigpoohVEVO", "Tha Realness", "Emanny Music", "rapperbigpoohVEVO", "rapperbigpoohVEVO", "Steve Roxx-Topic", "LuteVEVO", "SpiceGirlsVEVO", "Mass Appeal", "LuteVEVO", "B.J. The Chicago Kid-Topic", "rapperbigpoohVEVO", "rapperbigpoohVEVO", "rapperbigpoohVEVO",
         # Channels for additional test cases "On The Radar", "Bravo The Bagchaser", "Rough Trade Records", "On The Radar",
 ]
 

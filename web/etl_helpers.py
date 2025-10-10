@@ -1,8 +1,8 @@
-# SPDX - License - Identifier: GPL - 3.0 - or - later
+
 from __future__ import annotations
 
 """
-ETL Helper Utilities - YouTube Music Analytics Platform
+ETL Helper Utilities-YouTube Music Analytics Platform
 
 This is the main utility module for the YouTube analytics ETL pipeline.
 It contains all core database operations, data normalization, and ETL tracking functions.
@@ -12,13 +12,13 @@ This module follows the "kitchen sink" pattern common in data engineering where
 related utilities are kept together to avoid import complexity and maintain cohesion.
 
 📋 MODULE SECTIONS:
-1. Database Connection & Core Utilities - Engine setup, table reflection, SQL helpers
-2. Generic Upsert & Data Manipulation - Reusable database operations
-3. Spotify Data Processing - Spotify API data normalization and processing
-4. YouTube Data Processing - YouTube API data normalization and processing
-5. Tidal Data Processing & Label Management - Tidal integration and label cleanup
-6. Bulk Operations & Performance - High - performance database operations
-7. ETL Execution Tracking & Logging - Pipeline monitoring and run tracking
+1. Database Connection & Core Utilities-Engine setup, table reflection, SQL helpers
+2. Generic Upsert & Data Manipulation-Reusable database operations
+3. Spotify Data Processing-Spotify API data normalization and processing
+4. YouTube Data Processing-YouTube API data normalization and processing
+5. Tidal Data Processing & Label Management-Tidal integration and label cleanup
+6. Bulk Operations & Performance-High-performance database operations
+7. ETL Execution Tracking & Logging-Pipeline monitoring and run tracking
 
 🎯 BUSINESS CONTEXT:
 This module supports music industry analytics by processing data from multiple
@@ -40,23 +40,27 @@ from web.etl_helpers import (
 
 __doctest__ = False  # 🚫 Skip doc‑string doctests when PyCharm / pytest runs the module
 import contextlib
-from contextlib import contextmanager
 import json
 import os
-from pathlib import Path
 import re
+from contextlib import contextmanager
+from pathlib import Path
 
-from dotenv import load_dotenv  # NEW: enables load_dotenv()
 import pandas as pd
-from sqlalchemy import MetaData  # fixes NameError in init_tables()
-from sqlalchemy import Table  # used for type hints all over the file
-from sqlalchemy import create_engine  # used in get_engine()
-from sqlalchemy import insert
-from sqlalchemy import inspect  # used in bulk_upsert()
-from sqlalchemy import select  # already imported later, but safe to add here
-from sqlalchemy import text  # used in several on_duplicate_key_update() calls
-from sqlalchemy.engine import Connection  # used for type hints
-from sqlalchemy.engine import Engine
+from dotenv import load_dotenv  # NEW: enables load_dotenv()
+from sqlalchemy import (
+    MetaData,  # fixes NameError in init_tables()
+    Table,  # used for type hints all over the file
+    create_engine,  # used in get_engine()
+    insert,
+    inspect,  # used in bulk_upsert()
+    select,  # already imported later, but safe to add here
+    text,  # used in several on_duplicate_key_update() calls
+)
+from sqlalchemy.engine import (
+    Connection,  # used for type hints
+    Engine,
+)
 
 # ============================================================================
 # 1. DATABASE CONNECTION & CORE UTILITIES
@@ -222,7 +226,7 @@ _TABLES_INITIALIZED: bool = False
 
 def init_tables(engine: Engine) -> None:
     """
-    Reflect ALL core tables once and expose them as module - level variables.
+    Reflect ALL core tables once and expose them as module-level variables.
     """
     global _GLOBAL_META, _TABLE_HANDLES, _TABLES_INITIALIZED  # noqa: F824
 
@@ -270,7 +274,7 @@ def get_table(name: str):
         if "cursor" not in str(exc):
             raise
 
-    # --- Fallback: use DB - API connection that *does* have .cursor() ------
+    # --- Fallback: use DB-API connection that *does* have .cursor() ------
     with contextlib.closing(engine.raw_connection()) as raw:
         return pd.read_sql_query(sql, con=raw, **kw)
         raise KeyError(f"Unknown table '{name}'. Check ALL_TABLE_NAMES.") from exc
@@ -284,7 +288,7 @@ def get_or_create(conn: Connection, table: Table, **kwargs) -> int:
     Return the PK for the row matching **kwargs.
     Insert if not present and return new PK.
 
-    Assumes single - column integer PK and SQLAlchemy table object.
+    Assumes single-column integer PK and SQLAlchemy table object.
     """
     row = conn.execute(select(table).filter_by(**kwargs)).first()
     if row:
@@ -298,7 +302,7 @@ def get_or_create(conn: Connection, table: Table, **kwargs) -> int:
 # ============================================================================
 
 # ---------------------------------------------------------------------------
-# Module - level in - memory caches
+# Module-level in-memory caches
 # ---------------------------------------------------------------------------
 # Having these objects *defined once* on import guarantees they always exist.
 label_cache: dict[str, int] = {}
@@ -311,7 +315,7 @@ artist_cache: dict[str, int] = {}
 
 
 def clear_caches() -> None:
-    """Utility for tests – empties all module - level caches."""
+    """Utility for tests – empties all module-level caches."""
     label_cache.clear()
     album_cache.clear()
     artist_cache.clear()
@@ -354,7 +358,7 @@ def detect_version_type(track_title: str, album_title: str = None) -> str:
     # First, try to extract version from parentheses in the track title
     m = re.match(r"^(.*?)\s*\(([^)]+)\)", track_title)
     if m:
-        _version_text_item = m.group(2).strip()
+        _version_text_item = m.group(2).strip()  # noqa: F841
         # Check if the extracted version matches any of our known version types
         for version_type, pattern in version_keywords.items():
             if re.search(pattern, version_text, re.IGNORECASE):
@@ -549,7 +553,7 @@ def get_tidal_disc_number(track: object, conn: Connection = None) -> int | None:
             if disc_num is not None:
                 return disc_num
 
-    # Fallback for raw - dict tracks
+    # Fallback for raw-dict tracks
     if isinstance(track, dict):
         disc_num = track.get("volumeNumber") or track.get("discNumber")
         if disc_num is not None:
@@ -794,7 +798,7 @@ def normalize_youtube_video(
     Convert one YouTube playlistItem JSON → YoutubeMetrics row.
     Simplified — adapt to your schema.
     """
-    _youtube_metrics_tbl = tables["YoutubeMetrics"]
+    _youtube_metrics_tbl = tables["YoutubeMetrics"]  # noqa: F841
     dsp_tbl = tables["DSPProviders"]
     songs_tbl = tables["Songs"]
 
@@ -829,10 +833,10 @@ def normalize_youtube_video(
     }
 
 
-# Human - friendly alias for the title splitter
+# Human-friendly alias for the title splitter
 parse_title = _split_title
 
-# Notebook - friendly alias for the richer Spotify normaliser
+# Notebook-friendly alias for the richer Spotify normaliser
 normalize_spotify = normalize_spotify_track
 
 # Anything you expose here should also be surfaced via __all__
@@ -1001,7 +1005,7 @@ def upsert_artist(conn: Connection, artist_name: str) -> int:
     conn : sqlalchemy.engine.Connection
         An open SQLAlchemy connection.
     artist_name : str
-        The canonical artist name (case - sensitive).
+        The canonical artist name (case-sensitive).
 
     Returns
     -------
@@ -1026,7 +1030,7 @@ def upsert_artist(conn: Connection, artist_name: str) -> int:
     result = conn.execute(stmt)
 
     # MySQL returns the new PK in lastrowid only when an INSERT actually
-    # happened; if we hit the duplicate key path we need to re - query.
+    # happened; if we hit the duplicate key path we need to re-query.
     artist_id = result.lastrowid
     if not artist_id:
         artist_id = conn.execute(
@@ -1176,7 +1180,6 @@ def get_tidal_track(conn: Connection, isrc: str) -> Optional[Any]:
 
     # Try to get the track from Tidal API
     try:
-        import tidalapi
 
         # Set up Tidal client using our authentication module
         from web.tidal_auth import get_tidal_session
@@ -1485,13 +1488,13 @@ from sqlalchemy.dialects.mysql import insert as mysql_insert
 
 def safe_upsert_legacy(conn, tbl, record: dict) -> None:
     # -------------------------------------------------------------------
-    # LEGACY ROW - BY - ROW UPSERT  – kept for reference / small jobs only
+    # LEGACY ROW-BY-ROW UPSERT  – kept for reference / small jobs only
     # -------------------------------------------------------------------
     """
     Insert or update a single row.
     • Columns that do not exist on *tbl* are silently dropped.
-    • None - values are stripped so you never overwrite real data with NULLs.
-    • Primary - key columns are never updated.
+    • None-values are stripped so you never overwrite real data with NULLs.
+    • Primary-key columns are never updated.
     """
     cols = {c.name for c in inspect(tbl).columns}
     clean = {k: v for k, v in record.items() if k in cols and v is not None}
@@ -1500,7 +1503,7 @@ def safe_upsert_legacy(conn, tbl, record: dict) -> None:
 
     stmt = mysql_insert(tbl).values(**clean)
 
-    # Do not touch primary - key columns on update
+    # Do not touch primary-key columns on update
     pk_cols = {c.name for c in tbl.primary_key.columns}
     update_cols = {k: v for k, v in clean.items() if k not in pk_cols}
     if update_cols:
@@ -1512,7 +1515,7 @@ def safe_upsert_legacy(conn, tbl, record: dict) -> None:
 # ============================================================================
 # 6. BULK OPERATIONS & PERFORMANCE
 # ============================================================================
-# High - performance database operations for ETL processing.
+# High-performance database operations for ETL processing.
 
 
 def bulk_upsert(
@@ -1525,9 +1528,9 @@ def bulk_upsert(
     """
     Insert *rows* into *table*, updating existing rows on conflicts.
 
-    • Works on every MySQL ≥5.7 release. [oai_citation:5‡dev.mysql.com](https://dev.mysql.com / doc / relnotes / mysql / 8.0 / en / news - 8-0 - 19.html)  # noqa: E501
+    • Works on every MySQL ≥5.7 release. [oai_citation:5‡dev.mysql.com](https://dev.mysql.com / doc / relnotes / mysql / 8.0 / en / news-8-0-19.html)  # noqa: E501
     • UPDATE clause references *only* the columns you actually supplied,
-      so “unknown column new.xyz” can’t happen again. [oai_citation:6‡stackoverflow.com](https://stackoverflow.com / questions / 68878680 / on - duplicate - key - doesnt - work - with - my - insert - into - script)  # noqa: E501
+      so “unknown column new.xyz” can’t happen again. [oai_citation:6‡stackoverflow.com](https://stackoverflow.com / questions / 68878680 / on-duplicate-key-doesnt-work-with-my-insert-into-script)  # noqa: E501
     """
     conflict_columns = conflict_columns or []
     update_columns = update_columns or []
@@ -1536,14 +1539,15 @@ def bulk_upsert(
 
     insert_stmt = mysql_insert(table).values(rows)  # explicit VALUES list
     pk_cols = {
-        c.name for c in inspect(table).primary_key
-    # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error - 1054 - unknown - column - in - field - list?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
+        c.name
+        for c in inspect(table).primary_key
+        # fast PK lookup [oai_citation:7‡stackoverflow.com](https://stackoverflow.com / questions / 46012899 / error-1054-unknown-column-in-field-list?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
     }
     update_map = {c: insert_stmt.inserted[c] for c in rows[0] if c not in pk_cols}
 
     stmt = insert_stmt.on_duplicate_key_update(
         **update_map
-    # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
+        # SQLAlchemy magic [oai_citation:8‡docs.sqlalchemy.org](https://docs.sqlalchemy.org / en / latest / dialects / mysql.html?utm_source=chatgpt.com)  # noqa: E501  # noqa: E122
     )
     with engine.begin() as conn:
         return conn.execute(stmt).rowcount
@@ -1574,7 +1578,7 @@ def clean_df_playcounts(df_playcounts):
 # %%  ← ordinary notebook cell
 
 # utils.py lives in the `etl` package, not in `web`
-# from etl.utils import tables_exist  # Commented out - causing MySQL import error
+# from etl.utils import tables_exist  # Commented out-causing MySQL import error
 
 
 def _assert_tables_exist(engine: Engine, names: List[str]) -> None:
@@ -1666,7 +1670,7 @@ def seed_role_types(engine: Engine) -> None:
         "Remixer",
     ]
 
-    # Open a transaction - scoped Connection (SQLAlchemy 2.x style)
+    # Open a transaction-scoped Connection (SQLAlchemy 2.x style)
     with engine.begin() as conn:
         # 1️⃣ Fetch existing role names (each row is a single string)
         existing = {role for (role,) in conn.execute(select(role_types_tbl.c.role_name))}
@@ -1738,7 +1742,7 @@ def _process_track_artists(conn: Connection, track: dict) -> tuple[list[tuple], 
         is_featured = _is_featured_artist(name)
         artists.append((aid, name))
         if is_featured:
-            auto_featured.append(len(artists))  # Store 1 - based index
+            auto_featured.append(len(artists))  # Store 1-based index
 
     # Match artists with featured names from title
     if featured_from_title:
@@ -1844,7 +1848,7 @@ logger = logging.getLogger("playcount_upsert_debug")
 #         logger.debug("DSPRecordID=%s  Playcount=%s  Disc=%s Track=%s",
 #                      row.DSPRecordID, row.Playcount, row.DiscNumber, row.TrackNumber)
 #
-#         # 1️⃣  Verify foreign - key (SpotifyTracks) exists
+#         # 1️⃣  Verify foreign-key (SpotifyTracks) exists
 #         exists = conn.execute(
 #             select(func.count())
 #             .select_from(tracks_tbl)
@@ -1871,7 +1875,7 @@ logger = logging.getLogger("playcount_upsert_debug")
 #             LastPlaycountUpdate = func.now(),
 #         )
 #
-#         # 3️⃣  Show fully - rendered SQL (literal values) then execute
+#         # 3️⃣  Show fully-rendered SQL (literal values) then execute
 #         compiled = stmt.compile(dialect=conn.dialect,
 #                                 compile_kwargs={"literal_binds": True})
 #         logger.debug("SQL: %s", compiled.string)
@@ -1880,7 +1884,7 @@ logger = logging.getLogger("playcount_upsert_debug")
 #             logger.info("UPSERT OK – rowcount=%d", res.rowcount)
 #         except Exception:
 #             logger.exception("‼️  UPSERT FAILED")
-#             raise     # still raise so you see a stack - trace in notebook
+#             raise     # still raise so you see a stack-trace in notebook
 #
 #     logger.info("⏹️  END debug_upsert_spotify_playcounts")
 
@@ -1996,10 +2000,9 @@ def debug_upsert_spotify_playcounts(conn, df, pc_tbl, tracks_tbl, dsp_id):
 
 def _run_debug_upsert() -> None:
     """
-    Run the Spotify - play - count upsert in DEBUG mode.
+    Run the Spotify-play-count upsert in DEBUG mode.
     Invoke with:  python -m web.etl_helpers
     """
-    import pandas as pd
 
     engine = get_engine(echo=False)
 
@@ -2017,7 +2020,7 @@ def _run_debug_upsert() -> None:
     df_playcounts = clean_df_playcounts(load_playcounts("data / playlist.json"))
 
     # 4️⃣  Execute the upsert
-    print("🚀 Upserting play - counts in DEBUG mode …")
+    print("🚀 Upserting play-counts in DEBUG mode …")
     with engine.begin() as conn:
         debug_upsert_spotify_playcounts(
             conn,
@@ -2035,7 +2038,7 @@ def _run_debug_upsert() -> None:
 if __name__ == "__main__":
     _run_debug_upsert()
     # ────────────────────────────────────────────────────────────────
-    #  ⬇️  Create debug - only handles *after* init_tables() has run
+    #  ⬇️  Create debug-only handles *after* init_tables() has run
     # ────────────────────────────────────────────────────────────────
     if __name__ == "__main__":
         #         from sqlalchemy import select
@@ -2049,13 +2052,13 @@ if __name__ == "__main__":
         spotify_playcounts_tbl = get_table("spotify_playcounts")
         dsp_tbl = get_table("dsp_providers")
 
-        # 3️⃣  Dynamic lookup → “Spotify” primary - key
+        # 3️⃣  Dynamic lookup → “Spotify” primary-key
         with engine.connect() as conn:
             SPOTIFY_DSP_ID = conn.scalar(
                 select(dsp_tbl.c.DSPName).where(dsp_tbl.c.DSPName == "Spotify")  # PK column in your schema
             )
 
-        # 4️⃣  Smoke - test
+        # 4️⃣  Smoke-test
         with engine.connect() as conn:
             any_track = conn.execute(SpotifyTracks_tbl.select().limit(1)).first()
 

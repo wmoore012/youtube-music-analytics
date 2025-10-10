@@ -1,4 +1,4 @@
-# SPDX - License - Identifier: GPL - 3.0 - or - later
+
 """
 YouTube data integration for the iCatalog ETL pipeline.
 
@@ -8,8 +8,8 @@ It also uses the YouTube version parser to extract artist names and version info
 from video titles.
 
 The module supports two approaches for finding YouTube videos:
-1. Playlist - based approach: Uses curated YouTube playlists to find videos
-2. Search - based approach: Searches YouTube for videos matching songs in the database
+1. Playlist-based approach: Uses curated YouTube playlists to find videos
+2. Search-based approach: Searches YouTube for videos matching songs in the database
 
 It also supports cleaning the database to remove incorrect songs:
 1. Selective clean: Removes only songs that don't belong to the user's catalog
@@ -35,35 +35,35 @@ Usage:
     python youtube_integration.py --clean
 
     # Run with full cleaning (remove all records)
-    python youtube_integration.py --clean --full - clean
+    python youtube_integration.py --clean --full-clean
 
-    # Run with search - based approach
-    python youtube_integration.py --no - playlist
+    # Run with search-based approach
+    python youtube_integration.py --no-playlist
 
     # Run with custom batch size (smaller batch size reduces quota usage)
-    python youtube_integration.py --batch - size 5
+    python youtube_integration.py --batch-size 5
 
     # Process a specific playlist first
-    python youtube_integration.py --priority - playlist PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q
+    python youtube_integration.py --priority-playlist PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q
 
     # Process only a specific playlist
-    python youtube_integration.py --only - playlist PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q
+    python youtube_integration.py --only-playlist PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q
 
     # Skip updating metrics to save quota
-    python youtube_integration.py --skip - metrics
+    python youtube_integration.py --skip-metrics
 
     # Run in development mode (fetch all videos, ignore progress tracking, store raw data)
-    python youtube_integration.py --development - mode
+    python youtube_integration.py --development-mode
 
     # Run in development mode with full clean (remove all records and start fresh)
-    python youtube_integration.py --development - mode --full - clean
+    python youtube_integration.py --development-mode --full-clean
 """
-from datetime import date, datetime, timezone
 import json
 import logging
 import os
 import re
 import sys
+from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from googleapiclient.discovery import build
@@ -108,7 +108,7 @@ VERSION_KEYWORDS = {
 
 def _normalize(name: str) -> str:
     """Lower‑case, strip punctuation and extra whitespace."""
-    return re.sub(r"[^a - z0 - 9 ]", " ", name.lower()).strip()
+    return re.sub(r"[^a-z0-9 ]", " ", name.lower()).strip()
 
 
 def resolve_artist_id(conn: Connection, channel: str, parsed_artists: List[str]) -> Optional[int]:
@@ -131,7 +131,7 @@ def resolve_artist_id(conn: Connection, channel: str, parsed_artists: List[str])
     if parsed_artists:
         candidates.extend(parsed_artists)
 
-    # First try exact match with artist_name (case - insensitive)
+    # First try exact match with artist_name (case-insensitive)
     for cand in {c for c in candidates if c}:  # unique, non‑empty
         # Try direct match with artist name
         row = conn.execute(
@@ -392,7 +392,7 @@ def get_playlist_videos(  # noqa: C901
                             f"🔄 USING CACHED DATA: Playlist data from {
                                 fetched_at.isoformat()} ({age_hours:.1f} hours old)"
                         )
-                        logger.info(f"💾 Cache threshold: {cache_threshold_hours} hours - No API call needed")
+                        logger.info(f"💾 Cache threshold: {cache_threshold_hours} hours-No API call needed")
 
                         # Extract items from the cached data
                         raw_data = most_recent["raw_data"]
@@ -410,17 +410,17 @@ def get_playlist_videos(  # noqa: C901
                             if effective_max > 0 and len(videos) >= effective_max:
                                 break
 
-                        logger.info(f"📦 Retrieved {len(videos)} videos from CACHED DATA - No YouTube API quota used")
+                        logger.info(f"📦 Retrieved {len(videos)} videos from CACHED DATA-No YouTube API quota used")
                         using_cached_data = True
                     else:
                         logger.info(
                             f"🔄 FETCHING FRESH DATA: Cached data is {
                                 age_hours:.1f} hours old (threshold: {cache_threshold_hours})"
                         )
-                        logger.info(f"⚠️ Cache expired - Will use YouTube API quota")
+                        logger.info(f"⚠️ Cache expired-Will use YouTube API quota")
                 else:
                     logger.info(f"🔄 FETCHING FRESH DATA: No cached data found for playlist {playlist_id}")
-                    logger.info(f"⚠️ No cache available - Will use YouTube API quota")
+                    logger.info(f"⚠️ No cache available-Will use YouTube API quota")
             except Exception as e:
                 logger.warning(f"Error checking cached data: {e}")
                 # Continue with API fetching
@@ -444,7 +444,7 @@ def get_playlist_videos(  # noqa: C901
                     break
 
                 # Calculate how many more videos we need (always 50 in development mode)
-                remaining = effective_max - len(videos) if effective_max > 0 else 50
+                remaining = effective_max-len(videos) if effective_max > 0 else 50
                 max_results = min(50, remaining) if effective_max > 0 else 50  # API maximum is 50
 
                 # Get playlist items
@@ -524,7 +524,9 @@ def get_playlist_videos(  # noqa: C901
         else:
             logger.error(f"Error getting playlist videos: {e}")
         return []
-  # noqa: C901  # noqa: E114
+
+
+# noqa: C901  # noqa: E114
 
 
 def get_video_details(  # noqa: C901
@@ -658,7 +660,7 @@ def get_video_details(  # noqa: C901
                 break
 
             except HttpError as e:
-                # For non - quota errors, log and break
+                # For non-quota errors, log and break
                 logger.error(f"Error getting video details: {e}")
                 break
 
@@ -677,7 +679,7 @@ def get_video_details(  # noqa: C901
 def find_youtube_videos_for_songs(*_, **__):
     # Guard in case someone flips the flag back
     if YT_SEARCH_ENABLED:
-        raise NotImplementedError("Re - enable the old search code before using this.")
+        raise NotImplementedError("Re-enable the old search code before using this.")
     return {}  # noqa: C901
 
 
@@ -789,7 +791,7 @@ def find_youtube_videos_from_playlist(  # noqa: C901
         channel = snippet.get("channelTitle", "")
 
         # Look for ISRC in description
-        isrc_match = re.search(r"ISRC:?\s*([A - Z]{2}[A - Z0 - 9]{10})", description, re.IGNORECASE)
+        isrc_match = re.search(r"ISRC:?\s*([A-Z]{2}[A-Z0-9]{10})", description, re.IGNORECASE)
         if isrc_match:
             isrc = isrc_match.group(1)
             if isrc in song_map:
@@ -858,7 +860,9 @@ def find_youtube_videos_from_playlist(  # noqa: C901
     return isrc_to_video_id
 
 
-def insert_youtube_videos(engine: Engine, isrc_to_video_id: Dict[str, str], development_mode: bool = False) -> None:  # noqa: C901
+def insert_youtube_videos(
+    engine: Engine, isrc_to_video_id: Dict[str, str], development_mode: bool = False
+) -> None:  # noqa: C901  # noqa: E501
     """
     Insert YouTube videos into the database.
 
@@ -913,7 +917,7 @@ def insert_youtube_videos(engine: Engine, isrc_to_video_id: Dict[str, str], deve
                     logger.info(f"Found existing artist 'blackwave.' with ID {row.artist_id}")
                     return row.artist_id
 
-            # First try direct match with artist name (case - insensitive)
+            # First try direct match with artist name (case-insensitive)
             row = conn.execute(
                 select(artists_tbl.c.artist_id).where(func.lower(artists_tbl.c.artist_name) == _normalize(name))
             ).fetchone()
@@ -964,7 +968,7 @@ def insert_youtube_videos(engine: Engine, isrc_to_video_id: Dict[str, str], deve
                             )
                             return row.artist_id
 
-                    # Try to find the artist again (case - insensitive)
+                    # Try to find the artist again (case-insensitive)
                     row = conn.execute(
                         select(artists_tbl.c.artist_id).where(func.lower(artists_tbl.c.artist_name) == _normalize(name))
                     ).fetchone()
@@ -1433,7 +1437,7 @@ def clean_youtube_database(engine: Engine, full_clean: bool = False) -> None:
     logger.info("Cleaning YouTube database...")
 
     if full_clean:
-        # Full clean - remove all records
+        # Full clean-remove all records
         with engine.begin() as conn:
             # Delete all records from youtube_metrics first (due to foreign key constraint)
             conn.execute(text("DELETE FROM youtube_metrics"))
@@ -1445,7 +1449,7 @@ def clean_youtube_database(engine: Engine, full_clean: bool = False) -> None:
 
         logger.info("YouTube database fully cleaned")
     else:
-        # Selective clean - remove only incorrect records
+        # Selective clean-remove only incorrect records
         with engine.begin() as conn:
             # Get table handles
             youtube_metrics_tbl = get_table("youtube_metrics")
@@ -1605,7 +1609,7 @@ def ensure_youtube_tables(engine: Engine, check_staging: bool = False) -> None:
         msg = "youtube_videos schema out of date – missing 'title' " "column. Expected: title, isrc, video_id"
         logger.error(msg)
         raise RuntimeError(msg)
-  # noqa: C901  # noqa: E114
+    # noqa: C901  # noqa: E114
     logger.info("✅ All YouTube tables exist with required columns")
 
 
@@ -1762,8 +1766,8 @@ def process_youtube_data(  # noqa: C901
         # Use the curated playlist approach
         # Playlist IDs from the issue description
         playlist_ids = [
-            "PLl - ShioB5kaqGuVCTwT7jP7VBu_jcSGj8",  # Original playlist
-            "PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q",  # New playlist from issue description
+            "PLl-ShioB5kaqGuVCTwT7jP7VBu_jcSGj8",  # Original playlist
+            "PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q",  # New playlist from issue description
         ]
 
         # If a priority playlist is specified, move it to the front of the list
@@ -1805,7 +1809,7 @@ def process_youtube_data(  # noqa: C901
                     progress_data = json.load(f)
                     # Support both old and new format
                     if "processed_playlists" in progress_data:
-                        # Old format - convert to new format
+                        # Old format-convert to new format
                         for pl_id in progress_data.get("processed_playlists", []):
                             state["playlists"][pl_id] = max_videos or 0
                         state["date"] = date.today().isoformat()
@@ -1813,7 +1817,7 @@ def process_youtube_data(  # noqa: C901
                         # New format with playlists key
                         state = progress_data
                     else:
-                        # Intermediate format - direct mapping of playlist IDs to video counts
+                        # Intermediate format-direct mapping of playlist IDs to video counts
                         state["playlists"] = progress_data
                         state["date"] = date.today().isoformat()
 
@@ -1851,7 +1855,7 @@ def process_youtube_data(  # noqa: C901
 
             # In development mode, fetch all videos
             # In production mode, fetch only the remaining videos
-            to_fetch = 0 if development_mode else (max_videos - already if max_videos > 0 else 0)
+            to_fetch = 0 if development_mode else (max_videos-already if max_videos > 0 else 0)
             offset = 0 if development_mode else already
 
             logger.info(
@@ -1894,7 +1898,7 @@ def process_youtube_data(  # noqa: C901
                         logger.warning(f"Duplicate video for ISRC {isrc}: {isrc_to_video_id[isrc]} and {video_id}")
                     isrc_to_video_id[isrc] = video_id
 
-                # Update progress - store the total number of videos processed (skip in development mode)
+                # Update progress-store the total number of videos processed (skip in development mode)
                 if not development_mode:
                     videos_processed = already + len(playlist_results)
                     state["playlists"][playlist_id] = max_videos if max_videos > 0 else videos_processed
@@ -1914,8 +1918,8 @@ def process_youtube_data(  # noqa: C901
 
         logger.info(f"Total matches from all playlists: {len(isrc_to_video_id)}")
     else:
-        # Use the original search - based approach
-        logger.info("Using search - based approach")
+        # Use the original search-based approach
+        logger.info("Using search-based approach")
 
         # Calculate max_search_calls based on quota_limit
         # Each search.list call costs 100 units
@@ -1957,10 +1961,10 @@ if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Process YouTube data for the iCatalog ETL pipeline.")
     parser.add_argument(
-        "--no - playlist",
+        "--no-playlist",
         action="store_false",
         dest="use_playlist",
-        help="Use search - based approach instead of playlist approach",
+        help="Use search-based approach instead of playlist approach",
     )
     parser.add_argument(
         "--clean",
@@ -1969,32 +1973,32 @@ if __name__ == "__main__":
         help="Clean the database before processing",
     )
     parser.add_argument(
-        "--full - clean",
+        "--full-clean",
         action="store_true",
         dest="full_clean",
         help="Perform a full clean (remove all records) instead of selective clean",
     )
     parser.add_argument(
-        "--batch - size",
+        "--batch-size",
         type=int,
         default=10,
         help="Number of songs to process in each batch (default: 10)",
     )
     parser.add_argument(
-        "--quota - limit",
+        "--quota-limit",
         type=int,
         default=0,
         help="Stop processing after using this many quota units (0 = no limit)",
     )
-    parser.add_argument("--priority - playlist", type=str, help="Playlist ID to process first")
+    parser.add_argument("--priority-playlist", type=str, help="Playlist ID to process first")
     parser.add_argument(
-        "--skip - metrics",
+        "--skip-metrics",
         action="store_true",
         help="Skip updating metrics (useful when quota is limited)",
     )
-    parser.add_argument("--only - playlist", type=str, help="Process only this specific playlist")
+    parser.add_argument("--only-playlist", type=str, help="Process only this specific playlist")
     parser.add_argument(
-        "--development - mode",
+        "--development-mode",
         action="store_true",
         help="Run in development mode (fetch all videos, ignore progress tracking, store raw data)",
     )

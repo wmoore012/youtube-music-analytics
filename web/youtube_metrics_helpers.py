@@ -1,20 +1,19 @@
-# SPDX - License - Identifier: GPL - 3.0 - or - later
+
 """
 YouTube metrics helper functions for the iCatalog ETL pipeline.
 
 This module provides helper functions for working with YouTube metrics,
 including functions for upserting metrics data with daily snapshots.
 """
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 
 import pandas as pd
 from sqlalchemy import text
-from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.engine import Connection, Engine
 
-from web.etl_helpers import get_table, read_sql_safe
+from web.etl_helpers import read_sql_safe
 
 logger = logging.getLogger(__name__)
 
@@ -233,8 +232,8 @@ def get_top_viewcount_increases(engine: Engine, limit: int = 10) -> pd.DataFrame
                 lc.last_date,
                 fc.first_count,
                 lc.last_count,
-                (lc.last_count - fc.first_count) AS increase,
-                ROUND((lc.last_count - fc.first_count) /
+                (lc.last_count-fc.first_count) AS increase,
+                ROUND((lc.last_count-fc.first_count) /
                       NULLIF(fc.first_count, 0) * 100, 2) AS percent_increase
             FROM first_counts fc
             JOIN last_counts lc ON fc.video_id = lc.video_id
@@ -305,9 +304,9 @@ def analyze_viewcount_changes(engine: Engine) -> pd.DataFrame:
             fetched_at,
             view_count,
             prev_count,
-            (view_count - COALESCE(prev_count, 0)) AS view_count_change,
+            (view_count-COALESCE(prev_count, 0)) AS view_count_change,
             CASE
-                WHEN prev_count > 0 THEN ROUND((view_count - prev_count) / prev_count * 100, 2)
+                WHEN prev_count > 0 THEN ROUND((view_count-prev_count) / prev_count * 100, 2)
                 ELSE 0
             END AS percent_change
         FROM view_counts
