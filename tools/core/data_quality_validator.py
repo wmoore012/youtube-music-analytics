@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Data Quality Validation System - YouTube Analytics Platform
+Data Quality Validation System-YouTube Analytics Platform
 
 This script performs comprehensive data quality checks including:
 1. Completeness validation (missing data detection)
@@ -11,8 +11,8 @@ This script performs comprehensive data quality checks including:
 
 Usage:
     python tools / etl / data_quality_validator.py
-    python tools / etl / data_quality_validator.py --fix - duplicates
-    python tools / etl / data_quality_validator.py --report - only
+    python tools / etl / data_quality_validator.py --fix-duplicates
+    python tools / etl / data_quality_validator.py --report-only
 """
 
 from dataclasses import dataclass, field
@@ -180,7 +180,7 @@ class DataQualityValidator:
                             fix_suggestion="Run ETL pipeline to populate data",
                         )
                         continue
-                _exc_ept Exc_eption as _e:  # noqa: E999
+                except Exception as e:
                     self._add_issue(
                         "Completeness",
                         "CRITICAL",
@@ -232,7 +232,7 @@ class DataQualityValidator:
                                 f"Investigate data source for {column} population",
                                 auto_fixable=(severity == "LOW"),
                             )
-                    _exc_ept Exc_eption as _e:
+                    except Exception as e:
                         self.logger.warning(f"Could not check {table}.{column}: {e}")
 
     def check_consistency(self) -> None:
@@ -240,7 +240,7 @@ class DataQualityValidator:
         self.logger.info("Checking data consistency...")
 
         consistency_checks = [
-            # Video - Comment relationships
+            # Video-Comment relationships
             {
                 "name": "orphaned_comments",
                 "query": """
@@ -253,7 +253,7 @@ class DataQualityValidator:
                 "severity": "HIGH",
                 "fix_suggestion": "Remove orphaned comments or ensure video data is complete",
             },
-            # Sentiment - Comment relationships
+            # Sentiment-Comment relationships
             {
                 "name": "orphaned_sentiment",
                 "query": """
@@ -266,7 +266,7 @@ class DataQualityValidator:
                 "severity": "MEDIUM",
                 "fix_suggestion": "Clean up orphaned sentiment records",
             },
-            # Metrics - Video relationships
+            # Metrics-Video relationships
             {
                 "name": "orphaned_metrics",
                 "query": """
@@ -319,7 +319,7 @@ class DataQualityValidator:
                             count,
                             fix_suggestion=check["fix_suggestion"],
                         )
-                _exc_ept Exc_eption as _e:
+                except Exception as e:
                     self.logger.warning(f"Consistency check {check['name']} failed: {e}")
 
     def check_duplicates(self) -> None:
@@ -376,7 +376,7 @@ class DataQualityValidator:
                     duplicates = result.fetchall()
 
                     if duplicates:
-                        total_duplicate_records = sum(row.duplicate_count - 1 for row in duplicates)
+                        total_duplicate_records = sum(row.duplicate_count-1 for row in duplicates)
 
                         # Get sample duplicates
                         samples = []
@@ -399,11 +399,11 @@ class DataQualityValidator:
                             auto_fixable=True,
                         )
 
-                        # Auto - fix if requested
+                        # Auto-fix if requested
                         if self.fix_issues and check["severity"] in ["LOW", "MEDIUM"]:
                             self._fix_duplicates(conn, table, key_cols)
 
-                _exc_ept Exc_eption as _e:
+                except Exception as e:
                     self.logger.warning(f"Duplicate check for {table} failed: {e}")
 
     def _fix_duplicates(self, conn, table: str, key_columns: List[str]) -> None:
@@ -438,7 +438,7 @@ class DataQualityValidator:
 
             self.logger.info(f"Removed {deleted_count} duplicate records from {table}")
 
-        _exc_ept Exc_eption as _e:
+        except Exception as e:
             self.logger.error(f"Failed to fix duplicates in {table}: {e}")
             conn.rollback()
 
@@ -523,7 +523,7 @@ class DataQualityValidator:
                             count,
                             fix_suggestion="Investigate data source and collection process",
                         )
-                _exc_ept Exc_eption as _e:
+                except Exception as e:
                     self.logger.warning(f"Anomaly check {check['name']} failed: {e}")
 
     def check_data_freshness(self) -> None:
@@ -593,7 +593,7 @@ class DataQualityValidator:
                             fix_suggestion="Run ETL pipeline to refresh data",
                         )
 
-                _exc_ept Exc_eption as _e:
+                except Exception as e:
                     self.logger.warning(f"Freshness check for {check['table']} failed: {e}")
 
     def generate_statistics(self) -> Dict[str, Any]:
@@ -655,13 +655,13 @@ class DataQualityValidator:
                 except Exception:
                     pass
 
-            _exc_ept Exc_eption as _e:
+            except Exception as e:
                 self.logger.warning(f"Error generating statistics: {e}")
 
         return stats
 
     def calculate_quality_score(self) -> float:
-        """Calculate overall data quality score (0 - 100)."""
+        """Calculate overall data quality score (0-100)."""
         if not self.issues:
             return 100.0
 
@@ -673,7 +673,7 @@ class DataQualityValidator:
         # Cap at 100 point deduction
         total_deduction = min(total_deduction, 100)
 
-        return max(0.0, 100.0 - total_deduction)
+        return max(0.0, 100.0-total_deduction)
 
     def generate_recommendations(self) -> List[str]:
         """Generate actionable recommendations based on issues found."""
@@ -686,7 +686,7 @@ class DataQualityValidator:
                 categories[issue.category] = []
             categories[issue.category].append(issue)
 
-        # Generate category - specific recommendations
+        # Generate category-specific recommendations
         if "Completeness" in categories:
             critical_completeness = [i for i in categories["Completeness"] if i.severity in ["CRITICAL", "HIGH"]]
             if critical_completeness:
@@ -812,8 +812,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Data Quality Validation System")
-    parser.add_argument("--fix - duplicates", action="store_true", help="Automatically fix duplicate records")
-    parser.add_argument("--report - only", action="store_true",
+    parser.add_argument("--fix-duplicates", action="store_true", help="Automatically fix duplicate records")
+    parser.add_argument("--report-only", action="store_true",
                         help="Generate report without running validation checks")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
 
@@ -846,7 +846,7 @@ def main():
         }
         print(json.dumps(report_dict, indent=2))
     else:
-        # Print human - readable report
+        # Print human-readable report
         validator.print_detailed_report(report)
 
     # Exit with appropriate code based on quality score
