@@ -2,22 +2,20 @@
 """
 Artist Data Migration Script
 
-This script migrates artist comments and related data from icatalog (PUBLIC)
+This script migrates artist comments and related data from the source (PUBLIC)
 to the local yt_proj database to consolidate all data in one place.
 
 Usage:
-    python tools / migration / migrate_artist_data.py [--dry - run] [--artist "Artist Name"]
+    python tools / migration / migrate_artist_data.py [--dry-run] [--artist "Artist Name"]
 """
 
 import argparse
-from datetime import datetime
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
-from dotenv import load_dotenv
 import pandas as pd
-from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -45,13 +43,13 @@ class ArtistDataMigrator:
             self.target_engine = get_engine()
             print("✅ Connected to target database (yt_proj)")
 
-            # Source database (icatalog_public) - try to connect
+            # Source database (public) - try to connect
             try:
                 self.source_engine = get_engine()
-                print("✅ Connected to source database (icatalog_public)")
+                print("✅ Connected to source database (public)")
                 return True
             except Exception as e:
-                print(f"⚠️  Cannot connect to icatalog_public: {e}")
+                print(f"⚠️  Cannot connect to source database: {e}")
                 print("   This is expected if all data is already in yt_proj")
                 return False
 
@@ -62,7 +60,7 @@ class ArtistDataMigrator:
     def check_artist_data_in_source(self, artist_filter=None):
         """Check what artist data exists in the source database."""
         if not self.source_engine:
-            print("📊 No source database connection - checking target only")
+            print("📊 No source database connection-checking target only")
             return self.check_target_data(artist_filter)
 
         print("🔍 Checking artist data in source database...")
@@ -227,13 +225,13 @@ class ArtistDataMigrator:
     def migrate_artist_data(self, artist_name):
         """Migrate all data for a specific artist."""
         if not self.source_engine:
-            print(f"⚠️  No source database - cannot migrate {artist_name}")
+            print(f"⚠️  No source database-cannot migrate {artist_name}")
             return False
 
         print(f"🚚 Migrating data for: {artist_name}")
 
         if self.dry_run:
-            print("🧪 DRY RUN MODE - No actual migration will occur")
+            print("🧪 DRY RUN MODE-No actual migration will occur")
 
         try:
             # Migration order is important due to foreign key constraints
@@ -264,31 +262,31 @@ class ArtistDataMigrator:
 
     def migrate_videos(self, artist_name):
         """Migrate video records for an artist."""
-        # Implementation would go here - for now return 0
+        # Implementation would go here-for now return 0
         return 0
 
     def migrate_metrics(self, artist_name):
         """Migrate metrics records for an artist."""
-        # Implementation would go here - for now return 0
+        # Implementation would go here-for now return 0
         return 0
 
     def migrate_comments(self, artist_name):
         """Migrate comment records for an artist."""
-        # Implementation would go here - for now return 0
+        # Implementation would go here-for now return 0
         return 0
 
     def migrate_sentiment(self, artist_name):
         """Migrate sentiment records for an artist."""
-        # Implementation would go here - for now return 0
+        # Implementation would go here-for now return 0
         return 0
 
 
 def main():
     """Main migration process."""
     parser = argparse.ArgumentParser(description="Migrate artist data between databases")
-    parser.add_argument("--dry - run", action="store_true", help="Show what would be migrated without doing it")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be migrated without doing it")
     parser.add_argument("--artist", help="Migrate specific artist only")
-    parser.add_argument("--check - only", action="store_true", help="Only check data, do not migrate")
+    parser.add_argument("--check-only", action="store_true", help="Only check data, do not migrate")
 
     args = parser.parse_args()
 
@@ -349,7 +347,7 @@ def main():
         print("✅ All migrations completed successfully!")
         return 0
     else:
-        print("⚠️  Some migrations failed - check logs above")
+        print("⚠️  Some migrations failed-check logs above")
         return 1
 
 
