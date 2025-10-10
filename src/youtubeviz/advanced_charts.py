@@ -957,21 +957,7 @@ def create_positive_theme_lollipops(
         # Re - raise unexpected errors - don't hide them
         raise RuntimeError(f"PositiveThemeLollipops execution error: {e}") from e
 
-                    artist,  # noqa: E999
-                    row[theme_col],
-                    "positive",
-                    artist_col,
-                    theme_col,
-                    sentiment_col,
-                    text_col,
-                    timestamp_col,
-                    max_quotes_per_theme,
-                )
-                quote_data.append(quotes)
-            else:
-                quote_data.append([])
 
-            current_y += 1
 
     # Create lollipop stems (lines from 0 to dot)
     for i, (y_pos, rate) in enumerate(zip(y_positions, rates)):
