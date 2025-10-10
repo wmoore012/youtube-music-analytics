@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-System Health Monitor - Production - Grade Monitoring
+System Health Monitor-Production-Grade Monitoring
 ==================================================
 
 Comprehensive monitoring and observability for the YouTube analytics platform.
@@ -8,21 +8,18 @@ Captures database connectivity, freshness, and quality metrics to support
 operational readiness checks.
 """
 
-from datetime import datetime, timedelta
 import json
-import os
-from pathlib import Path
 import subprocess
 import sys
 import time
-from typing import Dict, List, Optional
+from datetime import datetime
+from typing import Dict
 
-import pandas as pd
 
 
 class SystemHealthMonitor:
     """
-    Production - grade system health monitoring and observability.
+    Production-grade system health monitoring and observability.
 
     Demonstrates advanced data engineering practices:
     - Comprehensive logging and monitoring
@@ -234,7 +231,7 @@ except Exception as e:
             )
 
         except ImportError:
-            print("⚠️  psutil not available - install for detailed system metrics")
+            print("⚠️  psutil not available-install for detailed system metrics")
         except Exception as e:
             print(f"⚠️  Could not get system metrics: {e}")
 
@@ -276,16 +273,17 @@ except Exception as e:
         # Database recommendations
         if db_health.get("status") == "error":
             self.health_report["recommendations"].append(
-                "Database connection failed - check credentials and connectivity"
+                "Database connection failed-check credentials and connectivity"
             )
 
         # Model recommendations
         if not model_health.get("sentiment_analysis", {}).get("available", False):
             self.health_report["recommendations"].append(
-                "Sentiment analysis not available - run: make setup - sentiment")
+                "Sentiment analysis not available-run: make setup-sentiment"
+            )
 
         if not model_health.get("bot_detection", {}).get("available", False):
-            self.health_report["recommendations"].append("Bot detection not available - check bot_detection.py imports")
+            self.health_report["recommendations"].append("Bot detection not available-check bot_detection.py imports")
 
         # Performance recommendations
         db_load_time = db_health.get("performance_metrics", {}).get("load_time", 0)

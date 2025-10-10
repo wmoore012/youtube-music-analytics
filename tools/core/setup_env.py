@@ -15,7 +15,7 @@ def setup_env_file():
 
     env_file = Path(".env")
 
-    print("🎬 YouTube ETL Pipeline - Environment Setup")
+    print("🎬 YouTube ETL Pipeline-Environment Setup")
     print("=" * 50)
 
     if env_file.exists():
@@ -67,7 +67,7 @@ DB_NAME_PUBLIC={db_name}_public
 
 # Artist YouTube Channels
 # BicFizzle
-BICDIZZLE_CHANNEL_ID=UCZcMK - f8loeOkk3GX3hsmtQ
+BICDIZZLE_CHANNEL_ID=UCZcMK-f8loeOkk3GX3hsmtQ
 BICDIZZLE_SPOTIFY_URL=https://open.spotify.com / artist / 55zZKMiLQNwu6unkKc8J4y
 
 # Cobrah
@@ -147,7 +147,7 @@ def test_configuration():
         print("\n🚀 Ready to run the ETL pipeline!")
 
     except ImportError:
-        print("⚠️  python - dotenv not installed. Install with: pip install python - dotenv")
+        print("⚠️  python-dotenv not installed. Install with: pip install python-dotenv")
     except Exception as e:
         print(f"❌ Configuration test failed: {e}")
 

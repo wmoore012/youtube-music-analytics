@@ -16,7 +16,7 @@ def _make_min_notebook(path: Path) -> None:
         nbformat.v4.new_code_cell("x = 1 + 1\nprint(x)"),
     ]
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf - 8") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         nbformat.write(nb, fh)
 
 
@@ -33,7 +33,7 @@ def test_execute_notebook_writes_outputs(tmp_path):
     assert Path(res["summary_path"]).exists()
 
     # Basic sanity on executed output
-    with open(res["executed_path"], "r", encoding="utf - 8") as fh:
+    with open(res["executed_path"], "r", encoding="utf-8") as fh:
         nb2 = nbformat.read(fh, as_version=4)
     # Even without execution, the executed notebook should be valid JSON
     assert any(c.cell_type == "code" for c in nb2.cells)
@@ -115,7 +115,7 @@ def test_notebook_outputs_are_readable():
     print(f"\n📖 Testing readability: {test_notebook.name}")
 
     # Load executed notebook
-    with open(test_notebook, "r", encoding="utf - 8") as f:
+    with open(test_notebook, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
 
     # Check for meaningful outputs
@@ -175,7 +175,7 @@ def test_notebooks_produce_interactive_charts():  # noqa: C901
 
     for notebook_path in executed_notebooks:
         # Load notebook
-        with open(notebook_path, "r", encoding="utf - 8") as f:
+        with open(notebook_path, "r", encoding="utf-8") as f:
             nb = nbformat.read(f, as_version=4)
 
         # Check for charts

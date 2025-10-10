@@ -15,8 +15,8 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-from dotenv import load_dotenv
 import pytest
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 sys.path.append(".")
@@ -113,7 +113,7 @@ class TestComprehensiveDataCleanup:
             db_artist_names = {artist for artist, _ in mock_db_artists}
 
             authorized = db_artist_names & configured
-            unauthorized = db_artist_names - configured
+            unauthorized = db_artist_names-configured
 
             assert authorized == {"BiC Fizzle", "COBRAH", "Flyana Boss"}
             assert unauthorized == {"UnauthorizedArtist1", "UnauthorizedArtist2"}

@@ -456,7 +456,7 @@ def get_user_data(user_id):
 ### 2. Not Using Helper Functions
 
 ```python
-# ❌ WRONG - Duplicating validation logic
+# ❌ WRONG-Duplicating validation logic
 def process_video_a(video_data):
     if "video_id" not in video_data:
         raise ValueError("Missing video_id")
@@ -471,7 +471,7 @@ def process_video_b(video_data):
         raise ValueError("Missing title")
     # ... different processing logic
 
-# ✅ CORRECT - Using helper function
+# ✅ CORRECT-Using helper function
 def process_video_a(video_data):
     missing = validate_required_fields(video_data, ["video_id", "title"])
     if missing:

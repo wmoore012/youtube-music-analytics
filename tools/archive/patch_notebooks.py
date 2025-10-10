@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
 
 import nbformat
 
@@ -59,7 +58,7 @@ def patch_explore_notebook(path: Path) -> bool:
             "import pandas as pd\n"
             "import numpy as np\n"
             "import matplotlib.pyplot as plt\n"
-            "plt.style.use('seaborn - v0_8 - whitegrid')\n"
+            "plt.style.use('seaborn-v0_8-whitegrid')\n"
             "from web.db_guard import get_engine\n\n"
             "eng = get_engine()\n\n"
             "sql = '''\n"

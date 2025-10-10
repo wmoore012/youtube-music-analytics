@@ -1,5 +1,3 @@
-# tests / icatalog_public / oss / test_sql_helpers_v2.py
-
 from unittest.mock import MagicMock, call, patch  # Import call
 
 import pandas as pd
@@ -8,7 +6,7 @@ from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Connection, Engine
 
 # Import the new module
-from src.icatalog_public.oss.sql_helpers_v2 import (
+from src.public.oss.sql_helpers_v2 import (
     ALL_TABLE_NAMES,
     get_connection,
     get_table,
@@ -37,7 +35,7 @@ def test_read_sql_safe_sqlite_raw_connection():
 
 
 def test_read_sql_safe_other_dialect_connection():
-    # Mock a non - SQLite engine
+    # Mock a non-SQLite engine
     mock_engine = MagicMock()
     mock_engine.dialect = MagicMock(name="dialect_mock")
     mock_engine.dialect.name = "mysql"
@@ -60,7 +58,7 @@ def test_get_connection_public_schema():
     mock_conn = MagicMock(spec=Connection)
     mock_engine.connect.return_value = mock_conn
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.get_engine", return_value=mock_engine) as mock_get_engine:
+    with patch("src.public.oss.sql_helpers_v2.get_engine", return_value=mock_engine) as mock_get_engine:
         with get_connection("PUBLIC") as conn:
             assert conn is mock_conn
             conn.execute(text("SELECT 1"))
@@ -77,7 +75,7 @@ def test_get_connection_default_schema():
     mock_conn = MagicMock(spec=Connection)
     mock_engine.connect.return_value = mock_conn
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.get_engine", return_value=mock_engine) as mock_get_engine:
+    with patch("src.public.oss.sql_helpers_v2.get_engine", return_value=mock_engine) as mock_get_engine:
         with get_connection() as conn:
             assert conn is mock_conn
             conn.execute(text("INSERT INTO test VALUES (1)"))
@@ -110,7 +108,7 @@ def test_init_tables_reflects_correctly():
         "artists": mock_table_artists,
     }
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata) as mock_meta_constructor:
+    with patch("src.public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata) as mock_meta_constructor:
         init_tables(mock_engine)
 
         mock_meta_constructor.assert_called_once()
@@ -125,7 +123,7 @@ def test_init_tables_is_idempotent():
     mock_metadata = MagicMock(spec=MetaData)
     mock_metadata.tables = {"songs": MagicMock(spec=Table, name="songs")}
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata) as mock_meta_constructor:
+    with patch("src.public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata) as mock_meta_constructor:
         init_tables(mock_engine)
         init_tables(mock_engine)  # Call again
 
@@ -144,7 +142,7 @@ def test_get_table_returns_correct_table():
         "artists": mock_table_artists,
     }
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata):
+    with patch("src.public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata):
         init_tables(mock_engine)  # Initialize tables first
 
         songs_table = get_table("songs")
@@ -171,7 +169,7 @@ def test_get_table_raises_key_error_for_unknown_table():
     mock_metadata = MagicMock(spec=MetaData)
     mock_metadata.tables = {"songs": MagicMock(spec=Table, name="songs")}
 
-    with patch("src.icatalog_public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata):
+    with patch("src.public.oss.sql_helpers_v2.MetaData", return_value=mock_metadata):
         init_tables(mock_engine)  # Initialize with some tables
 
         with pytest.raises(

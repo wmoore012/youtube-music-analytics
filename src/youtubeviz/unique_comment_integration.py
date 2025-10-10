@@ -7,12 +7,9 @@ Integrates with existing data loading functions to prevent duplicate usage.
 """
 
 import functools
-import hashlib
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List
 
 import pandas as pd
-from sqlalchemy import text
-from sqlalchemy.engine import Engine
 
 from .unique_comment_manager import UniqueCommentManager, comment_manager
 
@@ -75,7 +72,7 @@ class UniqueCommentEnforcer:
                         )
 
                         if not allocated:
-                            # Comment was already used - log warning
+                            # Comment was already used-log warning
                             usage_info = self.manager.get_comment_usage(comment)
                             if usage_info:
                                 print(f"⚠️  Comment reuse detected in {func_name}:")
@@ -131,13 +128,13 @@ class UniqueCommentEnforcer:
         df_unique = df.drop_duplicates(subset=[comment_col])
 
         if len(df_unique) < original_count:
-            removed = original_count - len(df_unique)
+            removed = original_count-len(df_unique)
             print(f"🔄 Removed {removed} duplicate comments in {context}")
 
         # Check against global usage tracking
         unique_comments = []
         for _, row in df_unique.iterrows():
-            _comment_text_item = str(row[comment_col]).strip()
+            _comment_text_item = str(row[comment_col]).strip()  # noqa: F841
 
             if comment_text and not self.manager.is_comment_used(comment_text):  # noqa: F821
                 unique_comments.append(row)
@@ -263,7 +260,7 @@ def scan_for_fake_data(df: pd.DataFrame, context: str = "unknown") -> pd.DataFra
                 print(f"🗑️  Removing {rep_count} repetitive entries from {col} in {context}")
                 cleaned_df = cleaned_df[~repetitive_mask]
 
-    removed_count = original_count - len(cleaned_df)
+    removed_count = original_count-len(cleaned_df)
     if removed_count > 0:
         print(f"✅ Removed {removed_count} fake / suspicious entries from {context}")
     else:

@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Data File Organizer - TDD Implementation
+Data File Organizer-TDD Implementation
 
 Organizes scattered CSV / JSON files throughout the codebase into a structured system.
 This addresses the real problem of data files scattered in root, config/,
@@ -9,15 +9,15 @@ music_analysis_tables/, and other directories.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import shutil
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import hashlib
-import json
 from pathlib import Path
-import shutil
-import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
@@ -52,7 +52,7 @@ class DataFileInfo:
     content_hash: Optional[str] = None
 
     def calculate_content_hash(self) -> str:
-        """Calculate SHA - 256 hash of file content for duplicate detection."""
+        """Calculate SHA-256 hash of file content for duplicate detection."""
         if self.content_hash is not None:
             return self.content_hash
 
@@ -124,7 +124,7 @@ class OrganizationResult:
         }
 
     def generate_report(self) -> str:
-        """Generate human - readable report."""
+        """Generate human-readable report."""
         status = "SUCCESS" if self.success else "FAILED"
         report = f"Organization {status}\n"
         report += f"Files moved: {self.files_moved}\n"
@@ -307,7 +307,7 @@ class DataFileOrganizer:
                 # Try to read and validate content
                 try:
                     if file_info.file_type == "json":
-                        with open(file_info.path, "r", encoding="utf - 8") as f:
+                        with open(file_info.path, "r", encoding="utf-8") as f:
                             json.load(f)
                     elif file_info.file_type == "csv":
                         # Try to read with pandas to validate CSV format

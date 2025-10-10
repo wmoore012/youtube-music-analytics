@@ -6,15 +6,14 @@ organized database tables while maintaining data integrity and providing
 comprehensive validation.
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
 import json
 import logging
-import os
-from pathlib import Path
 import shutil
 import time
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from sqlalchemy import Engine, text
@@ -76,7 +75,7 @@ class MigrationResult:
         }
 
     def generate_report(self) -> str:
-        """Generate human - readable migration report."""
+        """Generate human-readable migration report."""
         status = "SUCCESS" if self.success else "FAILED"
         report = f"""
 Migration Report - {status}
@@ -349,7 +348,7 @@ class DataMigrator:
                     validation_result.add_error(f"Missing record with keys: {key_values}")
                     continue
 
-                # Compare data values (excluding auto - generated columns)
+                # Compare data values (excluding auto-generated columns)
                 for col in source_data.columns:
                     if col in migrated_row.columns:
                         source_val = source_row[col]
@@ -577,7 +576,7 @@ class DataMigrator:
         required_columns = set(mapping.get("columns", {}).keys())
         actual_columns = set(df.columns)
 
-        missing_columns = required_columns - actual_columns
+        missing_columns = required_columns-actual_columns
         if missing_columns:
             result.add_error(f"Missing required columns: {missing_columns}")
 
@@ -598,7 +597,7 @@ class DataMigrator:
 
         if transform_type == "key_value_pairs":
             if not isinstance(json_data, dict):
-                result.add_error("Expected JSON object for key - value transformation")
+                result.add_error("Expected JSON object for key-value transformation")
             elif len(json_data) == 0:
                 result.add_warning("JSON object is empty")
 
@@ -622,7 +621,7 @@ class DataMigrator:
         transform_type = mapping.get("transform", "direct")
 
         if transform_type == "key_value_pairs":
-            # Convert key - value pairs to DataFrame
+            # Convert key-value pairs to DataFrame
             key_column = mapping.get("key_column", "key")
             value_column = mapping.get("value_column", "value")
 
@@ -654,7 +653,7 @@ class DataMigrator:
         try:
             with self.engine.connect() as conn:
                 # Build query to select relevant columns
-                _columns_str = ", ".join(key_columns + ["*"])
+                _columns_str = ", ".join(key_columns + ["*"])  # noqa: F841
                 query = text(f"SELECT * FROM {table_name}")
 
                 result = conn.execute(query)

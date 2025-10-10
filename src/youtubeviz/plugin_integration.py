@@ -1,9 +1,8 @@
 """Plugin system integration for the main youtubeviz package."""
 
 import logging
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -13,7 +12,6 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.data_organization.plugin_manager import PluginManager
 from src.data_organization.scoring_engine import ScoringEngine
 from src.data_organization.scoring_storage import ScoringStorage
 
@@ -50,7 +48,7 @@ class YouTubeVizPluginManager:
             # Set up default search paths
             self._setup_default_search_paths()
 
-            # Auto - discover and load plugins if requested
+            # Auto-discover and load plugins if requested
             if auto_discover:
                 self._load_default_plugins()
 
@@ -94,7 +92,7 @@ class YouTubeVizPluginManager:
             # Discover and load plugins
             results = self.scoring_engine.discover_and_load_plugins([])
 
-            # Register built - in plugins manually if discovery fails
+            # Register built-in plugins manually if discovery fails
             self._register_builtin_plugins()
 
             self._default_plugins_loaded = True
@@ -102,19 +100,12 @@ class YouTubeVizPluginManager:
 
             return results
 
-        except Exception as e:
+        except Exception as e:  # pragma: no cover - this should be rare and is surfaced loudly
             self._logger.error(f"Failed to load default plugins: {e}")
-            # Try to register built - in plugins as fallback
-            try:
-                self._register_builtin_plugins()
-                self._default_plugins_loaded = True
-                return {"builtin_fallback": True}
-            except Exception as fallback_error:
-                self._logger.error(f"Fallback plugin registration failed: {fallback_error}")
-                raise PluginIntegrationError(f"Failed to load any plugins: {e}")
+            raise PluginIntegrationError("Failed to load default plugins") from e
 
     def _register_builtin_plugins(self) -> None:
-        """Register built - in plugins directly."""
+        """Register built-in plugins directly."""
         try:
             # Import and register example plugins
             from src.data_organization.example_plugins import (
@@ -129,12 +120,12 @@ class YouTubeVizPluginManager:
             for plugin in plugins:
                 try:
                     self.scoring_engine.register_plugin(plugin)
-                    self._logger.info(f"Registered built - in plugin: {plugin.get_name()}")
+                    self._logger.info(f"Registered built-in plugin: {plugin.get_name()}")
                 except Exception as e:
                     self._logger.warning(f"Failed to register plugin {plugin.get_name()}: {e}")
 
         except ImportError as e:
-            self._logger.warning(f"Could not import built - in plugins: {e}")
+            self._logger.warning(f"Could not import built-in plugins: {e}")
 
     def execute_scoring(
         self,

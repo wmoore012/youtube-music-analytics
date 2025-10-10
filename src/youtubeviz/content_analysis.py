@@ -1,26 +1,20 @@
 """
-Bulletproof content analysis system for Charts #8 - 11.
+Bulletproof content analysis system for Charts #8-11.
 Implements ISRC balance, dumbbell charts, Cleveland dots with statistical rigor.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
-import warnings
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from .chart_models import (
-    ChartDataValidationError,
     ContentAnalysisData,
     validate_data_quality,
     validate_dataframe_schema,
     validate_required_columns,
 )
-from .statistical_utils import calculate_wilson_intervals
 
 
 class InsufficientContentDataError(Exception):
@@ -37,7 +31,7 @@ class InvalidContentTypeError(Exception):
 
 @dataclass
 class PChartControlLimits:
-    """P - chart control limits for proportion analysis."""
+    """P-chart control limits for proportion analysis."""
 
     center_line: float
     upper_control_limit: float
@@ -64,7 +58,7 @@ class ContentAnalysisEngine:
     """
     Bulletproof content analysis engine for music industry analytics.
 
-    Implements p - chart control limits, ISRC balance analysis, and content type distribution
+    Implements p-chart control limits, ISRC balance analysis, and content type distribution
     with proper statistical validation and error handling.
     """
 
@@ -120,7 +114,7 @@ class ContentAnalysisEngine:
         # Validate against Pydantic schema
         validate_dataframe_schema(df, ContentAnalysisData, sample_size=50)
 
-        # Check per - artist video counts
+        # Check per-artist video counts
         artist_counts = df["artist_name"].value_counts()
         insufficient_artists = artist_counts[artist_counts < self.min_videos_per_artist]
 
@@ -142,7 +136,7 @@ class ContentAnalysisEngine:
         self, proportions: np.ndarray, sample_sizes: np.ndarray
     ) -> PChartControlLimits:
         """
-        Calculate p - chart control limits for proportion analysis.
+        Calculate p-chart control limits for proportion analysis.
 
         Args:
             proportions: Array of proportions (e.g., ISRC rates per artist)
@@ -171,16 +165,16 @@ class ContentAnalysisEngine:
         # Calculate control limits using average sample size
         avg_sample_size = np.mean(sample_sizes)
 
-        # Standard error for p - chart
-        std_error = np.sqrt(center_line * (1 - center_line) / avg_sample_size)
+        # Standard error for p-chart
+        std_error = np.sqrt(center_line * (1-center_line) / avg_sample_size)
 
-        # Control limits (3 - sigma)
+        # Control limits (3-sigma)
         ucl = center_line + 3 * std_error
-        lcl = center_line - 3 * std_error
+        lcl = center_line-3 * std_error
 
-        # Warning limits (2 - sigma)
+        # Warning limits (2-sigma)
         uwl = center_line + 2 * std_error
-        lwl = center_line - 2 * std_error
+        lwl = center_line-2 * std_error
 
         # Ensure limits are within [0, 1]
         ucl = min(ucl, 1.0)
@@ -200,7 +194,7 @@ class ContentAnalysisEngine:
 
     def analyze_isrc_balance(self, df: pd.DataFrame) -> Dict[str, float]:
         """
-        Analyze ISRC vs non - ISRC content balance per artist.
+        Analyze ISRC vs non-ISRC content balance per artist.
 
         Args:
             df: DataFrame with content data
@@ -287,7 +281,7 @@ class ContentAnalysisEngine:
         content_distribution = self.analyze_content_type_distribution(df)
         duration_analysis = self.analyze_duration_patterns(df)
 
-        # Calculate p - chart control limits for ISRC proportions
+        # Calculate p-chart control limits for ISRC proportions
         artists = list(isrc_proportions.keys())
         proportions = np.array([isrc_proportions[artist] for artist in artists])
         sample_sizes = np.array([len(df[df["artist_name"] == artist]) for artist in artists])
@@ -308,7 +302,7 @@ def calculate_p_chart_control_limits(
     proportions: np.ndarray, sample_sizes: np.ndarray, confidence_level: float = 0.95
 ) -> PChartControlLimits:
     """
-    Calculate p - chart control limits for proportion analysis.
+    Calculate p-chart control limits for proportion analysis.
 
     Args:
         proportions: Array of proportions

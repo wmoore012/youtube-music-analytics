@@ -15,9 +15,9 @@ Usage:
 
 import argparse
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def run_command(cmd, description=""):
@@ -42,12 +42,12 @@ def main():  # noqa: C901
     # Test selection options
     parser.add_argument("--unit", action="store_true", help="Run only unit tests")
     parser.add_argument("--integration", action="store_true", help="Run only integration tests")
-    parser.add_argument("--video - filter", action="store_true", help="Run only video filter tests")
+    parser.add_argument("--video-filter", action="store_true", help="Run only video filter tests")
 
     # Coverage options
     parser.add_argument("--coverage", action="store_true", help="Run with coverage analysis")
-    parser.add_argument("--coverage - target", type=float, default=80.0, help="Coverage target percentage")
-    parser.add_argument("--coverage - fail", action="store_true", help="Fail if coverage below target")
+    parser.add_argument("--coverage-target", type=float, default=80.0, help="Coverage target percentage")
+    parser.add_argument("--coverage-fail", action="store_true", help="Fail if coverage below target")
 
     # Execution options
     parser.add_argument("--fast", action="store_true", help="Run fast tests only (skip slow integration tests)")
@@ -56,7 +56,7 @@ def main():  # noqa: C901
     parser.add_argument("--timeout", type=int, default=30, help="Test timeout in seconds")
 
     # Output options
-    parser.add_argument("--html - report", action="store_true", help="Generate HTML coverage report")
+    parser.add_argument("--html-report", action="store_true", help="Generate HTML coverage report")
     parser.add_argument("--junit", action="store_true", help="Generate JUnit XML report")
 
     args = parser.parse_args()
@@ -101,15 +101,15 @@ def main():  # noqa: C901
 
     # Add coverage options
     if args.coverage:
-        pytest_cmd.extend(["--cov=web", "--cov=src", "--cov - report=term - missing"])
+        pytest_cmd.extend(["--cov=web", "--cov=src", "--cov-report=term-missing"])
 
         if args.html_report:
-            pytest_cmd.append("--cov - report=html")
+            pytest_cmd.append("--cov-report=html")
             print("📄 HTML coverage report will be generated")
 
     # Add output options
     if args.junit:
-        pytest_cmd.extend(["--junit - xml", "test - results.xml"])
+        pytest_cmd.extend(["--junit-xml", "test-results.xml"])
         print("📊 JUnit XML report will be generated")
 
     # Run tests
@@ -125,7 +125,7 @@ def main():  # noqa: C901
         coverage_cmd = [sys.executable, "tests / test_coverage.py", "--target", str(args.coverage_target)]
 
         if args.coverage_fail:
-            coverage_cmd.append("--fail - under")
+            coverage_cmd.append("--fail-under")
 
         coverage_success = run_command(coverage_cmd, "Running coverage analysis")
 
@@ -141,7 +141,7 @@ def main():  # noqa: C901
         print("📄 HTML coverage report: htmlcov / index.html")
 
     if args.junit:
-        print("📊 JUnit XML report: test - results.xml")
+        print("📊 JUnit XML report: test-results.xml")
 
     return 0
 

@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Channel - based Database Cleanup Tool
+Channel-based Database Cleanup Tool
 
 This tool validates youtube_videos.channel_title against configured channels in .env
 and safely removes data for channels that are not configured.
@@ -10,12 +10,12 @@ Use with extreme caution and always backup first.
 """
 
 import os
-from pathlib import Path
 import sys
-from typing import Dict, List, Set
+from pathlib import Path
+from typing import Dict, Set
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import text
 
 # Add project root to path
@@ -219,10 +219,10 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
     channels_to_remove = cleanup_plan["channels_to_remove"]
 
     if dry_run:
-        print("🔍 DRY RUN MODE - No data will be actually removed")
+        print("🔍 DRY RUN MODE-No data will be actually removed")
         print("=" * 60)
     else:
-        print("⚠️  LIVE MODE - Data will be permanently removed!")
+        print("⚠️  LIVE MODE-Data will be permanently removed!")
         print("=" * 60)
 
     with engine.connect() as conn:
@@ -302,7 +302,7 @@ def execute_cleanup(cleanup_plan: Dict, engine, dry_run: bool = True):
             conn.commit()
             print(f"\n🎉 Cleanup complete!")
         else:
-            print(f"\n📋 Dry run complete - use --execute to perform actual cleanup")
+            print(f"\n📋 Dry run complete-use --execute to perform actual cleanup")
 
 
 def main():
@@ -310,7 +310,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Clean up database based on configured channels")
-    parser.add_argument("--execute", action="store_true", help="Actually execute cleanup (default is dry - run)")
+    parser.add_argument("--execute", action="store_true", help="Actually execute cleanup (default is dry-run)")
     parser.add_argument("--backup", action="store_true", help="Create backup before cleanup")
 
     args = parser.parse_args()
@@ -351,7 +351,7 @@ def main():
     print(f"   Comments to remove: {cleanup_plan['summary']['comments_removed']:,}")
 
     if cleanup_plan["summary"]["channels_removed"] == 0:
-        print("\n✅ No cleanup needed - all channels are properly configured!")
+        print("\n✅ No cleanup needed-all channels are properly configured!")
         return
 
     # Create backup if requested
@@ -367,7 +367,7 @@ def main():
     if args.execute:
         # Verify cleanup
         post_analysis = analyze_channel_data(engine)
-        print(f"\n📊 Post - cleanup analysis:")
+        print(f"\n📊 Post-cleanup analysis:")
         print(f"   Remaining channels: {post_analysis['total_channels']}")
         print(f"   Remaining videos: {post_analysis['total_videos']:,}")
         print(f"   Remaining comments: {post_analysis['total_comments']:,}")

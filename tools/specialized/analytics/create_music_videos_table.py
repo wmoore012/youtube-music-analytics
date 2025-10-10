@@ -6,7 +6,7 @@ Creates a comprehensive table focused on MUSIC content with:
 - ISRC codes for official music releases
 - Revenue tracking over time
 - All music video types (official, lyric, visualizer, live, remix)
-- Normalized metrics for time - series analysis
+- Normalized metrics for time-series analysis
 """
 
 import os
@@ -14,13 +14,10 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from datetime import datetime
 import logging
 import re
 
-import numpy as np
 import pandas as pd
-from sqlalchemy import text
 
 from web.etl_helpers import get_engine
 
@@ -139,7 +136,7 @@ def create_music_videos_table():
     """
 
     df = pd.read_sql(query, engine)
-    logger.info(f"📊 Loaded {len(df)} video - metrics records")
+    logger.info(f"📊 Loaded {len(df)} video-metrics records")
 
     # Get latest metrics for each video (deduplicated)
     latest_metrics = df.sort_values("metrics_date").groupby("video_id").last().reset_index()
@@ -157,14 +154,14 @@ def create_music_videos_table():
 
     # Add music content flags
     latest_metrics["has_isrc"] = latest_metrics["isrc"].notna()
-    latest_metrics["is_music_content"] = True  # All content is music - related
+    latest_metrics["is_music_content"] = True  # All content is music-related
 
     # Calculate engagement metrics
     latest_metrics["like_rate"] = (latest_metrics["like_count"] / latest_metrics["view_count"] * 100).fillna(0)
     latest_metrics["comment_rate"] = (latest_metrics["comment_count"] / latest_metrics["view_count"] * 100).fillna(0)
     latest_metrics["engagement_rate"] = latest_metrics["like_rate"] + latest_metrics["comment_rate"]
 
-    # Add time - based metrics
+    # Add time-based metrics
     latest_metrics["days_since_publish"] = (
         pd.to_datetime(latest_metrics["metrics_date"]) - pd.to_datetime(latest_metrics["published_at"])
     ).dt.days
@@ -262,7 +259,7 @@ def create_music_summary_by_artist():
 
 def create_isrc_focused_analysis():
     """Create analysis focused specifically on videos with ISRC codes."""
-    logger.info("🎵 Creating ISRC - focused analysis...")
+    logger.info("🎵 Creating ISRC-focused analysis...")
 
     music_videos = create_music_videos_table()
 
@@ -451,7 +448,7 @@ def print_music_analysis_summary():
 
     # ISRC analysis
     if not isrc_analysis.empty:
-        print(f"\n🎵 ISRC - CODED MUSIC PERFORMANCE:")
+        print(f"\n🎵 ISRC-CODED MUSIC PERFORMANCE:")
         print(
             isrc_analysis[
                 ["artist_name", "isrc_videos", "isrc_total_views", "isrc_total_revenue_usd", "isrc_revenue_per_video"]
@@ -481,8 +478,12 @@ def print_music_analysis_summary():
     for _, video in top_videos.iterrows():
         isrc_indicator = "🎵" if video["has_isrc"] else "📹"
         print(
-            f"   {isrc_indicator} {video['artist_name']}: {
-                video['song_title']} ({video['video_type']}) - {video['view_count']:,                                                                } views (${video['est_revenue_usd']:.2f})"
+            f"   {isrc_indicator} {
+                video['artist_name']}: {
+                video['song_title']} ({
+                video['video_type']}) - {
+                    video['view_count']:,                                                                } views (${
+                        video['est_revenue_usd']:.2f})"
         )
 
     print(f"\n✅ Music analysis complete! Tables saved to music_analysis_tables/")

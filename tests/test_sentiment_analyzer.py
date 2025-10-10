@@ -11,8 +11,8 @@ This module provides comprehensive tests for the sentiment analysis system:
 - Database integration and result storage
 """
 
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -149,7 +149,7 @@ class TestSentimentAnalyzer:
         assert analyzer._validate_comment_text(long_text) is False
 
     def test_simple_sentiment_analysis(self):
-        """Test simple rule - based sentiment analysis."""
+        """Test simple rule-based sentiment analysis."""
         analyzer = SentimentAnalyzer()
 
         # Positive sentiment

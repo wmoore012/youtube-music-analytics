@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Advanced Script Dependency Analyzer - YouTube Analytics Platform
+Advanced Script Dependency Analyzer-YouTube Analytics Platform
 
 This script extends the duplicate code analyzer with dependency mapping and script usage tracking.
 It focuses on:
@@ -15,30 +15,25 @@ Usage:
     python tools / code_quality / advanced_script_dependency_analyzer.py --analyze
     python tools / code_quality / advanced_script_dependency_analyzer.py --dependencies
     python tools / code_quality / advanced_script_dependency_analyzer.py --usage
-    python tools / code_quality / advanced_script_dependency_analyzer.py --safety - check script_name.py
+    python tools / code_quality / advanced_script_dependency_analyzer.py --safety-check script_name.py
 """
 
 import ast
-from collections import defaultdict
-from dataclasses import dataclass, field
-import hashlib
-import os
-from pathlib import Path
 import re
 import subprocess
 import sys
 import time
-from typing import Dict, List, Optional, Set, Tuple, Union
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from tools.code_quality.duplicate_code_analyzer import (
-    CodeBlock,
     DuplicateCodeAnalyzer,
     DuplicationGroup,
-    DuplicationReport,
 )
 
 
@@ -117,8 +112,9 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
     def _check_git_availability(self) -> bool:
         """Check if git is available and we're in a git repository."""
         try:
-            result = subprocess.run(["git", "rev - parse", "--git - dir"],
-                                    cwd=PROJECT_ROOT, capture_output=True, text=True)
+            result = subprocess.run(
+                ["git", "rev-parse", "--git-dir"], cwd=PROJECT_ROOT, capture_output=True, text=True
+            )
             return result.returncode == 0
         except FileNotFoundError:
             return False
@@ -128,7 +124,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
         dependencies = []
 
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content, filename=str(file_path))
@@ -183,7 +179,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
         usage = ScriptUsage(file_path=str(file_path))
 
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Check if executable
@@ -312,13 +308,13 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
             assessment.risk_level = "LOW"
             assessment.is_safe_to_delete = True
             assessment.recommended_action = "DELETE"
-            assessment.rationale = "No git history and not executable - likely unused"
+            assessment.rationale = "No git history and not executable-likely unused"
 
         else:
             assessment.risk_level = "LOW"
             assessment.is_safe_to_delete = True
             assessment.recommended_action = "ARCHIVE"
-            assessment.rationale = "Low usage indicators - candidate for archiving"
+            assessment.rationale = "Low usage indicators-candidate for archiving"
 
         return assessment
 
@@ -372,7 +368,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
             assessment = self._assess_deletion_safety(file_path, usage)
             safety_assessments[file_path] = assessment
 
-        # Identify unused and high - risk scripts
+        # Identify unused and high-risk scripts
         unused_scripts = [
             file_path
             for file_path, assessment in safety_assessments.items()
@@ -394,7 +390,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
 
         print(f"✅ Analyzed {len(all_dependencies)} dependencies")
         print(f"📈 Found {len(unused_scripts)} potentially unused scripts")
-        print(f"⚠️ Identified {len(high_risk_scripts)} high - risk scripts")
+        print(f"⚠️ Identified {len(high_risk_scripts)} high-risk scripts")
 
         return self.dependency_map
 
@@ -451,7 +447,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
         print(f"Total Python Files: {len(self.dependency_map.usage_patterns)}")
         print(f"Total Dependencies: {len(self.dependency_map.dependencies)}")
         print(f"Unused Scripts: {len(self.dependency_map.unused_scripts)}")
-        print(f"High - Risk Scripts: {len(self.dependency_map.high_risk_scripts)}")
+        print(f"High-Risk Scripts: {len(self.dependency_map.high_risk_scripts)}")
         print()
 
         # Safe deletion candidates
@@ -473,9 +469,9 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
                 print(f"   ... and {len(safe_deletions) - 10} more")
             print()
 
-        # High - risk scripts
+        # High-risk scripts
         if self.dependency_map.high_risk_scripts:
-            print("HIGH - RISK SCRIPTS (DO NOT DELETE):")
+            print("HIGH-RISK SCRIPTS (DO NOT DELETE):")
             print("-" * 40)
             for file_path in self.dependency_map.high_risk_scripts[:10]:
                 assessment = self.dependency_map.safety_assessments[file_path]
@@ -513,13 +509,12 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
 def main():
     """Main entry point for advanced script dependency analyzer."""
     import argparse
-    import time
 
     parser = argparse.ArgumentParser(description="Advanced Script Dependency Analyzer")
     parser.add_argument("--analyze", action="store_true", help="Run full analysis (dependencies + duplicates)")
     parser.add_argument("--dependencies", action="store_true", help="Analyze script dependencies only")
     parser.add_argument("--usage", action="store_true", help="Analyze script usage patterns")
-    parser.add_argument("--safety - check", type=str, help="Check if specific script can be safely deleted")
+    parser.add_argument("--safety-check", type=str, help="Check if specific script can be safely deleted")
     parser.add_argument("--extract", action="store_true", help="Generate helper function suggestions")
 
     args = parser.parse_args()
@@ -558,7 +553,7 @@ def main():
 
     # Dependency analysis
     if args.dependencies or args.usage or args.analyze:
-        _dependency_map = analyzer.analyze_dependencies()
+        _dependency_map = analyzer.analyze_dependencies()  # noqa: F841
         analyzer.print_dependency_report()
 
     # Duplication analysis
@@ -567,7 +562,7 @@ def main():
         print("RUNNING DUPLICATE CODE ANALYSIS...")
         print("=" * 80)
 
-        _duplication_report = analyzer.analyze_codebase()
+        _duplication_report = analyzer.analyze_codebase()  # noqa: F841
 
         if args.extract:
             helpers = analyzer.generate_helper_functions()
@@ -577,7 +572,7 @@ def main():
         analyzer.print_report()
 
     print(f"\n✅ Advanced script dependency analysis completed!")
-    print("🎉 Task 4: Build Advanced Script Dependency Analyzer - COMPLETED")
+    print("🎉 Task 4: Build Advanced Script Dependency Analyzer-COMPLETED")
 
 
 if __name__ == "__main__":

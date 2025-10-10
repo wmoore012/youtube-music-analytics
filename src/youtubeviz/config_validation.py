@@ -7,8 +7,8 @@ import os
 import re
 from typing import Dict, List, Tuple
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 
 
 def get_artists_from_env() -> Tuple[List[str], int]:
@@ -21,7 +21,7 @@ def get_artists_from_env() -> Tuple[List[str], int]:
     load_dotenv()
 
     # Pattern to match YT_ARTISTNAME_YT variables
-    artist_pattern = r"^YT_([A - Z0 - 9_]+)_YT="
+    artist_pattern = r"^YT_([A-Z0-9_]+)_YT="
 
     artists = []
 
@@ -95,7 +95,7 @@ def validate_artist_count_in_data(df: pd.DataFrame, artist_col: str = "artist_na
     # Check if counts match
     count_match = actual_count == expected_count
 
-    # Check if artist names match (case - insensitive)
+    # Check if artist names match (case-insensitive)
     expected_lower = [name.lower() for name in expected_artists]
     actual_lower = [name.lower() for name in actual_artists]
     names_match = set(expected_lower) == set(actual_lower)

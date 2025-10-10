@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Dataset - Based Model Evaluation Framework
+Dataset-Based Model Evaluation Framework
 
 Comprehensive evaluation framework that uses the centralized music industry
 sentiment dataset to test and compare different sentiment models.
@@ -13,11 +13,10 @@ This framework provides:
 - Model comparison and recommendation
 """
 
-from dataclasses import dataclass
 import os
-import random
 import sys
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List
 
 import pandas as pd
 
@@ -28,7 +27,6 @@ from datasets.music_industry_sentiment_dataset import (
     SentimentLabel,
     get_music_industry_dataset,
 )
-
 from src.youtubeviz.production_music_sentiment import ProductionMusicSentimentAnalyzer
 
 
@@ -414,7 +412,7 @@ class DatasetModelEvaluator:
         print(f"\n📊 {result.model_name} Results:")
         print(f"   Accuracy: {result.accuracy:.1f}% ({result.correct_predictions}/{result.total_tests})")
 
-        # Sentiment - wise metrics
+        # Sentiment-wise metrics
         print(f"   Precision by sentiment:")
         for sentiment, precision in result.precision_by_sentiment.items():
             print(f"     {sentiment}: {precision:.3f}")
@@ -520,7 +518,7 @@ class DatasetModelEvaluator:
 
 
 def main():
-    """Run comprehensive dataset - based model evaluation."""
+    """Run comprehensive dataset-based model evaluation."""
 
     evaluator = DatasetModelEvaluator(test_size=0.2, random_state=42)
     results = evaluator.run_comprehensive_evaluation()

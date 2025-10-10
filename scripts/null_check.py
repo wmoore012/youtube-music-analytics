@@ -3,14 +3,14 @@
 Fast, comprehensive data quality scanner for YouTube ETL database.
 
 Features:
-- Scans ALL columns (nullable and NOT NULL) and reports DB - level NULL counts.
-- Optional checks for blank strings ("", whitespace - only) on text columns.
+- Scans ALL columns (nullable and NOT NULL) and reports DB-level NULL counts.
+- Optional checks for blank strings ("", whitespace-only) on text columns.
 - Optional checks for empty JSON values (empty object / array) on JSON columns.
 - Filter by table list and choose output format (table, csv, json).
 
 Usage examples:
   - python3 scripts / null_check.py
-  - python3 scripts / null_check.py --check - blanks --check - empty - json
+  - python3 scripts / null_check.py --check-blanks --check-empty-json
   - python3 scripts / null_check.py --tables youtube_videos,artist_aliases --format json
 """
 
@@ -18,7 +18,7 @@ import argparse
 import json
 import logging
 import shutil
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from dotenv import load_dotenv
 from sqlalchemy import text
@@ -66,7 +66,7 @@ def scan_table(
     check_blanks: bool,
     check_empty_json: bool,
 ) -> List[Dict[str, object]]:
-    """Scan a single table and return per - column metrics."""
+    """Scan a single table and return per-column metrics."""
     cols = fetch_columns(engine, table)
     logger.info(
         "Table %s: %d total columns, %d nullable",
@@ -77,7 +77,7 @@ def scan_table(
 
     report: List[Dict[str, object]] = []
     for name, _, data_type in cols:
-        # Always compute DB - level NULLs (even on NOT NULL columns -> typically 0)
+        # Always compute DB-level NULLs (even on NOT NULL columns -> typically 0)
         null_count = count_where(engine, table, f"`{name}` IS NULL")
 
         entry: Dict[str, object] = {
@@ -117,7 +117,7 @@ def _truncate(val: str, width: int) -> str:
         return s
     if width <= 1:
         return s[:width]
-    return s[: max(0, width - 1)] + "…"
+    return s[: max(0, width-1)] + "…"
 
 
 def format_table(report: List[Dict[str, object]]) -> str:  # noqa: C901
@@ -146,7 +146,7 @@ def format_table(report: List[Dict[str, object]]) -> str:  # noqa: C901
 
     report_sorted = sorted(report, key=sort_key)
 
-    # Desired column widths (pre - fit)
+    # Desired column widths (pre-fit)
     col_widths = {
         "Table": max(5, min(24, max(len(str(r["table"])) for r in report_sorted))),
         "Column": max(6, min(30, max(len(str(r["column"])) for r in report_sorted))),
@@ -237,7 +237,7 @@ def main():
     parser = argparse.ArgumentParser(description="Comprehensive data quality scanner")
     parser.add_argument(
         "--tables",
-        help="Comma - separated table list to scan. Default scans core YouTube + project tables.",
+        help="Comma-separated table list to scan. Default scans core YouTube + project tables.",
     )
     parser.add_argument(
         "--quiet",
@@ -245,12 +245,12 @@ def main():
         help="Suppress INFO logs for a cleaner report",
     )
     parser.add_argument(
-        "--check - blanks",
+        "--check-blanks",
         action="store_true",
-        help="Also count blank strings on text columns ('' or whitespace - only)",
+        help="Also count blank strings on text columns ('' or whitespace-only)",
     )
     parser.add_argument(
-        "--check - empty - json",
+        "--check-empty-json",
         action="store_true",
         help="Also count empty JSON values ({} or []) on JSON columns",
     )

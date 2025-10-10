@@ -3,8 +3,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
-
-from src.icatalog_public.etl.sql_helpers import read_sql_safe
+from src.public.etl.sql_helpers import read_sql_safe
 
 
 def test_read_sql_safe_sqlite_raw_connection():
@@ -28,7 +27,7 @@ def test_read_sql_safe_sqlite_raw_connection():
 
 
 def test_read_sql_safe_other_dialect_connection():
-    # Mock a non - SQLite engine
+    # Mock a non-SQLite engine
     mock_engine = MagicMock()
     mock_engine.dialect = MagicMock(name="dialect_mock")
     mock_engine.dialect.name = "mysql"

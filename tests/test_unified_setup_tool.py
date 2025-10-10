@@ -1,5 +1,5 @@
 """
-Tests for tools / core / unified_setup.py - unified system setup tool.
+Tests for tools / core / unified_setup.py-unified system setup tool.
 
 This test suite validates:
 - SystemSetup class functionality
@@ -12,8 +12,8 @@ This test suite validates:
 
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
@@ -30,7 +30,7 @@ class TestSystemSetup:
 
     def test_tool_initialization(self):
         """Test basic tool initialization."""
-        assert self.setup_tool.name == "unified - setup"
+        assert self.setup_tool.name == "unified-setup"
         assert self.setup_tool.version == "1.0.0"
         assert self.setup_tool.logger is not None
 
@@ -47,7 +47,7 @@ class TestSystemSetup:
         """Test tool configuration metadata."""
         config = self.setup_tool.get_tool_config()
 
-        assert config.name == "unified - setup"
+        assert config.name == "unified-setup"
         assert config.version == "1.0.0"
         assert config.category == "core"
         assert "python>=3.8" in config.dependencies
@@ -84,7 +84,7 @@ class TestEnvironmentSetup:
         assert "DB_USER=testuser" in content
         assert "DB_PASS=testpass" in content
         assert "DB_NAME=testdb" in content
-        assert "BICDIZZLE_CHANNEL_ID=" in content  # Pre - configured channels
+        assert "BICDIZZLE_CHANNEL_ID=" in content  # Pre-configured channels
         assert "YOUTUBE_QUOTA_LIMIT=10000" in content
 
     @patch("builtins.input")
@@ -141,7 +141,7 @@ class TestEnvironmentSetup:
     @patch("pathlib.Path.exists")
     @patch("builtins.input")
     def test_setup_environment_existing_file_keep(self, mock_input, mock_exists):
-        """Test setup with existing .env file - user chooses to keep."""
+        """Test setup with existing .env file-user chooses to keep."""
         mock_exists.return_value = True
         mock_input.return_value = "n"  # Don't update
 
@@ -153,7 +153,7 @@ class TestEnvironmentSetup:
 
     @patch("pathlib.Path.exists")
     def test_setup_environment_non_interactive_existing(self, mock_exists):
-        """Test non - interactive setup with existing .env file."""
+        """Test non-interactive setup with existing .env file."""
         mock_exists.return_value = True
 
         result = self.setup_tool.setup_environment(interactive=False)
@@ -392,12 +392,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_setup.SystemSetup")
     def test_main_create_tables_option(self, mock_setup_class):
-        """Test main function with --create - tables option."""
+        """Test main function with --create-tables option."""
         mock_setup = MagicMock()
         mock_setup.create_tables.return_value = True
         mock_setup_class.return_value.__enter__.return_value = mock_setup
 
-        with patch("sys.argv", ["unified_setup.py", "--create - tables"]):
+        with patch("sys.argv", ["unified_setup.py", "--create-tables"]):
             result = main()
 
         assert result == 0
@@ -405,12 +405,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_setup.SystemSetup")
     def test_main_full_setup_option(self, mock_setup_class):
-        """Test main function with --full - setup option."""
+        """Test main function with --full-setup option."""
         mock_setup = MagicMock()
         mock_setup.full_setup.return_value = True
         mock_setup_class.return_value.__enter__.return_value = mock_setup
 
-        with patch("sys.argv", ["unified_setup.py", "--full - setup"]):
+        with patch("sys.argv", ["unified_setup.py", "--full-setup"]):
             result = main()
 
         assert result == 0
@@ -439,7 +439,7 @@ class TestMainFunction:
         mock_setup.full_setup.side_effect = KeyboardInterrupt()
         mock_setup_class.return_value.__enter__.return_value = mock_setup
 
-        with patch("sys.argv", ["unified_setup.py", "--full - setup"]):
+        with patch("sys.argv", ["unified_setup.py", "--full-setup"]):
             result = main()
 
         assert result == 1
@@ -452,7 +452,7 @@ class TestMainFunction:
         mock_setup.handle_error = MagicMock()
         mock_setup_class.return_value.__enter__.return_value = mock_setup
 
-        with patch("sys.argv", ["unified_setup.py", "--full - setup"]):
+        with patch("sys.argv", ["unified_setup.py", "--full-setup"]):
             result = main()
 
         assert result == 1
@@ -470,10 +470,10 @@ class TestIntegration:
         setup_tool = SystemSetup()
 
         # Find the registered tool
-        found_tool = find_tool("unified - setup")
+        found_tool = find_tool("unified-setup")
 
         assert found_tool is not None
-        assert found_tool.name == "unified - setup"
+        assert found_tool.name == "unified-setup"
         assert found_tool.version == "1.0.0"
         assert found_tool.category == "core"
 
@@ -487,6 +487,6 @@ class TestIntegration:
                 cleanup_called = True
 
         with TestSetup() as setup_tool:
-            assert setup_tool.name == "unified - setup"
+            assert setup_tool.name == "unified-setup"
 
         assert cleanup_called

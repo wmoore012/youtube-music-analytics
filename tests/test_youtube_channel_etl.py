@@ -1,13 +1,13 @@
-from datetime import date
 import json
 import os
-from pathlib import Path
 import types
+from datetime import date
+from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
 import pymysql
 import pytest
+from dotenv import load_dotenv
 
 from web.youtube_channel_etl import YouTubeChannelETL
 

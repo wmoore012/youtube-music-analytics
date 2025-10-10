@@ -26,7 +26,7 @@ Notebook Guardian includes automatic package installation features that can exec
 
 1. **Disable Auto-Install in Production**:
    ```python
-   # Safe usage - manual control
+   # Safe usage-manual control
    installer = SmartInstaller(auto_install=False)
    deps = check_dependencies('script.py')
    # Review dependencies before installing
@@ -112,7 +112,7 @@ By using Notebook Guardian, you acknowledge that:
 - 🤖 Never forget to install dependencies again
 - ⚡ Ultra-fast validation (50k+ rows in <1 second)
 - 🛡️ Bulletproof error handling with clear messages
-- 🔧 Zero-config setup - works out of the box
+- 🔧 Zero-config setup-works out of the box
 
 **For Data Scientists:**
 - 📊 Comprehensive validation for all ML/DL workflows
@@ -205,7 +205,7 @@ metrics = {
 
 tooltips = create_tooltips(metrics)
 print(tooltips['accuracy'])
-# Output: "Accuracy: 0.950<br>Exceptional performance - model is highly accurate"
+# Output: "Accuracy: 0.950<br>Exceptional performance-model is highly accurate"
 ```
 
 ## 🧪 **Comprehensive Testing**
@@ -427,7 +427,7 @@ self._ml_patterns['new_pattern_name'] = new_pattern
 
 ## 📄 **License**
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License-see [LICENSE](LICENSE) file for details.
 
 ## 🙏 **Acknowledgments**
 

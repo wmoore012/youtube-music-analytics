@@ -7,7 +7,6 @@ It uses the existing backup infrastructure to ensure no code is lost.
 """
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -16,7 +15,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional
 
 
 class SafeLintingFixer:
@@ -52,56 +51,54 @@ class SafeLintingFixer:
             ["python", "-m", "pytest", "-q", "--tb=short"],
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
-            text=True
+            text=True,
         )
         return result.returncode == 0
 
     def get_linting_errors(self) -> List[Dict[str, str]]:
         """Get current linting errors."""
-        result = subprocess.run(
-            ["flake8", "--max-line-length=120"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["flake8", "--max-line-length=120"], capture_output=True, text=True)
 
         errors = []
         if result.returncode != 0:
-            for line in result.stdout.strip().split('\n'):
+            for line in result.stdout.strip().split("\n"):
                 if not line.strip():
                     continue
 
                 # Parse: ./file.py:line:col: CODE message
-                match = re.match(r'\./(.*?):(\d+):(\d+): ([A-Z]\d+) (.*)', line)
+                match = re.match(r"\./(.*?):(\d+):(\d+): ([A-Z]\d+) (.*)", line)
                 if match:
                     file_path, line_num, col, code, message = match.groups()
-                    errors.append({
-                        'file': file_path,
-                        'line': int(line_num),
-                        'col': int(col),
-                        'code': code,
-                        'message': message,
-                        'full_line': line
-                    })
+                    errors.append(
+                        {
+                            "file": file_path,
+                            "line": int(line_num),
+                            "col": int(col),
+                            "code": code,
+                            "message": message,
+                            "full_line": line,
+                        }
+                    )
 
         return errors
 
     def fix_trailing_whitespace(self, file_path: Path) -> bool:
         """Safely fix trailing whitespace."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             lines = content.splitlines()
             fixed_lines = [line.rstrip() for line in lines]
-            fixed_content = '\n'.join(fixed_lines)
+            fixed_content = "\n".join(fixed_lines)
 
             # Add final newline if missing
-            if fixed_content and not fixed_content.endswith('\n'):
-                fixed_content += '\n'
+            if fixed_content and not fixed_content.endswith("\n"):
+                fixed_content += "\n"
 
             if content != fixed_content:
                 self.create_backup(file_path)
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(fixed_content)
                 return True
 
@@ -114,20 +111,20 @@ class SafeLintingFixer:
     def fix_unused_variable(self, file_path: Path, line_num: int, var_name: str) -> bool:
         """Safely fix unused variable by prefixing with underscore."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
             if line_num <= len(lines):
-                original_line = lines[line_num - 1]
+                original_line = lines[line_num-1]
 
                 # Skip if already prefixed
-                if var_name.startswith('_'):
+                if var_name.startswith("_"):
                     return False
 
                 # Simple patterns for safe replacement
                 patterns = [
-                    (rf'\b{re.escape(var_name)}\s*=', f'_{var_name} ='),
-                    (rf'for\s+{re.escape(var_name)}\s+in', f'for _{var_name} in'),
+                    (rf"\b{re.escape(var_name)}\s*=", f"_{var_name} ="),
+                    (rf"for\s+{re.escape(var_name)}\s+in", f"for _{var_name} in"),
                 ]
 
                 for pattern, replacement in patterns:
@@ -135,18 +132,20 @@ class SafeLintingFixer:
                         new_line = re.sub(pattern, replacement, original_line)
 
                         self.create_backup(file_path)
-                        lines[line_num - 1] = new_line
+                        lines[line_num-1] = new_line
 
-                        with open(file_path, 'w', encoding='utf-8') as f:
+                        with open(file_path, "w", encoding="utf-8") as f:
                             f.writelines(lines)
 
-                        self.changes_log.append({
-                            'file': str(file_path),
-                            'line': line_num,
-                            'type': 'unused_variable',
-                            'old': original_line.strip(),
-                            'new': new_line.strip()
-                        })
+                        self.changes_log.append(
+                            {
+                                "file": str(file_path),
+                                "line": line_num,
+                                "type": "unused_variable",
+                                "old": original_line.strip(),
+                                "new": new_line.strip(),
+                            }
+                        )
                         return True
 
         except Exception as e:
@@ -158,43 +157,50 @@ class SafeLintingFixer:
     def fix_line_length_simple(self, file_path: Path, line_num: int) -> bool:
         """Fix simple line length issues."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
             if line_num <= len(lines):
-                original_line = lines[line_num - 1]
+                original_line = lines[line_num-1]
 
                 # Skip if not that long or already has breaks
                 if len(original_line.rstrip()) <= 125:
                     return False
 
                 # Only fix very simple cases
-                if ',' in original_line and '(' in original_line and original_line.count('(') == 1:
+                if "," in original_line and "(" in original_line and original_line.count("(") == 1:
                     indent = len(original_line) - len(original_line.lstrip())
-                    base_indent = ' ' * indent
+                    base_indent = " " * indent
 
                     # Find a good comma to break at
-                    comma_pos = original_line.find(',', 60)  # Look for comma after position 60
+                    comma_pos = original_line.find(",", 60)  # Look for comma after position 60
                     if comma_pos > 0 and comma_pos < len(original_line) - 20:
-                        new_line = (original_line[:comma_pos + 1] + '\n'  # noqa: W504
-                                   + base_indent + '    ' + original_line[comma_pos + 1:].lstrip())  # noqa: E128
+                        new_line = (
+                            original_line[: comma_pos + 1]
+                            + "\n"  # noqa: W504
+                            + base_indent
+                            + "    "
+                            + original_line[comma_pos + 1 :].lstrip()
+                        )  # noqa: E128
 
                         # Only apply if both lines are reasonable length
-                        new_lines = new_line.split('\n')
+                        new_lines = new_line.split("\n")
                         if all(len(line.rstrip()) <= 120 for line in new_lines):
                             self.create_backup(file_path)
-                            lines[line_num - 1] = new_line
+                            lines[line_num-1] = new_line
 
-                            with open(file_path, 'w', encoding='utf-8') as f:
+                            with open(file_path, "w", encoding="utf-8") as f:
                                 f.writelines(lines)
 
-                            self.changes_log.append({
-                                'file': str(file_path),
-                                'line': line_num,
-                                'type': 'line_length',
-                                'old': original_line.strip(),
-                                'new': new_line.replace('\n', '\\n').strip()
-                            })
+                            self.changes_log.append(
+                                {
+                                    "file": str(file_path),
+                                    "line": line_num,
+                                    "type": "line_length",
+                                    "old": original_line.strip(),
+                                    "new": new_line.replace("\n", "\\n").strip(),
+                                }
+                            )
                             return True
 
         except Exception as e:
@@ -206,32 +212,34 @@ class SafeLintingFixer:
     def add_noqa_comment(self, file_path: Path, line_num: int, error_code: str) -> bool:
         """Add noqa comment for unfixable issues."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
             if line_num <= len(lines):
-                original_line = lines[line_num - 1]
+                original_line = lines[line_num-1]
 
                 # Skip if already has noqa
-                if '# noqa' in original_line:
+                if "# noqa" in original_line:
                     return False
 
                 stripped = original_line.rstrip()
-                new_line = stripped + f'  # noqa: {error_code}\n'
+                new_line = stripped + f"  # noqa: {error_code}\n"
 
                 self.create_backup(file_path)
-                lines[line_num - 1] = new_line
+                lines[line_num-1] = new_line
 
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.writelines(lines)
 
-                self.changes_log.append({
-                    'file': str(file_path),
-                    'line': line_num,
-                    'type': 'noqa_comment',
-                    'old': original_line.strip(),
-                    'new': new_line.strip()
-                })
+                self.changes_log.append(
+                    {
+                        "file": str(file_path),
+                        "line": line_num,
+                        "type": "noqa_comment",
+                        "old": original_line.strip(),
+                        "new": new_line.strip(),
+                    }
+                )
                 return True
 
         except Exception as e:
@@ -244,7 +252,7 @@ class SafeLintingFixer:
         """Rollback all changes using backups."""
         print("🔄 Rolling back all changes...")
 
-        for backup_file in self.backup_dir.rglob('*'):
+        for backup_file in self.backup_dir.rglob("*"):
             if backup_file.is_file():
                 original_path = Path.cwd() / backup_file.relative_to(self.backup_dir)
                 if original_path.exists():
@@ -256,12 +264,16 @@ class SafeLintingFixer:
     def save_changes_log(self):
         """Save log of all changes made."""
         log_file = self.backup_dir / "changes_log.json"
-        with open(log_file, 'w') as f:
-            json.dump({
-                'timestamp': datetime.now().isoformat(),
-                'changes': self.changes_log,
-                'total_changes': len(self.changes_log)
-            }, f, indent=2)
+        with open(log_file, "w") as f:
+            json.dump(
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "changes": self.changes_log,
+                    "total_changes": len(self.changes_log),
+                },
+                f,
+                indent=2,
+            )
 
         print(f"📝 Changes log saved to: {log_file}")
 
@@ -287,7 +299,7 @@ class SafeLintingFixer:
         # Group errors by type
         error_types = {}
         for error in errors:
-            error_types.setdefault(error['code'], []).append(error)
+            error_types.setdefault(error["code"], []).append(error)
 
         print("Error breakdown:")
         for code, error_list in sorted(error_types.items()):
@@ -298,61 +310,61 @@ class SafeLintingFixer:
 
         # Fix trailing whitespace (W291, W293)
         if total_fixes < max_fixes:
-            whitespace_errors = error_types.get('W291', []) + error_types.get('W293', [])
+            whitespace_errors = error_types.get("W291", []) + error_types.get("W293", [])
             print(f"\n🧹 Fixing {len(whitespace_errors)} trailing whitespace errors...")
 
-            files_to_fix = set(error['file'] for error in whitespace_errors)
+            files_to_fix = set(error["file"] for error in whitespace_errors)
             for file_path_str in files_to_fix:
                 if total_fixes >= max_fixes:
                     break
 
                 file_path = Path(file_path_str)
                 if file_path.exists() and self.fix_trailing_whitespace(file_path):
-                    fixes_applied.setdefault('whitespace', 0)
-                    fixes_applied['whitespace'] += 1
+                    fixes_applied.setdefault("whitespace", 0)
+                    fixes_applied["whitespace"] += 1
                     total_fixes += 1
 
         # Fix unused variables (F841)
         if total_fixes < max_fixes:
-            unused_vars = error_types.get('F841', [])
+            unused_vars = error_types.get("F841", [])
             print(f"\n🗑️  Fixing {len(unused_vars)} unused variable errors...")
 
-            for error in unused_vars[:max_fixes - total_fixes]:
+            for error in unused_vars[: max_fixes-total_fixes]:
                 # Extract variable name from message
-                match = re.search(r"local variable '(\w+)' is assigned to but never used", error['message'])
+                match = re.search(r"local variable '(\w+)' is assigned to but never used", error["message"])
                 if match:
                     var_name = match.group(1)
-                    file_path = Path(error['file'])
+                    file_path = Path(error["file"])
 
-                    if file_path.exists() and self.fix_unused_variable(file_path, error['line'], var_name):
-                        fixes_applied.setdefault('unused_variables', 0)
-                        fixes_applied['unused_variables'] += 1
+                    if file_path.exists() and self.fix_unused_variable(file_path, error["line"], var_name):
+                        fixes_applied.setdefault("unused_variables", 0)
+                        fixes_applied["unused_variables"] += 1
                         total_fixes += 1
 
         # Fix simple line length issues (E501)
         if total_fixes < max_fixes:
-            line_length_errors = error_types.get('E501', [])
-            print(f"\n📏 Fixing simple line length errors (max {min(10, max_fixes - total_fixes)})...")
+            line_length_errors = error_types.get("E501", [])
+            print(f"\n📏 Fixing simple line length errors (max {min(10, max_fixes-total_fixes)})...")
 
-            for error in line_length_errors[:min(10, max_fixes - total_fixes)]:
-                file_path = Path(error['file'])
+            for error in line_length_errors[: min(10, max_fixes-total_fixes)]:
+                file_path = Path(error["file"])
 
-                if file_path.exists() and self.fix_line_length_simple(file_path, error['line']):
-                    fixes_applied.setdefault('line_length', 0)
-                    fixes_applied['line_length'] += 1
+                if file_path.exists() and self.fix_line_length_simple(file_path, error["line"]):
+                    fixes_applied.setdefault("line_length", 0)
+                    fixes_applied["line_length"] += 1
                     total_fixes += 1
 
         # Add noqa comments for complex issues (C901)
         if total_fixes < max_fixes:
-            complex_errors = error_types.get('C901', [])
+            complex_errors = error_types.get("C901", [])
             print(f"\n🏷️  Adding noqa comments for {len(complex_errors)} complex function errors...")
 
-            for error in complex_errors[:max_fixes - total_fixes]:
-                file_path = Path(error['file'])
+            for error in complex_errors[: max_fixes-total_fixes]:
+                file_path = Path(error["file"])
 
-                if file_path.exists() and self.add_noqa_comment(file_path, error['line'], 'C901'):
-                    fixes_applied.setdefault('noqa_comments', 0)
-                    fixes_applied['noqa_comments'] += 1
+                if file_path.exists() and self.add_noqa_comment(file_path, error["line"], "C901"):
+                    fixes_applied.setdefault("noqa_comments", 0)
+                    fixes_applied["noqa_comments"] += 1
                     total_fixes += 1
 
         print(f"\n✅ Applied {total_fixes} fixes")
@@ -382,17 +394,15 @@ Examples:
   python safe_linting_fix.py --max-fixes 50
   python safe_linting_fix.py --backup-dir ./my_backups
   python safe_linting_fix.py --rollback ./my_backups
-        """
+        """,
     )
 
-    parser.add_argument("--max-fixes", type=int, default=100,
-                       help="Maximum number of fixes to apply")  # noqa: E128
-    parser.add_argument("--backup-dir", type=str,
-                       help="Directory for backups")  # noqa: E128
-    parser.add_argument("--rollback", type=str,
-                       help="Rollback changes from backup directory")  # noqa: E128
-    parser.add_argument("--dry-run", action="store_true",
-                       help="Show what would be fixed without making changes")  # noqa: E128
+    parser.add_argument("--max-fixes", type=int, default=100, help="Maximum number of fixes to apply")  # noqa: E128
+    parser.add_argument("--backup-dir", type=str, help="Directory for backups")  # noqa: E128
+    parser.add_argument("--rollback", type=str, help="Rollback changes from backup directory")  # noqa: E128
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be fixed without making changes"
+    )  # noqa: E128
 
     args = parser.parse_args()
 
@@ -416,7 +426,7 @@ Examples:
 
         error_types = {}
         for error in errors:
-            error_types.setdefault(error['code'], []).append(error)
+            error_types.setdefault(error["code"], []).append(error)
 
         for code, error_list in sorted(error_types.items()):
             print(f"   {code}: {len(error_list)} errors")

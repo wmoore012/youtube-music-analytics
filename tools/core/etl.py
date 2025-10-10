@@ -1,23 +1,23 @@
 #!/usr / bin / env python3
 """
-Unified ETL Tool - Consolidated ETL Pipeline Management
+Unified ETL Tool-Consolidated ETL Pipeline Management
 
 This tool consolidates multiple ETL scripts into a single, configurable interface:
 - Focused ETL for core data processing
 - Comprehensive ETL with all data sources
-- Channel - specific ETL operations
+- Channel-specific ETL operations
 - Notebook execution integration
 
 Usage:
     python tools / core / etl.py --mode focused
     python tools / core / etl.py --mode comprehensive
     python tools / core / etl.py --channels "artist1,artist2"
-    python tools / core / etl.py --with - notebooks
+    python tools / core / etl.py --with-notebooks
 """
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import List, Optional
 
 # Add project root to path
@@ -36,7 +36,7 @@ class UnifiedETL(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="unified - etl", version="1.0.0")
+        super().__init__(name="unified-etl", version="1.0.0")
         register_tool(self.get_tool_config())
 
         # Import ETL modules after path setup
@@ -53,16 +53,16 @@ class UnifiedETL(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="unified - etl",
+            name="unified-etl",
             version="1.0.0",
             description="Unified ETL tool consolidating multiple ETL operations",
-            dependencies=["sqlalchemy", "pandas", "python - dotenv", "requests"],
+            dependencies=["sqlalchemy", "pandas", "python-dotenv", "requests"],
             environment_vars=["DATABASE_URL", "YOUTUBE_API_KEY"],
             usage_examples=[
                 "python tools / core / etl.py --mode focused",
                 "python tools / core / etl.py --mode comprehensive",
                 "python tools / core / etl.py --channels 'artist1,artist2'",
-                "python tools / core / etl.py --with - notebooks",
+                "python tools / core / etl.py --with-notebooks",
             ],
             category="core",
         )
@@ -121,10 +121,10 @@ class UnifiedETL(ToolBase):
         Args:
             channels: List of channel names to process
         """
-        self.log_progress(f"Starting channel - specific ETL for: {', '.join(channels)}")
+        self.log_progress(f"Starting channel-specific ETL for: {', '.join(channels)}")
 
         try:
-            # Import channel - specific ETL logic
+            # Import channel-specific ETL logic
             # Set channels in environment for the script
             import os
 
@@ -134,7 +134,7 @@ class UnifiedETL(ToolBase):
             os.environ["CHANNELS"] = ",".join(channels)
 
             try:
-                self.log_progress("Executing channel - specific ETL operations")
+                self.log_progress("Executing channel-specific ETL operations")
                 run_channels_main()
             finally:
                 # Restore original environment
@@ -143,10 +143,10 @@ class UnifiedETL(ToolBase):
                 elif "CHANNELS" in os.environ:
                     del os.environ["CHANNELS"]
 
-            self.log_progress("Channel - specific ETL completed successfully")
+            self.log_progress("Channel-specific ETL completed successfully")
 
         except Exception as e:
-            self.handle_error(e, "channel - specific ETL execution")
+            self.handle_error(e, "channel-specific ETL execution")
 
     def run_etl_with_notebooks(self, mode: str = "focused") -> None:
         """
@@ -182,11 +182,11 @@ class UnifiedETL(ToolBase):
         Run production pipeline with full validation.
 
         This mode includes:
-        - Pre - flight checks
+        - Pre-flight checks
         - Comprehensive ETL
         - Data validation
         - Notebook execution
-        - Post - processing validation
+        - Post-processing validation
         """
         self.log_progress("Starting production pipeline")
 
@@ -266,16 +266,16 @@ class UnifiedETL(ToolBase):
 def main():
     """Main entry point for the unified ETL tool."""
     parser = argparse.ArgumentParser(
-        description="Unified ETL Tool - Consolidated ETL Pipeline Management",
+        description="Unified ETL Tool-Consolidated ETL Pipeline Management",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   %(prog)s --mode focused                    # Run focused ETL (default)
   %(prog)s --mode comprehensive              # Run comprehensive ETL
   %(prog)s --channels "artist1,artist2"      # Run ETL for specific channels
-  %(prog)s --mode focused --with - notebooks   # Run ETL and execute notebooks
+  %(prog)s --mode focused --with-notebooks   # Run ETL and execute notebooks
   %(prog)s --production                      # Run full production pipeline
-  %(prog)s --validate - only                   # Run data quality validation only
+  %(prog)s --validate-only                   # Run data quality validation only
         """,
     )
 
@@ -283,16 +283,16 @@ Examples:
         "--mode", choices=["focused", "comprehensive"], default="focused", help="ETL mode to run (default: focused)"
     )
 
-    parser.add_argument("--channels", type=str, help="Comma - separated list of channels to process (overrides mode)")
+    parser.add_argument("--channels", type=str, help="Comma-separated list of channels to process (overrides mode)")
 
-    parser.add_argument("--with - notebooks", action="store_true", help="Execute notebooks after ETL completion")
+    parser.add_argument("--with-notebooks", action="store_true", help="Execute notebooks after ETL completion")
 
     parser.add_argument("--production", action="store_true", help="Run full production pipeline with validation")
 
-    parser.add_argument("--validate - only", action="store_true", help="Run data quality validation only")
+    parser.add_argument("--validate-only", action="store_true", help="Run data quality validation only")
 
     parser.add_argument(
-        "--log - level",
+        "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default="INFO",
         help="Set logging level (default: INFO)",

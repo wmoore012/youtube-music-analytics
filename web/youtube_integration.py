@@ -1,6 +1,6 @@
 
 """
-YouTube data integration for the iCatalog ETL pipeline.
+YouTube data integration for the analytics ETL pipeline.
 
 This module provides functions to extract data from the YouTube API,
 map it to the appropriate tables, and integrate it with the existing ETL pipeline.
@@ -1629,7 +1629,7 @@ def process_youtube_data(  # noqa: C901
     max_api_fetches_per_day: int = 10,
 ) -> None:
     """
-    Process YouTube data for the iCatalog ETL pipeline.
+    Process YouTube data for the analytics ETL pipeline.
 
     This function implements a caching mechanism to avoid unnecessary API calls:
     - If data for a playlist exists in the youtube_playlists_raw table and is less than cache_threshold_hours old,
@@ -1959,7 +1959,7 @@ if __name__ == "__main__":
     import argparse
 
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Process YouTube data for the iCatalog ETL pipeline.")
+    parser = argparse.ArgumentParser(description="Process YouTube data for the analytics ETL pipeline.")
     parser.add_argument(
         "--no-playlist",
         action="store_false",

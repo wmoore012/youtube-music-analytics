@@ -191,7 +191,7 @@ class EducationalContent:
 - **Performance Testing**: Ensure system handles production data volumes
 
 ### Data Quality Testing
-- **Real Data Only**: All testing must use actual YouTube data - no fake or synthetic data allowed
+- **Real Data Only**: All testing must use actual YouTube data-no fake or synthetic data allowed
 - **Real Comment Analysis**: Bot detection and sentiment analysis tested with genuine user comments
 - **Authentic Score Validation**: Scoring algorithms validated against real artist performance data
 - **Production Data Scenarios**: Test with actual production data volumes and edge cases

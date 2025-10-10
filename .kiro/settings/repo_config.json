@@ -33,7 +33,7 @@
     "staging": {
       "name": "staging",
       "url": "https://github.com/wmoore012/staging_yt_analytics.git",
-      "description": "Private staging repository - full codebase",
+      "description": "Private staging repository-full codebase",
       "excluded_files": [],
       "required_files": [
         "*"

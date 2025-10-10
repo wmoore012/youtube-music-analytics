@@ -9,7 +9,7 @@ Supports channel URLs, usernames, and handles.
 Usage:
     python tools / utilities / find_channel_id.py @username
     python tools / utilities / find_channel_id.py "https://youtube.com/@artist"
-    python tools / utilities / find_channel_id.py "Artist Name - Topic"
+    python tools / utilities / find_channel_id.py "Artist Name-Topic"
 """
 
 import logging
@@ -39,7 +39,7 @@ def extract_channel_info_from_url(url: str) -> Optional[dict]:
     """Extract channel information from various YouTube URL formats."""
 
     # Channel ID pattern (UC followed by 22 characters)
-    channel_id_pattern = r"UC[a - zA - Z0 - 9_-]{22}"
+    channel_id_pattern = r"UC[a-zA-Z0-9_-]{22}"
 
     # Handle direct channel ID
     if re.match(channel_id_pattern, url):
@@ -57,12 +57,12 @@ def extract_channel_info_from_url(url: str) -> Optional[dict]:
             return {"type": "channel_id", "value": channel_id_match.group()}
 
         # Extract @handle from URL
-        handle_match = re.search(r"@([a - zA - Z0 - 9_-]+)", url)
+        handle_match = re.search(r"@([a-zA-Z0-9_-]+)", url)
         if handle_match:
             return {"type": "handle", "value": handle_match.group(1)}
 
         # Extract username from old format
-        username_match = re.search(r"/user/([a - zA - Z0 - 9_-]+)", url)
+        username_match = re.search(r"/user/([a-zA-Z0-9_-]+)", url)
         if username_match:
             return {"type": "username", "value": username_match.group(1)}
 
@@ -221,13 +221,13 @@ def main():
         print("Usage:")
         print("  python tools / utilities / find_channel_id.py '@username'")
         print("  python tools / utilities / find_channel_id.py 'https://youtube.com/@artist'")
-        print("  python tools / utilities / find_channel_id.py 'Artist Name - Topic'")
+        print("  python tools / utilities / find_channel_id.py 'Artist Name-Topic'")
         print("  python tools / utilities / find_channel_id.py 'UCxxxxxxxxxxxxxxxxxxxxx'")
         print("")
         print("Examples:")
         print("  python tools / utilities / find_channel_id.py '@BicFizzle'")
-        print("  python tools / utilities / find_channel_id.py 'BiC Fizzle - Topic'")
-        print("  python tools / utilities / find_channel_id.py 'UC - 9-kyTW8ZkZNDHQJ6FgpwQ'")
+        print("  python tools / utilities / find_channel_id.py 'BiC Fizzle-Topic'")
+        print("  python tools / utilities / find_channel_id.py 'UC-9-kyTW8ZkZNDHQJ6FgpwQ'")
         sys.exit(1)
 
     input_value = sys.argv[1]

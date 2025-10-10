@@ -1,13 +1,13 @@
 """
 Enhanced Music Industry Sentiment Analysis
 
-This module provides music industry - specific sentiment analysis that understands
+This module provides music industry-specific sentiment analysis that understands
 slang, AAVE, and cultural context in music fan comments.
 """
 
-from dataclasses import dataclass
 import re as regex_module
-from typing import Dict, List, Tuple
+from dataclasses import dataclass
+from typing import Dict, List
 
 import pandas as pd
 
@@ -18,7 +18,7 @@ class MusicSentimentConfig:
 
     # Positive expressions in music context
     positive_patterns = {
-        # VADER missed these - need custom rules
+        # VADER missed these-need custom rules
         r"\bthis is sick\b": 0.8,
         r"\bfuck it up\b": 0.8,
         r"\bbad bish\b": 0.8,
@@ -74,7 +74,7 @@ class MusicSentimentConfig:
         r"\bsay less\b": 0.6,
         r"\bbet\b": 0.5,
         r"\bfacts\b": 0.5,
-        # Music - specific positive terms
+        # Music-specific positive terms
         r"\bbanger\b": 0.8,
         r"\bslaps\b": 0.8,
         r"\bfire\b": 0.7,
@@ -128,8 +128,8 @@ class MusicSentimentConfig:
         r"\bbro\b": 0.4,  # "bro" - friendly / positive context
         r"\bthe beat\b": 0.5,  # Beat references are generally positive
         r"\bbeat\s+(though|tho)\b": 0.7,  # "beat though / tho"
-        r"\bwho made\b": 0.6,  # Asking about producer - appreciation
-        r"\bproducer\b": 0.5,  # Producer mentions - appreciation
+        r"\bwho made\b": 0.6,  # Asking about producer-appreciation
+        r"\bproducer\b": 0.5,  # Producer mentions-appreciation
         # Extended patterns for "hard" (positive in music)
         r"\bthis\s + hard\b": 0.7,  # "this hard"
         r"\bgoes?\s + hard\b": 0.8,  # "goes hard" / "go hard"
@@ -181,9 +181,9 @@ class MusicSentimentConfig:
         "🙌": 0.7,
         "👏": 0.6,
         "😖": 0.5,  # Can be positive in music context (emotional response)
-        "😚": 0.7,  # Kiss emoji - positive
-        "💕": 0.8,  # Love / hearts - positive
-        "🤞": 0.6,  # Crossed fingers - hopeful / positive
+        "😚": 0.7,  # Kiss emoji-positive
+        "💕": 0.8,  # Love / hearts-positive
+        "🤞": 0.6,  # Crossed fingers-hopeful / positive
     }
 
     # Emoji multiplier patterns (multiple emojis = more positive)
@@ -199,7 +199,7 @@ class MusicSentimentConfig:
         (r"🙌{2,}", 0.8),  # Multiple praise hands
     ]
 
-    # Special emoji - only comment patterns
+    # Special emoji-only comment patterns
     emoji_only_patterns = [
         (r"^🔥+$", 0.8),  # Only fire emojis
         (r"^🌊+$", 0.7),  # Only wave emojis
@@ -259,7 +259,6 @@ class MusicIndustrySentimentAnalyzer:
                 emoji_score += score * count  # Multiple emojis = more positive
 
         # Check emoji multiplier patterns (multiple same emojis)
-        import re
 
         for pattern, bonus_score in self.config.emoji_multiplier_patterns:
             matches = regex_module.findall(pattern, comment_text)
@@ -267,10 +266,10 @@ class MusicIndustrySentimentAnalyzer:
                 # Bonus for multiple same emojis
                 emoji_score += bonus_score * len(matches)
 
-        # Check emoji - only patterns (comments that are just emojis)
+        # Check emoji-only patterns (comments that are just emojis)
         for pattern, score in self.config.emoji_only_patterns:
             if regex_module.match(pattern, comment_text.strip()):
-                emoji_score = max(emoji_score, score)  # Use highest score for emoji - only
+                emoji_score = max(emoji_score, score)  # Use highest score for emoji-only
 
         # Combine pattern and emoji scores
         if pattern_matches > 0:
@@ -280,7 +279,7 @@ class MusicIndustrySentimentAnalyzer:
             emoji_score = emoji_score / emoji_count
             # Weight emoji score based on frequency
             emoji_weight = min(0.3, emoji_count * 0.1)
-            sentiment_score = (sentiment_score * (1 - emoji_weight)) + (emoji_score * emoji_weight)
+            sentiment_score = (sentiment_score * (1-emoji_weight)) + (emoji_score * emoji_weight)
 
         # Normalize to [-1, 1] range
         sentiment_score = max(-1.0, min(1.0, sentiment_score))

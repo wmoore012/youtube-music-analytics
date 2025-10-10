@@ -7,9 +7,7 @@ Checks EVERY SINGLE TABLE AND NOTEBOOK CHART to ensure all 6 artists appear corr
 This is the definitive validation that catches any missing artist issues.
 """
 
-import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 
@@ -41,8 +39,8 @@ def check_database_tables():
         print(f"   Found: {len(db_artists)} artists")
         print(f"   Expected: {EXPECTED_COUNT} artists")
 
-        missing = EXPECTED_ARTISTS - db_artists
-        unexpected = db_artists - EXPECTED_ARTISTS
+        missing = EXPECTED_ARTISTS-db_artists
+        unexpected = db_artists-EXPECTED_ARTISTS
 
         if missing:
             print(f"   ❌ Missing: {missing}")

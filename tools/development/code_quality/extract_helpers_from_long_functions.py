@@ -15,9 +15,9 @@ Usage:
 """
 
 import ast
-from pathlib import Path
 import sys
-from typing import Dict, List, Tuple
+from pathlib import Path
+from typing import List, Tuple
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -38,7 +38,7 @@ def analyze_long_functions() -> List[Tuple[str, str, int, List[str]]]:
 
         for py_file in dir_path.glob("**/*.py"):
             try:
-                with open(py_file, "r", encoding="utf - 8") as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
                     lines = content.splitlines()
 
@@ -48,11 +48,11 @@ def analyze_long_functions() -> List[Tuple[str, str, int, List[str]]]:
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                         start_line = node.lineno
                         end_line = node.end_lineno or start_line
-                        line_count = end_line - start_line + 1
+                        line_count = end_line-start_line + 1
 
                         if line_count > 50:  # Focus on really long functions
                             # Analyze function content for breakdown suggestions
-                            function_lines = lines[start_line - 1 : end_line]
+                            function_lines = lines[start_line-1 : end_line]
                             suggestions = analyze_function_for_breakdown(node, function_lines)
 
                             long_functions.append(
@@ -142,7 +142,7 @@ def create_helper_extraction_plan():
     critical_functions = [f for f in long_functions if f[2] > 100]
 
     if critical_functions:
-        print("🔴 CRITICAL - Functions over 100 lines (immediate attention needed):")
+        print("🔴 CRITICAL-Functions over 100 lines (immediate attention needed):")
         print("-" * 60)
 
         for file_path, func_name, line_count, suggestions in critical_functions[:10]:
@@ -157,7 +157,7 @@ def create_helper_extraction_plan():
     medium_functions = [f for f in long_functions if 50 < f[2] <= 100]
 
     if medium_functions:
-        print("🟡 MEDIUM - Functions 50 - 100 lines (should be addressed):")
+        print("🟡 MEDIUM-Functions 50-100 lines (should be addressed):")
         print("-" * 60)
 
         for file_path, func_name, line_count, suggestions in medium_functions[:5]:
@@ -191,7 +191,7 @@ def create_helper_extraction_plan():
     # Determine completion status
     if len(critical_functions) == 0:
         print("✅ No critical function length violations")
-        print("🎉 Task 2.2: Extract Helper Functions - COMPLETED")
+        print("🎉 Task 2.2: Extract Helper Functions-COMPLETED")
         return True
     else:
         print(f"⚠️ {len(critical_functions)} critical functions need refactoring")

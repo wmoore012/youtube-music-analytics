@@ -1,8 +1,8 @@
 # web / atomic_cache.py
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 CACHE_FILE = ".registry_cache.json"
 
@@ -11,14 +11,14 @@ def _atomic_write(path: str, data: str) -> None:
     """Atomically write data to file using temp file + rename and fsync directory entry."""
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    tmp = tempfile.NamedTemporaryFile(delete=False, dir=p.parent, mode="w", encoding="utf - 8")
+    tmp = tempfile.NamedTemporaryFile(delete=False, dir=p.parent, mode="w", encoding="utf-8")
     try:
         tmp.write(data)
         tmp.flush()
         os.fsync(tmp.fileno())  # Force write to disk
         tmp.close()
         os.replace(tmp.name, p)  # atomic on POSIX / NTFS
-        # fsync directory entry for durability (best - effort)
+        # fsync directory entry for durability (best-effort)
         try:
             dir_fd = os.open(str(p.parent), os.O_DIRECTORY)
             try:
@@ -39,7 +39,7 @@ def remember(label: str, obj):
     cache = {}
     if os.path.exists(CACHE_FILE):
         try:
-            with open(CACHE_FILE, encoding="utf - 8") as f:
+            with open(CACHE_FILE, encoding="utf-8") as f:
                 cache = json.load(f)
         except (json.JSONDecodeError, IOError):
             cache = {}
@@ -52,7 +52,7 @@ def recall(label: str, default=None):
     """Retrieve object from cache."""
     if os.path.exists(CACHE_FILE):
         try:
-            with open(CACHE_FILE, encoding="utf - 8") as f:
+            with open(CACHE_FILE, encoding="utf-8") as f:
                 return json.load(f).get(label, default)
         except (json.JSONDecodeError, IOError):
             return default

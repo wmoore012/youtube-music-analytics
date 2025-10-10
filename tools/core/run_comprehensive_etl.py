@@ -10,25 +10,23 @@ This script runs the complete data pipeline:
 5. Notebook execution
 
 Features:
-- Fail - fast error handling
+- Fail-fast error handling
 - Comprehensive logging
 - Progress tracking
 - Data validation at each step
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from datetime import datetime, timedelta
 
-import pandas as pd
 from sqlalchemy import text
 
-from tools.etl.sentiment_analysis import process_sentiment_analysis
+from tools.core.sentiment_analysis import process_sentiment_analysis
 from web.etl_helpers import finish_etl_run, get_engine, start_etl_run
-from youtubeviz.bot_detection import (
+from src.youtubeviz.bot_detection import (
     BotDetectionConfig,
     analyze_bot_patterns,
     store_bot_analysis,
@@ -125,7 +123,7 @@ def run_bot_detection(engine) -> dict:
         config = BotDetectionConfig(
             whitelist_phrases=frozenset(
                 {
-                    # Music - specific legitimate expressions
+                    # Music-specific legitimate expressions
                     "love this",
                     "dope",
                     "this is dope",
@@ -375,7 +373,7 @@ def main():
 
         # Summary report
         print("\n" + "=" * 60)
-        print("🎉 ETL PIPELINE COMPLETE - SUMMARY REPORT")
+        print("🎉 ETL PIPELINE COMPLETE-SUMMARY REPORT")
         print("=" * 60)
 
         print(f"📊 Sentiment Analysis:")

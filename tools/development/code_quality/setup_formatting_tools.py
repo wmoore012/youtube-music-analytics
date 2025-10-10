@@ -12,10 +12,10 @@ Usage:
     python tools / code_quality / setup_formatting_tools.py --all
 """
 
-from pathlib import Path
 import subprocess
 import sys
-from typing import List, Tuple
+from pathlib import Path
+from typing import Tuple
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -115,7 +115,7 @@ class CodeFormattingManager:
         cmd = [sys.executable, "-m", "isort"]
 
         if check_only:
-            cmd.append("--check - only")
+            cmd.append("--check-only")
             cmd.append("--diff")
 
         # Add target directories
@@ -269,7 +269,7 @@ def main():
     # Final status
     print("\n" + "=" * 50)
     if success:
-        print("🎉 TASK 3.1: CONFIGURE CODE FORMATTING TOOLS - COMPLETED")
+        print("🎉 TASK 3.1: CONFIGURE CODE FORMATTING TOOLS-COMPLETED")
         print("✅ Black and isort configured and working")
         print("✅ Code formatting standards established")
         print("✅ All code properly formatted")

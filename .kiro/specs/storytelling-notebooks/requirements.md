@@ -6,7 +6,7 @@ The current notebook system has critical import failures preventing execution an
 
 ## Requirements
 
-### Requirement 1 (CRITICAL - Import Validation)
+### Requirement 1 (CRITICAL-Import Validation)
 
 **User Story:** As a developer, I want to validate that existing notebook imports work correctly, so that I can identify any remaining import issues.
 
@@ -18,7 +18,7 @@ The current notebook system has critical import failures preventing execution an
 4. WHEN testing package installation THEN `pip install -e .` SHALL make all modules importable
 5. IF any imports fail THEN the system SHALL provide clear error messages and solutions
 
-### Requirement 2 (ENHANCEMENT - Advanced Charts)
+### Requirement 2 (ENHANCEMENT-Advanced Charts)
 
 **User Story:** As a music industry analyst, I want advanced chart types with statistical rigor, so that I can make data-driven investment decisions with confidence.
 
@@ -30,7 +30,7 @@ The current notebook system has critical import failures preventing execution an
 4. WHEN comparing artists THEN charts SHALL show uncertainty measures and "needs more data" indicators
 5. IF sample sizes are small THEN charts SHALL apply appropriate statistical corrections
 
-### Requirement 3 (NEW - Interactive Features)
+### Requirement 3 (NEW-Interactive Features)
 
 **User Story:** As an analyst, I want interactive charts with cross-filtering and drill-down capabilities, so that I can explore data dynamically.
 
@@ -169,7 +169,7 @@ is lost during the enhancement process.
 5. IF charts need modification THEN they SHALL be improved incrementally, not
    replaced entirely
 
-### Requirement 11 (NEW - Data Science Grade Charts)
+### Requirement 11 (NEW-Data Science Grade Charts)
 
 **User Story:** As a data scientist, I want charts that implement the 15 advanced chart specifications, so that I can perform rigorous analysis with proper uncertainty handling.
 

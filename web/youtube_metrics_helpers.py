@@ -1,6 +1,6 @@
 
 """
-YouTube metrics helper functions for the iCatalog ETL pipeline.
+YouTube metrics helper functions for the analytics ETL pipeline.
 
 This module provides helper functions for working with YouTube metrics,
 including functions for upserting metrics data with daily snapshots.

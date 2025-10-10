@@ -3,12 +3,12 @@
 Video Filtering System for YouTube ETL Pipeline
 
 This module provides comprehensive video filtering at the API level to prevent
-problematic videos from entering the database. It implements configuration - driven
+problematic videos from entering the database. It implements configuration-driven
 filtering rules and logs all filtering decisions with clear reasoning.
 
 Key Features:
-- Filter videos before database insertion (fail - fast approach)
-- Configuration - driven filtering rules from .env and config files
+- Filter videos before database insertion (fail-fast approach)
+- Configuration-driven filtering rules from .env and config files
 - Comprehensive logging of filtering decisions
 - Support for multiple filtering criteria (video IDs, channel IDs, patterns, etc.)
 - Personal issue handling (as mentioned in requirements)
@@ -22,14 +22,13 @@ Design Principles:
 - Support both blacklist and whitelist approaches
 """
 
-from datetime import datetime
-from enum import Enum
 import json
 import os
 import re
+from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from web.error_handling import ErrorContext, ValidationError, get_error_handler
 from web.models import VideoFilter, YouTubeVideo
@@ -147,13 +146,14 @@ class VideoFilterEngine:
     def _get_default_issue_videos(self) -> Set[str]:
         """Get default problematic video IDs as fallback."""
         default_ids = {
-            "dQw4w9WgXcQ",  # Example - replace with actual problematic video IDs
-            "oHg5SJYRHA0",  # Example - replace with actual problematic video IDs
-            "kJQP7kiw5Fk",  # Example - replace with actual problematic video IDs
-            "fC7oUOUEEi4",  # Example - replace with actual problematic video IDs
+            "dQw4w9WgXcQ",  # Example-replace with actual problematic video IDs
+            "oHg5SJYRHA0",  # Example-replace with actual problematic video IDs
+            "kJQP7kiw5Fk",  # Example-replace with actual problematic video IDs
+            "fC7oUOUEEi4",  # Example-replace with actual problematic video IDs
         }
-        print(f"⚠️ Using default personal issue video IDs - configure actual"
-            " IDs in config / personal_issue_videos.json")  # noqa: E128
+        print(
+            f"⚠️ Using default personal issue video IDs-configure actual" " IDs in config / personal_issue_videos.json"
+        )  # noqa: E128
         return default_ids
 
     def _load_personal_issue_videos(self) -> Set[str]:
@@ -214,7 +214,7 @@ class VideoFilterEngine:
                 video_id=video.video_id,
                 is_filtered=True,
                 reason=FilterReason.PERSONAL_ISSUE,
-                details="Video ID is in personal issue list - known problematic video",
+                details="Video ID is in personal issue list-known problematic video",
                 filter_rule="personal_issue_videos",
             )
         return None

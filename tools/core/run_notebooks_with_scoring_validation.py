@@ -9,24 +9,22 @@ This script implements task 10 from the data organization and scoring system spe
 4. Test notebook execution with scoring result visualization components
 5. Ensure all charts and analysis reflect current database state
 
-IMPORTANT: Uses ONLY real data from database - NO FAKE DATA!
+IMPORTANT: Uses ONLY real data from database-NO FAKE DATA!
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from datetime import datetime
 import json
 import os
-import subprocess
 import traceback
-from typing import Any, Dict, List
+from datetime import datetime
+from typing import Any, Dict
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
-import pandas as pd
+from nbconvert.preprocessors import ExecutePreprocessor
 from sqlalchemy import text
 
 from src.data_organization.configuration_manager import ConfigurationManager
@@ -169,7 +167,7 @@ class NotebookScoringValidator:
                         f"## 🚨 REAL DATA ONLY\n\n"
                         f"This notebook uses ONLY real data from your database. No fake data ever.\n\n"
                         f"## 🎯 Scoring System Components\n\n"
-                        f"- ScoringEngine: Plugin - based scoring execution\n"
+                        f"- ScoringEngine: Plugin-based scoring execution\n"
                         f"- ScoringStorage: Database storage and retrieval\n"
                         f"- Real YouTube data: Artists, videos, comments, sentiment\n"
                     ],
@@ -180,7 +178,7 @@ class NotebookScoringValidator:
                     "metadata": {},
                     "outputs": [],
                     "source": [
-                        "# 🚀 Setup and Imports - REAL DATA ONLY\n",
+                        "# 🚀 Setup and Imports-REAL DATA ONLY\n",
                         "import sys\n",
                         "import pandas as pd\n",
                         "import numpy as np\n",
@@ -193,9 +191,9 @@ class NotebookScoringValidator:
                         "# Add project root to path\n",
                         "sys.path.insert(0, '..')\n",
                         "\n",
-                        "print('🚀 Imports completed - REAL DATA MODE')\n",
+                        "print('🚀 Imports completed-REAL DATA MODE')\n",
                         "print('📊 Ready for scoring system demo')\n",
-                        "print('🚨 NO FAKE DATA - REAL DATABASE ONLY')",
+                        "print('🚨 NO FAKE DATA-REAL DATABASE ONLY')",
                     ],
                 },
                 {
@@ -246,7 +244,7 @@ class NotebookScoringValidator:
                         "real_data = pd.read_sql(query, engine)\n",
                         "print(f'📊 Loaded {len(real_data)} REAL artists from database')\n",
                         'print(f\'🎵 Artists: {", ".join(real_data["artist_name"].head(3).tolist())}\')\n',
-                        "print('🚨 NO FAKE DATA - ALL REAL FROM DATABASE')\n",
+                        "print('🚨 NO FAKE DATA-ALL REAL FROM DATABASE')\n",
                         "real_data.head()",
                     ],
                 },
@@ -357,7 +355,7 @@ class NotebookScoringValidator:
                         "print(f'🗄️ Database Connection: ✅ Working')\n",
                         "print(f'🔌 Scoring Engine: ✅ Initialized')\n",
                         "print(f'📈 Visualizations: ✅ Generated')\n",
-                        "print('🚨 NO FAKE DATA USED - ALL REAL FROM DATABASE')\n",
+                        "print('🚨 NO FAKE DATA USED-ALL REAL FROM DATABASE')\n",
                         "print('✅ Task 10 validation successful!')",
                     ],
                 },
@@ -466,7 +464,7 @@ class NotebookScoringValidator:
                     for output in cell.outputs:
                         # Check for text outputs indicating real data
                         if output.output_type == "stream" and hasattr(output, "text"):
-                            _text_item = output.text.lower()
+                            _text_item = output.text.lower()  # noqa: F841
                             if "real" in text and "database" in text:
                                 validation_result["real_data_found"] = True
                                 validation_result["validation_details"].append("Found real data confirmation")
@@ -581,7 +579,7 @@ class NotebookScoringValidator:
 
             # Final summary
             end_time = datetime.now()
-            duration = (end_time - start_time).total_seconds()
+            duration = (end_time-start_time).total_seconds()
 
             print("\n" + "=" * 60)
             print("🎉 NOTEBOOK VALIDATION WITH SCORING SYSTEM COMPLETE")

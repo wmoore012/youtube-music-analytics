@@ -5,11 +5,11 @@ This module provides bulletproof error handling, data validation warnings,
 fallback chart options, and performance monitoring for chart generation.
 """
 
-from datetime import datetime
-from functools import wraps
 import logging
 import time
 import traceback
+from datetime import datetime
+from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -193,7 +193,7 @@ def bulletproof_chart(chart_name: str, required_columns: List[str]):
                     return None
 
                 # Validate data quality (warnings only)
-                _data_issues = error_handler.validate_data_quality(df, chart_name, required_columns)
+                _data_issues = error_handler.validate_data_quality(df, chart_name, required_columns)  # noqa: F841
 
                 # Execute chart function
                 logger.info(f"Generating chart: {chart_name}")
@@ -331,6 +331,6 @@ def example_bulletproof_chart(df: pd.DataFrame) -> go.Figure:
 
         fig.add_trace(go.Bar(x=artist_views["artist_name"], y=artist_views["view_count"], name="Views"))
 
-        fig.update_layout(title="Artist Views - Real Data", xaxis_title="Artist", yaxis_title="Total Views")
+        fig.update_layout(title="Artist Views-Real Data", xaxis_title="Artist", yaxis_title="Total Views")
 
     return fig

@@ -1,5 +1,5 @@
 """
-Post - archive notebook validation testing.
+Post-archive notebook validation testing.
 
 This module runs comprehensive notebook tests AFTER archiving operations
 to ensure that the newest notebooks in the main directory are working
@@ -9,11 +9,11 @@ This test is designed to be run as part of the CI / CD pipeline after
 any archiving or cleanup operations to validate the current state.
 """
 
-from datetime import datetime
 import os
-from pathlib import Path
 import shutil
 import tempfile
+from datetime import datetime
+from pathlib import Path
 from typing import Dict, List
 
 import pytest
@@ -33,13 +33,13 @@ class PostArchiveNotebookValidator:
     """
 
     def __init__(self):
-        """Initialize the post - archive validator."""
+        """Initialize the post-archive validator."""
         self.tester = RobustNotebookTester(timeout=300)
         self.notebooks_dir = Path("notebooks")
         self.archive_dir = Path("notebooks / archive")
 
     def get_current_notebooks(self) -> List[Path]:
-        """Get list of current (non - archived) notebooks."""
+        """Get list of current (non-archived) notebooks."""
         if not self.notebooks_dir.exists():
             return []
 
@@ -239,7 +239,7 @@ class PostArchiveNotebookValidator:
 
 
 class TestPostArchiveNotebookValidation:
-    """Pytest test class for post - archive notebook validation."""
+    """Pytest test class for post-archive notebook validation."""
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -265,7 +265,7 @@ class TestPostArchiveNotebookValidation:
                 print(f"  - {warning}")
 
     def test_current_notebooks_execute_successfully(self):
-        """Test that all current (non - archived) notebooks execute successfully."""
+        """Test that all current (non-archived) notebooks execute successfully."""
         current_notebooks = self.validator.get_current_notebooks()
 
         if not current_notebooks:
@@ -434,7 +434,7 @@ class TestPostArchiveNotebookValidation:
             print("ℹ️  No charts found in current notebooks")
 
     def test_generate_post_archive_report(self):
-        """Generate comprehensive post - archive validation report."""
+        """Generate comprehensive post-archive validation report."""
         # Run all validations
         archive_results = self.validator.validate_archive_structure()
         quality_results = self.validator.validate_notebook_quality_standards()
@@ -442,7 +442,7 @@ class TestPostArchiveNotebookValidation:
 
         # Generate report
         report_lines = [
-            "# Post - Archive Notebook Validation Report",
+            "# Post-Archive Notebook Validation Report",
             f"Generated: {datetime.utcnow().isoformat()}Z",
             "",
             "## Archive Structure Validation",
@@ -492,10 +492,10 @@ class TestPostArchiveNotebookValidation:
         report_path = Path("test_reports / post_archive_validation_report.md")
         report_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(report_path, "w", encoding="utf - 8") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
 
-        print(f"\n📋 Post - archive validation report generated: {report_path}")
+        print(f"\n📋 Post-archive validation report generated: {report_path}")
 
         # Also generate the detailed execution report
         detailed_report = self.validator.tester.generate_test_report("test_reports / post_archive_execution_report.md")
@@ -506,7 +506,7 @@ class TestPostArchiveNotebookValidation:
 if __name__ == "__main__":
     validator = PostArchiveNotebookValidator()
 
-    print("🔍 Running post - archive notebook validation...")
+    print("🔍 Running post-archive notebook validation...")
 
     # Run all validations
     print("\n1. Validating archive structure...")
@@ -526,4 +526,4 @@ if __name__ == "__main__":
     print(f"   Improvements: {len(comparison_results['improvements'])}")
     print(f"   Regressions: {len(comparison_results['regressions'])}")
 
-    print("\n✅ Post - archive validation complete!")
+    print("\n✅ Post-archive validation complete!")

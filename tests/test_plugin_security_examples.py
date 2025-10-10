@@ -2,7 +2,7 @@
 Tests for plugin security examples and enhanced security validation.
 
 This module tests the security patterns, validation mechanisms, and
-best practices for open - source plugin development.
+best practices for open-source plugin development.
 """
 
 import time
@@ -39,7 +39,7 @@ class TestSecurePluginExample:
         assert metadata.name == "secure_example"
         assert metadata.version == "1.0.0"
         assert "security" in metadata.tags
-        assert "best - practices" in metadata.tags
+        assert "best-practices" in metadata.tags
 
         # Validate metadata
         validation_result = metadata.validate()

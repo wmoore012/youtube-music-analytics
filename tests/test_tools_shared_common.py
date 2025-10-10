@@ -1,5 +1,5 @@
 """
-Tests for tools / shared / common.py - shared base classes and utilities.
+Tests for tools / shared / common.py-shared base classes and utilities.
 
 This test suite validates:
 - ToolBase functionality (logging, configuration, error handling)
@@ -9,8 +9,8 @@ This test suite validates:
 """
 
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -34,9 +34,9 @@ class TestToolConfig:
 
     def test_tool_config_creation(self):
         """Test basic ToolConfig creation."""
-        config = ToolConfig(name="test - tool", version="1.0.0", description="Test tool for validation")
+        config = ToolConfig(name="test-tool", version="1.0.0", description="Test tool for validation")
 
-        assert config.name == "test - tool"
+        assert config.name == "test-tool"
         assert config.version == "1.0.0"
         assert config.description == "Test tool for validation"
         assert config.dependencies == []
@@ -47,7 +47,7 @@ class TestToolConfig:
     def test_tool_config_validation_success(self):
         """Test successful validation of complete config."""
         config = ToolConfig(
-            name="valid - tool",
+            name="valid-tool",
             version="2.1.0",
             description="A valid tool configuration",
             dependencies=["python>=3.8"],
@@ -73,7 +73,7 @@ class TestToolConfig:
     def test_tool_config_missing_env_vars(self):
         """Test validation failure for missing environment variables."""
         config = ToolConfig(
-            name="test - tool", version="1.0.0", description="Test tool", environment_vars=["MISSING_VAR"]
+            name="test-tool", version="1.0.0", description="Test tool", environment_vars=["MISSING_VAR"]
         )
 
         issues = config.validate()
@@ -89,13 +89,13 @@ class TestToolRegistry:
 
     def test_register_valid_tool(self):
         """Test registering a valid tool."""
-        config = ToolConfig(name="test - tool", version="1.0.0", description="Test tool")
+        config = ToolConfig(name="test-tool", version="1.0.0", description="Test tool")
 
         self.registry.register_tool(config)
-        found_tool = self.registry.find_tool("test - tool")
+        found_tool = self.registry.find_tool("test-tool")
 
         assert found_tool is not None
-        assert found_tool.name == "test - tool"
+        assert found_tool.name == "test-tool"
         assert found_tool.version == "1.0.0"
 
     def test_register_invalid_tool(self):
@@ -122,15 +122,15 @@ class TestToolRegistry:
 
     def test_list_tools_by_category(self):
         """Test listing tools filtered by category."""
-        config1 = ToolConfig(name="core - tool", version="1.0.0", description="Core tool", category="core")
-        config2 = ToolConfig(name="dev - tool", version="1.0.0", description="Dev tool", category="development")
+        config1 = ToolConfig(name="core-tool", version="1.0.0", description="Core tool", category="core")
+        config2 = ToolConfig(name="dev-tool", version="1.0.0", description="Dev tool", category="development")
 
         self.registry.register_tool(config1)
         self.registry.register_tool(config2)
 
         core_tools = self.registry.list_tools(category="core")
         assert len(core_tools) == 1
-        assert core_tools[0].name == "core - tool"
+        assert core_tools[0].name == "core-tool"
 
     def test_validate_tools(self):
         """Test validation of all registered tools."""
@@ -152,7 +152,7 @@ class TestToolRegistry:
 class MockTool(ToolBase):
     """Mock tool for testing ToolBase functionality."""
 
-    def __init__(self, name="mock - tool", required_vars=None):
+    def __init__(self, name="mock-tool", required_vars=None):
         self._required_vars = required_vars or []
         super().__init__(name=name, version="1.0.0")
 
@@ -173,7 +173,7 @@ class TestToolBase:
         """Test basic tool initialization."""
         tool = MockTool()
 
-        assert tool.name == "mock - tool"
+        assert tool.name == "mock-tool"
         assert tool.version == "1.0.0"
         assert tool.logger is not None
         assert tool.config is not None
@@ -191,7 +191,7 @@ class TestToolBase:
         """Test successful validation when required vars are present."""
         with patch.dict(os.environ, {"REQUIRED_VAR": "test_value"}):
             tool = MockTool(required_vars=["REQUIRED_VAR"])
-            assert tool.name == "mock - tool"
+            assert tool.name == "mock-tool"
 
     def test_get_config_value(self):
         """Test configuration value retrieval."""
@@ -224,7 +224,7 @@ class TestToolBase:
         tool = MockTool()
 
         result = tool.validate_input(
-            "valid_string", lambda x: isinstance(x, str) and len(x) > 0, "Must be non - empty string"
+            "valid_string", lambda x: isinstance(x, str) and len(x) > 0, "Must be non-empty string"
         )
 
         assert result == "valid_string"
@@ -234,9 +234,9 @@ class TestToolBase:
         tool = MockTool()
 
         with pytest.raises(ValidationError) as exc_info:
-            tool.validate_input("", lambda x: len(x) > 0, "Must be non - empty string")
+            tool.validate_input("", lambda x: len(x) > 0, "Must be non-empty string")
 
-        assert "Must be non - empty string" in str(exc_info.value)
+        assert "Must be non-empty string" in str(exc_info.value)
 
     def test_handle_error_tool_error(self):
         """Test error handling preserves ToolError types."""
@@ -258,7 +258,7 @@ class TestToolBase:
         with pytest.raises(ExecutionError) as exc_info:
             tool.handle_error(original_error, "test context")
 
-        assert "Error in mock - tool (test context)" in str(exc_info.value)
+        assert "Error in mock-tool (test context)" in str(exc_info.value)
         assert exc_info.value.__cause__ is original_error
 
     def test_context_manager(self):
@@ -271,7 +271,7 @@ class TestToolBase:
                 cleanup_called = True
 
         with TestTool() as tool:
-            assert tool.name == "mock - tool"
+            assert tool.name == "mock-tool"
 
         assert cleanup_called
 
@@ -356,10 +356,10 @@ class TestGlobalRegistry:
 
     def test_register_and_find_tool(self):
         """Test global register and find functions."""
-        config = ToolConfig(name="global - test - tool", version="1.0.0", description="Global test tool")
+        config = ToolConfig(name="global-test-tool", version="1.0.0", description="Global test tool")
 
         register_tool(config)
-        found_tool = find_tool("global - test - tool")
+        found_tool = find_tool("global-test-tool")
 
         assert found_tool is not None
-        assert found_tool.name == "global - test - tool"
+        assert found_tool.name == "global-test-tool"

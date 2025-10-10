@@ -8,9 +8,9 @@ It redirects to the new unified setup tool with appropriate warnings.
 DEPRECATED: Use tools / core / unified_setup.py instead.
 """
 
-from pathlib import Path
 import sys
 import warnings
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent

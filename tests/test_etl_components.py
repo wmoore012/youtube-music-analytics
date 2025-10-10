@@ -9,8 +9,8 @@ This module provides unit tests for all major ETL components to ensure:
 - Component integration
 """
 
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -98,7 +98,7 @@ class TestDataValidation:
             {
                 "video_id": "oHg5SJYRHA0",
                 "title": "Valid Video 2",
-                "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
+                "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
                 "channel_title": "Test Channel 2",
                 "published_at": datetime.now(),
                 "view_count": 2000,
@@ -264,7 +264,7 @@ class TestVideoFiltering:
             YouTubeVideo(
                 video_id="oHg5SJYRHA0",  # Will pass
                 title="Valid Video",
-                channel_id="UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
+                channel_id="UC-9-kyTW8ZkZNDHQJ6FgpwQ",
                 channel_title="Test Channel 2",
                 published_at=datetime.now(),
                 view_count=2000,
@@ -465,7 +465,7 @@ class TestPerformanceAndScaling:
             insert_test_video(test_engine, video)
 
         end_time = datetime.now()
-        processing_time = (end_time - start_time).total_seconds()
+        processing_time = (end_time-start_time).total_seconds()
 
         # Verify all videos were processed
         assert get_table_count(test_engine, "youtube_videos") == len(large_batch)
@@ -487,7 +487,7 @@ class TestPerformanceAndScaling:
             "9bZkp7q19f0",
             "fC7oUOUEEi4",
             "YQHsXMglC9A",
-            "3tmd - ClpJxA",
+            "3tmd-ClpJxA",
             "dQw4w9WgXcR",
         ]
 
@@ -505,7 +505,7 @@ class TestPerformanceAndScaling:
         assert len(large_dataset) == 100
 
         # Memory usage should be reasonable
-        # (This is a basic test - in production you'd use memory profiling tools)
+        # (This is a basic test-in production you'd use memory profiling tools)
         import sys
 
         dataset_size = sys.getsizeof(large_dataset)

@@ -63,7 +63,7 @@ class TestEducationalSidebar:
     """Test educational sidebar generation."""
 
     def test_engagement_rate_beginner(self):
-        """Test beginner - level engagement rate explanation."""
+        """Test beginner-level engagement rate explanation."""
         result = educational_sidebar("engagement_rate", "beginner")
 
         assert "engagement rate" in result.lower()
@@ -72,7 +72,7 @@ class TestEducationalSidebar:
         assert len(result) > 100
 
     def test_engagement_rate_intermediate(self):
-        """Test intermediate - level engagement rate explanation."""
+        """Test intermediate-level engagement rate explanation."""
         result = educational_sidebar("engagement_rate", "intermediate")
 
         assert "engagement rate =" in result.lower()
@@ -81,7 +81,7 @@ class TestEducationalSidebar:
         assert "%" in result
 
     def test_engagement_rate_advanced(self):
-        """Test advanced - level engagement rate explanation."""
+        """Test advanced-level engagement rate explanation."""
         result = educational_sidebar("engagement_rate", "advanced")
 
         assert "engagement velocity" in result.lower()
@@ -276,8 +276,9 @@ class TestIntegration:
 
         # Generate chart context
         chart_help = chart_context(
-            "bar_chart", ["Compare engagement rates", "Look for clear winners"], [
-                "Invest in higher - engagement artists"]
+            "bar_chart",
+            ["Compare engagement rates", "Look for clear winners"],
+            ["Invest in higher-engagement artists"],
         )
 
         # All should be substantial content

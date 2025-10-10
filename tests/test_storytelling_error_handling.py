@@ -57,7 +57,7 @@ class TestDataValidation:
                 "artist_name": ["Artist A", "Artist B", "Artist C"],
                 "view_count": [1000, 2000, 1500],
                 "like_count": [100, 200, 150],
-                "published_at": pd.date_range("2024 - 01 - 01", periods=3),
+                "published_at": pd.date_range("2024-01-01", periods=3),
             }
         )
 
@@ -264,7 +264,7 @@ class TestDataQualityReport:
                 "artist_name": ["Artist A", "Artist B", "Artist C"],
                 "view_count": [1000, 2000, 1500],
                 "like_count": [100, 200, 150],
-                "published_at": pd.date_range("2024 - 01 - 01", periods=3),
+                "published_at": pd.date_range("2024-01-01", periods=3),
             }
         )
 
@@ -321,7 +321,7 @@ class TestErrorRecoverySuggestions:
     def test_no_data_error_suggestions(self):
         """Test suggestions for no data error."""
         suggestions = create_error_recovery_suggestions(
-            "no_data", {"date_range": "2024 - 01 - 01 to 2024 - 01 - 07", "artists": ["Artist A"]}
+            "no_data", {"date_range": "2024-01-01 to 2024-01-07", "artists": ["Artist A"]}
         )
 
         assert "No Data Found" in suggestions
@@ -329,7 +329,7 @@ class TestErrorRecoverySuggestions:
         assert "artist names" in suggestions
         assert "database connection" in suggestions
         assert "Context:" in suggestions
-        assert "date_range: 2024 - 01 - 01 to 2024 - 01 - 07" in suggestions
+        assert "date_range: 2024-01-01 to 2024-01-07" in suggestions
 
     def test_insufficient_data_error_suggestions(self):
         """Test suggestions for insufficient data error."""
@@ -347,7 +347,7 @@ class TestErrorRecoverySuggestions:
         assert "Data Quality Issues" in suggestions
         assert "quality report" in suggestions
         assert "confidence indicators" in suggestions
-        assert "real - world analytics" in suggestions
+        assert "real-world analytics" in suggestions
 
     def test_calculation_error_suggestions(self):
         """Test suggestions for calculation errors."""
@@ -378,7 +378,7 @@ class TestIntegrationScenarios:
                 "view_count": [1000, None, None, 1500, 2000, None, 1800, 1200, None, 1600],  # 40% missing
                 "like_count": [100, 200, 150, 180, 220, 160, 190, 140, 170, 200],
                 "comment_count": [5, 8, 3, 7, 12, 4, 9, 6, 2, 10],  # Total 66 < 100 threshold
-                "published_at": pd.date_range("2024 - 01 - 01", periods=10),
+                "published_at": pd.date_range("2024-01-01", periods=10),
             }
         )
 

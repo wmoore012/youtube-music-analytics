@@ -1,9 +1,9 @@
 # web / db_guard.py
 from __future__ import annotations
 
-from functools import wraps
 import logging
 import os
+from functools import wraps
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Callable
@@ -32,11 +32,16 @@ def latency_warn(ms: int = 500) -> Callable[[Callable[..., Any]], Callable[..., 
     return deco
 
 
-# ── Engine factory with kill - switch & RO mode ──────────────────────────────
+# ── Engine factory with kill-switch & RO mode ──────────────────────────────
 def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = False) -> Engine:
-    """Get database engine with kill - switch and optional read - only mode."""
+    """Get database engine with kill-switch and optional read-only mode."""
     schema_normalized = (schema or "").strip().lower()
-    # Best - effort load of .env from repo root if not already present in env
+    # Normalize legacy schema aliases to neutral name
+    LEGACY_PUBLIC_ALIASES = {"icatalog_public"}
+    if schema_normalized in LEGACY_PUBLIC_ALIASES:
+        schema_normalized = "public"
+
+    # Best-effort load of .env from repo root if not already present in env
     try:
         repo_root = Path(__file__).resolve().parents[1]
         load_dotenv(dotenv_path=repo_root / ".env", override=False)
@@ -45,28 +50,23 @@ def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = Fals
 
     database_url = os.getenv("DATABASE_URL")
 
-    if schema_normalized == "icatalog_public":
-        url = database_url
-        if not url:
-            raise ValueError("DATABASE_URL environment variable not set")
-    else:
-        # Construct URL from components (default to the local analytics database)
-        host = os.getenv("DB_HOST", "127.0.0.1")
-        port = os.getenv("DB_PORT", "3306")
-        user = os.getenv("DB_USER", "root")
-        password = os.getenv("DB_PASS")
+    # Construct URL from components (default to the local analytics database)
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    port = os.getenv("DB_PORT", "3306")
+    user = os.getenv("DB_USER", "root")
+    password = os.getenv("DB_PASS")
 
-        if not password:
-            if database_url:
-                url = database_url
-            else:
-                raise ValueError("DB_PASS environment variable not set")
+    if not password:
+        if database_url:
+            url = database_url
         else:
-            db_name = os.getenv("DB_NAME", "yt_proj")
-            # Allow explicit schema overrides when provided
-            if schema_normalized and schema_normalized not in {"public", "icatalog_public"}:
-                db_name = schema
-            url = f"mysql + pymysql://{user}:{password}@{host}:{port}/{db_name}"
+            raise ValueError("DB_PASS environment variable not set")
+    else:
+        db_name = os.getenv("DB_NAME", "yt_proj")
+        # Allow explicit schema overrides when provided (treat legacy aliases as public)
+        if schema_normalized and schema_normalized != "public":
+            db_name = schema
+        url = f"mysql + pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
     if ro:
         # Check if URL already has query parameters

@@ -62,7 +62,7 @@ the beat tho,positive,praise_production,0.95,Casual appreciation for beat,True,F
 beat goes hard,positive,praise_production,0.95,Beat is impressive,True,False
 beat is fire,positive,praise_production,0.95,Beat is excellent,True,False
 beat slaps,positive,praise_production,0.9,Beat hits hard,True,False
-who made this beat,positive,praise_production,0.9,Asking about producer - shows appreciation,True,False
+who made this beat,positive,praise_production,0.9,Asking about producer-shows appreciation,True,False
 who made this beat bro,positive,praise_production,0.9,Casual inquiry about producer,True,False
 who produced this,positive,praise_production,0.85,Asking about producer,True,False
 car test passed,positive,praise_production,0.85,Mix sounds good in car speakers,True,False
@@ -80,9 +80,9 @@ yes sir,positive,hype_excitement,0.8,Formal affirmative excitement,False,False
 bitchhh,positive,hype_excitement,0.8,Extended exclamation of excitement,False,False
 bitch it's giving,positive,hype_excitement,0.85,Excited approval,False,True
 bitch it's givinnnng,positive,hype_excitement,0.85,Very excited approval,False,True
-periodt,positive,hype_excitement,0.85,Period with emphasis - end of discussion,False,True
+periodt,positive,hype_excitement,0.85,Period with emphasis-end of discussion,False,True
 period,positive,hype_excitement,0.75,"End of discussion, agreement",False,True
-no cap,positive,hype_excitement,0.8,No lie/for real - agreement,False,True
+no cap,positive,hype_excitement,0.8,No lie/for real-agreement,False,True
 for the culture,positive,cultural_identity,0.9,Supporting cultural representation,False,False
 for the culture fr,positive,cultural_identity,0.9,"Supporting culture, for real",False,False
 for the girls,positive,cultural_identity,0.85,Supporting female empowerment,False,False
@@ -173,9 +173,9 @@ who mixed this,neutral,neutral_questions,0.85,Information request about mixing,T
 who mixed this?,neutral,neutral_questions,0.85,Question about audio engineer,True,False
 what's the sample,neutral,neutral_questions,0.9,Information request about sample,True,False
 what's the sample?,neutral,neutral_questions,0.9,Question about musical sample,True,False
-"Hottie, Baddie, Maddie",positive,praise_performance,0.85,Real fan comment - compliment sequence,False,False
-Cuz I willie,positive,hype_excitement,0.7,Real fan comment - playful expression,False,True
-my legs are spread,positive,hype_excitement,0.75,Real fan comment - excitement/anticipation,False,False
+"Hottie, Baddie, Maddie",positive,praise_performance,0.85,Real fan comment-compliment sequence,False,False
+Cuz I willie,positive,hype_excitement,0.7,Real fan comment-playful expression,False,True
+my legs are spread,positive,hype_excitement,0.75,Real fan comment-excitement/anticipation,False,False
 wtfff,positive,hype_excitement,0.7,Extended WTF showing excitement,False,True
 wtf,neutral,hype_excitement,0.6,Can be positive or negative depending on context,False,False
-fr,positive,hype_excitement,0.6,For real - agreement/emphasis,False,True
+fr,positive,hype_excitement,0.6,For real-agreement/emphasis,False,True

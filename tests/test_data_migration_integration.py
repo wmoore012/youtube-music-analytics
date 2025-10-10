@@ -1,14 +1,14 @@
 """
 Integration tests for the complete data migration system.
 
-These tests verify the end - to - end functionality of migrating CSV / JSON files
+These tests verify the end-to-end functionality of migrating CSV / JSON files
 to database tables with validation, backup, and archiving capabilities.
 """
 
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pandas as pd

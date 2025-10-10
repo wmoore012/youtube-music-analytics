@@ -3,9 +3,7 @@
 import importlib
 import importlib.util
 import inspect
-import os
 from pathlib import Path
-import sys
 from typing import Dict, List, Optional, Type
 
 from .scoring_plugin import ScoringPlugin, ValidationResult
@@ -165,7 +163,7 @@ class PluginManager:
         except ImportError as e:
             raise PluginLoadingError(f"Failed to import plugin module {module_path}: {e}")
         except (PluginLoadingError, PluginValidationError):
-            raise  # Re - raise these specific exceptions
+            raise  # Re-raise these specific exceptions
         except Exception as e:
             raise PluginLoadingError(f"Failed to load plugin {plugin_class_path}: {e}")
 
@@ -209,7 +207,7 @@ class PluginManager:
             errors=errors,
             warnings=warnings,
             checked_items=len(required_methods) + 1,
-            passed_items=len(required_methods) + 1 - len(errors),
+            passed_items=len(required_methods) + 1-len(errors),
         )
 
     def get_plugin_instance(self, plugin_name: str) -> ScoringPlugin:

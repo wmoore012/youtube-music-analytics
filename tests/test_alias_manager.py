@@ -7,8 +7,6 @@ from pathlib import Path
 import pytest
 from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, text
 
-from src.youtubeviz.data import _build_artist_alias_map
-
 # Import functions under test
 from tools.alias_manager import (
     ensure_alias_table,
@@ -17,10 +15,12 @@ from tools.alias_manager import (
     write_aliases_json,
 )
 
+from src.youtubeviz.data import _build_artist_alias_map
+
 
 @pytest.fixture()
 def sqlite_engine(tmp_path: Path):
-    # Use a file - backed SQLite DB so multiple connections see the same schema
+    # Use a file-backed SQLite DB so multiple connections see the same schema
     db_path = tmp_path / "test_aliases.sqlite"
     eng = create_engine(f"sqlite:///{db_path}")
     # Minimal schema for tests (artists + youtube_videos are optional; tool does not require artists)
@@ -52,7 +52,7 @@ def test_ensure_alias_table_creates(sqlite_engine):
     # Should create artist_aliases if missing, idempotently
     tbl = ensure_alias_table(sqlite_engine)
     assert tbl is not None
-    # Re - run should not raise
+    # Re-run should not raise
     tbl2 = ensure_alias_table(sqlite_engine)
     assert tbl2 is not None
 
@@ -61,7 +61,7 @@ def test_upsert_and_dump_json(sqlite_engine, tmp_path: Path):
     # Create alias table
     ensure_alias_table(sqlite_engine)
     # Upsert a couple of aliases for Enchanting and ensure canonical row exists
-    n = upsert_aliases(sqlite_engine, "Enchanting", ["LuvEnchantingINC", "enchanting"])  # case - insensitive allowed
+    n = upsert_aliases(sqlite_engine, "Enchanting", ["LuvEnchantingINC", "enchanting"])  # case-insensitive allowed
     assert n >= 1
     # Verify rows exist
     with sqlite_engine.connect() as conn:
@@ -84,7 +84,7 @@ def test_build_alias_map_merges_db_and_env(sqlite_engine, monkeypatch):
     ensure_alias_table(sqlite_engine)
     upsert_aliases(sqlite_engine, "Enchanting", ["LuvEnchantingINC"])  # mapping
 
-    # No monkeypatch needed with natural - key schema
+    # No monkeypatch needed with natural-key schema
 
     # Overlay ENV mapping
     monkeypatch.setenv(

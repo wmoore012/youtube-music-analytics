@@ -87,9 +87,9 @@ jobs:
         sample_videos = pd.DataFrame({
             'video_id': ['test_vid_1', 'test_vid_2', 'test_vid_3'],
             'title': [
-                'Test Artist - Test Song [Official Music Video]',
-                'Test Artist - Another Song [Official Audio]',
-                'Test Artist - Social Post'
+                'Test Artist-Test Song [Official Music Video]',
+                'Test Artist-Another Song [Official Audio]',
+                'Test Artist-Social Post'
             ],
             'channel_title': ['Test Artist', 'Test Artist', 'Test Artist'],
             'published_at': [datetime.now() - timedelta(days=1)] * 3,

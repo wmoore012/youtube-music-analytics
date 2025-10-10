@@ -32,7 +32,7 @@ class ArtistDataMigrator:
 
     def __init__(self, dry_run=False):
         self.dry_run = dry_run
-        self.source_engine = None  # icatalog_public
+        self.source_engine = None
         self.target_engine = None  # yt_proj
         self.migration_log = []
 

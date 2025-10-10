@@ -64,7 +64,7 @@ score_result = output_validator.validate_score_range(
 # Generate metric explanations
 explanation = metric_explainer.explain_momentum_score(0.85)
 print(explanation)
-# Output: "Momentum Score: 0.85 - Exceptional momentum - rapid acceleration..."
+# Output: "Momentum Score: 0.85-Exceptional momentum-rapid acceleration..."
 ```
 
 ## Components

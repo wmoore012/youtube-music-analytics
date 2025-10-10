@@ -9,9 +9,8 @@ Usage:
     python examples / helper_functions_demo.py
 """
 
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +19,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date helpers  # noqa: E501
     clean_text_field,
     create_progress_bar,
-    execute_query_safely,
     format_duration,
     format_number,
     format_percentage,
@@ -138,8 +136,8 @@ def demo_error_handling():
 
 
 def demo_real_world_scenario():
-    """Demonstrate a real - world scenario using multiple helpers."""
-    print("🌍 REAL - WORLD SCENARIO DEMO")
+    """Demonstrate a real-world scenario using multiple helpers."""
+    print("🌍 REAL-WORLD SCENARIO DEMO")
     print("-" * 40)
     print("Processing YouTube video analytics data...")
 
@@ -147,12 +145,12 @@ def demo_real_world_scenario():
     raw_video_data = [
         {
             "id": "dQw4w9WgXcQ",
-            "snippet": {"title": "  Never Gonna Give You Up  ", "publishedAt": "2009 - 10 - 25T06:57:33Z"},
+            "snippet": {"title": "  Never Gonna Give You Up  ", "publishedAt": "2009-10-25T06:57:33Z"},
             "statistics": {"viewCount": "1234567890", "likeCount": "12345678", "commentCount": "123456"},
         },
         {
             "id": "invalid_id",  # This will cause validation error
-            "snippet": {"title": "Invalid Video", "publishedAt": "2023 - 01 - 01T12:00:00Z"},
+            "snippet": {"title": "Invalid Video", "publishedAt": "2023-01-01T12:00:00Z"},
             "statistics": {"viewCount": "1000", "likeCount": "50", "commentCount": "10"},
         },
     ]

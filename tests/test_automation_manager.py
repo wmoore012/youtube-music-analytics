@@ -1,7 +1,7 @@
 """Tests for the automation manager cron configuration generator."""
 
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pytest
 

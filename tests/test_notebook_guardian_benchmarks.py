@@ -1,16 +1,16 @@
 """
 Performance benchmarks for Notebook Guardian.
 
-Comprehensive benchmarking suite to measure real - world performance
+Comprehensive benchmarking suite to measure real-world performance
 across different file sizes, complexity levels, and usage patterns.
 """
 
 import json
 import os
-from pathlib import Path
 import statistics
 import tempfile
 import time
+from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
@@ -82,7 +82,7 @@ model = RandomForestClassifier()
             deps = self.detector.detect_dependencies(small_code)
             end = time.perf_counter()
 
-            self.benchmark.add_measurement((end - start) * 1000, items_processed=len(deps))
+            self.benchmark.add_measurement((end-start) * 1000, items_processed=len(deps))
 
         stats = self.benchmark.get_stats()
         print(f"\nSmall File Detection Performance:")
@@ -95,8 +95,8 @@ model = RandomForestClassifier()
         assert stats["mean_throughput"] > 100, f"Throughput too low: {stats['mean_throughput']:.1f} deps / sec"
 
     def test_medium_file_detection_speed(self):
-        """Benchmark dependency detection on medium files (1 - 10KB)."""
-        # Generate medium - sized code file
+        """Benchmark dependency detection on medium files (1-10KB)."""
+        # Generate medium-sized code file
         medium_code_parts = [
             "import pandas as pd",
             "import numpy as np",
@@ -134,7 +134,7 @@ model = RandomForestClassifier()
             deps = self.detector.detect_dependencies(medium_code)
             end = time.perf_counter()
 
-            benchmark.add_measurement((end - start) * 1000, items_processed=len(deps))
+            benchmark.add_measurement((end-start) * 1000, items_processed=len(deps))
 
         stats = benchmark.get_stats()
         print(f"\nMedium File Detection Performance:")
@@ -218,7 +218,7 @@ model = RandomForestClassifier()
             deps = self.detector.detect_dependencies(large_code)
             end = time.perf_counter()
 
-            benchmark.add_measurement((end - start) * 1000, items_processed=len(deps))
+            benchmark.add_measurement((end-start) * 1000, items_processed=len(deps))
 
         stats = benchmark.get_stats()
         print(f"\nLarge File Detection Performance:")
@@ -309,7 +309,7 @@ class TestPythonFileValidationBenchmarks:
                     result = self.validator.validate_file(file_path)
                     end = time.perf_counter()
 
-                    benchmark.add_measurement((end - start) * 1000, items_processed=len(result.functions_found))
+                    benchmark.add_measurement((end-start) * 1000, items_processed=len(result.functions_found))
 
                 stats = benchmark.get_stats()
                 print(f"\n{category.title()} File Validation Performance:")
@@ -379,7 +379,7 @@ if __name__ == "__main__":
 
                     end = time.perf_counter()
 
-                    benchmark.add_measurement((end - start) * 1000, items_processed=len(test_files))
+                    benchmark.add_measurement((end-start) * 1000, items_processed=len(test_files))
 
                 stats = benchmark.get_stats()
                 print(f"\nParallel Validation ({workers} workers):")
@@ -445,7 +445,7 @@ class TestDataValidationBenchmarks:
                 result = self.validator.validate_cell_output(data, schema)
                 end = time.perf_counter()
 
-                benchmark.add_measurement((end - start) * 1000, items_processed=size)
+                benchmark.add_measurement((end-start) * 1000, items_processed=size)
 
             stats = benchmark.get_stats()
             print(f"\nDataFrame Validation ({size:,} rows):")
@@ -487,7 +487,7 @@ class TestDataValidationBenchmarks:
             explanations = self.explainer.create_legend_definitions(metrics)
             end = time.perf_counter()
 
-            benchmark.add_measurement((end - start) * 1000, items_processed=len(metrics))
+            benchmark.add_measurement((end-start) * 1000, items_processed=len(metrics))
 
         stats = benchmark.get_stats()
         print(f"\nMetric Explanation Performance:")
@@ -566,7 +566,7 @@ class TestNotebookValidationBenchmarks:
                     result = validator.create_validation_report(notebook_path)
                     end = time.perf_counter()
 
-                    benchmark.add_measurement((end - start) * 1000, items_processed=num_cells)
+                    benchmark.add_measurement((end-start) * 1000, items_processed=num_cells)
 
                 stats = benchmark.get_stats()
                 print(f"\nNotebook Validation ({num_cells} cells):")
@@ -613,7 +613,7 @@ def run_comprehensive_benchmarks():
                 method()
 
     total_end = time.perf_counter()
-    total_time = total_end - total_start
+    total_time = total_end-total_start
 
     print(f"\n" + "=" * 60)
     print(f"✅ ALL BENCHMARKS COMPLETED")

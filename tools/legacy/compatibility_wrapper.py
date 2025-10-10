@@ -13,18 +13,16 @@ This wrapper:
 
 Usage:
     python tools / legacy / compatibility_wrapper.py old_tool_name [args]
-    python tools / legacy / compatibility_wrapper.py --list - mappings
-    python tools / legacy / compatibility_wrapper.py --migration - guide
+    python tools / legacy / compatibility_wrapper.py --list-mappings
+    python tools / legacy / compatibility_wrapper.py --migration-guide
 """
 
 import argparse
-from datetime import datetime
-import os
-from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Optional, Tuple
 import warnings
+from pathlib import Path
+from typing import Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -56,17 +54,17 @@ class CompatibilityWrapper:
             "run_etl.py": {
                 "new_tool": "tools / core / unified_setup.py",
                 "args_mapping": {
-                    "--focused": "--run - etl --mode focused",
-                    "--comprehensive": "--run - etl --mode comprehensive",
-                    "--channels": "--run - etl --channels",
+                    "--focused": "--run-etl --mode focused",
+                    "--comprehensive": "--run-etl --mode comprehensive",
+                    "--channels": "--run-etl --channels",
                 },
                 "category": "etl",
             },
             "youtube_channel_etl.py": {
                 "new_tool": "tools / core / unified_setup.py",
                 "args_mapping": {
-                    "--run": "--run - etl",
-                    "--validate": "--validate - etl",
+                    "--run": "--run-etl",
+                    "--validate": "--validate-etl",
                 },
                 "category": "etl",
             },
@@ -74,16 +72,16 @@ class CompatibilityWrapper:
             "setup_system.py": {
                 "new_tool": "tools / core / unified_setup.py",
                 "args_mapping": {
-                    "--database": "--database - setup",
-                    "--environment": "--environment - setup",
-                    "--full": "--full - setup",
+                    "--database": "--database-setup",
+                    "--environment": "--environment-setup",
+                    "--full": "--full-setup",
                 },
                 "category": "setup",
             },
             "create_tables.py": {
                 "new_tool": "tools / core / unified_setup.py",
                 "args_mapping": {
-                    "": "--database - setup",
+                    "": "--database-setup",
                 },
                 "category": "setup",
             },
@@ -91,16 +89,16 @@ class CompatibilityWrapper:
             "monitor.py": {
                 "new_tool": "tools / core / unified_monitor.py",
                 "args_mapping": {
-                    "--health": "--health - check",
-                    "--performance": "--performance - check",
-                    "--all": "--full - check",
+                    "--health": "--health-check",
+                    "--performance": "--performance-check",
+                    "--all": "--full-check",
                 },
                 "category": "monitoring",
             },
             "system_health.py": {
                 "new_tool": "tools / core / unified_monitor.py",
                 "args_mapping": {
-                    "": "--health - check",
+                    "": "--health-check",
                 },
                 "category": "monitoring",
             },
@@ -108,17 +106,17 @@ class CompatibilityWrapper:
             "cleanup.py": {
                 "new_tool": "tools / core / unified_maintenance.py",
                 "args_mapping": {
-                    "--old - data": "--cleanup - old",
-                    "--optimize": "--optimize - database",
-                    "--retention": "--retention - cleanup",
+                    "--old-data": "--cleanup-old",
+                    "--optimize": "--optimize-database",
+                    "--retention": "--retention-cleanup",
                 },
                 "category": "maintenance",
             },
             "database_maintenance.py": {
                 "new_tool": "tools / core / unified_maintenance.py",
                 "args_mapping": {
-                    "--optimize": "--optimize - database",
-                    "--cleanup": "--cleanup - old",
+                    "--optimize": "--optimize-database",
+                    "--cleanup": "--cleanup-old",
                 },
                 "category": "maintenance",
             },
@@ -126,9 +124,9 @@ class CompatibilityWrapper:
             "sentiment_analysis.py": {
                 "new_tool": "tools / specialized / analytics / sentiment_analysis_tool.py",
                 "args_mapping": {
-                    "--analyze": "--run - analysis",
-                    "--batch": "--batch - process",
-                    "--compare": "--compare - models",
+                    "--analyze": "--run-analysis",
+                    "--batch": "--batch-process",
+                    "--compare": "--compare-models",
                 },
                 "category": "analytics",
             },
@@ -136,17 +134,17 @@ class CompatibilityWrapper:
             "benchmark.py": {
                 "new_tool": "tools / specialized / benchmarking / unified_benchmark_tool.py",
                 "args_mapping": {
-                    "--models": "--model - benchmark",
-                    "--system": "--system - benchmark",
-                    "--all": "--full - benchmark",
+                    "--models": "--model-benchmark",
+                    "--system": "--system-benchmark",
+                    "--all": "--full-benchmark",
                 },
                 "category": "benchmarking",
             },
             "model_benchmark.py": {
                 "new_tool": "tools / specialized / benchmarking / model_benchmark_tool.py",
                 "args_mapping": {
-                    "--run": "--run - benchmark",
-                    "--compare": "--compare - models",
+                    "--run": "--run-benchmark",
+                    "--compare": "--compare-models",
                 },
                 "category": "benchmarking",
             },
@@ -154,16 +152,16 @@ class CompatibilityWrapper:
             "migrate_data.py": {
                 "new_tool": "tools / specialized / migration / storage_migrator.py",
                 "args_mapping": {
-                    "--to - file": "--db - to - file",
-                    "--to - db": "--file - to - db",
-                    "--validate": "--validate - migration",
+                    "--to-file": "--db-to-file",
+                    "--to-db": "--file-to-db",
+                    "--validate": "--validate-migration",
                 },
                 "category": "migration",
             },
         }
 
     def _initialize_migration_messages(self) -> Dict[str, str]:
-        """Initialize category - specific migration messages."""
+        """Initialize category-specific migration messages."""
         return {
             "etl": """
 🔄 ETL Tool Migration:
@@ -172,7 +170,7 @@ New tool provides better error handling, logging, and configuration management.
 
 Migration steps:
 1. Update your scripts to use: tools / core / unified_setup.py
-2. Review new command - line options with --help
+2. Review new command-line options with --help
 3. Update any automation scripts or cron jobs
 """,
             "setup": """
@@ -181,7 +179,7 @@ System setup has been unified into a single comprehensive tool.
 New tool provides better validation, error recovery, and progress tracking.
 
 Migration steps:
-1. Use: tools / core / unified_setup.py --full - setup
+1. Use: tools / core / unified_setup.py --full-setup
 2. Review environment variable requirements
 3. Update deployment scripts
 """,
@@ -254,7 +252,7 @@ The tool '{old_tool}' is deprecated and will be removed in a future version.
 {self.migration_messages.get(category, "")}
 
 📚 For complete migration guide, run:
-   python tools / legacy / compatibility_wrapper.py --migration - guide
+   python tools / legacy / compatibility_wrapper.py --migration-guide
 
 🆘 For help with the new tool, run:
    python {new_tool} --help
@@ -288,11 +286,11 @@ The tool '{old_tool}' is deprecated and will be removed in a future version.
                         break
 
                 if not found_mapping:
-                    # Keep unknown arguments as - is with warning
+                    # Keep unknown arguments as-is with warning
                     print(f"⚠️  Warning: Argument '{arg}' may not be supported by the new tool")
                     new_args.append(arg)
             else:
-                # Keep positional arguments as - is
+                # Keep positional arguments as-is
                 new_args.append(arg)
 
             i += 1
@@ -387,12 +385,12 @@ The new tools provide:
 ## Migration Process
 
 1. **Identify Legacy Tools**: Check which legacy tools you're using
-2. **Review Mappings**: Use --list - mappings to see new tool equivalents
+2. **Review Mappings**: Use --list-mappings to see new tool equivalents
 3. **Update Scripts**: Replace old tool calls with new ones
 4. **Test Thoroughly**: Verify functionality with new tools
 5. **Update Documentation**: Update any internal documentation
 
-## Category - Specific Guides:
+## Category-Specific Guides:
 """
         )
 
@@ -461,17 +459,17 @@ def main():
 Examples:
   python tools / legacy / compatibility_wrapper.py run_etl --focused
   python tools / legacy / compatibility_wrapper.py monitor --health
-  python tools / legacy / compatibility_wrapper.py --list - mappings
-  python tools / legacy / compatibility_wrapper.py --migration - guide
+  python tools / legacy / compatibility_wrapper.py --list-mappings
+  python tools / legacy / compatibility_wrapper.py --migration-guide
         """,
     )
 
     parser.add_argument("tool_name", nargs="?", help="Name of the legacy tool to execute")
     parser.add_argument("tool_args", nargs="*", help="Arguments to pass to the legacy tool")
 
-    parser.add_argument("--list - mappings", action="store_true", help="List all available tool mappings")
-    parser.add_argument("--migration - guide", action="store_true", help="Show comprehensive migration guide")
-    parser.add_argument("--create - wrappers", action="store_true", help="Create individual wrapper scripts")
+    parser.add_argument("--list-mappings", action="store_true", help="List all available tool mappings")
+    parser.add_argument("--migration-guide", action="store_true", help="Show comprehensive migration guide")
+    parser.add_argument("--create-wrappers", action="store_true", help="Create individual wrapper scripts")
 
     args = parser.parse_args()
 

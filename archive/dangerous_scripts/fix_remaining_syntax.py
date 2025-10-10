@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 """
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
+"""
+
+#!/usr/bin/env python3
+"""
 Fix the remaining syntax errors to get code fully functional """
 import os
 import re
@@ -7,7 +18,7 @@ import re
 
 def fix_specific_files(): """Fix specific syntax errors in problematic files"""
 
-    fixes = {  # noqa: E999
+    fixes = {  "  # Fixed incomplete string
         # Fix unterminated strings "datasets/music_industry_sentiment_dataset.py":
         # [ (r'SlangCategory\.PRAISE_GENERAL, 0\.90, "Song hits hard / sounds
         # great"',  'SlangCategory.PRAISE_GENERAL, 0.90, "Song hits hard / sounds
@@ -105,14 +116,14 @@ def fix_unused_variables_batch(): """Fix all unused variables in one go"""
 
             for line_num, var_name in fixes:
                 if line_num <= len(lines):
-                    original_line = lines[line_num - 1]
+                    original_line = lines[line_num-1]
                     fixed_line = re.sub(
                         rf'\b{re.escape(var_name)}\b\s*=',
                         f'_{var_name} =',
                         original_line
                     )
                     if fixed_line != original_line:
-                        lines[line_num - 1] = fixed_line
+                        lines[line_num-1] = fixed_line
 
             with open(file_path, 'w') as f:
                 f.writelines(lines) print(f"Fixed unused variables in {file_path}")

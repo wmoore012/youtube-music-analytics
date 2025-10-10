@@ -11,13 +11,13 @@ Usage:
 Options:
     --notebook: Test a specific notebook file
     --comprehensive: Run the full comprehensive test suite
-    --post - archive: Run post - archive validation tests
+    --post-archive: Run post-archive validation tests
     --quick: Run quick validation tests only
 """
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -76,8 +76,8 @@ def run_single_notebook_test(notebook_path: str) -> bool:
 
 
 def run_post_archive_tests() -> bool:
-    """Run post - archive validation tests."""
-    print("🔍 Running post - archive validation tests...")
+    """Run post-archive validation tests."""
+    print("🔍 Running post-archive validation tests...")
 
     try:
         validator = PostArchiveNotebookValidator()
@@ -123,12 +123,12 @@ def run_post_archive_tests() -> bool:
             and len(comparison_results["regressions"]) <= len(comparison_results["improvements"])
         )
 
-        print(f"\n🏁 Post - archive validation: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"\n🏁 Post-archive validation: {'✅ PASSED' if success else '❌ FAILED'}")
 
         return success
 
     except Exception as e:
-        print(f"❌ Post - archive validation failed: {str(e)}")
+        print(f"❌ Post-archive validation failed: {str(e)}")
         return False
 
 
@@ -235,7 +235,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run robust notebook tests")
     parser.add_argument("--notebook", help="Test a specific notebook file")
     parser.add_argument("--comprehensive", action="store_true", help="Run comprehensive test suite")
-    parser.add_argument("--post - archive", action="store_true", help="Run post - archive validation")
+    parser.add_argument("--post-archive", action="store_true", help="Run post-archive validation")
     parser.add_argument("--quick", action="store_true", help="Run quick validation tests")
 
     args = parser.parse_args()

@@ -1,15 +1,13 @@
 """
-Main API for Notebook Guardian - The AI Agent's Best Friend.
+Main API for Notebook Guardian-The AI Agent's Best Friend.
 
 Simple, fast functions for validating data science workflows.
 """
 
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List
 
 from .core_validator import DataValidator, MetricExplainer, NotebookValidator
-from .python_validator import PythonFileValidator, PythonValidationResult
+from .python_validator import PythonFileValidator
 from .smart_installer import SmartInstaller
 from .smart_installer import check_dependencies as _check_deps
 

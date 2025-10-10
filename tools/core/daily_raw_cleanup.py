@@ -15,10 +15,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from datetime import datetime
 import logging
+from datetime import datetime
 
-import pandas as pd
 from sqlalchemy import text
 
 from web.etl_helpers import get_engine
@@ -330,7 +329,7 @@ def main():
         integrity_ok = validate_data_integrity()
 
         # Generate report
-        _report = generate_cleanup_report()
+        _report = generate_cleanup_report()  # noqa: F841
 
         total_deleted = raw_deleted + processed_deleted + orphaned_deleted
 

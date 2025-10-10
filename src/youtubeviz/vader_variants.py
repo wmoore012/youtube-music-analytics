@@ -4,16 +4,16 @@ VADER Enhancement Variants for Music Domain
 
 Implements multiple VADER enhancement approaches using VADER's official extension points:
 - Lexicon: word / phrase → valence on −4…+4 scale
-- SPECIAL_CASE_IDIOMS: multi - word phrases scored as units
+- SPECIAL_CASE_IDIOMS: multi-word phrases scored as units
 - BOOSTER_DICT: intensifiers / dampeners using VADER's B_INCR = 0.293
 
 Based on expert analysis of music YouTube comments and VADER's documented extension patterns.
 """
 
+import re
 from enum import Enum
 from hashlib import md5
-import re
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 try:
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -21,7 +21,7 @@ try:
     VADER_AVAILABLE = True
 except ImportError:
     VADER_AVAILABLE = False
-    print("⚠️ VADER not available - install with: pip install vaderSentiment")
+    print("⚠️ VADER not available-install with: pip install vaderSentiment")
 
 
 class VariantType(Enum):
@@ -39,7 +39,7 @@ class VADERVariantManager:
 
     def __init__(self):
         if not VADER_AVAILABLE:
-            raise ImportError("VADER not available - install with: pip install vaderSentiment")
+            raise ImportError("VADER not available-install with: pip install vaderSentiment")
 
     def create_variant(self, variant_type: VariantType) -> SentimentIntensityAnalyzer:
         """Create a VADER variant with specified enhancement level."""
@@ -74,7 +74,7 @@ class VADERVariantManager:
         return variants
 
     def _apply_minimal_enhancements(self, analyzer: SentimentIntensityAnalyzer) -> None:
-        """Apply minimal, high - confidence enhancements only."""
+        """Apply minimal, high-confidence enhancements only."""
 
         # Only the most obvious music slang terms
         analyzer.lexicon.update(
@@ -88,7 +88,7 @@ class VADERVariantManager:
             }
         )
 
-        # Essential boosters - modify the module - level BOOSTER_DICT
+        # Essential boosters-modify the module-level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293  # VADER's official booster increment
@@ -142,7 +142,7 @@ class VADERVariantManager:
             }
         )
 
-        # Modern boosters - modify the module - level BOOSTER_DICT
+        # Modern boosters-modify the module-level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -159,7 +159,7 @@ class VADERVariantManager:
             }
         )
 
-        # Key multi - word idioms - add to lexicon as underscored phrases
+        # Key multi-word idioms-add to lexicon as underscored phrases
         analyzer.lexicon.update(
             {
                 "this_is_sick": 2.3,
@@ -248,7 +248,7 @@ class VADERVariantManager:
             }
         )
 
-        # Full booster set - modify the module - level BOOSTER_DICT
+        # Full booster set-modify the module-level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -267,7 +267,7 @@ class VADERVariantManager:
             }
         )
 
-        # Comprehensive idioms - add to lexicon as underscored phrases
+        # Comprehensive idioms-add to lexicon as underscored phrases
         analyzer.lexicon.update(
             {
                 "this_is_sick": 2.3,
@@ -340,7 +340,7 @@ class VADERVariantManager:
             }
         )
 
-        # Stronger boosters - modify the module - level BOOSTER_DICT
+        # Stronger boosters-modify the module-level BOOSTER_DICT
         import vaderSentiment.vaderSentiment as vader
 
         B_INCR = 0.293
@@ -354,12 +354,12 @@ class VADERVariantManager:
         )
 
     def _apply_hybrid_enhancements(self, analyzer: SentimentIntensityAnalyzer) -> None:
-        """Apply hybrid approach combining rule - based and contextual adjustments."""
+        """Apply hybrid approach combining rule-based and contextual adjustments."""
 
         # Start with moderate base
         self._apply_moderate_enhancements(analyzer)
 
-        # Add context - sensitive terms (positive in music, negative elsewhere)
+        # Add context-sensitive terms (positive in music, negative elsewhere)
         analyzer.lexicon.update(
             {
                 "sick": 2.3,  # Override VADER's negative in music context
@@ -373,7 +373,7 @@ class VADERVariantManager:
         # Cultural sensitivity adjustments
         analyzer.lexicon.update(
             {
-                "bitch": 0.0,  # Neutralize - context dependent
+                "bitch": 0.0,  # Neutralize-context dependent
                 "shit": 0.0,  # Neutralize - "this shit slaps"
                 "damn": 0.0,  # Neutralize - "damn this is good"
             }
@@ -381,10 +381,10 @@ class VADERVariantManager:
 
 
 class MusicVADERNormalizer:
-    """Normalizes text for music - domain VADER analysis."""
+    """Normalizes text for music-domain VADER analysis."""
 
     def __init__(self):
-        # Multi - word phrase patterns to join before VADER processing
+        # Multi-word phrase patterns to join before VADER processing
         self.phrase_patterns = [
             (re.compile(r"\bthis\s + is\s + sick\b", re.I), "this_is_sick"),
             (re.compile(r"\bthis\s + slaps\b", re.I), "this_slaps"),
@@ -451,14 +451,14 @@ def create_music_vader(
     variant_type: VariantType = VariantType.COMPREHENSIVE,
 ) -> Tuple[SentimentIntensityAnalyzer, MusicVADERNormalizer, str]:
     """
-    Create music - enhanced VADER analyzer with normalizer.
+    Create music-enhanced VADER analyzer with normalizer.
 
     Returns:
         Tuple of (analyzer, normalizer, patch_id)
     """
 
     if not VADER_AVAILABLE:
-        raise ImportError("VADER not available - install with: pip install vaderSentiment")
+        raise ImportError("VADER not available-install with: pip install vaderSentiment")
 
     manager = VADERVariantManager()
     analyzer = manager.create_variant(variant_type)
@@ -469,7 +469,7 @@ def create_music_vader(
 
 
 def score_with_music_vader(text: str, variant_type: VariantType = VariantType.COMPREHENSIVE) -> Dict:
-    """Score text with music - enhanced VADER."""
+    """Score text with music-enhanced VADER."""
 
     analyzer, normalizer, patch_id = create_music_vader(variant_type)
     normalized_text = normalizer.normalize_for_vader(text)

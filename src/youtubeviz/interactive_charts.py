@@ -5,14 +5,13 @@ These charts use proper validation, timeouts, and interactive features
 without hiding real errors.
 """
 
-from typing import List, Optional
+from typing import Optional
 
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from .chart_contracts import CHART_SPECS, bulletproof_chart, create_interactive_plotly_config, setup_plotly_animation
+from .chart_contracts import CHART_SPECS, bulletproof_chart, setup_plotly_animation
 
 
 @bulletproof_chart(CHART_SPECS["views_over_time"])
@@ -92,7 +91,7 @@ def create_sentiment_distribution_interactive(
 
     Features:
     - Hover shows actual comments
-    - Color - coded sentiment ranges
+    - Color-coded sentiment ranges
     - Interactive selection
     """
     # Create sentiment categories
@@ -226,5 +225,5 @@ def create_chart_with_fallback(chart_func, df: pd.DataFrame, chart_name: str, **
     except Exception as e:
         print(f"❌ {chart_name} failed: {e}")
         print(f"   💡 Check your data and try again")
-        # Re - raise the error so it's visible in the notebook
+        # Re-raise the error so it's visible in the notebook
         raise

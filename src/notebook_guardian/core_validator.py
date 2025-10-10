@@ -5,12 +5,10 @@ This module provides the main validation interfaces that work with both
 .py files and .ipynb notebooks.
 """
 
-# Re - export from existing modules for compatibility
+# Re-export from existing modules for compatibility
 from ..data_organization.notebook_validator import (
     MetricExplainer,
     NotebookValidator,
-)
-from ..data_organization.notebook_validator import (
     ValidationError,
     ValidationResult,
 )

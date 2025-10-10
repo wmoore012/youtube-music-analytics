@@ -1,14 +1,14 @@
 #!/usr / bin / env python3
 """
-Production - Ready Enhanced VADER for Music Domain
+Production-Ready Enhanced VADER for Music Domain
 
 Based on comprehensive evaluation showing 7% improvement in positive detection
 on real YouTube music comments. Uses the comprehensive variant as the best
 balance of accuracy and robustness.
 """
 
-from hashlib import md5
 import re
+from hashlib import md5
 from typing import Dict, Optional
 
 try:
@@ -22,7 +22,7 @@ except ImportError:
 
 class ProductionMusicVADER:
     """
-    Production - ready VADER enhanced for music domain sentiment analysis.
+    Production-ready VADER enhanced for music domain sentiment analysis.
 
     Improvements validated on 300+ real YouTube comments:
     - Stock VADER: 51.3% positive detection
@@ -31,7 +31,7 @@ class ProductionMusicVADER:
 
     def __init__(self):
         if not VADER_AVAILABLE:
-            raise ImportError("VADER not available - install with: pip install vaderSentiment")
+            raise ImportError("VADER not available-install with: pip install vaderSentiment")
 
         self.analyzer = self._create_enhanced_analyzer()
         self.normalizer = self._create_normalizer()
@@ -65,7 +65,7 @@ class ProductionMusicVADER:
                 "production_is_clean": 2.0,
                 "insane": 2.0,  # Override VADER's negative in music context
                 "crazy": 1.8,  # Override VADER's negative in music context
-                "obsessed": 2.0,  # Override VADER's negative - key improvement
+                "obsessed": 2.0,  # Override VADER's negative-key improvement
                 # Gen Z expressions
                 "ate": 2.3,
                 "left_no_crumbs": 2.6,
@@ -104,7 +104,7 @@ class ProductionMusicVADER:
                 "💀": 1.2,
                 "🥵": 1.4,
                 "😍": 2.0,
-                # Multi - word idioms (as underscored tokens)
+                # Multi-word idioms (as underscored tokens)
                 "this_is_sick": 2.3,
                 "this_slaps": 2.6,
                 "straight_fire": 2.7,
@@ -160,7 +160,7 @@ class ProductionMusicVADER:
 
     def analyze_sentiment(self, text: str) -> Dict:
         """
-        Analyze sentiment of text using enhanced music - domain VADER.
+        Analyze sentiment of text using enhanced music-domain VADER.
 
         Args:
             text: Input text to analyze
@@ -205,10 +205,10 @@ class ProductionMusicVADER:
 
 
 class MusicTextNormalizer:
-    """Normalizes text for music - domain VADER analysis."""
+    """Normalizes text for music-domain VADER analysis."""
 
     def __init__(self):
-        # Multi - word phrase patterns (validated on real comments)
+        # Multi-word phrase patterns (validated on real comments)
         self.phrase_patterns = [
             (re.compile(r"\bthis\s + is\s + sick\b", re.I), "this_is_sick"),
             (re.compile(r"\bthis\s + slaps\b", re.I), "this_slaps"),
@@ -247,7 +247,7 @@ class MusicTextNormalizer:
         text = re.sub(r"\bfiiiire\b", "fire", text, flags=re.I)
         text = re.sub(r"\bobsessssed\b", "obsessed", text, flags=re.I)
 
-        # Apply phrase joining (key for multi - word idioms)
+        # Apply phrase joining (key for multi-word idioms)
         for pattern, replacement in self.phrase_patterns:
             text = pattern.sub(replacement, text)
 

@@ -4,7 +4,6 @@ Sentiment Model Comparison Test
 Test different sentiment models against music slang and Gen Z language
 """
 
-import os
 from typing import Dict, List, Tuple
 
 import pandas as pd

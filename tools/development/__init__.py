@@ -1,5 +1,5 @@
 """
-Development tools directory - Developer utilities.
+Development tools directory-Developer utilities.
 
 This directory contains tools specifically for development workflows:
 - Code quality tools (linting, formatting, validation)

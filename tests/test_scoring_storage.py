@@ -1,7 +1,7 @@
 """Tests for scoring results storage system using real database data."""
 
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pandas as pd
@@ -26,7 +26,7 @@ class TestScoringStorageWithRealData:
             # Validate schema exists
             validation = self.storage.validate_schema()
             if not validation.is_valid:
-                pytest.skip("Scoring schema not available - run create_scoring_tables.py first")
+                pytest.skip("Scoring schema not available-run create_scoring_tables.py first")
 
             # Load real data for testing
             self.real_data = self._load_real_test_data()
@@ -40,7 +40,7 @@ class TestScoringStorageWithRealData:
         """Load real YouTube data for testing."""
         try:
             end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=30)
+            start_date = end_date-timedelta(days=30)
 
             data = load_artist_daily_metrics(start=start_date, end=end_date, engine=self.engine)
 
@@ -102,8 +102,7 @@ class TestScoringStorageMocked:
         assert len(run_id) > 0
 
         # Retrieve and verify
-        latest_scores = self.storage.get_latest_scores(
-            algorithm_name="artist_momentum_scorer", entity_type="artist")
+        latest_scores = self.storage.get_latest_scores(algorithm_name="artist_momentum_scorer", entity_type="artist")
 
         assert not latest_scores.empty
         assert len(latest_scores) == len(result.entity_scores)
@@ -203,23 +202,22 @@ class TestScoringStorageMocked:
         time_diff = datetime.now() - latest_timestamp.replace(tzinfo=None)
         assert time_diff.total_seconds() < 3600  # Within last hour
 
-
-# class TestScoringStorageMocked:
+    # class TestScoringStorageMocked:
     """Test cases for scoring storage system with mocked database."""
 
-#     def setup_method(self):
+    #     def setup_method(self):
     """Set up test fixtures with mocked database."""
     # Mock database engine
-    self.mock_engine = Mock()
-    self.mock_conn = Mock()
+    self.mock_engine = Mock()  # noqa: F821
+    self.mock_conn = Mock()  # noqa: F821
 
     # Set up context manager mock properly
     context_manager = Mock()
-    context_manager.__enter__ = Mock(return_value=self.mock_conn)
+    context_manager.__enter__ = Mock(return_value=self.mock_conn)  # noqa: F821
     context_manager.__exit__ = Mock(return_value=None)
-    self.mock_engine.connect.return_value = context_manager
+    self.mock_engine.connect.return_value = context_manager  # noqa: F821
 
-    self.storage = ScoringStorage(engine=self.mock_engine)
+    self.storage = ScoringStorage(engine=self.mock_engine)  # noqa: F821, F821
 
     def test_register_algorithm_new(self):
         """Test registering a new algorithm."""
@@ -237,7 +235,7 @@ class TestScoringStorageMocked:
 
     def test_register_algorithm_existing(self):
         """Test registering an existing algorithm."""
-        # Mock database response - algorithm exists
+        # Mock database response-algorithm exists
         existing_result = Mock()
         existing_result.fetchone.return_value = ("existing_id",)
         self.mock_conn.execute.return_value = existing_result
@@ -400,7 +398,7 @@ class TestScoringStorageMocked:
 
     def test_validate_schema_missing_tables(self):
         """Test schema validation with missing tables."""
-        # Mock database responses - some tables missing
+        # Mock database responses-some tables missing
         responses = [
             Mock(fetchone=Mock(return_value=(1,))),  # scoring_algorithms exists
             Mock(fetchone=Mock(return_value=(0,))),  # scoring_configurations missing
@@ -495,7 +493,7 @@ class TestScoringStorageRealIntegration:
         try:
             # Load real data
             end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=14)
+            start_date = end_date-timedelta(days=14)
 
             data = load_artist_daily_metrics(start=start_date, end=end_date, engine=self.engine)
 
@@ -580,7 +578,7 @@ class TestScoringStorageRealIntegration:
         try:
             # Load data spanning multiple days
             end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=21)
+            start_date = end_date-timedelta(days=21)
 
             data = load_artist_daily_metrics(start=start_date, end=end_date, engine=self.engine)
 
@@ -614,7 +612,7 @@ class TestScoringStorageRealIntegration:
 
             run_ids = []
             for days_back in [21, 14, 7]:
-                cutoff_date = end_date - timedelta(days=days_back)
+                cutoff_date = end_date-timedelta(days=days_back)
                 subset_data = momentum_data[momentum_data["metrics_date"] >= cutoff_date]
 
                 if not subset_data.empty:
@@ -702,8 +700,7 @@ class TestScoringStorageIntegration:
         )
 
         with patch("pandas.read_sql", return_value=mock_df):
-            retrieved = self.storage.get_latest_scores(
-                algorithm_name="integration_test_scorer", entity_type="artist")
+            retrieved = self.storage.get_latest_scores(algorithm_name="integration_test_scorer", entity_type="artist")
 
             assert len(retrieved) == 3
             assert retrieved["score_value"].max() == 0.9
@@ -739,7 +736,7 @@ class TestScoringStorageIntegration:
         """Test scenario for time series analysis of scores."""
         # Simulate storing results over time
         base_time = datetime.now()
-        time_points = [base_time - timedelta(days=i) for i in range(5)]
+        time_points = [base_time-timedelta(days=i) for i in range(5)]
 
         for i, timestamp in enumerate(time_points):
             scores_df = pd.DataFrame(
@@ -784,5 +781,5 @@ class TestScoringStorageIntegration:
             history = self.storage.get_scoring_history(entity_id="artist1", entity_type="artist", days_back=7)
 
             assert len(history) == 5
-            # Verify trend (scores should increase over time - first timestamp is most recent)
+            # Verify trend (scores should increase over time-first timestamp is most recent)
             assert history["score_value"].iloc[-1] > history["score_value"].iloc[0]

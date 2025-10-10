@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
+"""
+
+#!/usr/bin/env python3
+"""
 Careful final reduction to get under 100 errors
 Only safe, targeted fixes
 """
-import subprocess
 import os
-import re
+import subprocess
 
 
 def run_command(cmd):
@@ -25,7 +35,7 @@ def main():  # noqa: C901
     print("\n🧪 Verifying tests pass...")
     test_result = run_command('PYTHONPATH=. python -m pytest -q')
     if test_result.returncode != 0:
-        print("❌ Tests failing - aborting")
+        print("❌ Tests failing-aborting")
         return
     print("✅ Tests pass")
 
@@ -75,9 +85,9 @@ def main():  # noqa: C901
                     # Add noqa to first 10 long lines in each file
                     for line_num in lines_to_fix[:10]:
                         if line_num <= len(file_lines):
-                            original_line = file_lines[line_num - 1]
+                            original_line = file_lines[line_num-1]
                             if '# noqa: E501' not in original_line:
-                                file_lines[line_num - 1] = original_line.rstrip() + '  # noqa: E501\n'
+                                file_lines[line_num-1] = original_line.rstrip() + '  # noqa: E501\n'
                                 noqa_count += 1
 
                     with open(file_path, 'w') as f:
@@ -94,14 +104,14 @@ def main():  # noqa: C901
     result = run_command('flake8 --count')
     final_count = int(result.stdout.split('\n')[-2]) if result.stdout and result.returncode != 0 else 0
 
-    reduction = start_errors - final_count
+    reduction = start_errors-final_count
     print(f"📊 {start_errors} → {final_count} errors ({reduction} eliminated)")
     print(f"🏷️ Added {noqa_count} targeted noqa comments")
 
     if final_count <= 100:
         print("\n🎉 SUCCESS! Under 100 errors achieved!")
     else:
-        print(f"\n📈 Progress made! {final_count - 100} more to reach 100")
+        print(f"\n📈 Progress made! {final_count-100} more to reach 100")
 
     # Final test verification
     print("\n🧪 Final test verification...")
@@ -111,7 +121,7 @@ def main():  # noqa: C901
 
         # Show total progress
         original_errors = 564
-        total_reduction = original_errors - final_count
+        total_reduction = original_errors-final_count
         percentage = (total_reduction / original_errors) * 100
 
         print(f"\n🎯 TOTAL PROGRESS:")
@@ -120,7 +130,7 @@ def main():  # noqa: C901
         print(f"📉 Reduced: {total_reduction} errors ({percentage:.1f}%)")
 
     else:
-        print("❌ Tests broken - need to review")
+        print("❌ Tests broken-need to review")
 
 
 if __name__ == "__main__":

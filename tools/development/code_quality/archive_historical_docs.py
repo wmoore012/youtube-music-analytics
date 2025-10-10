@@ -6,10 +6,8 @@ Moves historical documentation files from root directory to archive.
 This completes the codebase cleanup by organizing development artifacts.
 """
 
-from datetime import datetime
-import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def main():
@@ -102,7 +100,7 @@ def main():
         print(f"\n✅ Historical documentation successfully archived!")
         print(f"   Location: {archive_base}")
     else:
-        print(f"\n💡 No files needed archiving - root directory already clean!")
+        print(f"\n💡 No files needed archiving-root directory already clean!")
 
     # Show current root directory status
     print(f"\n📊 Current Root Directory Status:")

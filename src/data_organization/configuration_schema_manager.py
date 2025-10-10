@@ -8,7 +8,7 @@ for the configuration management system.
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -175,8 +175,8 @@ class ConfigurationSchemaManager:
     def backup_configuration_data(self, backup_file: str) -> bool:
         """Backup configuration data to a file."""
         try:
-            from datetime import datetime
             import json
+            from datetime import datetime
 
             cursor = self.database_connection.cursor()
 

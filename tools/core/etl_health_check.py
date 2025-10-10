@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-ETL System Health Check - YouTube Analytics Platform
+ETL System Health Check-YouTube Analytics Platform
 
 This script performs comprehensive health checks on the ETL pipeline to ensure:
 1. Database connectivity and schema validation
@@ -12,27 +12,27 @@ This script performs comprehensive health checks on the ETL pipeline to ensure:
 Usage:
     python tools / etl / etl_health_check.py
     python tools / etl / etl_health_check.py --verbose
-    python tools / etl / etl_health_check.py --fix - issues
+    python tools / etl / etl_health_check.py --fix-issues
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 import json
 import logging
 import os
-from pathlib import Path
 import sys
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List
 
-from dotenv import load_dotenv
 import pymysql
 import requests
+from dotenv import load_dotenv
 
 # Add project root to path for imports
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from web.etl_helpers import get_connection, get_engine
+from web.etl_helpers import get_engine
 
 
 @dataclass
@@ -158,7 +158,7 @@ class ETLHealthChecker:
                     raise Exception("Database connection test failed")
 
             # Test pymysql connection (used by ETL)
-#             import pymysql
+            #             import pymysql
 
             conn = pymysql.connect(
                 host=os.getenv("DB_HOST"),
@@ -303,8 +303,8 @@ class ETLHealthChecker:
             response = requests.get(url, params=params, timeout=10)
 
             if response.status_code == 200:
-                _data = response.json()
-                quota_info = response.headers.get("X - RateLimit - Remaining", "Unknown")
+                _data = response.json()  # noqa: F841
+                quota_info = response.headers.get("X-RateLimit-Remaining", "Unknown")
 
                 self._add_result(
                     "YouTube API",
@@ -438,21 +438,21 @@ class ETLHealthChecker:
                 freshness_issues = []
 
                 if video_stats["latest_fetch"]:
-                    video_age = now - video_stats["latest_fetch"]
+                    video_age = now-video_stats["latest_fetch"]
                     if video_age > timedelta(hours=24):
                         freshness_issues.append(f"Video data is {video_age.days} days old")
                 else:
                     freshness_issues.append("No video data found")
 
                 if metrics_stats["latest_metrics"]:
-                    metrics_age = now - metrics_stats["latest_metrics"]
+                    metrics_age = now-metrics_stats["latest_metrics"]
                     if metrics_age > timedelta(hours=24):
                         freshness_issues.append(f"Metrics data is {metrics_age.days} days old")
                 else:
                     freshness_issues.append("No metrics data found")
 
                 if etl_stats["latest_run"]:
-                    run_age = now - etl_stats["latest_run"]
+                    run_age = now-etl_stats["latest_run"]
                     if run_age > timedelta(hours=24):
                         freshness_issues.append(f"Last ETL run was {run_age.days} days ago")
                 else:
@@ -550,7 +550,7 @@ class ETLHealthChecker:
         """Check system dependencies and Python packages."""
         self.logger.info("Checking system dependencies...")
 
-        required_packages = ["pymysql", "requests", "pandas", "sqlalchemy", "plotly", "altair", "python - dotenv"]
+        required_packages = ["pymysql", "requests", "pandas", "sqlalchemy", "plotly", "altair", "python-dotenv"]
 
         missing_packages = []
         package_versions = {}
@@ -701,7 +701,7 @@ def main():
     parser = argparse.ArgumentParser(description="ETL System Health Check")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
     parser.add_argument(
-        "--fix - issues", action="store_true", help="Attempt to fix issues automatically (future feature)"
+        "--fix-issues", action="store_true", help="Attempt to fix issues automatically (future feature)"
     )
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
 
@@ -730,7 +730,7 @@ def main():
         }
         print(json.dumps(report_dict, indent=2))
     else:
-        # Print human - readable report
+        # Print human-readable report
         checker.print_detailed_report(report)
 
     # Exit with appropriate code

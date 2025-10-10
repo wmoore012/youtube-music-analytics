@@ -406,7 +406,7 @@ class TestIntegrationScenarios:
             }
         )
 
-        # Validate data types - should fail
+        # Validate data types-should fail
         expected_types = {
             "artist_name": "object",
             "momentum_score": "float64",
@@ -417,11 +417,11 @@ class TestIntegrationScenarios:
         type_result = self.output_validator.validate_data_types(output_data, expected_types)
         assert type_result.is_valid is False
 
-        # Check missing values - should fail
+        # Check missing values-should fail
         required_columns = ["artist_name", "growth_potential"]
         missing_result = self.output_validator.check_missing_values(output_data, required_columns)
         assert missing_result.is_valid is False
 
-        # Validate score ranges - should fail for momentum_score
+        # Validate score ranges-should fail for momentum_score
         momentum_result = self.output_validator.validate_score_range(output_data["momentum_score"], 0.0, 1.0)
         assert momentum_result.is_valid is False

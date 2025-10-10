@@ -3,9 +3,9 @@
 Verify that CI / CD setup is working correctly.
 """
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def run_command(command: str, description: str) -> bool:
@@ -50,7 +50,7 @@ def main():
 
     # Check configuration files exist
     config_files = [
-        (".pre - commit - config.yaml", "Pre - commit configuration"),
+        (".pre-commit-config.yaml", "Pre-commit configuration"),
         ("pyproject.toml", "Project configuration"),
         (".github / workflows / ci.yml", "GitHub Actions CI workflow"),
     ]
@@ -66,7 +66,7 @@ def main():
         ("isort --version", "isort import sorter"),
         ("flake8 --version", "flake8 linter"),
         ("mypy --version", "mypy type checker"),
-        ("pre - commit --version", "pre - commit hooks"),
+        ("pre-commit --version", "pre-commit hooks"),
         ("pytest --version", "pytest testing framework"),
     ]
 
@@ -75,14 +75,14 @@ def main():
         if run_command(command, description):
             checks_passed += 1
 
-    # Test pre - commit hooks are installed
+    # Test pre-commit hooks are installed
     total_checks += 1
-    if Path(".git / hooks / pre - commit").exists():
-        print("✅ Pre - commit hooks installed - EXISTS")
+    if Path(".git / hooks / pre-commit").exists():
+        print("✅ Pre-commit hooks installed-EXISTS")
         checks_passed += 1
     else:
-        print("❌ Pre - commit hooks installed - MISSING")
-        print("Run 'pre - commit install' to install hooks")
+        print("❌ Pre-commit hooks installed-MISSING")
+        print("Run 'pre-commit install' to install hooks")
 
     # Summary
     print("\n" + "=" * 50)

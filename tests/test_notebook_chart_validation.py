@@ -44,8 +44,8 @@ class TestNotebookChartValidation:
             "Chart #5: Standout Videos Scatter Plot",
             "Chart #6: Tour Compatibility Analysis (UMAP + Similarity Matrix)",
             "Chart #7: UpSet Plot for Feature Intersections",
-            "Chart #8: ISRC vs Non - ISRC Content Analysis",
-            "Chart #9: Short - form vs Long - form Video Analysis",
+            "Chart #8: ISRC vs Non-ISRC Content Analysis",
+            "Chart #9: Short-form vs Long-form Video Analysis",
             "Chart #10: Content Type Breakdown (MV / Lyric / Visualizer)",
             "Chart #11: Total Views by Category Over Time",
             "Chart #12: Genre Context Heatmap",
@@ -232,12 +232,12 @@ class TestNotebookChartValidation:
 
             if success_rate >= 0.8:  # 80% or more charts working
                 return "PASS", "Excellent chart health"
-            elif success_rate >= 0.6:  # 60 - 79% charts working
+            elif success_rate >= 0.6:  # 60-79% charts working
                 return "WARNING", "Acceptable chart health but needs improvement"
-            elif success_rate >= 0.3:  # 30 - 59% charts working
-                return "FAIL", "Poor chart health - major issues"
+            elif success_rate >= 0.3:  # 30-59% charts working
+                return "FAIL", "Poor chart health-major issues"
             else:  # Less than 30% working
-                return "CRITICAL", "Critical chart failure - immediate attention needed"
+                return "CRITICAL", "Critical chart failure-immediate attention needed"
 
         # Test different scenarios
         status1, msg1 = evaluate_chart_health(15, 15)  # Perfect
@@ -286,7 +286,7 @@ class TestNotebookIntegration:
                 lines.extend(
                     [
                         f"🎉 SUCCESS: {len(real_charts)} charts working with REAL data!",
-                        "💝 No fake data used - authentic analytics only!",
+                        "💝 No fake data used-authentic analytics only!",
                     ]
                 )
             elif len(real_charts) >= 1:
@@ -297,7 +297,7 @@ class TestNotebookIntegration:
                     ]
                 )
             else:
-                lines.append("📋 All charts show data requirements - add real data to see analytics!")
+                lines.append("📋 All charts show data requirements-add real data to see analytics!")
 
             lines.append("🎵 MusicScope™ Real Data Analytics Complete! 🎵")
             return "\n".join(lines)

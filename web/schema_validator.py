@@ -28,14 +28,13 @@ Usage:
     integrity_result = validator.validate_referential_integrity()
 """
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import wraps
-import logging
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from sqlalchemy import Engine, MetaData, Table, inspect, text
-from sqlalchemy.engine import Connection
+from sqlalchemy import Engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
 # Constants
@@ -337,7 +336,7 @@ class SchemaValidator:
                 )
 
             # Check for unexpected columns (warnings only)
-            unexpected_columns = actual_columns - set(expected_columns)
+            unexpected_columns = actual_columns-set(expected_columns)
             for col in unexpected_columns:
                 warnings.append(
                     ValidationError(
@@ -380,8 +379,8 @@ class SchemaValidator:
             expected_tables = set(self._expected_schemas.keys())
 
             # Check for added / removed tables
-            tables_added = list(current_tables - expected_tables)
-            tables_removed = list(expected_tables - current_tables)
+            tables_added = list(current_tables-expected_tables)
+            tables_removed = list(expected_tables-current_tables)
 
             # Check column changes for existing tables
             for table_name in expected_tables.intersection(current_tables):
@@ -392,8 +391,8 @@ class SchemaValidator:
                 current_columns = current_schema.column_names
 
                 # Check for added / removed columns
-                added_cols = list(current_columns - expected_columns)
-                removed_cols = list(expected_columns - current_columns)
+                added_cols = list(current_columns-expected_columns)
+                removed_cols = list(expected_columns-current_columns)
 
                 if added_cols:
                     columns_added[table_name] = added_cols

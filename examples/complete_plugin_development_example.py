@@ -3,7 +3,7 @@
 Complete Plugin Development Example
 
 This example demonstrates the full workflow of creating, testing, validating,
-and using a custom music analytics plugin with the open - source framework.
+and using a custom music analytics plugin with the open-source framework.
 
 Run this example to see:
 1. Plugin creation and registration
@@ -14,8 +14,6 @@ Run this example to see:
 """
 
 from datetime import datetime, timedelta
-import os
-from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -40,7 +38,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
     - Comprehensive metadata
     - Robust input validation
     - Configurable parameters
-    - Security - conscious implementation
+    - Security-conscious implementation
     - Clear output schema
     """
 
@@ -85,13 +83,13 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
                 "prediction_confidence": "float64",
             },
             license="MIT",
-            repository_url="https://github.com / music - analytics / virality - plugin",
-            documentation_url="https://music - analytics.github.io / virality - plugin",
+            repository_url="https://github.com / music-analytics / virality-plugin",
+            documentation_url="https://music-analytics.github.io / virality-plugin",
             tags=["virality", "trending", "music", "prediction", "engagement"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
-        """Comprehensive input validation with music - specific checks."""
+        """Comprehensive input validation with music-specific checks."""
         result = ValidationResult(is_valid=True, errors=[], warnings=[], checked_items=0, passed_items=0)
 
         # Check required columns
@@ -129,7 +127,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
             result.checked_items += 1
             max_views = data["view_count"].max()
             if max_views > 10_000_000_000:  # 10 billion views seems unrealistic
-                result.add_warning("Extremely high view counts detected - please verify data accuracy")
+                result.add_warning("Extremely high view counts detected-please verify data accuracy")
             result.passed_items += 1
 
         # Check for data completeness
@@ -190,7 +188,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
                     continue
 
                 # Calculate time since publication
-                time_since_pub = (current_time - published_date).total_seconds() / 3600  # hours
+                time_since_pub = (current_time-published_date).total_seconds() / 3600  # hours
 
                 # 1. Velocity Component (views per hour)
                 if time_since_pub > 0:
@@ -297,7 +295,7 @@ class MusicViralityPlugin(OpenSourceScoringPlugin):
 
         min_views = self.config.get("min_views_threshold", 10000)
         if not isinstance(min_views, int) or min_views < 0:
-            raise ValueError("min_views_threshold must be a non - negative integer")
+            raise ValueError("min_views_threshold must be a non-negative integer")
 
 
 def create_sample_music_data() -> pd.DataFrame:
@@ -365,7 +363,7 @@ def demonstrate_complete_workflow():
 
     plugin = MusicViralityPlugin()
     validator = PluginValidator()
-    __security_checker = AdvancedSecurityChecker()
+    __security_checker = AdvancedSecurityChecker()  # noqa: F841
 
     # Validate plugin structure
     structure_result = validator.validate_plugin_structure(plugin)

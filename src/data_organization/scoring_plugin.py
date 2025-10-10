@@ -26,16 +26,16 @@ class PluginMetadata:
         warnings = []
 
         if not self.name or not isinstance(self.name, str):
-            errors.append("Plugin name must be a non - empty string")
+            errors.append("Plugin name must be a non-empty string")
 
         if not self.version or not isinstance(self.version, str):
-            errors.append("Plugin version must be a non - empty string")
+            errors.append("Plugin version must be a non-empty string")
 
         if not self.author or not isinstance(self.author, str):
-            errors.append("Plugin author must be a non - empty string")
+            errors.append("Plugin author must be a non-empty string")
 
         if not self.description or not isinstance(self.description, str):
-            errors.append("Plugin description must be a non - empty string")
+            errors.append("Plugin description must be a non-empty string")
 
         if not isinstance(self.parameters, dict):
             errors.append("Plugin parameters must be a dictionary")
@@ -51,7 +51,7 @@ class PluginMetadata:
             errors=errors,
             warnings=warnings,
             checked_items=7,
-            passed_items=7 - len(errors),
+            passed_items=7-len(errors),
             metadata={"plugin_name": self.name, "plugin_version": self.version},
         )
 
@@ -167,7 +167,7 @@ class ScoringResult:
             if score_col.dtype in ["float64", "float32", "int64", "int32"]:
                 out_of_range = ((score_col < 0) | (score_col > 1)).sum()
                 if out_of_range > 0:
-                    warnings.append(f"Found {out_of_range} scores outside 0 - 1 range")
+                    warnings.append(f"Found {out_of_range} scores outside 0-1 range")
 
         return ValidationResult(
             is_valid=len(errors) == 0,
@@ -240,7 +240,7 @@ class ScoringPlugin(ABC):
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> ValidationResult:
         """Validate plugin parameters."""
-        # Default implementation - plugins can override for custom validation
+        # Default implementation-plugins can override for custom validation
         return ValidationResult(
             is_valid=True,
             checked_items=len(parameters),

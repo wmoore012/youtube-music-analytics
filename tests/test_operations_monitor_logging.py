@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -15,7 +15,7 @@ from src.youtubeviz.operations_monitor import (
 
 
 def _build_sqlite_engine():
-    """Create an in - memory SQLite engine with the logging table."""
+    """Create an in-memory SQLite engine with the logging table."""
     engine = create_engine("sqlite://")
     with engine.begin() as conn:
         conn.execute(
@@ -56,7 +56,7 @@ def test_record_operational_health_snapshot_inserts_row():
     record_operational_health_snapshot(
         snapshot,
         lookback_days=14,
-        source="unit - test",
+        source="unit-test",
         engine=engine,
         recorded_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
     )
@@ -71,7 +71,7 @@ def test_record_operational_health_snapshot_inserts_row():
 
     assert row is not None
     data = row._mapping
-    assert data["source"] == "unit - test"
+    assert data["source"] == "unit-test"
     assert data["lookback_days"] == 14
     assert data["data_freshness_hours"] == pytest.approx(12.5)
     assert data["coverage_ratio"] == pytest.approx(75.0)

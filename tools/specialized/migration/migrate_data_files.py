@@ -2,18 +2,16 @@
 """
 CLI tool for migrating CSV / JSON data files to database tables.
 
-This script provides a command - line interface for the data migration system,
+This script provides a command-line interface for the data migration system,
 allowing users to migrate scattered data files into organized database tables.
 """
 
 import argparse
 import json
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Dict
 
-from sqlalchemy import create_engine
 
 # Add src and root to path for imports
 root_path = Path(__file__).parent.parent.parent
@@ -226,8 +224,9 @@ Examples:
 
     parser.add_argument("--archive", help="Archive directory for successfully migrated files")
 
-    parser.add_argument("--dry - run", action="store_true",
-                        help="Show what would be migrated without actually doing it")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be migrated without actually doing it"
+    )
 
     parser.add_argument("--validate", action="store_true", help="Validate migration results after completion")
 
@@ -262,7 +261,7 @@ Examples:
         print(f"📋 Found {len(csv_files)} CSV files and {len(json_files)} JSON files")
 
         if args.dry_run:
-            print("\n🔍 DRY RUN - Files that would be migrated:")
+            print("\n🔍 DRY RUN-Files that would be migrated:")
             for file_path in all_files:
                 print(f"   📄 {Path(file_path).name}")
             return 0

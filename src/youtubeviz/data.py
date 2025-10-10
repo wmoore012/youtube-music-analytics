@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, timedelta
 import json
 import os
+from dataclasses import dataclass
+from datetime import date, timedelta
 from time import perf_counter
 from typing import Iterable, Optional
 
@@ -37,7 +37,7 @@ def _get_engine(engine=None):
     # Lazily import to avoid hard dependency when not needed
     from web.etl_helpers import get_engine
 
-    return get_engine()  # Use unified .env - driven engine for local YouTube analytics database
+    return get_engine()  # Use unified .env-driven engine for local YouTube analytics database
 
 
 def load_youtube_data(
@@ -122,7 +122,7 @@ def load_artist_daily_metrics(  # noqa: C901
 
     Notes:
     - The ETL uses channel URLs from your `.env` (e.g. YT_CHANNEL_1=...) to control ingestion. This function does not
-      alter those inputs; the `artists` parameter is a read - time filter only (uses `isrc_recordings.artist_primary` or
+      alter those inputs; the `artists` parameter is a read-time filter only (uses `isrc_recordings.artist_primary` or
       `youtube_videos.channel_title`).
     """
     eng = _get_engine(engine)
@@ -230,12 +230,12 @@ def _build_artist_alias_map(eng) -> dict[str, str]:  # noqa: C901
         from sqlalchemy import MetaData, Table
 
         meta = MetaData()
-        meta.reflect(bind=eng, only=["artist_aliases"])  # type: ignore[arg - type]
+        meta.reflect(bind=eng, only=["artist_aliases"])  # type: ignore[arg-type]
         aliases_tbl: Table = meta.tables["artist_aliases"]  # type: ignore[index]
         cols = set(aliases_tbl.c.keys())
         with eng.connect() as conn:
             if "canonical_name" in cols:
-                # Natural - key schema
+                # Natural-key schema
                 res = conn.execute(text("SELECT alias, canonical_name FROM artist_aliases WHERE alias <> ''"))
                 for alias, canonical in res:
                     if alias and canonical:
@@ -259,7 +259,7 @@ def _build_artist_alias_map(eng) -> dict[str, str]:  # noqa: C901
 
         config_path = Path(__file__).parent.parent.parent / "config" / "artist_aliases.json"
         if config_path.exists():
-            with open(config_path, "r", encoding="utf - 8") as f:
+            with open(config_path, "r", encoding="utf-8") as f:
                 obj = json.load(f)
                 for k, v in (obj or {}).items():
                     if k and v:
@@ -278,7 +278,7 @@ def _build_artist_alias_map(eng) -> dict[str, str]:  # noqa: C901
     except Exception:
         pass
 
-    # Case - insensitive keys: add lowercase variants for lookups
+    # Case-insensitive keys: add lowercase variants for lookups
     lower = {k.lower(): v for k, v in mapping.items()}
     mapping.update(lower)
     return mapping
@@ -286,10 +286,10 @@ def _build_artist_alias_map(eng) -> dict[str, str]:  # noqa: C901
 
 def compute_kpis(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Aggregate KPI snapshot per artist using per - video rollup:
-    - total_views: sum of per - video max views within the window
+    Aggregate KPI snapshot per artist using per-video rollup:
+    - total_views: sum of per-video max views within the window
     - videos: number of unique videos
-    - median_views: median of per - video max views
+    - median_views: median of per-video max views
     """
     if df.empty:
         return df
@@ -329,8 +329,8 @@ def detect_outliers_iqr(
     def _outliers(sub: pd.DataFrame) -> pd.DataFrame:
         q1 = sub[value_col].quantile(0.25)
         q3 = sub[value_col].quantile(0.75)
-        iqr = q3 - q1
-        lower = q1 - factor * iqr
+        iqr = q3-q1
+        lower = q1-factor * iqr
         upper = q3 + factor * iqr
         return sub[(sub[value_col] < lower) | (sub[value_col] > upper)]
 
@@ -365,7 +365,7 @@ def compute_estimated_revenue(
     """Estimate revenue from views using RPM (USD per 1,000 views).
 
     - If `rpm_usd` is a float, apply globally; if dict, map per artist (fallback to global 3.0).
-    - Returns per - artist summary; when `per_video=True`, also aggregates by video first using max views.
+    - Returns per-artist summary; when `per_video=True`, also aggregates by video first using max views.
     Columns: artist_name, total_views, est_revenue_usd, videos, median_views, mean_views
     """
     if df.empty:
@@ -405,7 +405,7 @@ def compute_estimated_revenue(
 
 
 def compute_yoy_views(df: pd.DataFrame) -> pd.DataFrame:
-    """Year - over - year total views per artist from daily metrics df (with 'date', 'views')."""
+    """Year-over-year total views per artist from daily metrics df (with 'date', 'views')."""
     if df.empty:
         return df.iloc[0:0]
     data = df.copy()
@@ -424,7 +424,7 @@ def run_artist_metrics_pipeline(
     end: Optional[date] = None,
     rpm_usd: float | dict[str, float] | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Execute an end - to - end pipeline from DB load to revenue summary."""
+    """Execute an end-to-end pipeline from DB load to revenue summary."""
 
     daily = load_artist_daily_metrics(artists=artists, start=start, end=end, engine=engine)
     revenue = compute_estimated_revenue(daily, rpm_usd=rpm_usd)
@@ -434,7 +434,7 @@ def run_artist_metrics_pipeline(
 def benchmark_run_artist_metrics_pipeline(
     *, engine=None, iterations: int = 1, **kwargs
 ) -> dict[str, float | int | pd.DataFrame]:
-    """Benchmark the end - to - end pipeline to detect performance regressions."""
+    """Benchmark the end-to-end pipeline to detect performance regressions."""
 
     runs = max(1, int(iterations))
     total = 0.0
@@ -499,7 +499,7 @@ def load_comment_examples(
     )
 
     # Use window functions if available; fallback to simple LIMIT per group via variables isn't portable.
-    # We'll select all and do per - group head in pandas.
+    # We'll select all and do per-group head in pandas.
     # Choose a stable alias for time column
     time_sel = f", c.{time_col} AS comment_time" if time_col else ""
     sql = f"""
@@ -637,7 +637,7 @@ def load_recent_window_days(
     if pd.isna(maxd):
         return pd.DataFrame()
     maxd = pd.to_datetime(maxd).date()
-    start = maxd - timedelta(days=days)
+    start = maxd-timedelta(days=days)
     return load_artist_daily_metrics(artists=artists, start=start, end=maxd, engine=eng)
 
 
@@ -900,7 +900,7 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
 
         # Count artists in sentiment data
         end_date = date.today()
-        start_date = end_date - timedelta(days=days)
+        start_date = end_date-timedelta(days=days)
         sentiment_data = load_sentiment_daily(start=start_date, end=end_date, engine=eng)
         sentiment_count = sentiment_data["artist_name"].nunique() if len(sentiment_data) > 0 else 0
 
@@ -923,18 +923,18 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
 
         consistent = core_consistent and sentiment_consistent
 
-        # Generate user - friendly explanation
+        # Generate user-friendly explanation
         if consistent:
             if sentiment_count == 0:
                 _explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {  # noqa: E501
-                                                                                                              days} day period - this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501  # noqa: E126
+                                                                                                              days} day period-this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501  # noqa: E126
             else:
                 _explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
         else:
-            _explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {
+            _explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {  # noqa: F841
                 core_counts}. This indicates a bug in the analytics functions."
 
-        # Temporal consistency check - sentiment data should exist for same time period
+        # Temporal consistency check-sentiment data should exist for same time period
         temporal_issues = []
         if data_count > 0 and sentiment_count == 0:
             temporal_issues.append(f"No sentiment data found for {days}-day period despite having {data_count} artists")
@@ -943,7 +943,7 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
         if len(sentiment_data) > 0:
             latest_sentiment = sentiment_data["date"].max()
             latest_main_data = recent_data["date"].max()
-            date_diff = (latest_main_data - latest_sentiment).days
+            date_diff = (latest_main_data-latest_sentiment).days
             if date_diff > 1:  # More than 1 day lag
                 temporal_issues.append(f"Sentiment data is {date_diff} days behind main data")
 
@@ -959,10 +959,10 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
             "message": (
                 "All artist counts match"
                 if consistent
-                else f"Inconsistent counts - Core: {core_counts}, Sentiment: {sentiment_count}"
+                else f"Inconsistent counts-Core: {core_counts}, Sentiment: {sentiment_count}"
             ),
             "explanation": f"Core functions: {data_count} artists."
-            " Sentiment: {sentiment_count} artists ({'normal - no"
+            " Sentiment: {sentiment_count} artists ({'normal-no"
             " sentiment data for this period' if sentiment_count == 0 else 'matches core count'})",
         }
 

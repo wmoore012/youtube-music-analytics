@@ -5,8 +5,8 @@ Fix JSON escape issues in notebooks.
 
 import json
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def fix_json_escapes(content):
@@ -36,7 +36,7 @@ def fix_notebook(notebook_path):
 
     try:
         # Read the file as text first
-        with open(notebook_path, "r", encoding="utf - 8") as f:
+        with open(notebook_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Try to parse as JSON
@@ -56,7 +56,7 @@ def fix_notebook(notebook_path):
                 notebook_data = json.loads(fixed_content)
 
                 # Write back the fixed content
-                with open(notebook_path, "w", encoding="utf - 8") as f:
+                with open(notebook_path, "w", encoding="utf-8") as f:
                     json.dump(notebook_data, f, indent=2, ensure_ascii=False)
 
                 print(f"  ✅ Fixed and saved: {notebook_path}")
@@ -88,7 +88,7 @@ def fix_notebook(notebook_path):
                     "nbformat_minor": 4,
                 }
 
-                with open(notebook_path, "w", encoding="utf - 8") as f:
+                with open(notebook_path, "w", encoding="utf-8") as f:
                     json.dump(minimal_notebook, f, indent=2)
 
                 print(f"  🔄 Created minimal notebook: {notebook_path}")

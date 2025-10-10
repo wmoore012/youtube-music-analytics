@@ -109,17 +109,17 @@ def bulletproof_chart(spec: ChartSpec, timeout_sec: Optional[int] = None):
                         )
 
             except ValidationError as e:
-                # Pydantic validation errors - these are data issues
+                # Pydantic validation errors-these are data issues
                 elapsed = time.time() - start_time
                 logger.error(f"[{actual_spec.name}] Data validation failed after {elapsed:.2f}s: {e}")
                 raise ValueError(f"[{actual_spec.name}] Data validation error: {e}") from e
 
             except Exception as e:
-                # Log the error but re - raise it (don't hide it)
+                # Log the error but re-raise it (don't hide it)
                 elapsed = time.time() - start_time
                 logger.error(f"[{actual_spec.name}] Failed after {elapsed:.2f}s: {e}")
 
-                # Re - raise with enhanced context but preserve original exception type
+                # Re-raise with enhanced context but preserve original exception type
                 raise type(e)(f"[{actual_spec.name}] {str(e)}") from e
 
         return wrapper
@@ -168,13 +168,13 @@ def setup_plotly_animation(
         # Set stable ranges with 5% padding
         if all_x_vals:
             x_min, x_max = min(all_x_vals), max(all_x_vals)
-            x_padding = (x_max - x_min) * 0.05
-            fig.update_xaxes(range=[x_min - x_padding, x_max + x_padding])
+            x_padding = (x_max-x_min) * 0.05
+            fig.update_xaxes(range=[x_min-x_padding, x_max + x_padding])
 
         if all_y_vals:
             y_min, y_max = min(all_y_vals), max(all_y_vals)
-            y_padding = (y_max - y_min) * 0.05
-            fig.update_yaxes(range=[y_min - y_padding, y_max + y_padding])
+            y_padding = (y_max-y_min) * 0.05
+            fig.update_yaxes(range=[y_min-y_padding, y_max + y_padding])
 
     # Configure animation controls
     if hasattr(fig.layout, "updatemenus") and fig.layout.updatemenus:
@@ -186,7 +186,7 @@ def setup_plotly_animation(
                     button.args[1]["frame"]["redraw"] = False  # Reduce redraws for smoother animation
                 if "transition" in button.args[1]:
                     button.args[1]["transition"]["duration"] = transition_duration
-                    button.args[1]["transition"]["easing"] = "cubic - in - out"
+                    button.args[1]["transition"]["easing"] = "cubic-in-out"
 
         # Set autoplay behavior
         if not autoplay:

@@ -1,8 +1,8 @@
 #!/usr / bin / env python3
 """
-Automation Manager - Explicit User Control Over Scheduled Tasks
+Automation Manager-Explicit User Control Over Scheduled Tasks
 
-This script provides transparent, user - controlled automation for the
+This script provides transparent, user-controlled automation for the
 YouTube analytics platform. It is designed for predictable scheduling
 across development, staging, and production environments.
 
@@ -14,13 +14,11 @@ Key Principles:
 """
 
 import argparse
-from datetime import datetime
-import json
 import os
-from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Optional
+from datetime import datetime
+from pathlib import Path
 
 import yaml
 
@@ -127,7 +125,7 @@ class AutomationManager:
         cron_lines.append("")
 
         for process in processes:
-            __name = process["name"]
+            __name = process["name"]  # noqa: F841
             command = process["command"]
             schedule_time = process["schedule"]
             description = process.get("description", "No description")
@@ -155,7 +153,7 @@ class AutomationManager:
             print(cron_config)
             print("=" * 60)
             print("\n💡 To apply this configuration:")
-            print(f"   python scripts / automation_manager.py apply - cron {schedule_name}")
+            print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
         else:
             # Save configuration for review
             config_file = Path(f"config / automation / generated_{schedule_name}_cron.txt")
@@ -166,7 +164,7 @@ class AutomationManager:
             print("\n📋 Review the configuration before applying:")
             print(f"   cat {config_file}")
             print("\n🚀 Apply the configuration:")
-            print(f"   python scripts / automation_manager.py apply - cron {schedule_name}")
+            print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
 
         return cron_config
 
@@ -195,7 +193,7 @@ class AutomationManager:
 
         if not config_file.exists():
             print(f"❌ Generated configuration not found: {config_file}")
-            print(f"Run: python scripts / automation_manager.py generate - cron {schedule_name}")
+            print(f"Run: python scripts / automation_manager.py generate-cron {schedule_name}")
             return False
 
         # Show what will be applied
@@ -272,8 +270,8 @@ class AutomationManager:
             if process.returncode == 0:
                 self.log_action("AUTOMATION_DISABLED", "All CRON jobs removed")
                 print("✅ All automation disabled")
-                print("\n🔄 To re - enable automation:")
-                print("   python scripts / automation_manager.py restore - cron")
+                print("\n🔄 To re-enable automation:")
+                print("   python scripts / automation_manager.py restore-cron")
                 return True
             else:
                 print("❌ Failed to disable automation")
@@ -408,14 +406,14 @@ class AutomationManager:
             print()
 
         print("💡 To apply this schedule:")
-        print(f"   python scripts / automation_manager.py generate - cron {schedule_name}")
-        print(f"   python scripts / automation_manager.py apply - cron {schedule_name}")
+        print(f"   python scripts / automation_manager.py generate-cron {schedule_name}")
+        print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
 
 
 def main():
     """Main function with comprehensive argument parsing."""
     parser = argparse.ArgumentParser(
-        description="YouTube Music Analytics - Automation Manager",
+        description="YouTube Music Analytics-Automation Manager",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -426,10 +424,10 @@ Examples:
   python scripts / automation_manager.py test standard
 
   # Generate CRON configuration
-  python scripts / automation_manager.py generate - cron standard
+  python scripts / automation_manager.py generate-cron standard
 
   # Apply CRON configuration
-  python scripts / automation_manager.py apply - cron standard
+  python scripts / automation_manager.py apply-cron standard
 
   # Check automation status
   python scripts / automation_manager.py status
@@ -438,19 +436,19 @@ Examples:
   python scripts / automation_manager.py disable
 
   # Restore from backup
-  python scripts / automation_manager.py restore - cron
+  python scripts / automation_manager.py restore-cron
         """,
     )
 
     parser.add_argument(
         "action",
-        choices=["list", "test", "generate - cron", "apply - cron", "status", "disable", "restore - cron"],
+        choices=["list", "test", "generate-cron", "apply-cron", "status", "disable", "restore-cron"],
         help="Action to perform",
     )
 
-    parser.add_argument("schedule", nargs="?", help="Schedule name (required for test, generate - cron, apply - cron)")
+    parser.add_argument("schedule", nargs="?", help="Schedule name (required for test, generate-cron, apply-cron)")
 
-    parser.add_argument("--dry - run", action="store_true", help="Show what would be done without executing")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be done without executing")
 
     parser.add_argument("--force", action="store_true", help="Skip confirmation prompts")
 
@@ -470,16 +468,16 @@ Examples:
             sys.exit(1)
         manager.test_schedule(args.schedule)
 
-    elif args.action == "generate - cron":
+    elif args.action == "generate-cron":
         if not args.schedule:
-            print("❌ Schedule name required for generate - cron action")
+            print("❌ Schedule name required for generate-cron action")
             parser.print_help()
             sys.exit(1)
         manager.generate_cron_config(args.schedule, dry_run=args.dry_run)
 
-    elif args.action == "apply - cron":
+    elif args.action == "apply-cron":
         if not args.schedule:
-            print("❌ Schedule name required for apply - cron action")
+            print("❌ Schedule name required for apply-cron action")
             parser.print_help()
             sys.exit(1)
         manager.apply_cron_schedule(args.schedule, force=args.force)
@@ -490,7 +488,7 @@ Examples:
     elif args.action == "disable":
         manager.disable_automation()
 
-    elif args.action == "restore - cron":
+    elif args.action == "restore-cron":
         manager.restore_cron()
 
 

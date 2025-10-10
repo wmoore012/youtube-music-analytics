@@ -8,10 +8,10 @@ music industry sentiment analyzer that understands Gen Z slang and music context
 
 import os
 import sys
-from typing import Dict, List
+from typing import Dict
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 # Add src to path for imports
@@ -359,7 +359,7 @@ def verify_sentiment_update(engine) -> bool:
 
         row = result.fetchone()
         total, positive, negative, beat_love = row
-        neutral = total - positive - negative
+        neutral = total-positive-negative
 
         print(f"✅ Sentiment distribution:")
         print(f"   😊 Positive: {positive:,} ({positive / total * 100:.1f}%)")
@@ -391,7 +391,7 @@ def main():
         check_database_schema(engine)
 
         # Step 2: Update sentiment analysis
-        _results = update_sentiment_analysis(engine)
+        _results = update_sentiment_analysis(engine)  # noqa: F841
 
         # Step 3: Verify update
         if verify_sentiment_update(engine):

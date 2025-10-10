@@ -2,21 +2,18 @@
 """
 Final V2.0 Model Validation
 
-Test the production - grade v2.0 dataset with proper intent / sentiment separation
+Test the production-grade v2.0 dataset with proper intent / sentiment separation
 against all available sentiment models to demonstrate the improvements.
 """
 
 import os
 import sys
-from typing import Dict, List, Tuple
 
-import pandas as pd
 
 # Add paths for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from datasets.music_industry_sentiment_dataset_v2 import get_music_industry_dataset_v2
-
 from src.youtubeviz.production_music_sentiment import ProductionMusicSentimentAnalyzer
 
 
@@ -267,7 +264,7 @@ def analyze_intent_sentiment_separation():
 def run_v2_validation():
     """Run comprehensive v2.0 dataset validation."""
 
-    print("🎵 Music Industry Sentiment Dataset v2.0 - Final Validation")
+    print("🎵 Music Industry Sentiment Dataset v2.0-Final Validation")
     print("=" * 80)
 
     # Load dataset info
@@ -366,7 +363,7 @@ def run_v2_validation():
     print(f"{'Comment':<35} | {'Sentiment':<10} | {'Score':<8} | {'Beat':<5}")
     print("-" * 65)
 
-    _original_correct = 0
+    _original_correct = 0  # noqa: F841
     for comment in original_cases:
         result = full_analyzer.analyze_comment(comment)
         score = result["sentiment_score"]
@@ -388,7 +385,7 @@ def run_v2_validation():
     print("✅ 255 scientifically classified phrases (vs 180 in v1.0)")
     print("✅ Intent / sentiment separation following SemEval standards")
     print("✅ Proper neutral handling for requests / questions")
-    print("✅ Aspect - based sentiment analysis support")
+    print("✅ Aspect-based sentiment analysis support")
     print("✅ Toxicity and NSFW flagging")
     print("✅ Pydantic schema validation with runtime checks")
     print("✅ Deduplication and normalization guardrails")
@@ -396,7 +393,7 @@ def run_v2_validation():
     print("✅ Multiple export formats (CSV, JSONL)")
 
     if best_model and best_model["accuracy"] >= 80:
-        print(f"\n🎉 V2.0 DATASET IS PRODUCTION - READY!")
+        print(f"\n🎉 V2.0 DATASET IS PRODUCTION-READY!")
         print("   - Proper scientific methodology")
         print("   - Intent / sentiment separation")
         print("   - Comprehensive music industry coverage")

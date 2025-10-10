@@ -4,15 +4,15 @@ Tests for Video Filtering System
 
 This module tests the video filtering functionality to ensure:
 - Problematic videos are filtered at API level
-- Configuration - driven filtering works correctly
+- Configuration-driven filtering works correctly
 - Filtering decisions are logged properly
 - Statistics are tracked accurately
 """
 
-from datetime import datetime
 import json
 import os
 import tempfile
+from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -40,8 +40,8 @@ VALID_VIDEO_IDS = {
 
 VALID_CHANNEL_IDS = {
     "blocked": "UCuAXFkgsw1L7xaCfnd5JJOw",
-    "valid": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
-    "test": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
+    "valid": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
+    "test": "UCsT0YIqwnpJCM-mx7-gSA4Q",
 }
 
 
@@ -327,7 +327,7 @@ class TestVideoFilter:
         assert filter_engine._parse_duration("invalid") is None
 
     def test_filter_videos_at_api_level(self):
-        """Test the main API - level filtering function."""
+        """Test the main API-level filtering function."""
         videos = [
             YouTubeVideo(
                 video_id=VALID_VIDEO_IDS["valid1"],

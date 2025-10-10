@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, List, Optional, Tuple
 
 import pymysql
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -21,8 +20,8 @@ class YouTubeCommentSentimentJob:
 
     - Uses env: DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
     - Stores VADER compound in youtube_comments.sentiment_score (decimal(3,2))
-    - Optionally refreshes youtube_sentiment_summary with per - video averages
-    - Optionally snapshots per - video sentiment into youtube_sentiment (when ISRC is available)
+    - Optionally refreshes youtube_sentiment_summary with per-video averages
+    - Optionally snapshots per-video sentiment into youtube_sentiment (when ISRC is available)
     """
 
     def __init__(self) -> None:
@@ -143,14 +142,14 @@ class YouTubeCommentSentimentJob:
             conn.close()
 
     def snapshot_daily_sentiment(self) -> int:
-        """Insert a per - video daily snapshot into youtube_sentiment when ISRC exists.
+        """Insert a per-video daily snapshot into youtube_sentiment when ISRC exists.
 
-        Uses the average of comment - level sentiment for each video_id.
+        Uses the average of comment-level sentiment for each video_id.
         Returns number of rows inserted.
         """
         conn = self._connect()
         try:
-            # Use date - truncated timestamp so we keep one snapshot per day per (isrc, video)
+            # Use date-truncated timestamp so we keep one snapshot per day per (isrc, video)
             with conn.cursor() as cur:
                 cur.execute(
                     """

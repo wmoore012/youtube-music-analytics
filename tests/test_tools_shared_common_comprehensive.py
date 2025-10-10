@@ -6,11 +6,11 @@ Comprehensive tests for the shared tools common functionality.
 Tests the ToolBase class, ToolConfig, ToolRegistry, and error handling.
 """
 
-from datetime import datetime
 import json
-from pathlib import Path
 import sys
 import tempfile
+from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -41,7 +41,7 @@ class TestToolBase:
                 from tools.shared.common import ToolConfig
 
                 return ToolConfig(
-                    name="test - tool",
+                    name="test-tool",
                     version="1.0.0",
                     description="Test tool",
                     dependencies=[],
@@ -56,8 +56,8 @@ class TestToolBase:
             def cleanup_resources(self):
                 pass
 
-        tool = TestTool(name="test - tool", version="1.0.0")
-        assert tool.name == "test - tool"
+        tool = TestTool(name="test-tool", version="1.0.0")
+        assert tool.name == "test-tool"
         assert tool.version == "1.0.0"
 
     def test_tool_base_context_manager(self):
@@ -66,7 +66,7 @@ class TestToolBase:
 
         class TestTool(ToolBase):
             def __init__(self):
-                super().__init__(name="test - tool", version="1.0.0")
+                super().__init__(name="test-tool", version="1.0.0")
                 self.cleanup_called = False
 
             def get_required_environment_vars(self):
@@ -76,7 +76,7 @@ class TestToolBase:
                 from tools.shared.common import ToolConfig
 
                 return ToolConfig(
-                    name="test - tool",
+                    name="test-tool",
                     version="1.0.0",
                     description="Test tool",
                     dependencies=[],
@@ -93,7 +93,7 @@ class TestToolBase:
 
         # Test context manager
         with TestTool() as tool:
-            assert tool.name == "test - tool"
+            assert tool.name == "test-tool"
 
         # Cleanup should have been called
         assert tool.cleanup_called
@@ -104,7 +104,7 @@ class TestToolBase:
 
         class TestTool(ToolBase):
             def __init__(self):
-                super().__init__(name="test - tool", version="1.0.0")
+                super().__init__(name="test-tool", version="1.0.0")
                 self.logged_messages = []
 
             def get_required_environment_vars(self):
@@ -114,7 +114,7 @@ class TestToolBase:
                 from tools.shared.common import ToolConfig
 
                 return ToolConfig(
-                    name="test - tool",
+                    name="test-tool",
                     version="1.0.0",
                     description="Test tool",
                     dependencies=[],
@@ -145,7 +145,7 @@ class TestToolBase:
 
         class TestTool(ToolBase):
             def __init__(self):
-                super().__init__(name="test - tool", version="1.0.0")
+                super().__init__(name="test-tool", version="1.0.0")
 
             def get_required_environment_vars(self):
                 return ["TEST_VAR"]
@@ -154,7 +154,7 @@ class TestToolBase:
                 from tools.shared.common import ToolConfig
 
                 return ToolConfig(
-                    name="test - tool",
+                    name="test-tool",
                     version="1.0.0",
                     description="Test tool",
                     dependencies=["python>=3.8"],
@@ -172,7 +172,7 @@ class TestToolBase:
         tool = TestTool()
         config = tool.get_tool_config()
 
-        assert config.name == "test - tool"
+        assert config.name == "test-tool"
         assert config.version == "1.0.0"
         assert "TEST_VAR" in config.environment_vars
         assert "python>=3.8" in config.dependencies
@@ -186,7 +186,7 @@ class TestToolConfig:
         from tools.shared.common import ToolConfig
 
         config = ToolConfig(
-            name="test - tool",
+            name="test-tool",
             version="1.0.0",
             description="Test tool description",
             dependencies=["python>=3.8", "requests"],
@@ -195,7 +195,7 @@ class TestToolConfig:
             category="test",
         )
 
-        assert config.name == "test - tool"
+        assert config.name == "test-tool"
         assert config.version == "1.0.0"
         assert config.description == "Test tool description"
         assert len(config.dependencies) == 2
@@ -209,7 +209,7 @@ class TestToolConfig:
 
         # Valid config should work
         config = ToolConfig(
-            name="valid - tool",
+            name="valid-tool",
             version="1.0.0",
             description="Valid tool",
             dependencies=[],
@@ -217,7 +217,7 @@ class TestToolConfig:
             usage_examples=[],
             category="test",
         )
-        assert config.name == "valid - tool"
+        assert config.name == "valid-tool"
 
     def test_tool_config_serialization(self):
         """Test ToolConfig serialization."""
@@ -226,7 +226,7 @@ class TestToolConfig:
         from tools.shared.common import ToolConfig
 
         config = ToolConfig(
-            name="serializable - tool",
+            name="serializable-tool",
             version="2.0.0",
             description="Serializable tool",
             dependencies=["pandas", "numpy"],
@@ -237,7 +237,7 @@ class TestToolConfig:
 
         # Should be serializable to dict
         config_dict = dataclasses.asdict(config)
-        assert config_dict["name"] == "serializable - tool"
+        assert config_dict["name"] == "serializable-tool"
         assert config_dict["version"] == "2.0.0"
         assert len(config_dict["dependencies"]) == 2
 
@@ -268,7 +268,7 @@ class TestToolRegistry:
 
         # Create test config
         config = ToolConfig(
-            name="registry - test - tool",
+            name="registry-test-tool",
             version="1.0.0",
             description="Registry test tool",
             dependencies=[],
@@ -287,12 +287,12 @@ class TestToolRegistry:
         # Should find our registered tool
         registered_tool = None
         for tool in tools:
-            if tool.name == "registry - test - tool":
+            if tool.name == "registry-test-tool":
                 registered_tool = tool
                 break
 
         assert registered_tool is not None
-        assert registered_tool.name == "registry - test - tool"
+        assert registered_tool.name == "registry-test-tool"
         assert registered_tool.version == "1.0.0"
 
     def test_tool_registry_list_tools(self):
@@ -319,7 +319,7 @@ class TestToolRegistry:
         # Register tools in different categories
         test_configs = [
             ToolConfig(
-                name="category - test - 1",
+                name="category-test-1",
                 version="1.0.0",
                 description="Category test 1",
                 dependencies=[],
@@ -328,7 +328,7 @@ class TestToolRegistry:
                 category="analytics",
             ),
             ToolConfig(
-                name="category - test - 2",
+                name="category-test-2",
                 version="1.0.0",
                 description="Category test 2",
                 dependencies=[],
@@ -351,8 +351,8 @@ class TestToolRegistry:
         analytics_names = [tool.name for tool in analytics_tools]
         development_names = [tool.name for tool in development_tools]
 
-        assert "category - test - 1" in analytics_names
-        assert "category - test - 2" in development_names
+        assert "category-test-1" in analytics_names
+        assert "category-test-2" in development_names
 
     def test_tool_registry_validation(self):
         """Test tool registry validation."""
@@ -465,7 +465,7 @@ class TestUtilityFunctions:
             from tools.shared.common import setup_logging
 
             # Test logging setup
-            logger = setup_logging("test - logger")
+            logger = setup_logging("test-logger")
             assert logger is not None
 
         except ImportError:
@@ -482,7 +482,7 @@ class TestIntegrationScenarios:
 
         class LifecycleTestTool(ToolBase):
             def __init__(self):
-                super().__init__(name="lifecycle - test", version="1.0.0")
+                super().__init__(name="lifecycle-test", version="1.0.0")
                 self.initialized = True
                 self.run_called = False
                 self.cleanup_called = False
@@ -492,7 +492,7 @@ class TestIntegrationScenarios:
 
             def get_tool_config(self):
                 return ToolConfig(
-                    name="lifecycle - test",
+                    name="lifecycle-test",
                     version="1.0.0",
                     description="Lifecycle test tool",
                     dependencies=["python>=3.8"],
@@ -520,7 +520,7 @@ class TestIntegrationScenarios:
             registry = get_tool_registry()
             tools = registry.list_tools()
             tool_names = [t.name for t in tools]
-            assert "lifecycle - test" in tool_names
+            assert "lifecycle-test" in tool_names
 
             # Run tool
             result = tool.run()
@@ -536,14 +536,14 @@ class TestIntegrationScenarios:
 
         class ErrorTestTool(ToolBase):
             def __init__(self):
-                super().__init__(name="error - test", version="1.0.0")
+                super().__init__(name="error-test", version="1.0.0")
 
             def get_required_environment_vars(self):
                 return []
 
             def get_tool_config(self):
                 return ToolConfig(
-                    name="error - test",
+                    name="error-test",
                     version="1.0.0",
                     description="Error test tool",
                     dependencies=[],
@@ -569,7 +569,7 @@ class TestIntegrationScenarios:
             tool.run()
         except ExecutionError as e:
             tool.handle_error(e, "test context")
-            # Should not re - raise
+            # Should not re-raise
 
 
 def test_module_structure():

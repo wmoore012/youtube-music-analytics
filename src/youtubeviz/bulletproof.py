@@ -6,11 +6,11 @@ handle missing data gracefully, and provide clear error messages.
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FutureTimeoutError
 import functools
 import logging
-from typing import Any, Callable, List, Optional, TypeVar, Union
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
+from typing import Any, Callable, List, Optional, TypeVar
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-# Configure logging to be notebook - safe
+# Configure logging to be notebook-safe
 def _setup_logger(name: str) -> logging.Logger:
     """Set up a logger that won't duplicate handlers in notebooks."""
     logger = logging.getLogger(name)
@@ -123,7 +123,7 @@ def safe_chart_execution(
 ) -> Optional[go.Figure]:
     """Execute a chart function safely with timeout and error handling.
 
-    This is a functional alternative to the decorator for one - off usage.
+    This is a functional alternative to the decorator for one-off usage.
 
     Args:
         chart_func: Chart function to execute

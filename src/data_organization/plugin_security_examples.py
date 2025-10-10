@@ -1,5 +1,5 @@
 """
-Security examples and validation patterns for open - source plugin development.
+Security examples and validation patterns for open-source plugin development.
 
 This module provides examples of secure plugin development patterns and
 demonstrates how to avoid common security pitfalls when creating music
@@ -7,11 +7,9 @@ analytics plugins.
 """
 
 import ast
-import inspect
 import logging
-import tempfile
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 
 import pandas as pd
 
@@ -20,7 +18,6 @@ from src.data_organization.open_source_plugin_framework import (
     OpenSourceScoringPlugin,
     PluginMetadata,
     PluginSecurityChecker,
-    PluginSecurityError,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,7 +54,7 @@ class SecurePluginExample(OpenSourceScoringPlugin):
             },
             input_requirements=["entity_id", "metric_value"],
             output_schema={"entity_id": "object", "security_score": "float64"},
-            tags=["security", "example", "best - practices"],
+            tags=["security", "example", "best-practices"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
@@ -129,7 +126,7 @@ class SecurePluginExample(OpenSourceScoringPlugin):
                 entity_id = str(row["entity_id"])  # Ensure string type
                 metric_value = float(row["metric_value"])  # Ensure numeric type
 
-                # Safe calculation using only built - in operations
+                # Safe calculation using only built-in operations
                 security_score = min(max(metric_value * threshold, 0.0), 1.0)
 
                 results.append({"entity_id": entity_id, "security_score": security_score})
@@ -287,13 +284,13 @@ class AdvancedSecurityChecker(PluginSecurityChecker):
             execution_time = time.time() - start_time
 
             memory_after = process.memory_info().rss / 1024 / 1024  # MB
-            memory_used = memory_after - memory_before
+            memory_used = memory_after-memory_before
 
             # Check execution time
             if execution_time > 60:  # 1 minute limit
                 result.add_error(f"Plugin execution took {execution_time:.2f} seconds (limit: 60s)")
             elif execution_time > 30:  # Warning at 30 seconds
-                result.add_warning(f"Plugin execution took {execution_time:.2f} seconds - consider optimization")
+                result.add_warning(f"Plugin execution took {execution_time:.2f} seconds-consider optimization")
             else:
                 result.passed_items += 1
 
@@ -302,7 +299,7 @@ class AdvancedSecurityChecker(PluginSecurityChecker):
             if memory_used > 500:  # 500MB limit
                 result.add_error(f"Plugin used {memory_used:.1f}MB memory (limit: 500MB)")
             elif memory_used > 100:  # Warning at 100MB
-                result.add_warning(f"Plugin used {memory_used:.1f}MB memory - consider optimization")
+                result.add_warning(f"Plugin used {memory_used:.1f}MB memory-consider optimization")
             else:
                 result.passed_items += 1
 
@@ -388,7 +385,7 @@ def malicious_function(self, data):
 
     print("\n🎯 SECURITY RECOMMENDATIONS:")
     print("1. Always validate input data types and ranges")
-    print("2. Implement timeouts for long - running operations")
+    print("2. Implement timeouts for long-running operations")
     print("3. Use try / except blocks for error handling")
     print("4. Avoid file system and network operations")
     print("5. Sanitize string inputs to prevent injection")

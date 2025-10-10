@@ -5,16 +5,16 @@ Bulletproof ETL Runner with Enhanced Error Handling and Data Quality
 This module provides a robust ETL execution framework with:
 - Comprehensive error handling and recovery
 - Data quality validation at each step
-- Progress tracking for long - running operations
+- Progress tracking for long-running operations
 - Automatic retry logic for transient failures
 - Detailed logging and monitoring
 """
 
-from datetime import datetime
 import logging
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -54,7 +54,7 @@ class BulletproofETLRunner:
 
     def initialize_components(self) -> None:
         """Initialize database connection and components with error handling."""
-        _context_item = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")
+        _context_item = ErrorContext(component="BulletproofETLRunner", operation="initialize_components")  # noqa: F841
 
         try:
             logger.info("🔧 Initializing ETL components...")
@@ -95,7 +95,9 @@ class BulletproofETLRunner:
 
     def validate_system_prerequisites(self) -> None:
         """Validate that system is ready for ETL execution."""
-        _context_item = ErrorContext(component="BulletproofETLRunner", operation="validate_system_prerequisites")
+        _context_item = ErrorContext(
+            component="BulletproofETLRunner", operation="validate_system_prerequisites"
+        )  # noqa: F841
 
         try:
             logger.info("🔍 Validating system prerequisites...")
@@ -144,7 +146,7 @@ class BulletproofETLRunner:
 
     def process_youtube_data_with_validation(self, channel_ids: List[str]) -> Dict[str, Any]:
         """Process YouTube data with comprehensive validation and error handling."""
-        _context_item = ErrorContext(
+        _context_item = ErrorContext(  # noqa: F841
             component="BulletproofETLRunner",
             operation="process_youtube_data_with_validation",
             user_data={"channel_count": len(channel_ids)},
@@ -243,7 +245,7 @@ class BulletproofETLRunner:
 
     def run_sentiment_analysis_with_validation(self) -> Dict[str, Any]:
         """Run sentiment analysis with comprehensive validation."""
-        _context_item = ErrorContext(
+        _context_item = ErrorContext(  # noqa: F841
             component="BulletproofETLRunner", operation="run_sentiment_analysis_with_validation"
         )
 
@@ -309,17 +311,22 @@ class BulletproofETLRunner:
                 "Sentiment analysis failed", context={"error": str(e), "duration_seconds": duration}
             )
             raise ETLError(
-                "Failed to run sentiment analysis", context=context, original_error=e, severity=ErrorSeverity.HIGH  # noqa: F821
+                "Failed to run sentiment analysis",
+                context=context,
+                original_error=e,
+                severity=ErrorSeverity.HIGH,  # noqa: F821  # noqa: E501
             )
 
     def run_final_data_quality_validation(self) -> Dict[str, Any]:
         """Run final comprehensive data quality validation."""
-        _context_item = ErrorContext(component="BulletproofETLRunner", operation="run_final_data_quality_validation")
+        _context_item = ErrorContext(
+            component="BulletproofETLRunner", operation="run_final_data_quality_validation"
+        )  # noqa: F841
 
         try:
             logger.info("🔍 Running final data quality validation...")
 
-            # Define post - processing validation config
+            # Define post-processing validation config
             final_validation_config = {
                 "youtube_videos": {
                     "required_columns": ["video_id", "title", "channel_title"],
@@ -389,9 +396,9 @@ class BulletproofETLRunner:
             "recommendations": [],
         }
 
-        # Add performance - based recommendations
+        # Add performance-based recommendations
         if execution_time and execution_time > 3600:  # More than 1 hour
-            report["recommendations"].append("Consider optimizing pipeline performance - execution took over 1 hour")
+            report["recommendations"].append("Consider optimizing pipeline performance-execution took over 1 hour")
 
         if self.execution_stats["errors_encountered"] > 0:
             report["recommendations"].append("Review error logs and address recurring issues")
@@ -513,7 +520,7 @@ def main():
     runner = BulletproofETLRunner()
 
     # Example channel IDs (replace with actual channels from .env)
-    test_channels = ["UCcomP27Fb7_kqDBPaWKJQzg", "UC - 9-kyTW8ZkZNDHQJ6FgpwQ"]  # Example channel  # Example channel
+    test_channels = ["UCcomP27Fb7_kqDBPaWKJQzg", "UC-9-kyTW8ZkZNDHQJ6FgpwQ"]  # Example channel  # Example channel
 
     try:
         results = runner.run_bulletproof_etl(test_channels)

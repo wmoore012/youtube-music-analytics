@@ -12,20 +12,19 @@ This tool implements the BackupVerifier class to:
 - Generate removal recommendations with safety checks
 
 Usage:
-    python tools / development / code_quality / backup_verifier.py --verify - all
+    python tools / development / code_quality / backup_verifier.py --verify-all
     python tools / development / code_quality / backup_verifier.py --phase 1
-    python tools / development / code_quality / backup_verifier.py --remove - verified
+    python tools / development / code_quality / backup_verifier.py --remove-verified
 """
 
 import argparse
-from datetime import datetime
 import hashlib
-import json
 import os
-from pathlib import Path
 import shutil
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
@@ -59,7 +58,7 @@ class BackupVerifier(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="backup - verifier", version="1.0.0")
+        super().__init__(name="backup-verifier", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -87,21 +86,21 @@ class BackupVerifier(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="backup - verifier",
+            name="backup-verifier",
             version="1.0.0",
             description="Systematic backup verification and cleanup tool",
             dependencies=["python>=3.8"],
             environment_vars=[],
             usage_examples=[
-                "python tools / development / code_quality / backup_verifier.py --verify - all",
+                "python tools / development / code_quality / backup_verifier.py --verify-all",
                 "python tools / development / code_quality / backup_verifier.py --phase 1",
-                "python tools / development / code_quality / backup_verifier.py --remove - verified",
+                "python tools / development / code_quality / backup_verifier.py --remove-verified",
             ],
             category="development",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly."""
+        """Main execution method-should not be called directly."""
         self.log_progress("Use specific verification methods like verify_all_backups()")
 
     def verify_all_backups(self) -> BackupVerificationResult:
@@ -114,7 +113,7 @@ class BackupVerifier(ToolBase):
         self.log_progress("🔍 Starting comprehensive backup verification")
 
         if not self.backup_root.exists():
-            self.log_progress("✅ No backup directory found - cleanup already complete")
+            self.log_progress("✅ No backup directory found-cleanup already complete")
             return BackupVerificationResult()
 
         result = BackupVerificationResult()
@@ -268,7 +267,7 @@ class BackupVerifier(ToolBase):
                 return False
 
             # Read backup file content
-            with open(backup_file, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(backup_file, "r", encoding="utf-8", errors="ignore") as f:
                 backup_content = f.read()
 
             # Extract key functions and classes
@@ -307,7 +306,7 @@ class BackupVerifier(ToolBase):
                 return False
 
             # Read backup file
-            with open(backup_file, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(backup_file, "r", encoding="utf-8", errors="ignore") as f:
                 backup_content = f.read()
 
             # Skip very small files
@@ -524,7 +523,7 @@ class BackupVerifier(ToolBase):
 
             for file_path in search_dir.rglob("*.py"):
                 try:
-                    with open(file_path, "r", encoding="utf - 8", errors="ignore") as f:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
                         if f"def {element}" in content or f"class {element}" in content:
                             return True
@@ -554,7 +553,7 @@ class BackupVerifier(ToolBase):
 
     def _search_for_block_in_codebase(self, block: str) -> bool:
         """Search for a code block in current codebase."""
-        # Simplified search - look for key lines from the block
+        # Simplified search-look for key lines from the block
         key_lines = [line.strip() for line in block.split("\n") if line.strip() and not line.strip().startswith("#")]
 
         if not key_lines:
@@ -569,7 +568,7 @@ class BackupVerifier(ToolBase):
 
             for file_path in search_dir.rglob("*.py"):
                 try:
-                    with open(file_path, "r", encoding="utf - 8", errors="ignore") as f:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
                         for key_line in key_lines:
                             if key_line in content:
@@ -599,19 +598,19 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python tools / development / code_quality / backup_verifier.py --verify - all
+  python tools / development / code_quality / backup_verifier.py --verify-all
   python tools / development / code_quality / backup_verifier.py --phase 1
-  python tools / development / code_quality / backup_verifier.py --remove - verified --dry - run
+  python tools / development / code_quality / backup_verifier.py --remove-verified --dry-run
         """,
     )
 
     # Verification operations
-    parser.add_argument("--verify - all", action="store_true", help="Verify all backup phases")
-    parser.add_argument("--phase", type=int, help="Verify specific backup phase (1 - 6)")
-    parser.add_argument("--remove - verified", action="store_true", help="Remove files verified as safe to remove")
+    parser.add_argument("--verify-all", action="store_true", help="Verify all backup phases")
+    parser.add_argument("--phase", type=int, help="Verify specific backup phase (1-6)")
+    parser.add_argument("--remove-verified", action="store_true", help="Remove files verified as safe to remove")
 
     # Options
-    parser.add_argument("--dry - run", action="store_true", help="Simulate operations without making changes")
+    parser.add_argument("--dry-run", action="store_true", help="Simulate operations without making changes")
     parser.add_argument("--report", type=str, help="Save verification report to file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 

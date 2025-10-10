@@ -7,14 +7,13 @@ Normalization helpers to populate music_videos_normalized and reduce nulls witho
 - Links ISRC when present; otherwise attempts a conservative parse using web.youtube_version_parser
 - Writes / updates rows in music_videos_normalized
 
-This module is intentionally light - weight to support quick iterative TDD cycles.
+This module is intentionally light-weight to support quick iterative TDD cycles.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
-import json
-import os
 from typing import Dict, Iterable, Optional
 
 import pandas as pd
@@ -40,7 +39,7 @@ class NormalizedVideo:
 
 def load_alias_map(path: str = "config / artist_aliases.json") -> Dict[str, str]:
     try:
-        with open(path, "r", encoding="utf - 8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return {k.strip(): v.strip() for k, v in data.items() if k and v}
     except FileNotFoundError:
@@ -90,7 +89,7 @@ def _load_vrl_map(engine: Engine) -> Dict[str, str]:
         pass
     # Optional overrides file
     try:
-        with open("config / video_isrc_overrides.json", "r", encoding="utf - 8") as f:
+        with open("config / video_isrc_overrides.json", "r", encoding="utf-8") as f:
             overrides = json.load(f) or {}
         # Normalize values
         for vid, isrc in overrides.items():

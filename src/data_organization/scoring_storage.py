@@ -1,13 +1,13 @@
 """Scoring results storage system for database persistence."""
 
-from datetime import datetime
 import json
-from typing import Any, Dict, List, Optional, Tuple
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from .scoring_plugin import ScoringResult, ValidationResult
 
@@ -548,5 +548,5 @@ class ScoringStorage:
             errors=errors,
             warnings=warnings,
             checked_items=len(required_tables) + 1,
-            passed_items=len(required_tables) + 1 - len(errors),
+            passed_items=len(required_tables) + 1-len(errors),
         )

@@ -17,17 +17,16 @@ Key Features:
 ⚠️ Data deletion operations are irreversible. Please create a backup.
 
 Usage Examples:
-    python cleanup_db.py --dry - run          # Preview what will be deleted (safe)
+    python cleanup_db.py --dry-run          # Preview what will be deleted (safe)
     python cleanup_db.py --confirm          # Actually perform the cleanup
-    python cleanup_db.py --validate - config  # Check .env channel configuration
+    python cleanup_db.py --validate-config  # Check .env channel configuration
 """
 
 import os
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
-from urllib.parse import urlparse
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -132,7 +131,7 @@ def load_channels_from_env() -> Tuple[Set[str], Dict[str, str]]:
 
     This function scans your .env file for variables ending in '_YT' which should
     contain YouTube channel URLs. It extracts the channel handles and maps them
-    to the actual database channel names using the handle - to - display - name mapping.
+    to the actual database channel names using the handle-to-display-name mapping.
 
     Returns:
         Tuple of (keep_channels_set, url_to_name_mapping)
@@ -225,8 +224,8 @@ def validate_database_channels(engine, keep_channels: Set[str]) -> Tuple[Set[str
         db_channels = {row[0] for row in result.fetchall()}
 
     # Calculate differences between .env config and database reality
-    channels_to_delete = db_channels - keep_channels
-    missing_from_db = keep_channels - db_channels
+    channels_to_delete = db_channels-keep_channels
+    missing_from_db = keep_channels-db_channels
 
     return channels_to_delete, missing_from_db
 
@@ -248,7 +247,7 @@ def show_configuration_summary(
     if analysis_type == "music_artists":
         print("   → Optimized for music artist analytics and sentiment analysis")
         print("   → Will preserve all content from artist channels (music + other)")
-        print("   → Removes non - artist channels (podcasts, unrelated content)")
+        print("   → Removes non-artist channels (podcasts, unrelated content)")
     elif analysis_type == "podcasts":
         print("   → Optimized for podcast analytics")
         print("   → Will preserve podcast channels and remove music content")
@@ -288,7 +287,7 @@ def get_channel_video_ids(engine, channel_title: str) -> List[str]:
     Retrieve all video IDs associated with a specific YouTube channel.
 
     This is the foundation for all cleanup operations since video_id is the
-    natural key that links records across all YouTube - related tables.
+    natural key that links records across all YouTube-related tables.
 
     Args:
         engine: SQLAlchemy database engine
@@ -315,11 +314,11 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
     """
     Remove all database records associated with a specific YouTube channel.
 
-    This function performs a comprehensive cleanup across all YouTube - related tables:
-    1. youtube_comments - User comments and engagement data
-    2. youtube_metrics - View counts, likes, subscriber metrics over time
+    This function performs a comprehensive cleanup across all YouTube-related tables:
+    1. youtube_comments-User comments and engagement data
+    2. youtube_metrics-View counts, likes, subscriber metrics over time
     3. youtube_sentiment_* - Sentiment analysis results and summaries
-    4. youtube_videos - Core video metadata (deleted last due to foreign keys)
+    4. youtube_videos-Core video metadata (deleted last due to foreign keys)
 
     The cleanup preserves referential integrity by deleting child records first,
     then parent records. All SQL is formatted for readability and debugging.
@@ -371,7 +370,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
                 conn.execute(delete_comments_query, {"video_ids": video_ids})
 
         # Step 2: Clean up YouTube metrics (performance data over time)
-        # Metrics track views, likes, subscriber changes - critical for trend analysis
+        # Metrics track views, likes, subscriber changes-critical for trend analysis
         metrics_count_query = text(
             """
             SELECT COUNT(*) as metrics_count
@@ -394,7 +393,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
                 )
                 conn.execute(delete_metrics_query, {"video_ids": video_ids})
 
-        # Step 3: Clean up sentiment analysis data (AI - generated insights)
+        # Step 3: Clean up sentiment analysis data (AI-generated insights)
         # Sentiment tables contain VADER analysis results for comment emotional tone
         sentiment_tables = ["youtube_sentiment", "youtube_sentiment_by_video", "youtube_sentiment_summary"]
 
@@ -428,7 +427,7 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
             print(f"   🧠 Sentiment: {stats['sentiment']:,} records across all sentiment tables")
 
         # Step 4: Clean up core video records (metadata and ISRC data)
-        # Videos table is the parent - must be deleted last to maintain referential integrity
+        # Videos table is the parent-must be deleted last to maintain referential integrity
         video_count_query = text(
             """
             SELECT COUNT(*) as video_count
@@ -460,12 +459,12 @@ def cleanup_channel_data(engine, channel_title: str, dry_run: bool = True) -> Di
 
 def get_deletion_reasoning(channel_name: str, analysis_type: str) -> str:
     """
-    Provide clear, human - readable reasoning for why a channel should be deleted.
+    Provide clear, human-readable reasoning for why a channel should be deleted.
 
     This helps users understand the cleanup logic and builds confidence that
     the system is making intelligent decisions about their data.
     """
-    # Common patterns that indicate non - artist content
+    # Common patterns that indicate non-artist content
     podcast_indicators = ["podcast", "show", "talk", "interview", "news"]
     business_indicators = ["inc", "llc", "corp", "company", "official"]
 
@@ -473,18 +472,18 @@ def get_deletion_reasoning(channel_name: str, analysis_type: str) -> str:
 
     # Check for obvious podcast content
     if any(indicator in channel_lower for indicator in podcast_indicators):
-        return f"Podcast / talk show content - not relevant for {analysis_type} analysis"
+        return f"Podcast / talk show content-not relevant for {analysis_type} analysis"
 
     # Check for business / label channels vs artist channels
     if any(indicator in channel_lower for indicator in business_indicators):
-        return f"Business / label channel - may contain mixed content not specific to artist"
+        return f"Business / label channel-may contain mixed content not specific to artist"
 
     # Check for secondary / fan channels
     if "fan" in channel_lower or "unofficial" in channel_lower:
-        return "Fan or unofficial channel - may contain low - quality or duplicate content"
+        return "Fan or unofficial channel-may contain low-quality or duplicate content"
 
     # Default reasoning
-    return f"Channel not found in .env configuration - not part of target {analysis_type} analysis"
+    return f"Channel not found in .env configuration-not part of target {analysis_type} analysis"
 
 
 def confirm_deletion_with_user(channels_to_delete: Set[str], analysis_type: str) -> bool:
@@ -517,7 +516,7 @@ def confirm_deletion_with_user(channels_to_delete: Set[str], analysis_type: str)
         if response == "DELETE":
             return True
         elif response.lower() in ["no", "n", "cancel", "abort", "quit"]:
-            print("✅ Cleanup cancelled - no data was deleted")
+            print("✅ Cleanup cancelled-no data was deleted")
             return False
         else:
             print("❌ Invalid response. Type 'DELETE' to confirm or 'cancel' to abort.")
@@ -536,9 +535,9 @@ def main():  # noqa: C901
     6. Provide summary of results and next steps
     """
     # Parse command line arguments
-    dry_run = "--dry - run" in sys.argv
+    dry_run = "--dry-run" in sys.argv
     confirm = "--confirm" in sys.argv
-    validate_only = "--validate - config" in sys.argv
+    validate_only = "--validate-config" in sys.argv
 
     print("🧹 YouTube ETL Database Cleanup Utility")
     print("=" * 50)
@@ -571,7 +570,7 @@ def main():  # noqa: C901
     # Show comprehensive configuration summary
     show_configuration_summary(keep_channels, channels_to_delete, missing_from_db, analysis_type)
 
-    # Handle validation - only mode
+    # Handle validation-only mode
     if validate_only:
         print("\n✅ Configuration validation complete")
         if missing_from_db:
@@ -580,9 +579,9 @@ def main():  # noqa: C901
 
     # Handle dry run mode (safe preview)
     if dry_run:
-        print(f"\n🔍 DRY RUN MODE - No data will be deleted (safe preview)")
+        print(f"\n🔍 DRY RUN MODE-No data will be deleted (safe preview)")
     else:
-        print(f"\n🗑️  LIVE CLEANUP MODE - Data will be permanently deleted")
+        print(f"\n🗑️  LIVE CLEANUP MODE-Data will be permanently deleted")
 
     # Get user confirmation for destructive operations
     if not dry_run and not confirm:
@@ -611,7 +610,7 @@ def main():  # noqa: C901
         print(f"Total: {sum(total_stats.values()):,} records")
 
         if dry_run:
-            print(f"\n🔍 Preview complete - no data was modified")
+            print(f"\n🔍 Preview complete-no data was modified")
             print(f"💡 Run with --confirm to perform actual cleanup")
         else:
             print(f"\n✅ Cleanup completed successfully!")
@@ -619,7 +618,7 @@ def main():  # noqa: C901
 
     except Exception as e:
         logger.error(f"Cleanup failed: {e}")
-        logger.error("Database may be in an inconsistent state - please check manually")
+        logger.error("Database may be in an inconsistent state-please check manually")
         sys.exit(1)
 
 

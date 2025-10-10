@@ -1,12 +1,12 @@
-"""Multiprocessing bullet - proof wrapper for notebook cells."""
+"""Multiprocessing bullet-proof wrapper for notebook cells."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 import multiprocessing as mp
 import queue
 import time
+from dataclasses import dataclass
 from typing import Any, Callable
 
 

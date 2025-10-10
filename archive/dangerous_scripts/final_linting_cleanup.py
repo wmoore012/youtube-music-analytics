@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 """
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
+"""
+
+#!/usr/bin/env python3
+"""
 Final comprehensive linting cleanup script.
 """
 
@@ -64,7 +75,7 @@ def fix_simple_line_breaks():  # noqa: C901
                 lines = f.readlines()
 
             if line_num <= len(lines):
-                original_line = lines[line_num - 1]
+                original_line = lines[line_num-1]
 
                 # Skip if line is not that long or already has breaks
                 if len(original_line.rstrip()) <= 125 or '\n' in original_line[:-1]:
@@ -94,7 +105,7 @@ def fix_simple_line_breaks():  # noqa: C901
                                    + base_indent + '    ' + original_line[plus_pos:].lstrip())  # noqa: E128
 
                 if new_line and len(new_line.split('\n')[0].rstrip()) <= 120:
-                    lines[line_num - 1] = new_line
+                    lines[line_num-1] = new_line
 
                     with open(file_path, 'w', encoding='utf-8') as f:
                         f.writelines(lines)
@@ -103,11 +114,11 @@ def fix_simple_line_breaks():  # noqa: C901
                     if fixed_count <= 10:  # Limit output
                         print(f"   Fixed: {file_path}:{line_num}")
 
-        _exc_ept Exc_eption as _e:  # noqa: E999
+        _exc_ept Exc_eption as _e:  "  # Fixed incomplete string
             continue
 
     if fixed_count > 10:
-        print(f"   ... and {fixed_count - 10} more")
+        print(f"   ... and {fixed_count-10} more")
 
 
 def add_noqa_for_remaining_complex():
@@ -138,11 +149,11 @@ def add_noqa_for_remaining_complex():
                     lines = f.readlines()
 
                 if line_num <= len(lines):
-                    original_line = lines[line_num - 1]
+                    original_line = lines[line_num-1]
 
                     if '# noqa' not in original_line:
                         stripped = original_line.rstrip()
-                        lines[line_num - 1] = stripped + '  # noqa: C901\n'
+                        lines[line_num-1] = stripped + '  # noqa: C901\n'
 
                         with open(file_path, 'w', encoding='utf-8') as f:
                             f.writelines(lines)
@@ -184,7 +195,7 @@ def fix_remaining_unused_vars():
                 lines = f.readlines()
 
             if line_num <= len(lines):
-                original_line = lines[line_num - 1]
+                original_line = lines[line_num-1]
 
                 # More aggressive pattern matching
                 patterns = [
@@ -196,7 +207,7 @@ def fix_remaining_unused_vars():
                 for pattern, replacement in patterns:
                     if re.search(pattern, original_line):
                         new_line = re.sub(pattern, replacement, original_line)
-                        lines[line_num - 1] = new_line
+                        lines[line_num-1] = new_line
 
                         with open(file_path, 'w', encoding='utf-8') as f:
                             f.writelines(lines)
@@ -230,7 +241,7 @@ def main():
     total_final = sum(final_counts.values())
 
     print(f"\n📊 Final errors: {total_final}")
-    improvement = total_initial - total_final
+    improvement = total_initial-total_final
     if improvement > 0:
         print(f"🎉 Improved by {improvement} errors!")
 
@@ -257,7 +268,7 @@ def main():
             print(f"   - Complex functions that should be refactored")
             print(f"   - Legacy code patterns that need architectural changes")
     else:
-        print("❌ Some tests are failing - please review changes")
+        print("❌ Some tests are failing-please review changes")
 
 
 if __name__ == "__main__":

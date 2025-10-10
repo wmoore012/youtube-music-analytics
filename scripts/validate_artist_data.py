@@ -11,9 +11,9 @@ This ensures data consistency and prevents missing artist issues.
 
 import json
 import os
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Set
+from pathlib import Path
+from typing import Any, Dict, Set
 
 
 def load_expected_artists_from_config() -> Dict[str, Any]:
@@ -114,8 +114,8 @@ def validate_artist_consistency() -> Dict[str, Any]:
     database_artists = get_database_artists()
 
     # Calculate differences
-    missing_artists = expected_artists - database_artists
-    unexpected_artists = database_artists - expected_artists
+    missing_artists = expected_artists-database_artists
+    unexpected_artists = database_artists-expected_artists
 
     # Validation results
     results = {
@@ -241,7 +241,7 @@ def update_config_from_env():
         config = {
             "expected_artists": sorted(list(env_artists)),
             "minimum_artists": len(env_artists),
-            "last_updated": "2025 - 09 - 15",
+            "last_updated": "2025-09-15",
             "description": "Expected artists configuration for CI / CD"
             " validation. Update this when adding / removing artists from .env",
         }
@@ -269,8 +269,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Validate artist data consistency")
-    parser.add_argument("--update - config", action="store_true", help="Update config file from current .env")
-    parser.add_argument("--notebooks - only", action="store_true", help="Only validate notebook outputs")
+    parser.add_argument("--update-config", action="store_true", help="Update config file from current .env")
+    parser.add_argument("--notebooks-only", action="store_true", help="Only validate notebook outputs")
 
     args = parser.parse_args()
 
@@ -303,7 +303,7 @@ def main():
             print("❌ Artist data inconsistency")
         if not notebook_validation_passed:
             print("❌ Notebook output issues")
-        print("\n💡 Run with --update - config to sync config with .env")
+        print("\n💡 Run with --update-config to sync config with .env")
         sys.exit(1)
 
 

@@ -21,7 +21,7 @@ class TestMusicIndustryMLAnalytics:
         np.random.seed(42)  # For reproducible tests
 
         artists = ["Artist A", "Artist B", "Artist C", "Artist D", "Artist E"]
-        dates = pd.date_range("2024 - 01 - 01", periods=90, freq="D")
+        dates = pd.date_range("2024-01-01", periods=90, freq="D")
 
         data = []
         for artist in artists:
@@ -29,7 +29,7 @@ class TestMusicIndustryMLAnalytics:
                 # Simulate realistic music industry metrics
                 base_views = np.random.normal(50000, 15000)
                 seasonal_factor = 1 + 0.3 * np.sin(2 * np.pi * date.dayofyear / 365)
-                trend_factor = 1 + 0.001 * (date - dates[0]).days
+                trend_factor = 1 + 0.001 * (date-dates[0]).days
 
                 data.append(
                     {
@@ -41,7 +41,7 @@ class TestMusicIndustryMLAnalytics:
                         "daily_shares": max(0, int(base_views * 0.02 * seasonal_factor)),
                         "subscriber_growth": np.random.normal(100, 50),
                         "engagement_rate": np.random.normal(0.05, 0.02),
-                        "genre": np.random.choice(["Hip - Hop", "R&B", "Pop", "Alternative"]),
+                        "genre": np.random.choice(["Hip-Hop", "R&B", "Pop", "Alternative"]),
                         "content_type": np.random.choice(["Music Video", "Lyric Video", "Behind Scenes"]),
                     }
                 )
@@ -88,7 +88,7 @@ class TestMusicIndustryMLAnalytics:
         assert len(momentum_predictions) == len(unique_artists)
 
     def test_content_optimization_recommendations(self, artist_performance_data):
-        """Test ML - powered content optimization recommendations"""
+        """Test ML-powered content optimization recommendations"""
         from youtubeviz.ml_analytics import generate_content_optimization_recommendations
 
         recommendations = generate_content_optimization_recommendations(
@@ -152,7 +152,7 @@ class TestMusicIndustryMLAnalytics:
         assert all(0 <= score <= 1 for score in viral_scores["viral_score"])
 
     def test_audience_segmentation_clustering(self, artist_performance_data):
-        """Test ML - based audience segmentation and clustering"""
+        """Test ML-based audience segmentation and clustering"""
         from youtubeviz.ml_analytics import perform_audience_segmentation
 
         segments = perform_audience_segmentation(
@@ -250,7 +250,7 @@ class TestStatisticalAnalysis:
                         np.random.normal(0.04, 0.008, 100),  # Artist C
                     ]
                 ),
-                "genre": ["Hip - Hop"] * 100 + ["R&B"] * 100 + ["Pop"] * 100,
+                "genre": ["Hip-Hop"] * 100 + ["R&B"] * 100 + ["Pop"] * 100,
                 "release_week": np.tile(range(1, 101), 3),
             }
         )
@@ -279,7 +279,7 @@ class TestStatisticalAnalysis:
             assert "effect_size" in metric_results
             assert "significance" in metric_results
 
-            # P - values should be between 0 and 1
+            # P-values should be between 0 and 1
             assert 0 <= metric_results["p_value"] <= 1
 
     def test_correlation_analysis(self, performance_metrics_data):
@@ -380,7 +380,7 @@ class TestBusinessIntelligenceInsights:
 
         # Budget allocation should sum to target
         total_allocated = sum(optimization["optimal_allocation"].values())
-        assert abs(total_allocated - 60000) < 1000  # Allow small rounding differences
+        assert abs(total_allocated-60000) < 1000  # Allow small rounding differences
 
     def test_performance_benchmarking(self, business_metrics_data):
         """Test performance benchmarking against industry standards"""

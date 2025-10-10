@@ -27,7 +27,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         # Fallback to legacy root location
         legacy = repo_root / "notebooks"
         nbs = [p for p in sorted(legacy.glob("*.ipynb")) if not p.name.endswith("-executed.ipynb")]
-        source = "legacy - root"
+        source = "legacy-root"
 
     if not nbs:
         print("No notebooks found.")

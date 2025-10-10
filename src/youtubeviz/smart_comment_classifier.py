@@ -1,5 +1,6 @@
 import re
-#!/usr / bin / env python3
+
+#!/usr / bin / env python3  # noqa: E265
 """
 Smart Comment Classification Assistant
 
@@ -7,19 +8,18 @@ Uses machine learning to suggest positive / negative classifications based on
 your existing classifications. Learns from your decisions and gets better over time.
 """
 
-from datetime import datetime
 import os
 import pickle
 import sqlite3
 import sys
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 # Transformer support
 try:
@@ -72,7 +72,7 @@ class CommentClassificationDB:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 comment_text TEXT NOT NULL,
                 classification TEXT NOT NULL,  -- 'positive' or 'negative'
-                confidence REAL,  -- Your confidence in the classification (0 - 1)
+                confidence REAL,  -- Your confidence in the classification (0-1)
                 source TEXT,  -- 'manual', 'imported', 'enhanced_dataset'
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 notes TEXT
@@ -129,7 +129,7 @@ class CommentClassificationDB:
         return df
 
     def get_training_data(self, min_confidence: float = 0.7) -> Tuple[List[str], List[str]]:
-        """Get high - confidence classifications for training."""
+        """Get high-confidence classifications for training."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -183,7 +183,7 @@ class CommentClassificationDB:
 
 
 class SmartCommentClassifier:
-    """ML - powered comment classifier that learns from your classifications."""
+    """ML-powered comment classifier that learns from your classifications."""
 
     def __init__(self, db_path: str = "comment_classifications.db", use_transformer: bool = False):
         self.db = CommentClassificationDB(db_path)
@@ -218,8 +218,8 @@ class SmartCommentClassifier:
         try:
             from youtubeviz.text_processing_helpers import create_music_text_processor
 
-            # Create music - aware text processor
-            self.transformer_processor = create_music_text_processor(model_name="distilbert - base - uncased")
+            # Create music-aware text processor
+            self.transformer_processor = create_music_text_processor(model_name="distilbert-base-uncased")
 
             print("✅ Transformer text processor initialized")
 
@@ -265,7 +265,7 @@ class SmartCommentClassifier:
         texts, labels = self.db.get_training_data(min_confidence)
 
         if len(texts) < 10:
-            print(f"⚠️  Need at least 10 high - confidence classifications to train. Have {len(texts)}.")
+            print(f"⚠️  Need at least 10 high-confidence classifications to train. Have {len(texts)}.")
             return False
 
         print(
@@ -279,7 +279,7 @@ class SmartCommentClassifier:
             return self._train_traditional_model(texts, labels)
 
     def _train_traditional_model(self, texts: List[str], labels: List[str]) -> bool:
-        """Train traditional TF - IDF + Logistic Regression model."""
+        """Train traditional TF-IDF + Logistic Regression model."""
         # Vectorize the text
         X = self.vectorizer.fit_transform(texts)
         y = np.array(labels)
@@ -300,16 +300,16 @@ class SmartCommentClassifier:
         return True
 
     def _train_transformer_model(self, texts: List[str], labels: List[str]) -> bool:
-        """Train transformer - based model with music - aware preprocessing."""
+        """Train transformer-based model with music-aware preprocessing."""
         try:
-            # Preprocess texts with music - aware processing
+            # Preprocess texts with music-aware processing
             processed_texts = []
             for text in texts:
                 processed = self.transformer_processor.preprocess_text(text)
                 processed_texts.append(processed)
 
-            # For now, use traditional model with transformer - preprocessed text
-            # In a full implementation, this would use actual transformer fine - tuning
+            # For now, use traditional model with transformer-preprocessed text
+            # In a full implementation, this would use actual transformer fine-tuning
             X = self.vectorizer.fit_transform(processed_texts)
             y = np.array(labels)
 
@@ -321,7 +321,7 @@ class SmartCommentClassifier:
             y_pred = self.model.predict(X)
             accuracy = accuracy_score(y, y_pred)
 
-            print(f"✅ Transformer - preprocessed model trained! Training accuracy: {accuracy:.3f}")
+            print(f"✅ Transformer-preprocessed model trained! Training accuracy: {accuracy:.3f}")
             print(f"   Music slang preservation: {self.transformer_processor.config.slang_preservation.value}")
             print(f"   Emoji handling: {self.transformer_processor.config.emoji_mode.value}")
 
@@ -439,7 +439,7 @@ class InteractiveClassifier:
         # Ask how many to classify
         while True:
             try:
-                target_count = input(f"\n🎯 How many comments would you like to classify? (1 - 100): ").strip()
+                target_count = input(f"\n🎯 How many comments would you like to classify? (1-100): ").strip()
                 if not target_count:
                     target_count = 10
                 else:
@@ -455,7 +455,7 @@ class InteractiveClassifier:
         return target_count
 
     def get_sample_comments(self, count: int) -> List[str]:
-        """Get UNIQUE real comments from database - NO FAKE DATA, NO DUPLICATES."""
+        """Get UNIQUE real comments from database-NO FAKE DATA, NO DUPLICATES."""
         try:
             from youtubeviz.unique_comment_manager import get_unique_comments_for_classification
 
@@ -503,7 +503,7 @@ class InteractiveClassifier:
         # Get confidence
         while True:
             try:
-                conf_input = input("👤 Your confidence (1 - 5, or press Enter for 5): ").strip()
+                conf_input = input("👤 Your confidence (1-5, or press Enter for 5): ").strip()
                 if not conf_input:
                     confidence = 1.0
                 else:

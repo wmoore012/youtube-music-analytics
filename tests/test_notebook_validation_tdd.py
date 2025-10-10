@@ -12,8 +12,8 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
-from create_and_validate_notebooks import NotebookValidator
 import pytest
+from create_and_validate_notebooks import NotebookValidator
 
 
 class TestNotebookValidator:
@@ -70,11 +70,11 @@ class TestNotebookValidator:
 ❌ Have errors: [19, 20]
 
 🎉 SUCCESS: 15 charts working with REAL data!
-💝 No fake data used - authentic analytics only!
+💝 No fake data used-authentic analytics only!
 
 🎵 MusicScope™ Real Data Analytics Complete! 🎵
 
-✅ CI / CD: PASS - Excellent chart health
+✅ CI / CD: PASS-Excellent chart health
         """
 
         result = validator._parse_validation_output(output_text)
@@ -100,11 +100,11 @@ class TestNotebookValidator:
 
 ❌ Have errors: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-📋 All charts show data requirements - add real data to see analytics!
+📋 All charts show data requirements-add real data to see analytics!
 
 🎵 MusicScope™ Real Data Analytics Complete! 🎵
 
-❌ CI / CD: FAIL - Poor chart health
+❌ CI / CD: FAIL-Poor chart health
         """
 
         result = validator._parse_validation_output(output_text)

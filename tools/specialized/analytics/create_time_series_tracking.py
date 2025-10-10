@@ -6,7 +6,7 @@ Creates a table for tracking music video performance over time with:
 - Daily / weekly snapshots of key metrics
 - Revenue tracking over time
 - Growth rate calculations
-- Trend analysis for long - term projects
+- Trend analysis for long-term projects
 """
 
 import os
@@ -14,12 +14,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from datetime import datetime, timedelta
 import logging
 
-import numpy as np
 import pandas as pd
-from sqlalchemy import text
 
 from web.etl_helpers import get_engine
 
@@ -68,7 +65,7 @@ def create_time_series_tracking_table():
     # Calculate daily velocity (views per day since publish)
     df["views_per_day"] = (df["view_count"] / df["days_since_publish"].replace(0, 1)).fillna(0)
 
-    # Calculate growth rates (day - over - day)
+    # Calculate growth rates (day-over-day)
     df = df.sort_values(["video_id", "metrics_date"])
     df["prev_views"] = df.groupby("video_id")["view_count"].shift(1)
     df["prev_revenue"] = df.groupby("video_id")["est_revenue_usd"].shift(1)
@@ -97,7 +94,7 @@ def create_time_series_tracking_table():
     df["video_type"] = df["title"].apply(classify_video_type)
     df["has_isrc"] = df["isrc"].notna()
 
-    # Add time - based features
+    # Add time-based features
     df["metrics_date"] = pd.to_datetime(df["metrics_date"])
     df["year"] = df["metrics_date"].dt.year
     df["month"] = df["metrics_date"].dt.month

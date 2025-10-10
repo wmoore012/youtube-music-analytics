@@ -3,14 +3,14 @@
 Integration Tests for ETL Pipeline
 
 This module provides integration tests that verify:
-- End - to - end ETL pipeline functionality
+- End-to-end ETL pipeline functionality
 - Database operations and transactions
 - Component integration and data flow
-- Real - world scenarios and edge cases
+- Real-world scenarios and edge cases
 """
 
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -49,7 +49,7 @@ class TestETLPipelineIntegration:
             {
                 "video_id": "oHg5SJYRHA0",
                 "title": "Valid Video 2",
-                "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
+                "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
                 "channel_title": "Test Channel 2",
                 "published_at": datetime.now() - timedelta(days=2),
                 "duration": "PT4M15S",
@@ -59,11 +59,11 @@ class TestETLPipelineIntegration:
             },
             {
                 "video_id": "jNQXAC9IVRw",
-                "title": "Short Video - Will be filtered",
-                "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
+                "title": "Short Video-Will be filtered",
+                "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
                 "channel_title": "Test Channel 3",
                 "published_at": datetime.now() - timedelta(days=3),
-                "duration": "PT15S",  # Too short - will be filtered
+                "duration": "PT15S",  # Too short-will be filtered
                 "view_count": 500,
                 "like_count": 50,
                 "comment_count": 25,
@@ -153,7 +153,7 @@ class TestETLPipelineIntegration:
         for comment_data in comments_data:
             assert assert_comment_in_database(test_engine, comment_data["comment_id"])
 
-        # Step 5: Verify comment - video relationship
+        # Step 5: Verify comment-video relationship
         with test_engine.connect() as conn:
             result = conn.execute(
                 text(
@@ -184,7 +184,7 @@ class TestETLPipelineIntegration:
             result = conn.execute(text("SELECT comment_id, comment_text FROM youtube_comments"))
 
             for row in result:
-                # Simulate sentiment analysis (simple rule - based for testing)
+                # Simulate sentiment analysis (simple rule-based for testing)
                 text_lower = row.comment_text.lower()
                 if any(word in text_lower for word in ["great", "love", "amazing", "good"]):
                     sentiment_score = 0.8
@@ -288,12 +288,12 @@ class TestDatabaseTransactionIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
                     """
                         ),
                         {
-                            "video_id": video.video_id,  # Same video_id - should cause constraint violation
+                            "video_id": video.video_id,  # Same video_id-should cause constraint violation
                             "title": "Duplicate Video",
                             "channel_id": video.channel_id,
                             "channel_title": video.channel_title,
@@ -331,8 +331,8 @@ class TestDatabaseTransactionIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
                     """
                         ),
                         {
@@ -480,8 +480,8 @@ class TestPerformanceIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
                     """
                         ),
                         {
@@ -501,7 +501,7 @@ class TestPerformanceIntegration:
                 raise
 
         end_time = datetime.now()
-        processing_time = (end_time - start_time).total_seconds()
+        processing_time = (end_time-start_time).total_seconds()
 
         # Verify all videos were inserted
         assert get_table_count(test_engine, "youtube_videos") == 10
@@ -547,7 +547,7 @@ class TestPerformanceIntegration:
             results = result.fetchall()
 
         end_time = datetime.now()
-        query_time = (end_time - start_time).total_seconds()
+        query_time = (end_time-start_time).total_seconds()
 
         # Verify query results
         assert len(results) == 5  # Should return all 5 videos

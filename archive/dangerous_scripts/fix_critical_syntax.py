@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 """
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
+"""
+
+#!/usr/bin/env python3
+"""
 Fix critical syntax errors that prevent the code from running
 """
 import os

@@ -6,20 +6,19 @@ scoring algorithm parameters from environment variables and database storage,
 with validation, auditing, and change tracking capabilities.
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, field
-from datetime import datetime
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Union
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 
 class ConfigurationError(Exception):
-    """Base exception for configuration - related errors."""
+    """Base exception for configuration-related errors."""
 
     pass
 
@@ -87,7 +86,7 @@ class ConfigChange:
 
 @dataclass
 class EnvironmentConfig:
-    """Environment - specific configuration settings."""
+    """Environment-specific configuration settings."""
 
     environment: str = "development"
     database_url: str = ""
@@ -126,7 +125,7 @@ class EnvironmentConfig:
 
         # Validate database URL
         if not self.database_url:
-            result.add_warning("Database URL is empty - using default connection")
+            result.add_warning("Database URL is empty-using default connection")
         result.passed_items += 1
 
         # Validate max_workers

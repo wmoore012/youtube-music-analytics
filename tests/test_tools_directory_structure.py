@@ -159,7 +159,7 @@ class TestToolsDirectoryStructure:
 
     def test_directory_organization_follows_design(self):
         """Test that directory organization follows the design document."""
-        # Core tools should contain essential daily - use tools
+        # Core tools should contain essential daily-use tools
         core_dir = Path("tools / core")
         core_files = [f.name for f in core_dir.glob("*.py")]
 
@@ -170,7 +170,7 @@ class TestToolsDirectoryStructure:
             matching_files = [f for f in core_files if pattern in f.lower()]
             assert len(matching_files) > 0, f"Core directory should contain tools matching pattern '{pattern}'"
 
-        # Specialized should contain domain - specific tools
+        # Specialized should contain domain-specific tools
         specialized_analytics = Path("tools / specialized / analytics")
         if specialized_analytics.exists():
             analytics_files = list(specialized_analytics.glob("*.py"))

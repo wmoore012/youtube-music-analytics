@@ -9,9 +9,9 @@ This module provides comprehensive testing infrastructure including:
 - Database transaction management for tests
 """
 
-from datetime import datetime, timedelta
 import os
 import tempfile
+from datetime import datetime, timedelta
 from typing import Dict, Generator, List, Optional
 from unittest.mock import Mock
 
@@ -231,11 +231,11 @@ class TestDataFactory:
             "9bZkp7q19f0",
             "fC7oUOUEEi4",
             "YQHsXMglC9A",
-            "3tmd - ClpJxA",
+            "3tmd-ClpJxA",
             "dQw4w9WgXcR",
         ]
 
-        channel_ids = ["UCuAXFkgsw1L7xaCfnd5JJOw", "UC - 9-kyTW8ZkZNDHQJ6FgpwQ", "UCsT0YIqwnpJCM - mx7 - gSA4Q"]
+        channel_ids = ["UCuAXFkgsw1L7xaCfnd5JJOw", "UC-9-kyTW8ZkZNDHQJ6FgpwQ", "UCsT0YIqwnpJCM-mx7-gSA4Q"]
 
         for i in range(min(count, len(video_ids))):
             video = TestDataFactory.create_youtube_video(
@@ -313,7 +313,7 @@ class TestDataFactory:
 
 @pytest.fixture(scope="session")
 def test_db_manager():
-    """Session - scoped test database manager."""
+    """Session-scoped test database manager."""
     manager = TestDatabaseManager()
     yield manager
     manager.cleanup_test_database()
@@ -382,7 +382,7 @@ def mock_youtube_api():
                     "title": "Test Video",
                     "channelId": "UCuAXFkgsw1L7xaCfnd5JJOw",
                     "channelTitle": "Test Channel",
-                    "publishedAt": "2023 - 01 - 01T00:00:00Z",
+                    "publishedAt": "2023-01-01T00:00:00Z",
                     "description": "Test video description",
                 },
                 "contentDetails": {"duration": "PT3M33S"},
@@ -403,7 +403,7 @@ def mock_youtube_api():
                             "textDisplay": "Great video!",
                             "authorDisplayName": "Test User",
                             "likeCount": 5,
-                            "publishedAt": "2023 - 01 - 01T01:00:00Z",
+                            "publishedAt": "2023-01-01T01:00:00Z",
                         },
                     }
                 },

@@ -1,8 +1,6 @@
 import os
-from pathlib import Path
 import platform
 import subprocess
-import sys
 import time
 
 from dotenv import load_dotenv

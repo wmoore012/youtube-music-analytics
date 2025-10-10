@@ -16,6 +16,7 @@ import pytest
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+
 from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
 
 
@@ -42,7 +43,7 @@ class TestSentimentAnalysisIntegration:
         assert labeled_count > 0, "At least some texts should be labeled"
 
     def test_music_slang_detection(self):
-        """Test detection of music - specific slang."""
+        """Test detection of music-specific slang."""
         analyzer = WeakSupervisionSentimentAnalyzer()
 
         music_slang = ["this is fire", "absolute banger", "this slaps", "goes hard"]

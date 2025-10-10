@@ -6,24 +6,24 @@ Consolidates all monitoring functionality into a single, comprehensive tool that
 - Data quality monitoring and validation
 - ETL pipeline health checks and status
 - System resource monitoring and alerts
-- Enterprise - grade monitoring with SLA tracking
+- Enterprise-grade monitoring with SLA tracking
 - Sentiment analysis monitoring and bot detection
 - Performance metrics and trend analysis
 
 Usage:
     python tools / core / unified_monitor.py                    # Quick health check
-    python tools / core / unified_monitor.py --full - check       # Complete system check
-    python tools / core / unified_monitor.py --data - quality     # Data quality report
-    python tools / core / unified_monitor.py --etl - status       # ETL pipeline status
+    python tools / core / unified_monitor.py --full-check       # Complete system check
+    python tools / core / unified_monitor.py --data-quality     # Data quality report
+    python tools / core / unified_monitor.py --etl-status       # ETL pipeline status
     python tools / core / unified_monitor.py --performance      # Performance metrics
     python tools / core / unified_monitor.py --enterprise       # Enterprise dashboard
 """
 
 import argparse
-from datetime import datetime
 import json
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List
 
 # Add project root to path
@@ -45,13 +45,13 @@ class SystemMonitor(ToolBase):
     - Data quality validation and reporting
     - ETL pipeline health checks and status tracking
     - System resource monitoring and performance metrics
-    - Enterprise - grade SLA monitoring and alerting
+    - Enterprise-grade SLA monitoring and alerting
     - Sentiment analysis monitoring and bot detection
     - Automated issue detection and recovery suggestions
     """
 
     def __init__(self):
-        super().__init__(name="unified - monitor", version="1.0.0")
+        super().__init__(name="unified-monitor", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -73,7 +73,7 @@ class SystemMonitor(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="unified - monitor",
+            name="unified-monitor",
             version="1.0.0",
             description="Unified YouTube Analytics system monitoring tool",
             dependencies=[
@@ -90,15 +90,15 @@ class SystemMonitor(ToolBase):
                 "YOUTUBE_API_KEY",
             ],
             usage_examples=[
-                "python tools / core / unified_monitor.py --full - check",
-                "python tools / core / unified_monitor.py --data - quality",
-                "python tools / core / unified_monitor.py --etl - status",
+                "python tools / core / unified_monitor.py --full-check",
+                "python tools / core / unified_monitor.py --data-quality",
+                "python tools / core / unified_monitor.py --etl-status",
             ],
             category="core",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly, use specific monitoring methods."""
+        """Main execution method-should not be called directly, use specific monitoring methods."""
         self.log_progress("Use specific monitoring methods like quick_health_check() or full_system_check()")
 
     def quick_health_check(self, days: int = 30) -> Dict[str, Any]:
@@ -347,7 +347,7 @@ class SystemMonitor(ToolBase):
 
     def enterprise_monitoring(self, include_sla: bool = True) -> Dict[str, Any]:
         """
-        Enterprise - grade monitoring with SLA tracking and alerting.
+        Enterprise-grade monitoring with SLA tracking and alerting.
 
         Args:
             include_sla: Whether to include SLA compliance monitoring
@@ -848,7 +848,7 @@ class SystemMonitor(ToolBase):
                 if len(trends["daily_video_growth"]) >= 2:
                     recent = trends["daily_video_growth"][0]["count"]
                     previous = trends["daily_video_growth"][1]["count"]
-                    growth_rate = ((recent - previous) / previous * 100) if previous > 0 else 0
+                    growth_rate = ((recent-previous) / previous * 100) if previous > 0 else 0
                     trends["growth_rate_percent"] = round(growth_rate, 1)
 
                 return {
@@ -881,7 +881,7 @@ class SystemMonitor(ToolBase):
             }
 
     def _generate_performance_alerts(self, metrics: Dict[str, Any], trends: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Generate performance - based alerts."""
+        """Generate performance-based alerts."""
         alerts = []
 
         # Check ETL performance
@@ -1051,7 +1051,7 @@ class SystemMonitor(ToolBase):
     def _generate_enterprise_alerts(
         self, service_health: Dict[str, Any], sla_compliance: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
-        """Generate enterprise - level alerts."""
+        """Generate enterprise-level alerts."""
         alerts = []
 
         # Service health alerts
@@ -1080,7 +1080,7 @@ class SystemMonitor(ToolBase):
         return alerts
 
     def _generate_system_recommendations(self, components: Dict[str, Any]) -> List[str]:
-        """Generate system - wide recommendations based on all monitoring results."""
+        """Generate system-wide recommendations based on all monitoring results."""
         recommendations = []
 
         # Analyze component results
@@ -1105,11 +1105,11 @@ class SystemMonitor(ToolBase):
             recommendations.append("Monitor system performance and consider optimization")
 
         if len(failed_components) > 2:
-            recommendations.append("Multiple system components failing - consider comprehensive system review")
+            recommendations.append("Multiple system components failing-consider comprehensive system review")
 
         # Add general recommendations
         if not recommendations:
-            recommendations.append("System is healthy - continue regular monitoring")
+            recommendations.append("System is healthy-continue regular monitoring")
 
         return recommendations
 
@@ -1147,25 +1147,25 @@ def main():
         epilog="""
 Examples:
   python tools / core / unified_monitor.py                    # Quick health check
-  python tools / core / unified_monitor.py --full - check       # Complete system check
-  python tools / core / unified_monitor.py --data - quality     # Data quality report
-  python tools / core / unified_monitor.py --etl - status       # ETL pipeline status
+  python tools / core / unified_monitor.py --full-check       # Complete system check
+  python tools / core / unified_monitor.py --data-quality     # Data quality report
+  python tools / core / unified_monitor.py --etl-status       # ETL pipeline status
   python tools / core / unified_monitor.py --performance      # Performance metrics
   python tools / core / unified_monitor.py --enterprise       # Enterprise dashboard
         """,
     )
 
     # Monitoring options
-    parser.add_argument("--full - check", action="store_true", help="Complete system health check")
-    parser.add_argument("--data - quality", action="store_true", help="Data quality validation")
-    parser.add_argument("--etl - status", action="store_true", help="ETL pipeline status")
+    parser.add_argument("--full-check", action="store_true", help="Complete system health check")
+    parser.add_argument("--data-quality", action="store_true", help="Data quality validation")
+    parser.add_argument("--etl-status", action="store_true", help="ETL pipeline status")
     parser.add_argument("--performance", action="store_true", help="Performance monitoring")
     parser.add_argument("--enterprise", action="store_true", help="Enterprise monitoring dashboard")
     parser.add_argument("--sentiment", action="store_true", help="Sentiment analysis monitoring")
 
     # Options
     parser.add_argument("--days", type=int, default=7, help="Number of days to analyze (default: 7)")
-    parser.add_argument("--fix - issues", action="store_true", help="Attempt to fix issues automatically")
+    parser.add_argument("--fix-issues", action="store_true", help="Attempt to fix issues automatically")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
@@ -1195,7 +1195,7 @@ Examples:
             if args.json:
                 print(json.dumps(result, indent=2, default=str))
             else:
-                # Human - readable output
+                # Human-readable output
                 print_monitoring_report(result, verbose=args.verbose)
 
             # Exit with appropriate code
@@ -1218,7 +1218,7 @@ Examples:
 
 
 def print_monitoring_report(result: Dict[str, Any], verbose: bool = False) -> None:  # noqa: C901
-    """Print human - readable monitoring report."""
+    """Print human-readable monitoring report."""
     print("\n" + "=" * 80)
     print("UNIFIED SYSTEM MONITORING REPORT")
     print("=" * 80)

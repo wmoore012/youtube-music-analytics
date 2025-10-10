@@ -1,13 +1,11 @@
 """YouTube analytics scoring plugins that work with existing database tables."""
 
 from datetime import datetime, timedelta
-import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
 
-from youtubeviz.data import _get_engine, load_artist_daily_metrics, load_sentiment_daily
 
 from .scoring_plugin import ScoringPlugin, ValidationResult
 
@@ -207,11 +205,11 @@ class ArtistMomentumScoringPlugin(ScoringPlugin):
         if first_avg == 0:
             return 1.0 if last_avg > 0 else 0.0
 
-        # Calculate growth rate and normalize to 0 - 1 scale
-        growth_rate = (last_avg - first_avg) / first_avg
+        # Calculate growth rate and normalize to 0-1 scale
+        growth_rate = (last_avg-first_avg) / first_avg
 
-        # Normalize: -50% to +200% growth maps to 0 - 1 scale
-        normalized_growth = (growth_rate + 0.5) / 2.5  # Maps -0.5 to 2.0 range to 0 - 1
+        # Normalize: -50% to +200% growth maps to 0-1 scale
+        normalized_growth = (growth_rate + 0.5) / 2.5  # Maps -0.5 to 2.0 range to 0-1
         return min(max(normalized_growth, 0.0), 1.0)
 
     def _calculate_engagement_rate(self, artist_data: pd.DataFrame) -> float:
@@ -226,8 +224,8 @@ class ArtistMomentumScoringPlugin(ScoringPlugin):
         # Calculate raw engagement rate (likes + comments / views)
         raw_engagement_rate = (total_likes + total_comments) / total_views
 
-        # Normalize to 0 - 1 scale using realistic engagement benchmarks
-        # Typical YouTube engagement rates: 1 - 3% is good, 3 - 6% is excellent
+        # Normalize to 0-1 scale using realistic engagement benchmarks
+        # Typical YouTube engagement rates: 1-3% is good, 3-6% is excellent
         # We'll use 5% as the maximum for normalization
         max_expected_engagement = 0.05  # 5%
         normalized_rate = min(raw_engagement_rate / max_expected_engagement, 1.0)
@@ -263,7 +261,7 @@ class ArtistMomentumScoringPlugin(ScoringPlugin):
 
         # Coefficient of variation (lower is more consistent)
         cv = std_gap / mean_gap if mean_gap > 0 else 1.0
-        consistency = max(0.0, 1.0 - cv)
+        consistency = max(0.0, 1.0-cv)
 
         return min(consistency, 1.0)
 
@@ -438,7 +436,7 @@ class EngagementScoringPlugin(ScoringPlugin):
                 + sentiment_boost * params["sentiment_weight"]
             )
 
-            # Normalize to 0 - 1 scale (engagement rates are typically very small)
+            # Normalize to 0-1 scale (engagement rates are typically very small)
             engagement_score = min(engagement_score * 1000, 1.0)  # Scale up and cap
 
             # Calculate confidence based on view count
@@ -559,11 +557,11 @@ class GrowthPotentialScoringPlugin(ScoringPlugin):
             trend_data = artist_data[artist_data["metrics_date"] >= cutoff_date].copy()
 
             if len(trend_data) < params["min_data_points"]:
-                # Insufficient data - return low confidence score
+                # Insufficient data-return low confidence score
                 results.append(
                     {
                         "entity_id": str(artist_name),
-                        "score_value": 0.3,  # Neutral - low score
+                        "score_value": 0.3,  # Neutral-low score
                         "confidence": 0.2,  # Low confidence
                         "growth_velocity": 0.0,
                         "growth_acceleration": 0.0,
@@ -574,7 +572,7 @@ class GrowthPotentialScoringPlugin(ScoringPlugin):
                 )
                 continue
 
-            # Aggregate metrics by date (sum across videos for multi - video artists)
+            # Aggregate metrics by date (sum across videos for multi-video artists)
             daily_metrics = (
                 trend_data.groupby("metrics_date")
                 .agg({"view_count": "sum", "like_count": "sum", "comment_count": "sum"})
@@ -594,10 +592,10 @@ class GrowthPotentialScoringPlugin(ScoringPlugin):
             growth_potential = (
                 growth_velocity * params["velocity_weight"]
                 + growth_acceleration * params["acceleration_weight"]
-                + (1 - volatility_score) * params["volatility_weight"]  # Lower volatility is better
+                + (1-volatility_score) * params["volatility_weight"]  # Lower volatility is better
             )
 
-            # Normalize to 0 - 1 scale
+            # Normalize to 0-1 scale
             growth_potential = max(0.0, min(1.0, growth_potential))
 
             # Calculate confidence based on data quality
@@ -679,7 +677,7 @@ class GrowthPotentialScoringPlugin(ScoringPlugin):
             return 1.0 if std_change > 0 else 0.0
 
         cv = abs(std_change / mean_change)
-        # Convert to 0 - 1 scale where 0 is low volatility, 1 is high volatility
+        # Convert to 0-1 scale where 0 is low volatility, 1 is high volatility
         volatility = min(cv / 2.0, 1.0)  # Divide by 2 to scale typical CV values
 
         return volatility

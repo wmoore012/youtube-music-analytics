@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Naming Convention Auditor - YouTube Analytics Platform
+Naming Convention Auditor-YouTube Analytics Platform
 
 This script audits the codebase for naming convention violations and provides
 automated fixes where possible. It enforces:
@@ -17,12 +17,11 @@ Usage:
 """
 
 import ast
-from dataclasses import dataclass, field
-import os
-from pathlib import Path
 import re
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -62,10 +61,10 @@ class NamingConventionAuditor:
         self.report = NamingAuditReport()
 
         # Patterns for different naming conventions
-        self.snake_case_pattern = re.compile(r"^[a - z][a - z0 - 9_]*$")
-        self.pascal_case_pattern = re.compile(r"^[A - Z][a - zA - Z0 - 9]*$")
-        self.camel_case_pattern = re.compile(r"^[a - z][a - zA - Z0 - 9]*$")
-        self.upper_case_pattern = re.compile(r"^[A - Z][A - Z0 - 9_]*$")
+        self.snake_case_pattern = re.compile(r"^[a-z][a-z0-9_]*$")
+        self.pascal_case_pattern = re.compile(r"^[A-Z][a-zA-Z0-9]*$")
+        self.camel_case_pattern = re.compile(r"^[a-z][a-zA-Z0-9]*$")
+        self.upper_case_pattern = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
         # Common exceptions that should not be changed
         self.exceptions = {
@@ -150,7 +149,7 @@ class NamingConventionAuditor:
             "*.pyo",
             "*/migrations/*",  # Database migrations often have generated names
             "*/test_*",  # Test files may have different conventions
-            "*/site - packages/*",  # External packages
+            "*/site-packages/*",  # External packages
         ]
 
         # Only scan our project directories
@@ -158,7 +157,7 @@ class NamingConventionAuditor:
 
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from scanning."""
-        _file_str = str(file_path)
+        _file_str = str(file_path)  # noqa: F841
         for pattern in self.exclude_patterns:
             if file_path.match(pattern):
                 return True
@@ -167,8 +166,8 @@ class NamingConventionAuditor:
     def _convert_to_snake_case(self, name: str) -> str:
         """Convert camelCase or PascalCase to snake_case."""
         # Handle acronyms and consecutive capitals
-        s1 = re.sub("(.)([A - Z][a - z]+)", r"\1_\2", name)
-        s2 = re.sub("([a - z0 - 9])([A - Z])", r"\1_\2", s1)
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        s2 = re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1)
         return s2.lower()
 
     def _convert_to_pascal_case(self, name: str) -> str:
@@ -187,7 +186,7 @@ class NamingConventionAuditor:
         violations = []
 
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content, filename=str(file_path))
@@ -292,7 +291,7 @@ class NamingConventionAuditor:
                     suggested_name=suggested,
                     context=f"Variable usage",
                     severity="LOW",
-                    auto_fixable=False,  # Variables are harder to auto - fix safely
+                    auto_fixable=False,  # Variables are harder to auto-fix safely
                 )
             )
 
@@ -356,7 +355,7 @@ class NamingConventionAuditor:
                 continue
 
             try:
-                with open(schema_file, "r", encoding="utf - 8") as f:
+                with open(schema_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Find column names in CREATE TABLE statements
@@ -429,7 +428,7 @@ class NamingConventionAuditor:
 
         print(f"✅ Scanned {self.report.files_scanned} files")
         print(f"📊 Found {self.report.total_violations} naming violations")
-        print(f"🔧 {self.report.auto_fixable_count} violations can be auto - fixed")
+        print(f"🔧 {self.report.auto_fixable_count} violations can be auto-fixed")
 
         return self.report
 
@@ -463,7 +462,7 @@ class NamingConventionAuditor:
     def _fix_file(self, file_path: str, violations: List[NamingViolation]) -> int:
         """Apply fixes to a single file."""
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             original_content = content
@@ -473,7 +472,7 @@ class NamingConventionAuditor:
             violations.sort(key=lambda v: v.line_number, reverse=True)
 
             for violation in violations:
-                # Simple string replacement (this is basic - more sophisticated AST - based
+                # Simple string replacement (this is basic-more sophisticated AST-based
                 # replacement would be better for production use)
                 if violation.violation_type in ["class", "function", "constant"]:
                     # Use word boundaries to avoid partial matches
@@ -487,7 +486,7 @@ class NamingConventionAuditor:
 
             # Write back if changes were made
             if content != original_content:
-                with open(file_path, "w", encoding="utf - 8") as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
             return fixes_applied
@@ -503,7 +502,7 @@ class NamingConventionAuditor:
         print("=" * 80)
         print(f"Files Scanned: {self.report.files_scanned}")
         print(f"Total Violations: {self.report.total_violations}")
-        print(f"Auto - fixable: {self.report.auto_fixable_count}")
+        print(f"Auto-fixable: {self.report.auto_fixable_count}")
         print()
 
         # Violations by type
@@ -577,7 +576,7 @@ def main():
         sys.exit(0)
     elif args.fix and report.auto_fixable_count > 0:
         print(f"\n🔧 Fixed {report.auto_fixable_count} violations automatically")
-        remaining = report.total_violations - report.auto_fixable_count
+        remaining = report.total_violations-report.auto_fixable_count
         if remaining > 0:
             print(f"⚠️ {remaining} violations require manual attention")
             sys.exit(1)

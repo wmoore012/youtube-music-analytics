@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -97,7 +97,7 @@ class NotebookConfig:
         Automatically detects artists from YT_ * _YT environment variables
         and loads other configuration from .env file.
         """
-        # Auto - detect artists from environment
+        # Auto-detect artists from environment
         artists = []
         for key, value in os.environ.items():
             if key.startswith("YT_") and key.endswith("_YT") and value:
@@ -354,7 +354,7 @@ story_block(
         filepath = Path(filepath)
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filepath, "w", encoding="utf - 8") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(notebook_json, f, indent=2, ensure_ascii=False)
 
     def _generate_notebook_header(self) -> str:
@@ -402,11 +402,11 @@ story_block(
             "performance_overview",
             "Performance Overview",
             "analysis",
-            "High - level performance metrics across all artists",
+            "High-level performance metrics across all artists",
         )
 
         notebook.add_section(
-            "head_to_head", "Head - to - Head Comparison", "analysis", "Direct comparison of key performance indicators"
+            "head_to_head", "Head-to-Head Comparison", "analysis", "Direct comparison of key performance indicators"
         )
 
         notebook.add_section(
@@ -422,7 +422,7 @@ story_block(
             "recommendations",
             "Strategic Recommendations",
             "conclusion",
-            "Data - driven insights for investment and marketing decisions",
+            "Data-driven insights for investment and marketing decisions",
         )
 
         return notebook

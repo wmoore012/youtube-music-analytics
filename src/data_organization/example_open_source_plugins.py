@@ -1,5 +1,5 @@
 """
-Example open - source plugins for music analytics scoring algorithms.
+Example open-source plugins for music analytics scoring algorithms.
 
 These plugins demonstrate common patterns in music data analysis that researchers
 can use as starting points for their own algorithms. All examples work with
@@ -8,12 +8,9 @@ real YouTube analytics data structures.
 Designed for music data researchers to extend and customize for their needs.
 """
 
-from datetime import datetime, timedelta
 import logging
-import os
-from typing import Any, Dict, List
+from datetime import timedelta
 
-import numpy as np
 import pandas as pd
 
 from src.data_organization.notebook_validator import ValidationResult
@@ -58,7 +55,7 @@ class ViewVelocityPlugin(OpenSourceScoringPlugin):
                 "velocity_category": "object",
             },
             license="MIT",
-            repository_url="https://github.com / music - analytics / youtube - plugins",
+            repository_url="https://github.com / music-analytics / youtube-plugins",
             tags=["velocity", "trending", "growth", "views"],
         )
 
@@ -153,7 +150,7 @@ class ViewVelocityPlugin(OpenSourceScoringPlugin):
                 avg_daily_rate = recent_data["daily_view_rate"].mean()
                 velocity_trend = recent_data["daily_view_rate"].diff().mean()  # Acceleration
 
-                # Normalize velocity score (0 - 1 scale)
+                # Normalize velocity score (0-1 scale)
                 current_views = video_data["view_count"].iloc[-1]
                 if current_views < min_views:
                     velocity_score = 0.0
@@ -233,7 +230,7 @@ class EngagementQualityPlugin(OpenSourceScoringPlugin):
                 "quality_category": "object",
             },
             license="MIT",
-            repository_url="https://github.com / music - analytics / youtube - plugins",
+            repository_url="https://github.com / music-analytics / youtube-plugins",
             tags=["engagement", "quality", "sentiment", "audience"],
         )
 
@@ -301,13 +298,13 @@ class EngagementQualityPlugin(OpenSourceScoringPlugin):
 
                 # Engagement consistency (how balanced likes vs comments are)
                 expected_comment_ratio = like_ratio * 0.1  # Typical comment:like ratio
-                consistency_score = 1.0 - abs(comment_ratio - expected_comment_ratio) / expected_comment_ratio
+                consistency_score = 1.0-abs(comment_ratio-expected_comment_ratio) / expected_comment_ratio
 
-                # Sentiment factor (placeholder - would integrate with real sentiment data)
+                # Sentiment factor (placeholder-would integrate with real sentiment data)
                 # In real implementation, this would query youtube_comments with sentiment scores
                 sentiment_factor = self._estimate_sentiment_factor(like_ratio, comment_ratio)
 
-                # Engagement diversity (how well - distributed engagement is)
+                # Engagement diversity (how well-distributed engagement is)
                 diversity_score = min(like_ratio * 1000, 1.0) * min(comment_ratio * 10000, 1.0)
 
                 # Combine factors
@@ -388,7 +385,7 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
             name="cross_platform_momentum",
             version="1.0.0",
             author="Music Analytics Community",
-            description="Platform - agnostic momentum calculation for cross - platform music analysis",
+            description="Platform-agnostic momentum calculation for cross-platform music analysis",
             parameters={
                 "growth_window_days": 30,
                 "velocity_weight": 0.4,
@@ -406,12 +403,12 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
                 "platform": "object",
             },
             license="MIT",
-            repository_url="https://github.com / music - analytics / youtube - plugins",
-            tags=["momentum", "cross - platform", "growth", "standardized"],
+            repository_url="https://github.com / music-analytics / youtube-plugins",
+            tags=["momentum", "cross-platform", "growth", "standardized"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
-        """Validate input data for cross - platform momentum calculation."""
+        """Validate input data for cross-platform momentum calculation."""
         result = ValidationResult(is_valid=True, errors=[], warnings=[], checked_items=0, passed_items=0)
 
         # Check required columns
@@ -437,14 +434,14 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
             entity_counts = data["entity_id"].value_counts()
             if entity_counts.min() < 3:
                 result.add_warning(
-                    "Some entities have fewer than 3 data points - momentum calculation may be less accurate"
+                    "Some entities have fewer than 3 data points-momentum calculation may be less accurate"
                 )
             result.passed_items += 1
 
         return result
 
     def calculate_scores(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Calculate cross - platform momentum scores."""
+        """Calculate cross-platform momentum scores."""
         self._record_execution_start()
 
         try:
@@ -488,7 +485,7 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
                 # Get platform for normalization
                 platform = entity_data["platform"].iloc[0]
 
-                # Calculate time - based metrics
+                # Calculate time-based metrics
                 entity_data["days_since_start"] = (
                     entity_data["metric_date"] - entity_data["metric_date"].min()
                 ).dt.days
@@ -522,7 +519,7 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
                     + consistency_weight * max(consistency, 0)
                 )
 
-                # Normalize to 0 - 1 scale
+                # Normalize to 0-1 scale
                 momentum_score = min(max(momentum_score, 0), 1)
 
                 # Categorize momentum
@@ -559,9 +556,9 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
 
     def _normalize_by_platform(self, values: pd.Series, platform: str) -> pd.Series:
         """
-        Normalize metric values by platform to enable cross - platform comparison.
+        Normalize metric values by platform to enable cross-platform comparison.
 
-        This applies platform - specific scaling factors based on typical
+        This applies platform-specific scaling factors based on typical
         engagement patterns for each platform.
         """
         # Platform normalization factors (based on typical engagement scales)
@@ -579,7 +576,7 @@ class CrossPlatformMomentumPlugin(OpenSourceScoringPlugin):
 
 class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
     """
-    Provides genre - specific scoring that accounts for different engagement
+    Provides genre-specific scoring that accounts for different engagement
     patterns across music genres.
 
     This plugin recognizes that different genres have different typical
@@ -599,7 +596,7 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
             name="genre_specific_scoring",
             version="1.0.0",
             author="Music Analytics Community",
-            description="Genre - aware scoring that accounts for different engagement patterns by music genre",
+            description="Genre-aware scoring that accounts for different engagement patterns by music genre",
             parameters={
                 "genre_weights": {
                     "pop": {"viral_factor": 1.2, "engagement_threshold": 0.03},
@@ -621,12 +618,12 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
                 "performance_vs_genre": "object",
             },
             license="MIT",
-            repository_url="https://github.com / music - analytics / youtube - plugins",
-            tags=["genre", "music", "normalization", "fair - comparison"],
+            repository_url="https://github.com / music-analytics / youtube-plugins",
+            tags=["genre", "music", "normalization", "fair-comparison"],
         )
 
     def validate_input(self, data: pd.DataFrame) -> ValidationResult:
-        """Validate input data for genre - specific scoring."""
+        """Validate input data for genre-specific scoring."""
         result = ValidationResult(is_valid=True, errors=[], warnings=[], checked_items=0, passed_items=0)
 
         # Check required columns
@@ -649,7 +646,7 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
         return result
 
     def calculate_scores(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Calculate genre - specific scores."""
+        """Calculate genre-specific scores."""
         self._record_execution_start()
 
         try:
@@ -667,7 +664,7 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
                 like_count = row["like_count"]
                 comment_count = row["comment_count"]
 
-                # Get genre - specific parameters
+                # Get genre-specific parameters
                 genre_params = genre_weights.get(
                     genre, genre_weights.get("default", {"viral_factor": 1.0, "engagement_threshold": 0.025})
                 )
@@ -680,7 +677,7 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
                 else:
                     raw_engagement = 0.0
 
-                # Apply genre - specific adjustments
+                # Apply genre-specific adjustments
                 viral_factor = genre_params.get("viral_factor", 1.0)
                 engagement_threshold = genre_params.get("engagement_threshold", 0.025)
 
@@ -688,11 +685,11 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
                 genre_factor = viral_factor
                 if raw_engagement > engagement_threshold:
                     # Bonus for exceeding genre threshold
-                    genre_factor *= 1 + (raw_engagement - engagement_threshold) / engagement_threshold
+                    genre_factor *= 1 + (raw_engagement-engagement_threshold) / engagement_threshold
 
                 genre_adjusted_score = raw_engagement * genre_factor
 
-                # Normalize to 0 - 1 scale
+                # Normalize to 0-1 scale
                 genre_adjusted_score = min(genre_adjusted_score, 1.0)
 
                 # Determine performance vs genre average
@@ -716,7 +713,7 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
 
             result_df = pd.DataFrame(results)
 
-            # Apply cross - genre normalization if enabled
+            # Apply cross-genre normalization if enabled
             if normalize_cross_genre and len(result_df) > 0:
                 result_df = self._apply_cross_genre_normalization(result_df)
 
@@ -729,17 +726,17 @@ class GenreSpecificScoringPlugin(OpenSourceScoringPlugin):
 
     def _apply_cross_genre_normalization(self, data: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply cross - genre normalization to make scores comparable across genres.
+        Apply cross-genre normalization to make scores comparable across genres.
 
         This ensures that artists from different genres can be fairly compared
-        while still accounting for genre - specific engagement patterns.
+        while still accounting for genre-specific engagement patterns.
         """
         data = data.copy()
 
-        # Calculate genre - specific percentiles
+        # Calculate genre-specific percentiles
         genre_percentiles = data.groupby("genre")["genre_adjusted_score"].rank(pct=True)
 
-        # Blend genre - specific ranking with raw score
+        # Blend genre-specific ranking with raw score
         data["cross_genre_normalized_score"] = (
             0.7 * genre_percentiles  # 70% based on genre ranking
             + 0.3 * data["genre_adjusted_score"]  # 30% based on raw adjusted score

@@ -10,13 +10,13 @@ Key Features Demonstrated:
 - Applying video filters before database insertion
 - Logging filtering decisions
 - Handling personal issue videos
-- Configuration - driven filtering
+- Configuration-driven filtering
 """
 
-from datetime import datetime
 import os
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import List
 
 # Add project root to path
@@ -37,7 +37,7 @@ def simulate_youtube_api_response() -> List[dict]:
     return [
         {
             "video_id": "dQw4w9WgXcQ",  # This will be filtered as personal issue
-            "title": "Rick Astley - Never Gonna Give You Up",
+            "title": "Rick Astley-Never Gonna Give You Up",
             "channel_id": "UCuAXFkgsw1L7xaCfnd5JJOw",
             "channel_title": "Rick Astley",
             "published_at": datetime(2009, 10, 25),
@@ -49,7 +49,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "oHg5SJYRHA0",  # Valid video
             "title": "RickRoll'D",
-            "channel_id": "UC - 9-kyTW8ZkZNDHQJ6FgpwQ",
+            "channel_id": "UC-9-kyTW8ZkZNDHQJ6FgpwQ",
             "channel_title": "Music Channel",
             "published_at": datetime(2020, 1, 1),
             "duration": "PT4M15S",
@@ -60,7 +60,7 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "kJQP7kiw5Fk",  # Valid video
             "title": "Great Music Video",
-            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
+            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
             "channel_title": "Artist Channel",
             "published_at": datetime(2021, 6, 15),
             "duration": "PT3M45S",
@@ -71,18 +71,18 @@ def simulate_youtube_api_response() -> List[dict]:
         {
             "video_id": "jNQXAC9IVRw",  # This will be filtered as too short
             "title": "Short Clip",
-            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
+            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
             "channel_title": "Artist Channel",
             "published_at": datetime(2022, 3, 10),
-            "duration": "PT15S",  # 15 seconds - too short
+            "duration": "PT15S",  # 15 seconds-too short
             "view_count": 1000,
             "like_count": 10,
             "comment_count": 5,
         },
         {
             "video_id": "ScMzIvxBSi4",  # This will be filtered by title pattern
-            "title": "SPAM CONTENT - Click Here for Free Money!!!",
-            "channel_id": "UCsT0YIqwnpJCM - mx7 - gSA4Q",
+            "title": "SPAM CONTENT-Click Here for Free Money!!!",
+            "channel_id": "UCsT0YIqwnpJCM-mx7-gSA4Q",
             "channel_title": "Spam Channel",
             "published_at": datetime(2023, 1, 1),
             "duration": "PT2M30S",

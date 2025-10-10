@@ -66,7 +66,7 @@ def train_and_deploy_model():
 
     logger.info("✅ Model trained successfully:")
     logger.info("   - Training size: %s", metrics["training_size"])
-    logger.info("   - Macro - F1: %.3f", metrics["macro_f1"])
+    logger.info("   - Macro-F1: %.3f", metrics["macro_f1"])
     logger.info("   - Label distribution: %s", metrics["label_distribution"])
 
     # Save model
@@ -185,7 +185,7 @@ def validate_deployment():
             logger.info("✅ Deployment validation PASSED")
             return True
         else:
-            logger.error("❌ Deployment validation FAILED - insufficient coverage")
+            logger.error("❌ Deployment validation FAILED-insufficient coverage")
             return False
 
 

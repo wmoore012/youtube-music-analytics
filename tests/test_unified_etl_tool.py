@@ -4,7 +4,7 @@ Tests for the unified ETL tool.
 This test suite validates:
 - UnifiedETL class functionality
 - Tool registration and configuration
-- Command - line interface
+- Command-line interface
 - ETL mode selection and execution
 """
 
@@ -25,7 +25,7 @@ class TestUnifiedETL:
         """Test ETL tool can be initialized properly."""
         etl = UnifiedETL()
 
-        assert etl.name == "unified - etl"
+        assert etl.name == "unified-etl"
         assert etl.version == "1.0.0"
         assert etl.logger is not None
 
@@ -35,9 +35,9 @@ class TestUnifiedETL:
         etl = UnifiedETL()
 
         # Check tool is registered
-        tool_config = find_tool("unified - etl")
+        tool_config = find_tool("unified-etl")
         assert tool_config is not None
-        assert tool_config.name == "unified - etl"
+        assert tool_config.name == "unified-etl"
         assert tool_config.version == "1.0.0"
         assert tool_config.category == "core"
 
@@ -46,13 +46,13 @@ class TestUnifiedETL:
         etl = UnifiedETL.__new__(UnifiedETL)  # Create without __init__
         config = etl.get_tool_config()
 
-        assert config.name == "unified - etl"
+        assert config.name == "unified-etl"
         assert config.version == "1.0.0"
         assert "Unified ETL tool" in config.description
         assert config.category == "core"
 
         # Check dependencies
-        expected_deps = ["sqlalchemy", "pandas", "python - dotenv", "requests"]
+        expected_deps = ["sqlalchemy", "pandas", "python-dotenv", "requests"]
         for dep in expected_deps:
             assert dep in config.dependencies
 
@@ -166,7 +166,7 @@ class TestUnifiedETLMethods:
     @patch.dict("os.environ", {"DATABASE_URL": "test://db", "YOUTUBE_API_KEY": "test_key"})
     @patch("tools.core.run_channels_from_env.main")
     def test_run_channel_specific_etl(self, mock_channels_main):
-        """Test channel - specific ETL execution."""
+        """Test channel-specific ETL execution."""
         etl = UnifiedETL()
 
         channels = ["artist1", "artist2"]
@@ -232,7 +232,7 @@ class TestUnifiedETLMethods:
 
 
 class TestCommandLineInterface:
-    """Test command - line interface functionality."""
+    """Test command-line interface functionality."""
 
     @patch("tools.core.etl.UnifiedETL")
     def test_main_default_arguments(self, mock_etl_class):
@@ -280,7 +280,7 @@ class TestCommandLineInterface:
         mock_etl = MagicMock()
         mock_etl_class.return_value.__enter__.return_value = mock_etl
 
-        with patch("sys.argv", ["etl.py", "--with - notebooks"]):
+        with patch("sys.argv", ["etl.py", "--with-notebooks"]):
             main()
 
         mock_etl.run.assert_called_once_with(
@@ -306,7 +306,7 @@ class TestCommandLineInterface:
         mock_etl = MagicMock()
         mock_etl_class.return_value.__enter__.return_value = mock_etl
 
-        with patch("sys.argv", ["etl.py", "--validate - only"]):
+        with patch("sys.argv", ["etl.py", "--validate-only"]):
             main()
 
         mock_etl.run.assert_called_once_with(

@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """
-Targeted linting fix - only fix safe issues that won't break code
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
 """
-import subprocess
+
+#!/usr/bin/env python3
+"""
+Targeted linting fix-only fix safe issues that won't break code
+"""
 import os
 import re
+import subprocess
 
 
 def run_command(cmd):
@@ -13,7 +24,7 @@ def run_command(cmd):
 
 
 def fix_unused_variables_safely():
-    """Fix unused variables by prefixing with underscore - very safe"""
+    """Fix unused variables by prefixing with underscore-very safe"""
     print("🗑️ Fixing unused variables (safe)...")
 
     result = run_command('flake8 --select=F841')
@@ -41,12 +52,12 @@ def fix_unused_variables_safely():
                         lines = f.readlines()
 
                     if line_num <= len(lines):
-                        original_line = lines[line_num - 1]
+                        original_line = lines[line_num-1]
                         # Only fix simple assignments
                         if f'{var_name} =' in original_line and '=' in original_line:
                             fixed_line = original_line.replace(f'{var_name} =', f'_{var_name} =')
                             if fixed_line != original_line:
-                                lines[line_num - 1] = fixed_line
+                                lines[line_num-1] = fixed_line
 
                                 with open(file_path, 'w') as f:
                                     f.writelines(lines)
@@ -56,7 +67,7 @@ def fix_unused_variables_safely():
 
 
 def fix_whitespace_safely():
-    """Fix whitespace issues - very safe"""
+    """Fix whitespace issues-very safe"""
     print("🧹 Fixing whitespace issues (safe)...")
 
     # Only fix trailing whitespace and blank lines
@@ -65,7 +76,7 @@ def fix_whitespace_safely():
 
 
 def add_noqa_for_complexity():
-    """Add noqa comments for complexity issues - safe"""
+    """Add noqa comments for complexity issues-safe"""
     print("🏷️ Adding noqa for complexity (safe)...")
 
     result = run_command('flake8 --select=C901')
@@ -86,9 +97,9 @@ def add_noqa_for_complexity():
                         lines = f.readlines()
 
                     if line_num <= len(lines):
-                        original_line = lines[line_num - 1]
+                        original_line = lines[line_num-1]
                         if '# noqa: C901' not in original_line:
-                            lines[line_num - 1] = original_line.rstrip() + '  # noqa: C901\n'
+                            lines[line_num-1] = original_line.rstrip() + '  # noqa: C901\n'
 
                             with open(file_path, 'w') as f:
                                 f.writelines(lines)
@@ -98,7 +109,7 @@ def add_noqa_for_complexity():
 
 
 def main():
-    print("🎯 TARGETED LINTING FIX - SAFE CHANGES ONLY")
+    print("🎯 TARGETED LINTING FIX-SAFE CHANGES ONLY")
     print("=" * 50)
 
     # Check starting error count
@@ -114,9 +125,9 @@ def main():
     print("\n🧪 Verifying tests pass...")
     test_result = run_command('PYTHONPATH=. python -m pytest -q')
     if test_result.returncode != 0:
-        print("❌ Tests are failing - aborting")
+        print("❌ Tests are failing-aborting")
         return
-    print("✅ Tests pass - proceeding")
+    print("✅ Tests pass-proceeding")
 
     # Apply only safe fixes
     fix_unused_variables_safely()
@@ -138,7 +149,7 @@ def main():
     if test_result.returncode == 0:
         print("✅ All tests still pass!")
     else:
-        print("❌ Tests broken - reverting changes")
+        print("❌ Tests broken-reverting changes")
         run_command('git checkout -- .')
 
 

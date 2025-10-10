@@ -69,7 +69,7 @@ graph TD
     end
 
     subgraph "First 5 Minutes"
-        C1[make setup - One Command]
+        C1[make setup-One Command]
         C2[Sample Data Included]
         C3[Working Examples]
         C4[Interactive Notebooks]
@@ -134,7 +134,7 @@ graph LR
 **Professional Identity Integration:**
 ```markdown
 # YouTube Music Analytics Platform
-*By Wilton Moore - Grammy-Nominated Producer & Data Scientist*
+*By Wilton Moore-Grammy-Nominated Producer & Data Scientist*
 
 > "Combining 10+ years of music industry experience with advanced data science
 > to unlock insights that matter to artists, labels, and music professionals."

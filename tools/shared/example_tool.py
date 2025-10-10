@@ -13,7 +13,7 @@ class ExampleTool(ToolBase):
     """Example tool showing proper usage of ToolBase."""
 
     def __init__(self):
-        super().__init__(name="example - tool", version="1.0.0")
+        super().__init__(name="example-tool", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -25,7 +25,7 @@ class ExampleTool(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="example - tool",
+            name="example-tool",
             version="1.0.0",
             description="Example tool demonstrating ToolBase usage patterns",
             dependencies=["python>=3.8"],
@@ -48,7 +48,7 @@ class ExampleTool(ToolBase):
             # Example of input validation
             test_value = "example"
             self.validate_input(
-                test_value, lambda x: isinstance(x, str) and len(x) > 0, "Test value must be a non - empty string"
+                test_value, lambda x: isinstance(x, str) and len(x) > 0, "Test value must be a non-empty string"
             )
 
             self.log_progress("Example tool completed successfully")

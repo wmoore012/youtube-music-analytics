@@ -3,12 +3,11 @@
 📓 Archive Redundant Notebooks
 
 Moves redundant / executed notebook versions to archive, keeping only the active ones.
-Based on analysis: keep 20 - Chart Dashboard and Professional Dashboard as the main ones.
+Based on analysis: keep 20-Chart Dashboard and Professional Dashboard as the main ones.
 """
 
-import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def main():
@@ -30,7 +29,7 @@ def main():
 
     # Keep these active notebooks
     keep_notebooks = [
-        "MusicScope™_20_Chart_Dashboard.ipynb",  # Main 20 - chart dashboard
+        "MusicScope™_20_Chart_Dashboard.ipynb",  # Main 20-chart dashboard
         "MusicScope™_Professional_Dashboard.ipynb",  # Professional version
         "🔧_CHECK_DEPENDENCIES.py",  # Utility script
         "🚀_RUN_NOTEBOOK_CREATION.py",  # Utility script

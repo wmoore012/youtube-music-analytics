@@ -11,8 +11,6 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-
-from src.data_organization.scoring_plugin import ScoringPlugin, ValidationResult
 from src.data_organization.scoring_plugins_implementation import (
     DataValidationError,
     EngagementScoringPlugin,
@@ -20,6 +18,8 @@ from src.data_organization.scoring_plugins_implementation import (
     MomentumScoringPlugin,
     ScoringPluginError,
 )
+
+from src.data_organization.scoring_plugin import ScoringPlugin, ValidationResult
 
 
 class TestMomentumScoringPlugin:

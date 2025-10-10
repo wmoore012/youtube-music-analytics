@@ -4,15 +4,14 @@ Notebook Management System for MusicScope™
 Handles archiving, versioning, and creation of new notebooks.
 """
 
-from datetime import datetime
 import json
-import os
-from pathlib import Path
 import shutil
+from datetime import datetime
+from pathlib import Path
 
 
 def get_today_date():
-    """Get today's date in YYYY - MM - DD format."""
+    """Get today's date in YYYY-MM-DD format."""
     return datetime.now().strftime("%Y-%m-%d")
 
 
@@ -89,7 +88,7 @@ def create_new_notebook(template_path=None, notebooks_dir="notebooks"):
     if existing:
         latest = existing[-1]  # Most recent version
         print(f"🔄 Found existing notebook: {latest.name}")
-        _archived = archive_notebook(latest)
+        _archived = archive_notebook(latest)  # noqa: F841
         print(f"✅ Archived previous version")
 
     # Create new notebook
@@ -112,7 +111,7 @@ def create_new_notebook(template_path=None, notebooks_dir="notebooks"):
                         "- 📊 **ChartFlow™**: Interactive performance charts & artist comparison\n",
                         "- 🎭 **SentimentScope™**: Fan insights, comment analysis & tour planning\n",
                         "- 🎬 **ContentFlow™**: Video categorization & content strategy\n",
-                        "- 🤖 **Auto - Generated Summaries**: Intelligent insights with actionable recommendations\n",
+                        "- 🤖 **Auto-Generated Summaries**: Intelligent insights with actionable recommendations\n",
                         "- 💝 **Compassionate Analytics**: Treats artists as humans, not data points\n",
                         "- 📈 **Line Charts**: Trending performance over time\n",
                         "- 🔄 **Dynamic Artist Support**: Works with any number of artists from .env\n\n",
@@ -146,13 +145,12 @@ def create_new_notebook(template_path=None, notebooks_dir="notebooks"):
 def test_notebook(notebook_path):
     """Test if a notebook can be executed without errors."""
     try:
-        from nbconvert.preprocessors import ExecutePreprocessor
         import nbformat
 
         with open(notebook_path) as f:
-            _nb = nbformat.read(f, as_version=4)
+            _nb = nbformat.read(f, as_version=4)  # noqa: F841
 
-        # Quick syntax check - just try to parse
+        # Quick syntax check-just try to parse
         print(f"✅ Notebook syntax is valid: {notebook_path.name}")
         return True
 
@@ -183,7 +181,7 @@ def main():
     print("\n🔧 Creating new notebook...")
 
     # Use the v2 notebook as template if it exists
-    template = Path("notebooks / 2025 - 09 - 16_MusicScope™_Complete_Analytics_Dashboard_v2.ipynb")
+    template = Path("notebooks / 2025-09-16_MusicScope™_Complete_Analytics_Dashboard_v2.ipynb")
     if template.exists():
         new_notebook = create_new_notebook(template_path=str(template))
     else:

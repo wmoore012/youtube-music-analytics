@@ -81,14 +81,14 @@ class ScoringEngine:
         try:
             name = plugin.get_name()
             if not name or not isinstance(name, str):
-                errors.append("Plugin name must be a non - empty string")
+                errors.append("Plugin name must be a non-empty string")
         except Exception as e:
             errors.append(f"Failed to get plugin name: {e}")
 
         try:
             version = plugin.get_version()
             if not version or not isinstance(version, str):
-                errors.append("Plugin version must be a non - empty string")
+                errors.append("Plugin version must be a non-empty string")
         except Exception as e:
             errors.append(f"Failed to get plugin version: {e}")
 
@@ -110,7 +110,7 @@ class ScoringEngine:
             errors.append(f"Failed to get plugin metadata: {e}")
 
         return ValidationResult(
-            is_valid=len(errors) == 0, errors=errors, warnings=warnings, checked_items=4, passed_items=4 - len(errors)
+            is_valid=len(errors) == 0, errors=errors, warnings=warnings, checked_items=4, passed_items=4-len(errors)
         )
 
     def load_plugin_from_path(self, plugin_class_path: str) -> None:
@@ -203,9 +203,9 @@ class ScoringEngine:
         self, plugin: ScoringPlugin, data: pd.DataFrame, parameters: Optional[Dict[str, Any]] = None
     ) -> ScoringResult:
         """Execute plugin with isolation and error handling."""
-        from contextlib import contextmanager
         import resource
         import signal
+        from contextlib import contextmanager
 
         @contextmanager
         def timeout_context(seconds):

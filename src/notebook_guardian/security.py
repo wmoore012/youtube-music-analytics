@@ -5,10 +5,10 @@ This module provides security controls and warnings for safe usage
 of automatic package installation features.
 """
 
-from dataclasses import dataclass
 import os
-from typing import List, Optional, Set
 import warnings
+from dataclasses import dataclass
+from typing import List, Set
 
 
 @dataclass
@@ -56,7 +56,7 @@ def set_security_config(config: SecurityConfig) -> None:
 
 def enable_safe_mode() -> None:
     """
-    Enable safe mode - disables automatic installation.
+    Enable safe mode-disables automatic installation.
 
     Recommended for production environments and untrusted code.
     """
@@ -64,7 +64,7 @@ def enable_safe_mode() -> None:
     _security_config.auto_install_enabled = False
     _security_config.require_confirmation = True
     _security_config.strict_mode = True
-    print("🔒 Safe mode enabled - automatic installation disabled")
+    print("🔒 Safe mode enabled-automatic installation disabled")
 
 
 def enable_auto_install_mode() -> None:
@@ -132,7 +132,7 @@ def _is_potential_typosquat(package_name: str) -> bool:
     """
     Check if package name might be typosquatting a popular package.
 
-    This is a basic heuristic check - not comprehensive security.
+    This is a basic heuristic check-not comprehensive security.
     """
     # Common legitimate packages
     legitimate_packages = {
@@ -141,7 +141,7 @@ def _is_potential_typosquat(package_name: str) -> bool:
         "matplotlib",
         "seaborn",
         "plotly",
-        "scikit - learn",
+        "scikit-learn",
         "sklearn",
         "tensorflow",
         "torch",
@@ -200,10 +200,10 @@ class SecurityError(Exception):
 
 
 def warn_about_ai_generated_code() -> None:
-    """Show warning about AI - generated code risks."""
+    """Show warning about AI-generated code risks."""
     if get_security_config().show_security_warnings:
         warnings.warn(
-            "⚠️ SECURITY WARNING: Be cautious with AI - generated code. "
+            "⚠️ SECURITY WARNING: Be cautious with AI-generated code. "
             "AI models may suggest malicious or incorrect package names. "
             "Always verify dependencies before installation.",
             UserWarning,
@@ -228,7 +228,7 @@ def create_security_report(packages: List[str]) -> dict:
         "warnings": [],
     }
 
-    _config = get_security_config()
+    _config = get_security_config()  # noqa: F841
 
     for package in packages:
         try:
@@ -249,7 +249,7 @@ def create_security_report(packages: List[str]) -> dict:
     return report
 
 
-# Environment - based security defaults
+# Environment-based security defaults
 def _load_security_from_environment():
     """Load security configuration from environment variables."""
     global _security_config  # noqa: F824

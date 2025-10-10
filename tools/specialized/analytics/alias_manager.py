@@ -8,9 +8,8 @@ behaviour for counts, ordering, and case handling.
 
 from __future__ import annotations
 
-from collections import Counter
 import json
-import os
+from collections import Counter
 from pathlib import Path
 from typing import Sequence
 
@@ -36,7 +35,7 @@ def ensure_alias_table(eng: Engine) -> Table:
     inspector = inspect(eng)
     meta = MetaData()
     if inspector.has_table(ALIAS_TABLE_NAME):
-        meta.reflect(bind=eng, only=[ALIAS_TABLE_NAME])  # type: ignore[arg - type]
+        meta.reflect(bind=eng, only=[ALIAS_TABLE_NAME])  # type: ignore[arg-type]
         return meta.tables[ALIAS_TABLE_NAME]
 
     Table(
@@ -120,7 +119,7 @@ def write_aliases_json(eng: Engine, destination: Path | str) -> int:
         rows = conn.execute(select(tbl.c.alias, tbl.c.canonical_name).where(tbl.c.alias != "")).all()
     mapping = {alias: canonical for alias, canonical in rows if alias and canonical}
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(mapping, indent=2, sort_keys=True), encoding="utf - 8")
+    path.write_text(json.dumps(mapping, indent=2, sort_keys=True), encoding="utf-8")
     return len(mapping)
 
 

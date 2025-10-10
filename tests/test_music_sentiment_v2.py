@@ -2,7 +2,7 @@
 """
 Comprehensive Tests for Music Industry Sentiment Dataset v2.0
 
-Tests the production - grade v2.0 dataset with proper validation,
+Tests the production-grade v2.0 dataset with proper validation,
 intent / sentiment separation, and model performance evaluation.
 """
 
@@ -24,7 +24,6 @@ from datasets.music_industry_sentiment_dataset_v2 import (
     Toxicity,
     get_music_industry_dataset_v2,
 )
-
 from src.youtubeviz.production_music_sentiment import ProductionMusicSentimentAnalyzer
 
 
@@ -125,7 +124,7 @@ class TestMusicSentimentDatasetV2:
 
         beat_entries = [e for e in self.dataset.entries if e.beat_appreciation]
 
-        # Beat appreciation entries should have beat - related aspects or patterns
+        # Beat appreciation entries should have beat-related aspects or patterns
         for entry in beat_entries:
             has_beat_aspect = entry.aspect in [Aspect.BEAT, Aspect.MIX]
             has_beat_words = any(
@@ -135,7 +134,7 @@ class TestMusicSentimentDatasetV2:
 
             assert (
                 has_beat_aspect or has_beat_words
-            ), f"Beat appreciation entry should have beat - related content: '{entry.phrase}'"
+            ), f"Beat appreciation entry should have beat-related content: '{entry.phrase}'"
 
     def test_gen_z_slang_flagging(self):
         """Test Gen Z slang flagging accuracy."""
@@ -198,7 +197,7 @@ class TestMusicSentimentDatasetV2:
             has_gen_z_indicator = any(indicator in entry.phrase.lower() for indicator in gen_z_indicators)
             # Allow some flexibility for borderline cases
             if not has_gen_z_indicator:
-                print(f"⚠️ Potentially mis - flagged Gen Z: '{entry.phrase}'")
+                print(f"⚠️ Potentially mis-flagged Gen Z: '{entry.phrase}'")
 
     def test_toxicity_flagging(self):
         """Test toxicity flagging accuracy."""
@@ -253,8 +252,8 @@ class TestMusicSentimentDatasetV2:
             test_prop = test_sentiment_dist.get(sentiment, 0) / len(test_entries)
 
             # Allow some variance in stratification
-            assert abs(train_prop - original_prop) < 0.1, f"Train set {sentiment} proportion off"
-            assert abs(test_prop - original_prop) < 0.15, f"Test set {sentiment} proportion off"
+            assert abs(train_prop-original_prop) < 0.1, f"Train set {sentiment} proportion off"
+            assert abs(test_prop-original_prop) < 0.15, f"Test set {sentiment} proportion off"
 
     def test_export_functionality(self):
         """Test dataset export to different formats."""

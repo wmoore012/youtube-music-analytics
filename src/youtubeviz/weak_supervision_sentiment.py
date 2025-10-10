@@ -6,25 +6,23 @@ Implements the professional approach:
 1. Convert phrase lists to labeling functions
 2. Generate silver labels using boosters
 3. Train compact LM on silver labels
-4. Proper evaluation with macro - F1 / AUPRC
+4. Proper evaluation with macro-F1 / AUPRC
 5. Calibrated confidence scoring
 
-Based on expert feedback for production - grade sentiment analysis.
+Based on expert feedback for production-grade sentiment analysis.
 """
 
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import joblib
 import numpy as np
-import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, f1_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 
 
 class SentimentLabel(Enum):
@@ -57,7 +55,7 @@ class WeakLabel:
 
 class WeakSupervisionSentimentAnalyzer:
     """
-    Production - grade sentiment analyzer using weak supervision.
+    Production-grade sentiment analyzer using weak supervision.
 
     Converts phrase lists and booster rules into labeling functions,
     generates silver labels, and trains a calibrated classifier.
@@ -73,7 +71,7 @@ class WeakSupervisionSentimentAnalyzer:
         """Create labeling functions from domain knowledge."""
         functions = []
 
-        # AAVE and in - group praise (HIGH CONFIDENCE)
+        # AAVE and in-group praise (HIGH CONFIDENCE)
         aave_patterns = [
             (r"\b(snapped|ate|served|killed it|bodied|went off)\b", 0.9),
             (r"\b(my|this|he|she)\s+(nigga|bro|sis)\s+(snapped|ate|killed)", 0.95),
@@ -87,11 +85,11 @@ class WeakSupervisionSentimentAnalyzer:
                     pattern=pattern,
                     label=SentimentLabel.POSITIVE,
                     confidence=conf,
-                    description="AAVE / in - group praise",
+                    description="AAVE / in-group praise",
                 )
             )
 
-        # Music - specific positive slang
+        # Music-specific positive slang
         music_positive = [
             (r"\b(fire|lit|slaps|bangs|hits different|goes hard|hard af)\b", 0.8),
             (r"\b(sick|crazy|insane|wild|dope|clean)\b", 0.7),
@@ -106,7 +104,7 @@ class WeakSupervisionSentimentAnalyzer:
                     pattern=pattern,
                     label=SentimentLabel.POSITIVE,
                     confidence=conf,
-                    description="Music - specific positive",
+                    description="Music-specific positive",
                 )
             )
 
@@ -196,12 +194,12 @@ class WeakSupervisionSentimentAnalyzer:
         features["multiple_exclamations"] = 1.0 if re.search(r"!{2,}", text) else 0.0
 
         # Elongation (repeated letters)
-        elongations = re.findall(r"([a - z])\1{2,}", text.lower())
+        elongations = re.findall(r"([a-z])\1{2,}", text.lower())
         features["elongation_count"] = len(elongations)
-        features["max_elongation"] = max([len(match) for match in re.findall(r"([a - z])\1+", text.lower())] + [0])
+        features["max_elongation"] = max([len(match) for match in re.findall(r"([a-z])\1+", text.lower())] + [0])
 
-        # ALL - CAPS words
-        caps_words = re.findall(r"\b[A - Z]{2,}\b", text)
+        # ALL-CAPS words
+        caps_words = re.findall(r"\b[A-Z]{2,}\b", text)
         features["caps_word_count"] = len(caps_words)
         features["caps_ratio"] = len(caps_words) / max(len(text.split()), 1)
 
@@ -302,7 +300,7 @@ class WeakSupervisionSentimentAnalyzer:
         if len(labeled_data) < 100:
             raise ValueError(f"Insufficient labeled data: {len(labeled_data)} examples")
 
-        print(f"📊 Training on {len(labeled_data)} silver - labeled examples")
+        print(f"📊 Training on {len(labeled_data)} silver-labeled examples")
 
         # Prepare training data
         train_texts, train_labels = zip(*labeled_data)
@@ -315,7 +313,7 @@ class WeakSupervisionSentimentAnalyzer:
 
         # Calibrate probabilities
         print("🎯 Calibrating probabilities...")
-        # Check if we have enough samples for cross - validation
+        # Check if we have enough samples for cross-validation
         unique_labels, counts = np.unique(y_train, return_counts=True)
         min_samples = min(counts)
 
@@ -333,7 +331,7 @@ class WeakSupervisionSentimentAnalyzer:
         y_pred = self.calibrated_classifier.predict(X_train)
         f1_macro = f1_score(y_train, y_pred, average="macro")
 
-        print(f"✅ Training complete. Macro - F1: {f1_macro:.3f}")
+        print(f"✅ Training complete. Macro-F1: {f1_macro:.3f}")
 
         return {
             "macro_f1": f1_macro,

@@ -757,7 +757,7 @@ class ArtistMomentumPlugin(OpenSourceScoringPlugin):
                     recent_avg = recent_half['view_count'].mean()
                     older_avg = older_half['view_count'].mean()
 
-                    growth_momentum = max(0, min(1, (recent_avg - older_avg) / max(older_avg, 1)))
+                    growth_momentum = max(0, min(1, (recent_avg-older_avg) / max(older_avg, 1)))
                 else:
                     growth_momentum = 0.5  # Neutral for insufficient data
 
@@ -922,7 +922,7 @@ setup(
     url="https://github.com/your-username/my-music-plugin",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 4-Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
@@ -1002,7 +1002,7 @@ results = plugin.calculate_scores(your_data)
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License-see LICENSE file for details.
 ```
 
 ### Publishing Checklist

@@ -47,20 +47,20 @@ class TestYouTubeScoringIntegration:
                 "artist_name": ["Artist A", "Artist A", "Artist B", "Artist B"],
                 "video_id": ["vid1", "vid2", "vid3", "vid4"],
                 "published_at": [
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=15),
-                    base_date - timedelta(days=20),
-                    base_date - timedelta(days=10),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=15),
+                    base_date-timedelta(days=20),
+                    base_date-timedelta(days=10),
                 ],
                 "view_count": [5000, 10000, 8000, 12000],
                 "like_count": [50, 150, 100, 180],
                 "comment_count": [25, 75, 50, 90],
                 "channel_title": ["Channel A", "Channel A", "Channel B", "Channel B"],
                 "metrics_date": [
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=15),
-                    base_date - timedelta(days=20),
-                    base_date - timedelta(days=10),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=15),
+                    base_date-timedelta(days=20),
+                    base_date-timedelta(days=10),
                 ],
             }
         )
@@ -114,7 +114,7 @@ class TestYouTubeScoringIntegration:
             {
                 "artist_name": ["Artist A"] * 10,
                 "video_id": ["vid1"] * 10,
-                "metrics_date": [base_date - timedelta(days=i) for i in range(9, -1, -1)],
+                "metrics_date": [base_date-timedelta(days=i) for i in range(9, -1, -1)],
                 "view_count": [1000 + i * 100 for i in range(10)],
                 "like_count": [10 + i * 2 for i in range(10)],
                 "comment_count": [5 + i * 1 for i in range(10)],

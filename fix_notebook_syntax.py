@@ -1,20 +1,20 @@
 #!/usr / bin / env python3
 """
-Fix F - String Syntax Errors in Notebook
+Fix F-String Syntax Errors in Notebook
 
-This script fixes the f - string syntax errors in the MusicScope™ Professional Dashboard notebook
-where single quotes are used inside f - strings that are also delimited by single quotes.
+This script fixes the f-string syntax errors in the MusicScope™ Professional Dashboard notebook
+where single quotes are used inside f-strings that are also delimited by single quotes.
 """
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def fix_fstring_syntax(text):
-    """Fix f - string syntax errors by replacing single quotes with double quotes inside f - strings."""
+    """Fix f-string syntax errors by replacing single quotes with double quotes inside f-strings."""
 
-    # Pattern to match problematic f - strings with lists containing single quotes
+    # Pattern to match problematic f-strings with lists containing single quotes
     # Example: f'   🔍 Required columns: ['artist_name', 'sentiment_score', 'comment_text']'
     pattern = r"f'([^']*🔍 Required columns: \[)([^']*)'([^']*)'([^']*)'([^']*)\]([^']*)"
 
@@ -53,7 +53,7 @@ def fix_notebook_syntax(notebook_path):
     print(f"🔧 Fixing syntax errors in {notebook_path}")
 
     # Read the notebook
-    with open(notebook_path, "r", encoding="utf - 8") as f:
+    with open(notebook_path, "r", encoding="utf-8") as f:
         notebook = json.load(f)
 
     fixes_made = 0
@@ -90,7 +90,7 @@ def fix_notebook_syntax(notebook_path):
 
     if fixes_made > 0:
         # Save the fixed notebook
-        with open(notebook_path, "w", encoding="utf - 8") as f:
+        with open(notebook_path, "w", encoding="utf-8") as f:
             json.dump(notebook, f, indent=1, ensure_ascii=False)
 
         print(f"✅ Fixed {fixes_made} syntax errors in {notebook_path}")

@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import json
 import logging
-import os
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-import pandas as pd
 
 from .plugin_integration import get_plugin_manager
 
@@ -24,7 +22,7 @@ class PluginEnhancedNotebookGenerator:
     """Notebook generator with plugin system integration."""
 
     def __init__(self, enable_plugins: bool = True):
-        """Initialize plugin - enhanced notebook generator."""
+        """Initialize plugin-enhanced notebook generator."""
         self._logger = logging.getLogger(__name__)
         self._enable_plugins = enable_plugins
         self._plugin_manager = None
@@ -41,12 +39,12 @@ class PluginEnhancedNotebookGenerator:
 
     def create_plugin_enhanced_notebook(
         self,
-        title: str = "MusicScope™ Plugin - Enhanced Analytics",
+        title: str = "MusicScope™ Plugin-Enhanced Analytics",
         artists: Optional[List[str]] = None,
         algorithms: Optional[List[str]] = None,
         output_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Create notebook with plugin - generated content."""
+        """Create notebook with plugin-generated content."""
         try:
             # Initialize notebook structure
             notebook = self._create_base_notebook_structure(title)
@@ -54,7 +52,7 @@ class PluginEnhancedNotebookGenerator:
             # Add plugin system overview
             notebook["cells"].extend(self._create_plugin_overview_cells())
 
-            # Add plugin - based analysis cells
+            # Add plugin-based analysis cells
             if self._enable_plugins and self._plugin_manager:
                 plugin_cells = self._create_plugin_analysis_cells(artists, algorithms)
                 notebook["cells"].extend(plugin_cells)
@@ -76,7 +74,7 @@ class PluginEnhancedNotebookGenerator:
             }
 
         except Exception as e:
-            self._logger.error(f"Plugin - enhanced notebook creation failed: {e}")
+            self._logger.error(f"Plugin-enhanced notebook creation failed: {e}")
             raise NotebookPluginIntegrationError(f"Notebook creation failed: {e}")
 
     def _create_base_notebook_structure(self, title: str) -> Dict[str, Any]:
@@ -146,8 +144,8 @@ class PluginEnhancedNotebookGenerator:
                     "\n",
                     "- **Multiple Scoring Algorithms**: Different approaches to analyzing artist performance\n",
                     "- **Extensible Architecture**: Easy addition of new analysis methods\n",
-                    "- **Comparative Analysis**: Side - by - side comparison of different scoring approaches\n",
-                    "- **Real - time Processing**: Dynamic scoring with live data\n",
+                    "- **Comparative Analysis**: Side-by-side comparison of different scoring approaches\n",
+                    "- **Real-time Processing**: Dynamic scoring with live data\n",
                     "\n",
                     "Let's explore what plugins are available and how they work.\n",
                 ],
@@ -179,7 +177,7 @@ class PluginEnhancedNotebookGenerator:
     def _create_plugin_analysis_cells(
         self, artists: Optional[List[str]] = None, algorithms: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
-        """Create cells with plugin - based analysis."""
+        """Create cells with plugin-based analysis."""
         cells = []
 
         # Data preparation cell
@@ -240,7 +238,7 @@ class PluginEnhancedNotebookGenerator:
                 "cell_type": "markdown",
                 "metadata": {},
                 "source": [
-                    "## 🎯 Plugin - Based Scoring Analysis\n",
+                    "## 🎯 Plugin-Based Scoring Analysis\n",
                     "\n",
                     "Now let's run our available algorithms on the artist data and compare their results.\n",
                 ],
@@ -373,7 +371,7 @@ class PluginEnhancedNotebookGenerator:
                 "metadata": {},
                 "source": [
                     "# Fallback analysis without plugins\n",
-                    "print('🔧 Plugin system not available - using fallback analysis')\n",
+                    "print('🔧 Plugin system not available-using fallback analysis')\n",
                     "\n",
                     "# Create basic sample data\n",
                     "sample_data = pd.DataFrame({\n",
@@ -443,9 +441,9 @@ class PluginEnhancedNotebookGenerator:
                     "        print(f'   {i}. {artist}: {std:.3f} std dev')\n",
                     "        \n",
                     "else:\n",
-                    "    print('📋 Plugin system analysis completed - check individual algorithm results above')\n",
+                    "    print('📋 Plugin system analysis completed-check individual algorithm results above')\n",
                     "\n",
-                    "print('\\n✨ Plugin - Enhanced Analysis Complete!')\n",
+                    "print('\\n✨ Plugin-Enhanced Analysis Complete!')\n",
                 ],
             },
         ]
@@ -466,7 +464,7 @@ class PluginEnhancedNotebookGenerator:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         # Save notebook
-        with open(output_path, "w", encoding="utf - 8") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(notebook, f, indent=2, ensure_ascii=False)
 
         self._logger.info(f"Notebook saved to: {output_path}")
@@ -486,7 +484,7 @@ class PluginEnhancedNotebookGenerator:
                 # Filter to requested algorithms
                 available_algorithms = [alg for alg in algorithms if alg in available_algorithms]
 
-            # Create comparison - focused notebook
+            # Create comparison-focused notebook
             notebook = self._create_base_notebook_structure("MusicScope™ Plugin Algorithm Comparison")
 
             # Add algorithm comparison cells
@@ -520,7 +518,7 @@ class PluginEnhancedNotebookGenerator:
                 "source": [
                     "## 🔍 Detailed Algorithm Comparison\n",
                     "\n",
-                    "This notebook provides an in - depth comparison of available scoring algorithms.\n",
+                    "This notebook provides an in-depth comparison of available scoring algorithms.\n",
                     f"We'll analyze {len(algorithms)} algorithms and their characteristics.\n",
                 ],
             }
@@ -571,13 +569,13 @@ class PluginEnhancedNotebookGenerator:
 
 # Convenience functions
 def create_plugin_enhanced_notebook(
-    title: str = "MusicScope™ Plugin - Enhanced Analytics",
+    title: str = "MusicScope™ Plugin-Enhanced Analytics",
     artists: Optional[List[str]] = None,
     algorithms: Optional[List[str]] = None,
     output_path: Optional[str] = None,
     enable_plugins: bool = True,
 ) -> Dict[str, Any]:
-    """Create a plugin - enhanced notebook."""
+    """Create a plugin-enhanced notebook."""
     generator = PluginEnhancedNotebookGenerator(enable_plugins=enable_plugins)
     return generator.create_plugin_enhanced_notebook(
         title=title, artists=artists, algorithms=algorithms, output_path=output_path

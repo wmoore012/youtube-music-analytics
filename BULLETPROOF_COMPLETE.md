@@ -1,4 +1,4 @@
-# 🛡️ Bulletproof Notebook System - COMPLETE!
+# 🛡️ Bulletproof Notebook System-COMPLETE!
 
 ## What We Built
 

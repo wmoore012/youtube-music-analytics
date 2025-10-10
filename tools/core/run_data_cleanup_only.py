@@ -2,7 +2,7 @@
 """
 Data Cleanup Only Pipeline
 
-This script runs ONLY data cleanup and quality checks - NO ETL.
+This script runs ONLY data cleanup and quality checks-NO ETL.
 Designed for frequent runs (every few hours) to maintain data quality
 without triggering the main ETL process.
 
@@ -10,10 +10,9 @@ Usage:
     python tools / etl / run_data_cleanup_only.py
 """
 
-from datetime import datetime
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -42,12 +41,12 @@ def run_data_cleanup_only():
         original_count = len(data)
 
         if original_count == 0:
-            logger.info("📊 No data found - nothing to clean")
+            logger.info("📊 No data found-nothing to clean")
             return True
 
         # Deduplicate by video_id (natural key)
         clean_data = data.drop_duplicates(["video_id"], keep="first")
-        duplicates_removed = original_count - len(clean_data)
+        duplicates_removed = original_count-len(clean_data)
 
         logger.info(f"📊 Data cleanup results:")
         logger.info(f"   Original records: {original_count:,}")
@@ -62,12 +61,12 @@ def run_data_cleanup_only():
         elif duplicate_pct > 0:
             logger.info(f"✅ Normal duplicate rate: {duplicate_pct:.1f}%")
         else:
-            logger.info("✅ No duplicates found - data is clean!")
+            logger.info("✅ No duplicates found-data is clean!")
 
         # Check for data quality issues
         enchanting_count = data["artist_name"].str.contains("Enchanting", case=False, na=False).sum()
         if enchanting_count > 0:
-            logger.error(f"❌ Found {enchanting_count} Enchanting records - should be 0!")
+            logger.error(f"❌ Found {enchanting_count} Enchanting records-should be 0!")
             return False
 
         none_count = (data["artist_name"] == "None").sum()

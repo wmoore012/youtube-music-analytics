@@ -194,8 +194,8 @@ python -m pytest tests/test_video_filter.py -v
      duration_too_short: 1
 
 🚫 Filtered Videos Details:
-   Video jNQXAC9IVRw: duration_too_short - Duration 15s is less than minimum 30s
-   Video ScMzIvxBSi4: blocked_title_pattern - Title matches blocked pattern: spam.*content
+   Video jNQXAC9IVRw: duration_too_short-Duration 15s is less than minimum 30s
+   Video ScMzIvxBSi4: blocked_title_pattern-Title matches blocked pattern: spam.*content
 ```
 
 ## Benefits

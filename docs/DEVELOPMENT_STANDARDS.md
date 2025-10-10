@@ -1,4 +1,4 @@
-# Development Standards - YouTube Analytics Platform
+# Development Standards-YouTube Analytics Platform
 
 ## 🎯 Overview
 
@@ -111,7 +111,7 @@ from src.youtubeviz.common_helpers import (
     retry_operation
 )
 
-# ✅ CORRECT - Using helper functions
+# ✅ CORRECT-Using helper functions
 def get_video_stats(conn, video_id):
     query = "SELECT view_count, like_count FROM youtube_videos WHERE video_id = :video_id"
     result = execute_query_safely(conn, query, {"video_id": video_id})
@@ -132,7 +132,7 @@ def process_comment(comment_data):
         "formatted_likes": format_number(comment_data.get("like_count", 0))
     }
 
-# ❌ INCORRECT - Duplicating logic
+# ❌ INCORRECT-Duplicating logic
 def get_video_stats_bad(conn, video_id):
     try:
         result = conn.execute(text("SELECT view_count, like_count FROM youtube_videos WHERE video_id = :video_id"), {"video_id": video_id})
@@ -231,7 +231,7 @@ progress = create_progress_bar(75, 100)  # "[███████████�
 Always handle errors explicitly and provide clear messages:
 
 ```python
-# ✅ CORRECT - Fail-loud with specific exceptions
+# ✅ CORRECT-Fail-loud with specific exceptions
 def process_video_data(video_id):
     try:
         video_data = fetch_video_from_api(video_id)
@@ -250,14 +250,14 @@ def process_video_data(video_id):
 
     return processed_data
 
-# ❌ INCORRECT - Silent failures
+# ❌ INCORRECT-Silent failures
 def process_video_data_bad(video_id):
     try:
         video_data = fetch_video_from_api(video_id)
         processed_data = transform_video_data(video_data)
         return processed_data
     except:
-        pass  # Silent failure - never do this!
+        pass  # Silent failure-never do this!
         return None
 ```
 
@@ -300,7 +300,7 @@ except PermissionError:
 Use descriptive values instead of booleans when the meaning could be unclear:
 
 ```python
-# ✅ CORRECT - Descriptive values
+# ✅ CORRECT-Descriptive values
 video_status = "published"  # vs "draft", "private", "unlisted"
 sentiment_category = "positive"  # vs "negative", "neutral"
 processing_state = "completed"  # vs "pending", "failed", "in_progress"
@@ -312,7 +312,7 @@ CREATE TABLE youtube_videos (
     processing_state ENUM('pending', 'in_progress', 'completed', 'failed')
 );
 
-# ❌ INCORRECT - Unclear booleans
+# ❌ INCORRECT-Unclear booleans
 is_published = True  # What about draft? private? unlisted?
 is_positive = False  # Could be negative OR neutral
 is_done = True  # Done with what? Success or failure?
@@ -330,7 +330,7 @@ CREATE TABLE youtube_videos (
 Always use real data from the database or API, not fake/mock data:
 
 ```python
-# ✅ CORRECT - Real data access
+# ✅ CORRECT-Real data access
 def get_channel_analytics(channel_id):
     with get_connection() as conn:
         query = """
@@ -346,7 +346,7 @@ def get_channel_analytics(channel_id):
         cursor.execute(query, (channel_id,))
         return cursor.fetchone()
 
-# ❌ INCORRECT - Fake data
+# ❌ INCORRECT-Fake data
 def get_channel_analytics_fake(channel_id):
     return {
         "video_count": random.randint(10, 100),
@@ -367,7 +367,7 @@ def get_channel_analytics_fake(channel_id):
 4. **Comprehensive Comments**: Explain the why, not just the what
 
 ```python
-# ✅ CORRECT - Well-designed function
+# ✅ CORRECT-Well-designed function
 def calculate_engagement_rate(video_data: Dict[str, Any]) -> float:
     """
     Calculate engagement rate for a YouTube video.
@@ -398,7 +398,7 @@ def calculate_engagement_rate(video_data: Dict[str, Any]) -> float:
     engagement = (likes + comments) / views * 100
     return round(engagement, 2)
 
-# ❌ INCORRECT - Poor function design
+# ❌ INCORRECT-Poor function design
 def calc(d):  # Unclear name, no documentation
     # No validation, no error handling
     return (d["like_count"] + d["comment_count"]) / d["view_count"] * 100
@@ -409,7 +409,7 @@ def calc(d):  # Unclear name, no documentation
 Use descriptive names that explain the purpose:
 
 ```python
-# ✅ CORRECT - Meaningful names
+# ✅ CORRECT-Meaningful names
 youtube_api_key = os.getenv("YOUTUBE_API_KEY")
 max_comments_per_video = 100
 sentiment_analysis_results = []
@@ -423,7 +423,7 @@ for video_metadata in channel_video_list:
 
     # Process each video...
 
-# ❌ INCORRECT - Unclear names
+# ❌ INCORRECT-Unclear names
 key = os.getenv("YOUTUBE_API_KEY")  # What kind of key?
 max_c = 100  # Max what?
 results = []  # Results of what?

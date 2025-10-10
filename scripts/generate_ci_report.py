@@ -5,12 +5,11 @@ Generate comprehensive CI validation report.
 This script creates a summary report of all CI checks and system health.
 """
 
-from datetime import datetime
 import json
-import os
-from pathlib import Path
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List
 
 
@@ -35,8 +34,8 @@ class CIReportGenerator:
             # Get git info if available
             git_info = {}
             try:
-                git_branch = subprocess.check_output(["git", "branch", "--show - current"], text=True).strip()
-                git_commit = subprocess.check_output(["git", "rev - parse", "HEAD"], text=True).strip()[:8]
+                git_branch = subprocess.check_output(["git", "branch", "--show-current"], text=True).strip()
+                git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()[:8]
                 git_info = {"branch": git_branch, "commit": git_commit}
             except Exception:
                 git_info = {"branch": "unknown", "commit": "unknown"}
@@ -53,10 +52,10 @@ class CIReportGenerator:
     def check_code_quality(self) -> Dict[str, Any]:
         """Check code quality metrics."""
         quality_checks = {
-            "black_formatting": self.run_command(["black", "--check", "--line - length=120", "."]),
-            "isort_imports": self.run_command(["isort", "--check - only", "--profile", "black", "."]),
+            "black_formatting": self.run_command(["black", "--check", "--line-length=120", "."]),
+            "isort_imports": self.run_command(["isort", "--check-only", "--profile", "black", "."]),
             "flake8_linting": self.run_command(
-                ["flake8", "--max - line - length=120", "--exclude=.git,__pycache__,notebooks,venv,.venv"]
+                ["flake8", "--max-line-length=120", "--exclude=.git,__pycache__,notebooks,venv,.venv"]
             ),
             "loc_limits": self.run_command(["python", "scripts / validate_loc_limits.py"]),
         }
@@ -175,15 +174,17 @@ class CIReportGenerator:
         return self.report
 
     def print_summary(self):
-        """Print a human - readable summary of the report."""
+        """Print a human-readable summary of the report."""
         print("\\n" + "=" * 60)
         print("📋 CI VALIDATION REPORT")
         print("=" * 60)
 
         # System info
         sys_info = self.report["system_info"]
-        print(f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {
-              sys_info.get('platform', 'unknown')}")
+        print(
+            f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {
+              sys_info.get('platform', 'unknown')}"
+        )
         if "git_info" in sys_info:
             git = sys_info["git_info"]
             print(f"📝 Git: {git.get('branch', 'unknown')} @ {git.get('commit', 'unknown')}")

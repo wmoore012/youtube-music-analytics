@@ -1,12 +1,12 @@
 """
-Enhanced Music Industry Sentiment Analysis - Comprehensive Gen Z Edition
+Enhanced Music Industry Sentiment Analysis-Comprehensive Gen Z Edition
 
-This module provides the most comprehensive music industry - specific sentiment analysis
+This module provides the most comprehensive music industry-specific sentiment analysis
 that understands modern slang, AAVE, Gen Z language, and cultural context in music fan comments.
 """
 
 import re
-from typing import Dict, List, Tuple
+from typing import Dict
 
 import pandas as pd
 
@@ -21,7 +21,7 @@ class ComprehensiveMusicSentimentAnalyzer:
     - AAVE and cultural expressions
     - Emoji patterns and multipliers
     - Beat appreciation detection
-    - Context - aware sentiment scoring
+    - Context-aware sentiment scoring
     """
 
     def __init__(self):
@@ -116,7 +116,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             "friday can't come sooner": 0.8,
             "please come to": 0.7,
             "come to my city": 0.7,
-            # Gen Z slang - praise and hype
+            # Gen Z slang-praise and hype
             "you slid": 0.8,
             "slid": 0.7,
             "this fye": 0.8,
@@ -256,7 +256,7 @@ class ComprehensiveMusicSentimentAnalyzer:
             "mix sounds chaotic": -0.5,
             "who asked for this remix": -0.6,
             "album rollout ain't rollouting": -0.4,
-            "this ain't real hip - hop": -0.5,
+            "this ain't real hip-hop": -0.5,
             "sounds the same every track": -0.5,
         }
 
@@ -274,20 +274,20 @@ class ComprehensiveMusicSentimentAnalyzer:
             "🙌": 0.7,
             "👏": 0.6,
             "😖": 0.5,  # Can be positive in music context (emotional response)
-            "😚": 0.7,  # Kiss emoji - positive
-            "💕": 0.8,  # Love / hearts - positive
-            "🤞": 0.6,  # Crossed fingers - hopeful / positive
-            "🎤": 0.6,  # Microphone - music positive
-            "🎧": 0.6,  # Headphones - music positive
-            "🔊": 0.6,  # Speaker - music positive
-            "💃": 0.7,  # Dancing - positive
-            "🕺": 0.7,  # Dancing - positive
-            "🎉": 0.8,  # Party - positive
-            "✨": 0.7,  # Sparkles - positive
-            "💫": 0.7,  # Dizzy - positive (amazed)
-            "🤩": 0.8,  # Star eyes - very positive
+            "😚": 0.7,  # Kiss emoji-positive
+            "💕": 0.8,  # Love / hearts-positive
+            "🤞": 0.6,  # Crossed fingers-hopeful / positive
+            "🎤": 0.6,  # Microphone-music positive
+            "🎧": 0.6,  # Headphones-music positive
+            "🔊": 0.6,  # Speaker-music positive
+            "💃": 0.7,  # Dancing-positive
+            "🕺": 0.7,  # Dancing-positive
+            "🎉": 0.8,  # Party-positive
+            "✨": 0.7,  # Sparkles-positive
+            "💫": 0.7,  # Dizzy-positive (amazed)
+            "🤩": 0.8,  # Star eyes-very positive
             "😭": 0.6,  # Can be positive emotional response in music
-            "🥺": 0.6,  # Pleading - can be positive (wanting more)
+            "🥺": 0.6,  # Pleading-can be positive (wanting more)
         }
 
         # Patterns for detecting beat appreciation
@@ -348,11 +348,11 @@ class ComprehensiveMusicSentimentAnalyzer:
         # Calculate total indicators for confidence
         total_indicators = phrase_matches + min(emoji_count, 3)
 
-        # Check if this is an emoji - only comment
+        # Check if this is an emoji-only comment
         is_emoji_only = len(original_comment.strip()) <= 10 and emoji_count > 0 and phrase_matches == 0
 
         if is_emoji_only:
-            # Special scoring for emoji - only comments
+            # Special scoring for emoji-only comments
             if "🔥" in original_comment:
                 sentiment_score = 0.8
             elif "🌊" in original_comment:
@@ -364,15 +364,15 @@ class ComprehensiveMusicSentimentAnalyzer:
             elif "😍" in original_comment:
                 sentiment_score = 0.8
             else:
-                # Use regular emoji scoring for other emoji - only comments
+                # Use regular emoji scoring for other emoji-only comments
                 sentiment_score = emoji_score / emoji_count if emoji_count > 0 else 0
         else:
             # Combine phrase and emoji scores for mixed content
             if total_indicators > 0:
                 if phrase_matches > 0 and emoji_count > 0:
-                    # Both phrases and emojis - weighted average
+                    # Both phrases and emojis-weighted average
                     phrase_weight = phrase_matches / (phrase_matches + emoji_count)
-                    emoji_weight = 1 - phrase_weight
+                    emoji_weight = 1-phrase_weight
 
                     avg_phrase_score = sentiment_score / phrase_matches if phrase_matches > 0 else 0
                     avg_emoji_score = emoji_score / emoji_count if emoji_count > 0 else 0
@@ -384,7 +384,7 @@ class ComprehensiveMusicSentimentAnalyzer:
                     sentiment_score = sentiment_score / phrase_matches
 
                 elif emoji_count > 0:
-                    # Only emojis (but not emoji - only due to length)
+                    # Only emojis (but not emoji-only due to length)
                     sentiment_score = emoji_score / emoji_count
 
         # Normalize to [-1, 1] range

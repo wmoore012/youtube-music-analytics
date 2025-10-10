@@ -9,7 +9,6 @@ and removes ALL traces of unauthorized channels from ALL tables.
 """
 
 import os
-import sys
 from typing import List, Set, Tuple
 
 from dotenv import load_dotenv
@@ -149,7 +148,7 @@ def main():
 
     # Find unauthorized artists
     db_artist_names = {artist for artist, _ in db_artists}
-    unauthorized = db_artist_names - configured_artists
+    unauthorized = db_artist_names-configured_artists
 
     if not unauthorized:
         print(f"\n✅ All artists are authorized! No cleanup needed.")
@@ -159,8 +158,8 @@ def main():
     for artist in sorted(unauthorized):
         print(f"  ❌ {artist}")
 
-    # Auto - cleanup without confirmation (for automated use)
-    print(f"\n🗑️ AUTO - CLEANUP: Removing {len(unauthorized)} unauthorized artists...")
+    # Auto-cleanup without confirmation (for automated use)
+    print(f"\n🗑️ AUTO-CLEANUP: Removing {len(unauthorized)} unauthorized artists...")
     print(f"Artists to be deleted: {sorted(unauthorized)}")
 
     # Perform cleanup
@@ -187,7 +186,7 @@ def main():
 
     # Check if we're missing any configured artists
     final_artist_names = {artist for artist, _ in final_artists}
-    missing = configured_artists - final_artist_names
+    missing = configured_artists-final_artist_names
     if missing:
         print(f"\n⚠️ Missing configured artists (need ETL): {sorted(missing)}")
     else:

@@ -9,15 +9,12 @@ production model is superior for music industry analytics.
 
 import os
 import sys
-from typing import Dict, List, Tuple
 
-import pandas as pd
 
 # Add paths for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from datasets.music_industry_sentiment_dataset import get_music_industry_dataset
-
 from src.youtubeviz.production_music_sentiment import ProductionMusicSentimentAnalyzer
 
 

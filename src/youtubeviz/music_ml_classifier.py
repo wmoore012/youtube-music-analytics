@@ -3,21 +3,19 @@
 Music Industry ML Sentiment Classifier
 
 Advanced machine learning classifier trained on music industry comments
-with multi - dimensional classification including sentiment, production focus,
+with multi-dimensional classification including sentiment, production focus,
 and engagement type.
 """
 
 import re
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import cross_val_score
 from sklearn.svm import SVC
 
 # Transformer support
@@ -34,7 +32,7 @@ sys.path.insert(0, "src")
 
 
 class MusicIndustryFeatureExtractor:
-    """Extract music industry - specific features from comments."""
+    """Extract music industry-specific features from comments."""
 
     def __init__(self):
         # Production / technical terms
@@ -368,7 +366,7 @@ class MusicMLClassifier:
 
         feature_df = pd.DataFrame(feature_list)
 
-        # Get TF - IDF features
+        # Get TF-IDF features
         tfidf_features = self.tfidf_vectorizer.fit_transform(df["text"]).toarray()
         tfidf_df = pd.DataFrame(tfidf_features, columns=[f"tfidf_{i}" for i in range(tfidf_features.shape[1])])
 
@@ -402,12 +400,12 @@ class MusicMLClassifier:
         if include_isrc_feature:
             X["has_isrc"] = [True if i % 3 == 0 else False for i in range(len(X))]
 
-        # Get texts for TF - IDF (reconstruct from the comprehensive dataset)
+        # Get texts for TF-IDF (reconstruct from the comprehensive dataset)
         all_texts = []
         # Get the training data again to extract texts
         temp_data, _ = self.prepare_training_data()
 
-        # We need to get the actual text data - let's extract it from the comprehensive dataset
+        # We need to get the actual text data-let's extract it from the comprehensive dataset
         try:
             from datasets.music_industry_sentiment_dataset_v2 import MusicIndustrySentimentDatasetV2
 
@@ -431,7 +429,7 @@ class MusicMLClassifier:
                 "not bad",
             ]
 
-        # Get TF - IDF features
+        # Get TF-IDF features
         tfidf_features = self.tfidf_vectorizer.fit_transform(all_texts).toarray()
         tfidf_df = pd.DataFrame(tfidf_features, columns=[f"tfidf_{i}" for i in range(tfidf_features.shape[1])])
 
@@ -469,11 +467,11 @@ class MusicMLClassifier:
 
         self.sentiment_classifier.fit(X, combined_labels["sentiment"])
 
-        # Cross - validation with stratification
+        # Cross-validation with stratification
         cv_scores = cross_val_score(
             self.sentiment_classifier, X, combined_labels["sentiment"], cv=5, scoring="f1_macro"
         )
-        print(f"   Cross - validation F1 - score: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
+        print(f"   Cross-validation F1-score: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
 
         # Train other classifiers with better algorithms
         print("\n🎛️  Training production focus classifier...")
@@ -497,7 +495,7 @@ class MusicMLClassifier:
         # Extract features
         features = self.feature_extractor.extract_features(text)
 
-        # Get TF - IDF features
+        # Get TF-IDF features
         tfidf_features = self.tfidf_vectorizer.transform([text]).toarray()[0]
 
         # Create feature DataFrame in same format as training
@@ -506,7 +504,7 @@ class MusicMLClassifier:
         # Add ISRC feature
         feature_df["has_isrc"] = int(has_isrc)
 
-        # Add TF - IDF features
+        # Add TF-IDF features
         tfidf_df = pd.DataFrame([tfidf_features], columns=[f"tfidf_{i}" for i in range(len(tfidf_features))])
 
         # Combine features
@@ -610,7 +608,7 @@ def demo_ml_classifier():
             print(f"   👑 Detected: Artist support")
 
     print(f"\n✅ ML Classifier successfully identifies sentiment patterns!")
-    print(f"🎯 Ready to replace rule - based systems with ML predictions")
+    print(f"🎯 Ready to replace rule-based systems with ML predictions")
 
 
 if __name__ == "__main__":
@@ -619,16 +617,16 @@ if __name__ == "__main__":
 
 class MusicSentimentTransformer:
     """
-    Transformer - based sentiment classifier for music industry comments.
+    Transformer-based sentiment classifier for music industry comments.
 
-    Supports multiple pre - trained models:
+    Supports multiple pre-trained models:
     - DistilBERT (fast inference)
     - RoBERTa (better informal text)
-    - cardiffnlp / twitter - roberta - base - sentiment - latest (social media)
-    - j - hartmann / emotion - english - distilroberta - base (emotion understanding)
+    - cardiffnlp / twitter-roberta-base-sentiment-latest (social media)
+    - j-hartmann / emotion-english-distilroberta-base (emotion understanding)
     """
 
-    def __init__(self, model_name: str = "distilbert - base - uncased"):
+    def __init__(self, model_name: str = "distilbert-base-uncased"):
         self.model_name = model_name
         self.tokenizer = None
         self.model = None
@@ -648,14 +646,15 @@ class MusicSentimentTransformer:
             # Use simulated tokenizer for demonstration
             self.tokenizer = "simulated"
             print(f"🎭 Using simulated transformer logic for {model_name}")
-  # noqa: C901  # noqa: E114
+
+    # noqa: C901  # noqa: E114
 
     def predict(self, text: str, has_isrc: bool = False) -> Dict[str, any]:  # noqa: C901
         """
         Predict sentiment using transformer model with enhanced music domain understanding.
 
         This implementation focuses on correctly identifying positive music comments
-        that are often mislabeled as neutral by engagement - based systems.
+        that are often mislabeled as neutral by engagement-based systems.
         """
 
         if not self.tokenizer:
@@ -746,9 +745,9 @@ class MusicSentimentTransformer:
         negative_score = sum(1 for term in strong_negative_terms if term in text_lower)
         excitement_score = sum(1 for indicator in excitement_indicators if indicator in text_lower)
 
-        # Enhanced model - specific logic
+        # Enhanced model-specific logic
         if "twitter" in self.model_name.lower():
-            # Twitter RoBERTa - excellent at social media slang
+            # Twitter RoBERTa-excellent at social media slang
             if positive_score > 0 or excitement_score > 0:
                 sentiment = "positive"
                 confidence = min(0.95, 0.75 + (positive_score + excitement_score) * 0.1)
@@ -760,7 +759,7 @@ class MusicSentimentTransformer:
                 confidence = 0.60
 
         elif "emotion" in self.model_name.lower():
-            # Emotion model - great at detecting emotional content
+            # Emotion model-great at detecting emotional content
             if positive_score > 0 or excitement_score > 1:
                 sentiment = "positive"
                 confidence = min(0.92, 0.80 + (positive_score + excitement_score) * 0.08)
@@ -772,7 +771,7 @@ class MusicSentimentTransformer:
                 confidence = 0.65
 
         elif "roberta" in self.model_name.lower():
-            # RoBERTa - better at context and informal text
+            # RoBERTa-better at context and informal text
             if positive_score > 0 or excitement_score > 0:
                 sentiment = "positive"
                 confidence = min(0.90, 0.70 + (positive_score + excitement_score) * 0.12)
@@ -784,7 +783,7 @@ class MusicSentimentTransformer:
                 confidence = 0.55
 
         else:  # DistilBERT or other
-            # DistilBERT - fast but needs more explicit indicators
+            # DistilBERT-fast but needs more explicit indicators
             if positive_score >= 1 or excitement_score >= 2:
                 sentiment = "positive"
                 confidence = min(0.85, 0.65 + (positive_score + excitement_score) * 0.10)
@@ -862,10 +861,10 @@ def create_transformer_models() -> Dict[str, MusicSentimentTransformer]:
 
     # Model configurations for music domain
     transformer_configs = [
-        ("distilbert - base - uncased", "DistilBERT - Fast inference"),
-        ("roberta - base", "RoBERTa - Better informal text"),
-        ("cardiffnlp / twitter - roberta - base - sentiment - latest", "Twitter RoBERTa - Social media"),
-        ("j - hartmann / emotion - english - distilroberta - base", "Emotion DistilRoBERTa - Emotion understanding"),
+        ("distilbert-base-uncased", "DistilBERT-Fast inference"),
+        ("roberta-base", "RoBERTa-Better informal text"),
+        ("cardiffnlp / twitter-roberta-base-sentiment-latest", "Twitter RoBERTa-Social media"),
+        ("j-hartmann / emotion-english-distilroberta-base", "Emotion DistilRoBERTa-Emotion understanding"),
     ]
 
     for model_name, description in transformer_configs:

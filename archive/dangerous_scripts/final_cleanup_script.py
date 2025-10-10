@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """
+⚠️  WARNING: This script has been archived due to dangerous patterns:
+- Uses regex to modify Python code (can break syntax)
+- Mass # noqa insertion (hides real issues)
+- Whole-repository rewrites (creates noisy diffs)
+- Can break context managers and other constructs
+
+Use safe_professional_linting.py instead.
+"""
+
+#!/usr/bin/env python3
+"""
 Final comprehensive cleanup script to fix all remaining linting issues
 """
 import os
 import re
 import subprocess
-from pathlib import Path
 
 
 def fix_whitespace_issues():
@@ -123,7 +133,7 @@ def fix_unused_variables():
                         lines = f.readlines()
 
                     if line_num <= len(lines):
-                        original_line = lines[line_num - 1]
+                        original_line = lines[line_num-1]
                         # Replace variable assignment
                         fixed_line = re.sub(
                             rf'\b{re.escape(var_name)}\b\s*=',
@@ -131,7 +141,7 @@ def fix_unused_variables():
                             original_line
                         )
                         if fixed_line != original_line:
-                            lines[line_num - 1] = fixed_line
+                            lines[line_num-1] = fixed_line
 
                             with open(file_path, 'w') as f:
                                 f.writelines(lines)
@@ -182,9 +192,9 @@ def main():
     result = subprocess.run(['python', '-m', 'pytest', '-q'],
                             capture_output=True, env={**os.environ, 'PYTHONPATH': '.'})
     if result.returncode != 0:
-        print("❌ Tests are failing - aborting cleanup")
+        print("❌ Tests are failing-aborting cleanup")
         return
-    print("✅ Tests pass - proceeding with cleanup")
+    print("✅ Tests pass-proceeding with cleanup")
 
     # Apply all fixes
     fix_whitespace_issues()
@@ -210,7 +220,7 @@ def main():
     if result.returncode == 0:
         print("✅ All tests still pass!")
     else:
-        print("❌ Some tests are now failing - please review changes")
+        print("❌ Some tests are now failing-please review changes")
 
 
 if __name__ == "__main__":

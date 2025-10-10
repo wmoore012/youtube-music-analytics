@@ -7,15 +7,15 @@ and provides options to remove their data.
 """
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 
 from web.etl_helpers import get_engine
 
@@ -122,7 +122,7 @@ def cleanup_artist_data(artist_name, engine, dry_run=True):
         cleanup_queries.append((table, query))
 
     if dry_run:
-        print(f"\n🔍 DRY RUN - Would execute these queries for {artist_name}:")
+        print(f"\n🔍 DRY RUN-Would execute these queries for {artist_name}:")
         for table, query in cleanup_queries:
             print(f"   {table}: {query}")
         return
@@ -168,10 +168,10 @@ def main():
     # Identify artists to remove
     db_artists = set(db_artists_df["channel_title"].tolist())
     current_artists_set = set(current_artists)
-    artists_to_remove = db_artists - current_artists_set
+    artists_to_remove = db_artists-current_artists_set
 
     if not artists_to_remove:
-        print(f"\n🎉 DATABASE IS CLEAN - No old artists found!")
+        print(f"\n🎉 DATABASE IS CLEAN-No old artists found!")
         return
 
     print(f"\n🗑️  ARTISTS TO REMOVE:")

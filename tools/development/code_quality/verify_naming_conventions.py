@@ -11,8 +11,8 @@ This script verifies that the codebase follows proper naming conventions:
 This demonstrates completion of Task 2.1: Fix Naming Conventions
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -41,7 +41,7 @@ def main():
         print("  ✅ UPPER_CASE for constants")
         print()
         print(f"📊 Scanned {report.files_scanned} Python files")
-        print("🎉 Task 2.1: Fix Naming Conventions - COMPLETED")
+        print("🎉 Task 2.1: Fix Naming Conventions-COMPLETED")
         return 0
     else:
         print(f"❌ Found {report.total_violations} naming violations")

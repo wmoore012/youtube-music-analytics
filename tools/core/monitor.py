@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-📊 YouTube Analytics Monitoring Tool - LEGACY WRAPPER
+📊 YouTube Analytics Monitoring Tool-LEGACY WRAPPER
 
 This file has been replaced by unified_monitor.py but is kept for backward compatibility.
 All functionality has been moved to the new unified monitoring tool.
@@ -9,14 +9,14 @@ DEPRECATED: Use unified_monitor.py instead.
 
 Usage:
     python tools / core / unified_monitor.py                 # Quick health check
-    python tools / core / unified_monitor.py --data - quality  # Data quality report
-    python tools / core / unified_monitor.py --etl - status    # ETL pipeline status
-    python tools / core / unified_monitor.py --full - check    # Complete system check
+    python tools / core / unified_monitor.py --data-quality  # Data quality report
+    python tools / core / unified_monitor.py --etl-status    # ETL pipeline status
+    python tools / core / unified_monitor.py --full-check    # Complete system check
 """
 
-from pathlib import Path
 import sys
 import warnings
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -46,11 +46,11 @@ def main():
             # Consistency check is part of quick health check now
             pass  # Will use default quick check
         elif arg == "--quality":
-            new_args.append("--data - quality")
-        elif arg == "--etl - status":
-            new_args.append("--etl - status")
-        elif arg == "--full - check":
-            new_args.append("--full - check")
+            new_args.append("--data-quality")
+        elif arg == "--etl-status":
+            new_args.append("--etl-status")
+        elif arg == "--full-check":
+            new_args.append("--full-check")
         else:
             new_args.append(arg)  # Pass through other args
 

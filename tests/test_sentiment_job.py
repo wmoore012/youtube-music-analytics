@@ -6,10 +6,10 @@ Comprehensive tests for the sentiment analysis job functionality.
 Tests the core sentiment processing pipeline and job execution.
 """
 
-from datetime import datetime
-from pathlib import Path
 import sys
 import tempfile
+from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -239,7 +239,7 @@ class TestSentimentJobIntegration:
                 job.run()
 
             end_time = time.time()
-            processing_time = end_time - start_time
+            processing_time = end_time-start_time
 
             # Should complete within reasonable time (10 seconds for test)
             assert processing_time < 10.0

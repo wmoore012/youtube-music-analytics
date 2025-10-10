@@ -1,21 +1,20 @@
 #!/usr / bin / env python3
 """
-Error Handling Fixer - YouTube Analytics Platform
+Error Handling Fixer-YouTube Analytics Platform
 
 This script fixes common error handling issues in the codebase by:
 1. Replacing bare except clauses with specific exception handling
 2. Adding proper logging to silent error handlers
-3. Ensuring fail - loud behavior throughout the system
+3. Ensuring fail-loud behavior throughout the system
 
 Usage:
     python tools / code_quality / fix_error_handling.py --fix
     python tools / code_quality / fix_error_handling.py --verify
 """
 
-from pathlib import Path
 import re
 import sys
-from typing import List, Tuple
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -35,7 +34,7 @@ def fix_bare_except_clauses():
             continue
 
         try:
-            with open(full_path, "r", encoding="utf - 8") as f:
+            with open(full_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             original_content = content
@@ -55,7 +54,7 @@ def fix_bare_except_clauses():
             )
 
             if content != original_content:
-                with open(full_path, "w", encoding="utf - 8") as f:
+                with open(full_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 fixes_applied += 1
                 print(f"  ✅ Fixed {file_path}")
@@ -78,7 +77,7 @@ def add_logging_imports():
             continue
 
         try:
-            with open(full_path, "r", encoding="utf - 8") as f:
+            with open(full_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Check if logging is already imported
@@ -95,7 +94,7 @@ def add_logging_imports():
                     lines.insert(import_end, "import logging")
                     content = "\n".join(lines)
 
-                    with open(full_path, "w", encoding="utf - 8") as f:
+                    with open(full_path, "w", encoding="utf-8") as f:
                         f.write(content)
                     print(f"  ✅ Added logging import to {file_path}")
 
@@ -138,7 +137,7 @@ except ConnectionError as e:
 try:
     result = risky_operation()
 except Exception:
-    pass  # Silent failure - never do this!
+    pass  # Silent failure-never do this!
 ```
 
 ### ✅ Error Handling with Context
@@ -186,7 +185,7 @@ except PermissionError:
 ```
 """
 
-    with open(guidelines_path, "w", encoding="utf - 8") as f:
+    with open(guidelines_path, "w", encoding="utf-8") as f:
         f.write(guidelines_content)
 
     print(f"📚 Created error handling guidelines: {guidelines_path}")
@@ -209,7 +208,7 @@ def verify_error_handling():
             files_checked += 1
 
             try:
-                with open(py_file, "r", encoding="utf - 8") as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Count good error handling patterns
@@ -261,7 +260,7 @@ def main():
             print("\n🎉 Error handling verification successful!")
             print("✅ Proper exception handling patterns found")
             print("✅ Logging integration present")
-            print("✅ Fail - loud behavior implemented")
+            print("✅ Fail-loud behavior implemented")
         else:
             print("\n⚠️ Error handling needs more work")
 
@@ -271,9 +270,9 @@ def main():
     print("  ✅ Bare except clauses identified and fixed")
     print("  ✅ Logging added to error handlers")
     print("  ✅ Error handling guidelines created")
-    print("  ✅ Fail - loud behavior enforced")
+    print("  ✅ Fail-loud behavior enforced")
     print()
-    print("🎉 Task 2.3: Remove Fake Data and Improve Error Handling - COMPLETED")
+    print("🎉 Task 2.3: Remove Fake Data and Improve Error Handling-COMPLETED")
     print("   (Note: Most 'fake data' flagged was actually legitimate test data or utilities)")
 
     return 0

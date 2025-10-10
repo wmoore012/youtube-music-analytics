@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-🔧 YouTube Analytics Setup Tool - LEGACY WRAPPER
+🔧 YouTube Analytics Setup Tool-LEGACY WRAPPER
 
 This file has been replaced by unified_setup.py but is kept for backward compatibility.
 All functionality has been moved to the new unified setup tool.
@@ -9,14 +9,14 @@ DEPRECATED: Use unified_setup.py instead.
 
 Usage:
     python tools / core / unified_setup.py                  # Interactive setup
-    python tools / core / unified_setup.py --create - tables  # Create database tables
-    python tools / core / unified_setup.py --full - setup     # Complete automated setup
+    python tools / core / unified_setup.py --create-tables  # Create database tables
+    python tools / core / unified_setup.py --full-setup     # Complete automated setup
     python tools / core / unified_setup.py --check          # Verify setup
 """
 
-from pathlib import Path
 import sys
 import warnings
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent

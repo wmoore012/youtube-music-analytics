@@ -8,7 +8,7 @@ with proper categorization and sentiment labels for testing sentiment models.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Set, Tuple
+from typing import List, Tuple
 
 
 class SentimentLabel(Enum):
@@ -23,7 +23,7 @@ class SlangCategory(Enum):
     """Categories of music slang."""
 
     PRAISE_GENERAL = "praise_general"  # General positive expressions
-    PRAISE_PERFORMANCE = "praise_performance"  # Performance - specific praise
+    PRAISE_PERFORMANCE = "praise_performance"  # Performance-specific praise
     PRAISE_PRODUCTION = "praise_production"  # Beat / production praise
     HYPE_EXCITEMENT = "hype_excitement"  # Excitement and hype
     CULTURAL_IDENTITY = "cultural_identity"  # Cultural expressions
@@ -42,7 +42,7 @@ class SlangEntry:
     phrase: str
     sentiment: SentimentLabel
     category: SlangCategory
-    confidence: float  # How confident we are in this classification (0 - 1)
+    confidence: float  # How confident we are in this classification (0-1)
     context_notes: str = ""
     variations: List[str] = None
 
@@ -63,7 +63,7 @@ class MusicSlangDictionary:
 
         entries = []
 
-        # POSITIVE - PRAISE GENERAL
+        # POSITIVE-PRAISE GENERAL
         entries.extend(
             [
                 SlangEntry(
@@ -120,7 +120,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - PRAISE PERFORMANCE
+        # POSITIVE-PRAISE PERFORMANCE
         entries.extend(
             [
                 SlangEntry(
@@ -173,7 +173,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - PRAISE PRODUCTION
+        # POSITIVE-PRAISE PRODUCTION
         entries.extend(
             [
                 SlangEntry(
@@ -189,7 +189,7 @@ class MusicSlangDictionary:
                     SentimentLabel.POSITIVE,
                     SlangCategory.PRAISE_PRODUCTION,
                     0.90,
-                    "Asking about producer - shows appreciation",
+                    "Asking about producer-shows appreciation",
                     ["who produced this", "who made this beat bro"],
                 ),
                 SlangEntry(
@@ -211,7 +211,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - HYPE EXCITEMENT
+        # POSITIVE-HYPE EXCITEMENT
         entries.extend(
             [
                 SlangEntry(
@@ -256,7 +256,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - CULTURAL IDENTITY
+        # POSITIVE-CULTURAL IDENTITY
         entries.extend(
             [
                 SlangEntry(
@@ -284,7 +284,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - ENGAGEMENT BEHAVIORAL
+        # POSITIVE-ENGAGEMENT BEHAVIORAL
         entries.extend(
             [
                 SlangEntry(
@@ -330,7 +330,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - ANTICIPATION DEMAND
+        # POSITIVE-ANTICIPATION DEMAND
         entries.extend(
             [
                 SlangEntry(
@@ -367,7 +367,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - GEN Z SLANG
+        # POSITIVE-GEN Z SLANG
         entries.extend(
             [
                 SlangEntry(
@@ -383,7 +383,7 @@ class MusicSlangDictionary:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.85,
-                    "Period with emphasis - end of discussion",
+                    "Period with emphasis-end of discussion",
                     ["period"],
                 ),
                 SlangEntry(
@@ -391,7 +391,7 @@ class MusicSlangDictionary:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.80,
-                    "No lie / for real - agreement",
+                    "No lie / for real-agreement",
                 ),
                 SlangEntry(
                     "hits different",
@@ -425,7 +425,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # POSITIVE - RATINGS
+        # POSITIVE-RATINGS
         entries.extend(
             [
                 SlangEntry(
@@ -441,7 +441,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # NEGATIVE - CRITICISM
+        # NEGATIVE-CRITICISM
         entries.extend(
             [
                 SlangEntry(
@@ -515,7 +515,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # NEGATIVE - CONSTRUCTIVE CRITICISM
+        # NEGATIVE-CONSTRUCTIVE CRITICISM
         entries.extend(
             [
                 SlangEntry(
@@ -542,7 +542,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # NEUTRAL - REQUESTS
+        # NEUTRAL-REQUESTS
         entries.extend(
             [
                 SlangEntry(
@@ -565,7 +565,7 @@ class MusicSlangDictionary:
             ]
         )
 
-        # NEUTRAL - QUESTIONS
+        # NEUTRAL-QUESTIONS
         entries.extend(
             [
                 SlangEntry(
@@ -661,7 +661,7 @@ class MusicSlangDictionary:
             beat_phrases.append(entry.phrase)
             beat_phrases.extend(entry.variations)
 
-        # Add additional beat - related phrases
+        # Add additional beat-related phrases
         beat_phrases.extend(
             [
                 "the beat",

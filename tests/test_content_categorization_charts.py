@@ -24,7 +24,7 @@ class TestContentCategorizationCharts:
             artist = np.random.choice(artists)
             video_type = np.random.choice(video_types)
             has_isrc = np.random.choice([True, False], p=[0.6, 0.4])  # 60% have ISRC
-            duration_seconds = np.random.randint(60, 600)  # 1 - 10 minutes
+            duration_seconds = np.random.randint(60, 600)  # 1-10 minutes
 
             data.append(
                 {
@@ -43,7 +43,7 @@ class TestContentCategorizationCharts:
         return pd.DataFrame(data)
 
     def test_create_isrc_balance_chart(self, sample_video_data):
-        """Test ISRC vs non - ISRC balance analysis chart."""
+        """Test ISRC vs non-ISRC balance analysis chart."""
         from youtubeviz.charts import create_isrc_balance_chart
 
         chart = create_isrc_balance_chart(
@@ -54,7 +54,7 @@ class TestContentCategorizationCharts:
         assert hasattr(chart, "data")  # Plotly figure should have data attribute
 
     def test_create_video_duration_breakdown_chart(self, sample_video_data):
-        """Test short - form vs long - form video breakdown chart."""
+        """Test short-form vs long-form video breakdown chart."""
         from youtubeviz.charts import create_duration_breakdown_chart
 
         chart = create_duration_breakdown_chart(
@@ -76,7 +76,7 @@ class TestContentCategorizationCharts:
         assert hasattr(chart, "data")
 
     def test_create_artist_comparison_matrix(self, sample_video_data):
-        """Test side - by - side artist comparison chart."""
+        """Test side-by-side artist comparison chart."""
         from youtubeviz.charts import create_artist_content_comparison_chart
 
         chart = create_artist_content_comparison_chart(
@@ -101,10 +101,10 @@ class TestContentCategorizationCharts:
         """Test genre context chart for new signees."""
         # Add genre information to sample data
         genre_mapping = {
-            "BiC Fizzle": "Hip - Hop",
+            "BiC Fizzle": "Hip-Hop",
             "COBRAH": "Electronic",
             "Corook": "Pop",
-            "Flyana Boss": "Hip - Hop",
+            "Flyana Boss": "Hip-Hop",
             "Raiche": "R&B",
             "re6ce": "Alternative",
         }

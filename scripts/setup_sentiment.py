@@ -1,12 +1,11 @@
 #!/usr / bin / env python3
 """
 Quick setup for sentiment analysis if it's not working.
-This creates a basic VADER - based sentiment analyzer for benchmarking.
+This creates a basic VADER-based sentiment analyzer for benchmarking.
 """
 
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def create_basic_sentiment_analyzer():
@@ -23,7 +22,7 @@ def create_basic_sentiment_analyzer():
 
     # Basic sentiment analyzer using VADER
     sentiment_code = '''"""
-Basic music - aware sentiment analysis using VADER.
+Basic music-aware sentiment analysis using VADER.
 Created for benchmarking purposes.
 """
 
@@ -35,14 +34,14 @@ except ImportError:
     print("Warning: vaderSentiment not installed. Install with: pip install vaderSentiment")
 
 
-# Music - specific positive terms
+# Music-specific positive terms
 MUSIC_POSITIVE = {
     'fire': 2.0, 'slaps': 2.0, 'banger': 2.0, 'vibes': 1.5,
     'hits different': 2.0, 'goes hard': 2.0, 'chef kiss': 2.0,
     'no skip': 1.8, 'on repeat': 1.5, 'obsessed': 1.8
 }
 
-# Music - specific negative terms
+# Music-specific negative terms
 MUSIC_NEGATIVE = {
     'mid': -1.5, 'trash': -2.0, 'skip': -1.8, 'boring': -1.5,
     'overrated': -1.2, 'generic': -1.0
@@ -65,7 +64,7 @@ def analyze_comment(comment_text):
 
     analyzer = SentimentIntensityAnalyzer()
 
-    # Add music - specific terms to lexicon
+    # Add music-specific terms to lexicon
     for term, score in MUSIC_POSITIVE.items():
         analyzer.lexicon[term] = score
     for term, score in MUSIC_NEGATIVE.items():

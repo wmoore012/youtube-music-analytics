@@ -5,9 +5,9 @@ This module tests the ConfigurationManager, ScoringConfig, and related
 configuration management functionality for the scoring system.
 """
 
-from datetime import datetime
 import os
 import tempfile
+from datetime import datetime
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
@@ -212,7 +212,7 @@ class TestConfigurationManager:
         assert "momentum_scoring" in str(call_args[1])
 
     def test_get_environment_config(self, config_manager):
-        """Test getting environment - specific configuration."""
+        """Test getting environment-specific configuration."""
         env_vars = {
             "ENVIRONMENT": "staging",
             "DATABASE_URL": "mysql://localhost / test",
@@ -266,7 +266,7 @@ class TestConfigurationManager:
         with pytest.raises(ConfigurationError):
             config_manager.load_scoring_config("")
 
-        # Test with invalid parameters - this should return validation result, not raise exception
+        # Test with invalid parameters-this should return validation result, not raise exception
         invalid_config = ScoringConfig(
             algorithm_name="test_algorithm",
             version="1.0.0",
@@ -308,14 +308,14 @@ class TestEnvironmentConfig:
         """Test creating EnvironmentConfig instance."""
         config = EnvironmentConfig(
             environment="production",
-            database_url="mysql://prod - server / analytics",
+            database_url="mysql://prod-server / analytics",
             debug_mode=False,
             max_workers=8,
             log_level="INFO",
         )
 
         assert config.environment == "production"
-        assert config.database_url == "mysql://prod - server / analytics"
+        assert config.database_url == "mysql://prod-server / analytics"
         assert config.debug_mode is False
         assert config.max_workers == 8
         assert config.log_level == "INFO"
@@ -324,7 +324,7 @@ class TestEnvironmentConfig:
         """Test creating EnvironmentConfig from environment variables."""
         env_vars = {
             "ENVIRONMENT": "staging",
-            "DATABASE_URL": "mysql://staging - server / analytics",
+            "DATABASE_URL": "mysql://staging-server / analytics",
             "DEBUG_MODE": "true",
             "MAX_WORKERS": "6",
             "LOG_LEVEL": "DEBUG",
@@ -334,7 +334,7 @@ class TestEnvironmentConfig:
             config = EnvironmentConfig.from_env_vars()
 
         assert config.environment == "staging"
-        assert config.database_url == "mysql://staging - server / analytics"
+        assert config.database_url == "mysql://staging-server / analytics"
         assert config.debug_mode == "enabled"
         assert config.max_workers == 6
         assert config.log_level == "debug"

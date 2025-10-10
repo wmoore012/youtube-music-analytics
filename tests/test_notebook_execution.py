@@ -7,10 +7,10 @@ Tests that all notebooks execute successfully and contain the expected data.
 This is the definitive test that ensures all notebooks work in CI / CD.
 """
 
-from pathlib import Path
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -230,7 +230,10 @@ class TestNotebookExecution:
         """Test that comprehensive artist validation passes."""
 
         result = subprocess.run(
-            [sys.executable, "scripts / comprehensive_artist_validation.py"], capture_output=True, text=True, timeout=180  # noqa: E501
+            [sys.executable, "scripts / comprehensive_artist_validation.py"],
+            capture_output=True,
+            text=True,
+            timeout=180,  # noqa: E501
         )
 
         assert result.returncode == 0, f"Comprehensive validation failed: {result.stderr}"
@@ -259,7 +262,7 @@ class TestNotebookFiles:
             "notebooks / editable / 02_artist_comparison.ipynb",
             "notebooks / editable / 03_appendix_data_quality_clean.ipynb",
             "notebooks / editable / 04_sentiment_deep_dive_fun.ipynb",
-            "notebooks / 2025 - 09 - 16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks / 2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
         ]
 
         for notebook in expected_notebooks:

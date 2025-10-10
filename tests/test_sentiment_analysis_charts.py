@@ -1,5 +1,5 @@
 """
-TDD tests for sentiment analysis chart functions - Task 2
+TDD tests for sentiment analysis chart functions-Task 2
 These tests will fail initially and drive the implementation of sentiment analysis charts.
 """
 
@@ -197,7 +197,7 @@ class TestSentimentAnalysisCharts:
             assert row["views"] <= 30000
 
     def test_roster_wide_sentiment_analysis(self):
-        """Test roster - wide sentiment analysis grouping artists by fan types"""
+        """Test roster-wide sentiment analysis grouping artists by fan types"""
         from youtubeviz.sentiment import analyze_roster_sentiment
 
         result = analyze_roster_sentiment(
@@ -303,7 +303,7 @@ class TestSentimentVisualization:
     """Test suite for sentiment visualization functions"""
 
     def test_sentiment_wordcloud_generation(self):
-        """Test generation of sentiment - based word clouds"""
+        """Test generation of sentiment-based word clouds"""
         from youtubeviz.charts import create_sentiment_wordcloud
 
         comments = ["Amazing track love it", "Great vocals incredible", "Not good disappointing"]
@@ -317,12 +317,12 @@ class TestSentimentVisualization:
         """Test creation of sentiment timeline showing changes over time"""
         from youtubeviz.charts import create_sentiment_timeline
 
-        # Sample time - series sentiment data
+        # Sample time-series sentiment data
         timeline_data = pd.DataFrame(
             [
-                {"date": "2024 - 01 - 01", "artist": "Artist1", "avg_sentiment": 0.6},
-                {"date": "2024 - 01 - 02", "artist": "Artist1", "avg_sentiment": 0.7},
-                {"date": "2024 - 01 - 01", "artist": "Artist2", "avg_sentiment": 0.4},
+                {"date": "2024-01-01", "artist": "Artist1", "avg_sentiment": 0.6},
+                {"date": "2024-01-02", "artist": "Artist1", "avg_sentiment": 0.7},
+                {"date": "2024-01-01", "artist": "Artist2", "avg_sentiment": 0.4},
             ]
         )
 

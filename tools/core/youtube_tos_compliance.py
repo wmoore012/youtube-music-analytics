@@ -3,7 +3,7 @@
 YouTube Terms of Service Compliance Script
 
 This script ensures compliance with YouTube's Terms of Service by automatically
-deleting user - generated content (comments) after the specified retention period.
+deleting user-generated content (comments) after the specified retention period.
 This is required to maintain good standing with YouTube's API and protect user privacy.
 
 Key Compliance Requirements:
@@ -13,16 +13,16 @@ Key Compliance Requirements:
 - Provide clear reporting on compliance status
 
 Usage:
-    python tools / maintenance / youtube_tos_compliance.py --dry - run    # Preview deletions
+    python tools / maintenance / youtube_tos_compliance.py --dry-run    # Preview deletions
     python tools / maintenance / youtube_tos_compliance.py --execute    # Perform deletions
     python tools / maintenance / youtube_tos_compliance.py --status     # Check compliance status
 """
 
-from datetime import datetime, timedelta
 import os
-from pathlib import Path
 import sys
-from typing import Dict, List, Tuple
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict
 
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -269,7 +269,7 @@ def show_compliance_status(status: Dict[str, any]):
     print(f"   • General Data: {settings['data_retention_days']} days")
 
     if status["status"] == "COMPLIANT":
-        print(f"\n✅ COMPLIANT - All data within retention periods")
+        print(f"\n✅ COMPLIANT-All data within retention periods")
     else:
         print(f"\n❌ VIOLATIONS FOUND:")
         for violation in status["violations"]:
@@ -293,7 +293,7 @@ def show_compliance_status(status: Dict[str, any]):
 
     if status["violations"]:
         print(f"\n💡 Recommended Actions:")
-        print(f"   1. Run: python tools / maintenance / youtube_tos_compliance.py --dry - run")
+        print(f"   1. Run: python tools / maintenance / youtube_tos_compliance.py --dry-run")
         print(f"   2. Review what will be deleted")
         print(f"   3. Run: python tools / maintenance / youtube_tos_compliance.py --execute")
         print(f"   4. Set up automated cron job for daily compliance checks")
@@ -305,7 +305,7 @@ def main():
 
     Handles command line arguments and coordinates compliance operations.
     """
-    dry_run = "--dry - run" in sys.argv
+    dry_run = "--dry-run" in sys.argv
     execute = "--execute" in sys.argv
     status_only = "--status" in sys.argv
 
@@ -328,7 +328,7 @@ def main():
         logger.error(f"Failed to check compliance status: {e}")
         sys.exit(1)
 
-    # Handle status - only mode
+    # Handle status-only mode
     if status_only:
         show_compliance_status(compliance_status)
         sys.exit(0)
@@ -342,7 +342,7 @@ def main():
         sys.exit(0)
 
     if compliance_status["status"] == "COMPLIANT":
-        print(f"\n✅ System is already compliant - no action needed")
+        print(f"\n✅ System is already compliant-no action needed")
         sys.exit(0)
 
     # Perform cleanup operations
@@ -365,7 +365,7 @@ def main():
             print(f"   • Total: {total_deleted:,}")
 
             if dry_run:
-                print(f"\n🔍 Preview complete - no data was deleted")
+                print(f"\n🔍 Preview complete-no data was deleted")
                 print(f"💡 Run with --execute to perform actual cleanup")
             else:
                 print(f"\n✅ TOS compliance cleanup completed successfully!")
@@ -375,7 +375,7 @@ def main():
             logger.error(f"TOS compliance cleanup failed: {e}")
             sys.exit(1)
     else:
-        print(f"\n💡 Use --dry - run to preview or --execute to perform cleanup")
+        print(f"\n💡 Use --dry-run to preview or --execute to perform cleanup")
 
 
 if __name__ == "__main__":

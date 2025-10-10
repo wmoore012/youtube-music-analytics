@@ -1,31 +1,28 @@
 #!/usr / bin / env python3
 """
-Focused ETL Pipeline - Production Ready
+Focused ETL Pipeline-Production Ready
 
 This script runs essential data processing tasks:
 1. Sentiment analysis for new comments
 2. Data quality validation
 3. Notebook execution
 
-Designed to be robust, fast, and fail - safe.
+Designed to be robust, fast, and fail-safe.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from datetime import datetime, timedelta
 
 # Preflight utilities
 import os
 import subprocess
 
 from dotenv import load_dotenv
-import pandas as pd
 from sqlalchemy import text
 
-from tools.etl.sentiment_analysis import process_sentiment_analysis
+from tools.core.sentiment_analysis import process_sentiment_analysis
 from web.etl_helpers import get_engine
 
 
@@ -151,7 +148,7 @@ def validate_data_quality(engine) -> dict:
             stats = None
             sentiment_coverage = 0
 
-    quality_score = max(0, 100 - len(quality_issues) * 5)  # Deduct 5% per issue
+    quality_score = max(0, 100-len(quality_issues) * 5)  # Deduct 5% per issue
 
     print(f"\n🏆 Overall Data Quality Score: {quality_score:.1f}%")
 
@@ -218,7 +215,7 @@ def run_bot_detection(engine) -> dict:
         bot_detection_enabled = os.getenv("BOT_DETECTION_ENABLED", "false").lower() == "true"
 
         if not bot_detection_enabled:
-            print("⚠️ Bot detection is disabled - focusing on core analytics")
+            print("⚠️ Bot detection is disabled-focusing on core analytics")
             return {"processed": 0, "status": "disabled"}
 
         # Configure bot detection
@@ -254,7 +251,7 @@ def run_bot_detection(engine) -> dict:
 
     except ImportError as e:
         print(f"⚠️ Bot detection module not available: {str(e)}")
-        print("   Bot detection will be skipped - install youtubeviz package to enable")
+        print("   Bot detection will be skipped-install youtubeviz package to enable")
         return {"processed": 0, "status": "module_unavailable"}
     except Exception as e:
         print(f"❌ Bot detection failed: {str(e)}")
@@ -267,7 +264,7 @@ def preflight_setup() -> dict:  # noqa: C901
     Returns a dict with simple metrics to include in the final summary.
     """
     print("🧰 Preflight: environment, tables, and normalization")
-    # 1) Load .env (best - effort; non - destructive)
+    # 1) Load .env (best-effort; non-destructive)
     try:
         repo_root = Path(__file__).resolve().parents[2]
         load_dotenv(dotenv_path=repo_root / ".env", override=False)
@@ -281,7 +278,7 @@ def preflight_setup() -> dict:  # noqa: C901
         if result.returncode == 0:
             print("   ✅ Tables ready")
         else:
-            print("   ⚠️ Table creation script returned non - zero exit code")
+            print("   ⚠️ Table creation script returned non-zero exit code")
             if result.stdout:
                 print("      ├─ stdout:")
                 print("\n".join(["      │ " + line for line in result.stdout.strip().splitlines()[-10:]]))
@@ -306,7 +303,7 @@ def preflight_setup() -> dict:  # noqa: C901
                 line = (result.stdout or "").strip().splitlines()[-1] if (result.stdout or "").strip() else ""
                 print(f"   🎵 {line or 'Songs CSV loaded'}")
             else:
-                print("   ⚠️ Songs CSV loader returned non - zero exit code")
+                print("   ⚠️ Songs CSV loader returned non-zero exit code")
                 if result.stdout:
                     print("      ├─ stdout:")
                     print("\n".join(["      │ " + l for l in result.stdout.strip().splitlines()[-10:]]))  # noqa: E741
@@ -319,7 +316,7 @@ def preflight_setup() -> dict:  # noqa: C901
     # 4) Run normalization to populate music_videos_normalized
     normalized = 0
     try:
-        # Lazy import to reduce top - level import fragility
+        # Lazy import to reduce top-level import fragility
         from src.youtubeviz.normalization import run_normalization
 
         normalized = run_normalization()
@@ -363,8 +360,8 @@ def main():
     print("=" * 50)
 
     try:
-        # Run preflight once to make onboarding / first - run smooth
-        _pre = preflight_setup()
+        # Run preflight once to make onboarding / first-run smooth
+        _pre = preflight_setup()  # noqa: F841
 
         engine = get_engine()
 

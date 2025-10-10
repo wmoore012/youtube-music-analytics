@@ -1,10 +1,10 @@
 #!/usr / bin / env python3
 """
-Fake Data Scanner and Remover - YouTube Analytics Platform
+Fake Data Scanner and Remover-YouTube Analytics Platform
 
 This script identifies fake data generation code in the codebase and provides
 suggestions for replacing it with real data access patterns. It also audits
-error handling to ensure fail - loud behavior.
+error handling to ensure fail-loud behavior.
 
 Focus areas:
 1. Fake data generation functions
@@ -19,11 +19,11 @@ Usage:
 """
 
 import ast
-from dataclasses import dataclass, field
-from pathlib import Path
 import re
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -97,7 +97,7 @@ class FakeDataScanner:
 
     def _extract_code_snippet(self, lines: List[str], line_number: int, context: int = 2) -> str:
         """Extract code snippet with context."""
-        start = max(0, line_number - context - 1)
+        start = max(0, line_number-context-1)
         end = min(len(lines), line_number + context)
         snippet_lines = lines[start:end]
 
@@ -114,7 +114,7 @@ class FakeDataScanner:
         issues = []
 
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 lines = content.splitlines()
 
@@ -215,7 +215,7 @@ class FakeDataScanner:
                             file_path=str(file_path.relative_to(PROJECT_ROOT)),
                             line_number=node.lineno,
                             issue_type="silent_error",
-                            description="Bare except clause - catches all exceptions",
+                            description="Bare except clause-catches all exceptions",
                             code_snippet=self._extract_code_snippet(lines, node.lineno),
                             suggested_fix="Specify exception types and add proper error handling",
                             severity="HIGH",
@@ -233,7 +233,7 @@ class FakeDataScanner:
 
         for sql_file in sql_files:
             try:
-                with open(sql_file, "r", encoding="utf - 8") as f:
+                with open(sql_file, "r", encoding="utf-8") as f:
                     content = f.read()
                     lines = content.splitlines()
 
@@ -298,7 +298,7 @@ class FakeDataScanner:
         return self.report
 
     def generate_fixes(self) -> Dict[str, List[str]]:
-        """Generate specific fix suggestions for high - priority issues."""
+        """Generate specific fix suggestions for high-priority issues."""
         fixes = {"fake_data": [], "silent_error": [], "boolean_field": []}
 
         for issue in self.report.issues:
@@ -385,11 +385,11 @@ def main():
     high_priority_issues = [i for i in report.issues if i.severity == "HIGH"]
 
     if len(high_priority_issues) == 0:
-        print("\n✅ No high - priority fake data or error handling issues found!")
-        print("🎉 Task 2.3: Remove Fake Data and Improve Error Handling - COMPLETED")
+        print("\n✅ No high-priority fake data or error handling issues found!")
+        print("🎉 Task 2.3: Remove Fake Data and Improve Error Handling-COMPLETED")
         sys.exit(0)
     else:
-        print(f"\n⚠️ Found {len(high_priority_issues)} high - priority issues that need attention")
+        print(f"\n⚠️ Found {len(high_priority_issues)} high-priority issues that need attention")
         sys.exit(1)
 
 

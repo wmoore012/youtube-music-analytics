@@ -3,14 +3,14 @@
 Text Processing Helpers for Music Domain
 
 Provides specialized text processing utilities for music industry content,
-including music slang preservation, emoji handling, and transformer - ready preprocessing.
+including music slang preservation, emoji handling, and transformer-ready preprocessing.
 """
 
+import re
+import unicodedata
 from dataclasses import dataclass
 from enum import Enum
-import re
-from typing import Dict, List, Optional, Set, Tuple
-import unicodedata
+from typing import Dict, List, Optional
 
 # Import transformer support if available
 try:
@@ -47,14 +47,14 @@ class TextProcessingConfig:
     remove_extra_whitespace: bool = True
     normalize_unicode: bool = True
 
-    # Music - specific processing
+    # Music-specific processing
     slang_preservation: SlangPreservationLevel = SlangPreservationLevel.COMPREHENSIVE
     preserve_case_for_slang: bool = True
 
     # Emoji handling
     emoji_mode: EmojiHandlingMode = EmojiHandlingMode.PRESERVE
 
-    # Transformer - specific
+    # Transformer-specific
     max_length: Optional[int] = None
     add_special_tokens: bool = True
 
@@ -69,7 +69,7 @@ class MusicSlangPreserver:
 
     # Comprehensive music slang dictionary
     MUSIC_SLANG_TERMS = {
-        # Positive slang (case - sensitive preservation)
+        # Positive slang (case-sensitive preservation)
         "GOATED": {"variants": ["goated", "GOAT"], "sentiment": "positive", "preserve_case": True},
         "PERIODT": {"variants": ["periodt", "period"], "sentiment": "positive", "preserve_case": True},
         "SLAY": {"variants": ["slay", "slaying"], "sentiment": "positive", "preserve_case": True},
@@ -121,7 +121,7 @@ class MusicSlangPreserver:
             pattern = r"\b(?:" + "|".join(escaped_terms) + r")\b"
 
             if self.preservation_level == SlangPreservationLevel.BASIC:
-                # Only preserve high - confidence positive / negative terms
+                # Only preserve high-confidence positive / negative terms
                 if info["sentiment"] in ["positive", "negative"]:
                     self.patterns[term] = {
                         "pattern": re.compile(pattern, re.IGNORECASE),
@@ -140,7 +140,7 @@ class MusicSlangPreserver:
         if self.preservation_level == SlangPreservationLevel.NONE:
             return text
 
-        _preserved_text_item = text
+        _preserved_text_item = text  # noqa: F841
         replacements = {}
 
         # Find and mark slang terms for preservation
@@ -191,7 +191,7 @@ class MusicSlangPreserver:
 class EmojiHandler:
     """Handles emoji processing for music domain text."""
 
-    # Music - related emoji mappings
+    # Music-related emoji mappings
     MUSIC_EMOJI_MAP = {
         "🔥": " fire ",
         "💯": " hundred ",
@@ -281,7 +281,7 @@ class EmojiHandler:
         return self.EMOJI_PATTERN.findall(text)
 
     def has_music_emoji(self, text: str) -> bool:
-        """Check if text contains music - related emoji."""
+        """Check if text contains music-related emoji."""
         for emoji in self.MUSIC_EMOJI_MAP.keys():
             if emoji in text:
                 return True
@@ -289,9 +289,9 @@ class EmojiHandler:
 
 
 class TransformerTextProcessor:
-    """Transformer - ready text processing with music domain awareness."""
+    """Transformer-ready text processing with music domain awareness."""
 
-    def __init__(self, model_name: str = "distilbert - base - uncased", config: Optional[TextProcessingConfig] = None):
+    def __init__(self, model_name: str = "distilbert-base-uncased", config: Optional[TextProcessingConfig] = None):
         self.model_name = model_name
         self.config = config or TextProcessingConfig()
 
@@ -357,7 +357,7 @@ class TransformerTextProcessor:
             raise RuntimeError("Tokenizer not available. Install transformers library.")
 
         # Preprocess text first
-        _processed_text_item = self.preprocess_text(text)
+        _processed_text_item = self.preprocess_text(text)  # noqa: F841
 
         # Tokenize
         tokens = self.tokenizer(
@@ -410,7 +410,7 @@ class TransformerTextProcessor:
             "avg_word_length": sum(len(word) for word in processed.split()) / max(len(processed.split()), 1),
         }
 
-        # Music - specific features
+        # Music-specific features
         slang_terms = self.slang_preserver.identify_slang_terms(text)
         features.update(
             {
@@ -446,7 +446,7 @@ class TransformerTextProcessor:
 
 # Convenience functions
 def create_music_text_processor(
-    model_name: str = "distilbert - base - uncased",
+    model_name: str = "distilbert-base-uncased",
     slang_preservation: SlangPreservationLevel = SlangPreservationLevel.COMPREHENSIVE,
     emoji_mode: EmojiHandlingMode = EmojiHandlingMode.PRESERVE,
 ) -> TransformerTextProcessor:

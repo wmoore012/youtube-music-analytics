@@ -3,14 +3,14 @@
 Enhanced Sentiment Analysis Configuration Management
 
 Professional configuration system for sentiment analysis parameters with
-privacy controls and environment - based secret management.
+privacy controls and environment-based secret management.
 """
 
-from dataclasses import dataclass, field
 import os
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Dict, Optional
 
-from data_organization.configuration_manager import EnvironmentConfig, ValidationResult
+from data_organization.configuration_manager import ValidationResult
 
 
 @dataclass
@@ -97,7 +97,7 @@ class SentimentEnhancementConfig:
             )
 
         result.checked_items = 6
-        result.passed_items = result.checked_items - len(result.errors)
+        result.passed_items = result.checked_items-len(result.errors)
 
         return result
 

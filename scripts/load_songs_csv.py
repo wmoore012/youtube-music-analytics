@@ -3,13 +3,13 @@
 Load a CSV of songs (isrc,title,artist) into the songs table quickly.
 
 Requirements:
-- CSV headers: isrc,title,artist (case - insensitive OK)
-- ISRC must match format: ^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$ (case - insensitive accepted; will be uppercased)  # noqa: E501
+- CSV headers: isrc,title,artist (case-insensitive OK)
+- ISRC must match format: ^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$ (case-insensitive accepted; will be uppercased)  # noqa: E501
 
 Behavior:
 - Validates rows and prints a summary of accepted / rejected
 - Upsert semantics: INSERT ... ON DUPLICATE KEY UPDATE title / artist
-- Optional dry - run mode
+- Optional dry-run mode
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from sqlalchemy import text
 
 from web.db_guard import get_engine
 
-ISRC_RE = re.compile(r"^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$", re.IGNORECASE)
+ISRC_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$", re.IGNORECASE)
 
 
 def validate_row(row: dict) -> Tuple[bool, str]:
@@ -43,7 +43,7 @@ def load_csv(path: str, dry_run: bool = False) -> Tuple[int, int]:
     ok_rows: List[Tuple[str, str, str]] = []
     bad_rows = 0
 
-    with open(path, newline="", encoding="utf - 8") as f:
+    with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             valid, reason = validate_row(row)
@@ -77,11 +77,11 @@ def load_csv(path: str, dry_run: bool = False) -> Tuple[int, int]:
 def main() -> int:
     p = argparse.ArgumentParser(description="Load songs CSV into songs table")
     p.add_argument("csv_path", help="Path to CSV with headers isrc,title,artist")
-    p.add_argument("--dry - run", action="store_true", help="Validate only; do not write to DB")
+    p.add_argument("--dry-run", action="store_true", help="Validate only; do not write to DB")
     args = p.parse_args()
 
     ins, bad = load_csv(args.csv_path, dry_run=args.dry_run)
-    mode = "(dry - run) " if args.dry_run else ""
+    mode = "(dry-run) " if args.dry_run else ""
     print(f"{mode}Songs processed: {ins} inserted / updated, {bad} rejected")
     return 0
 

@@ -36,7 +36,7 @@ class TestNotebookArtistValidation:
             {
                 "artist_name": ["BiC Fizzle", "COBRAH", "Corook", "Flyana Boss", "Raiche", "re6ce"] * 5,
                 "views": [1000, 2000, 3000, 4000, 5000, 6000] * 5,
-                "date": pd.date_range("2024 - 01 - 01", periods=30, freq="D"),
+                "date": pd.date_range("2024-01-01", periods=30, freq="D"),
             }
         )
 

@@ -6,14 +6,14 @@ This script runs comprehensive data quality checks and can be integrated into CI
 It validates data integrity, checks for duplicates, and ensures notebooks will work correctly.
 
 Usage:
-    python scripts / run_data_quality_checks.py [--fail - on - duplicates] [--output - format json|text]
+    python scripts / run_data_quality_checks.py [--fail-on-duplicates] [--output-format json|text]
 """
 
 import argparse
-from datetime import datetime
 import json
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -79,7 +79,7 @@ def run_quality_checks(fail_on_duplicates=False, output_format="text"):  # noqa:
                 if check_name == "enchanting_check" and result > 0:
                     results["checks"][check_name]["status"] = "FAILED"
                     results["status"] = "FAILED"
-                    error_msg = f"Found {result} Enchanting records - should be 0"
+                    error_msg = f"Found {result} Enchanting records-should be 0"
                     results["errors"].append(error_msg)
                     if output_format == "text":
                         print(f"❌ {check_name}: FAILED - {error_msg}")
@@ -151,8 +151,8 @@ def run_quality_checks(fail_on_duplicates=False, output_format="text"):  # noqa:
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Run data quality checks for CI / CD")
-    parser.add_argument("--fail - on - duplicates", action="store_true", help="Fail the build if duplicates are found")
-    parser.add_argument("--output - format", choices=["text", "json"], default="text", help="Output format for results")
+    parser.add_argument("--fail-on-duplicates", action="store_true", help="Fail the build if duplicates are found")
+    parser.add_argument("--output-format", choices=["text", "json"], default="text", help="Output format for results")
 
     args = parser.parse_args()
 

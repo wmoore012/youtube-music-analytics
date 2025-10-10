@@ -5,13 +5,13 @@ Discovers actual database structure, artists, and data without hardcoding.
 Provides dynamic configuration for notebooks and charts.
 """
 
-from datetime import datetime, timedelta
 import logging
 import os
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 
 # Load environment variables from .env file
@@ -230,7 +230,7 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
                 END as content_type,
                 -- Add genre classification (simplified)
                 CASE
-                    WHEN channel_title LIKE '%hip%' OR channel_title LIKE '%rap%' THEN 'Hip - Hop'
+                    WHEN channel_title LIKE '%hip%' OR channel_title LIKE '%rap%' THEN 'Hip-Hop'
                     WHEN channel_title LIKE '%pop%' OR channel_title LIKE '%Pop%' THEN 'Pop'
                     WHEN channel_title LIKE '%rock%' OR channel_title LIKE '%Rock%' THEN 'Rock'
                     ELSE 'Alternative'
@@ -353,11 +353,11 @@ def create_chart_config(artists: List[str], data_summary: Dict[str, Any]) -> Dic
 
     # Adjust chart types based on available data
     if not data_summary.get("has_sentiment", False):
-        # Remove sentiment - dependent charts
+        # Remove sentiment-dependent charts
         config["chart_types"] = [ct for ct in config["chart_types"] if "sentiment" not in ct.lower()]
 
     if not data_summary.get("has_isrc", False):
-        # Remove ISRC - dependent charts
+        # Remove ISRC-dependent charts
         config["chart_types"] = [ct for ct in config["chart_types"] if "isrc" not in ct.lower()]
 
     return config
@@ -366,13 +366,13 @@ def create_chart_config(artists: List[str], data_summary: Dict[str, Any]) -> Dic
 def get_dynamic_notebook_config() -> Dict[str, Any]:
     """Get complete dynamic configuration for notebook generation.
 
-    FAILS LOUDLY if database connection issues - NO FAKE DATA EVER.
+    FAILS LOUDLY if database connection issues-NO FAKE DATA EVER.
     """
 
-    # Initialize discovery - FAIL LOUDLY if this doesn't work
+    # Initialize discovery-FAIL LOUDLY if this doesn't work
     discovery = DatabaseDiscovery()
 
-    # Discover database structure - FAIL LOUDLY if no tables
+    # Discover database structure-FAIL LOUDLY if no tables
     db_summary = discovery.discover_tables()
     if db_summary["total_tables"] == 0:
         raise RuntimeError(
@@ -380,7 +380,7 @@ def get_dynamic_notebook_config() -> Dict[str, Any]:
             "Check your database connection and ensure yt_proj database exists with data."
         )
 
-    # Discover artists - FAIL LOUDLY if no artists
+    # Discover artists-FAIL LOUDLY if no artists
     artists = discovery.discover_artists(min_videos=3)
     if len(artists) == 0:
         raise RuntimeError(
@@ -388,7 +388,7 @@ def get_dynamic_notebook_config() -> Dict[str, Any]:
             "Ensure youtube_videos or music_videos_normalized tables have data with artist names."
         )
 
-    # Get data summary - FAIL LOUDLY if no data
+    # Get data summary-FAIL LOUDLY if no data
     data_summary = discovery.get_data_summary()
     if data_summary["total_videos"] == 0:
         raise RuntimeError("🚨 CRITICAL: No video data found! " "Ensure youtube_videos table has data.")

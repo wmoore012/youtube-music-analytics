@@ -9,9 +9,8 @@ This script enforces:
 """
 
 import ast
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 
@@ -26,7 +25,7 @@ class LOCValidator:
     def count_effective_lines(self, file_path: Path) -> int:
         """Count lines excluding comments, docstrings, and blank lines."""
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
             effective_lines = 0
@@ -65,7 +64,7 @@ class LOCValidator:
     def get_function_lines(self, file_path: Path) -> List[Tuple[str, int, int]]:
         """Get function names with their line counts."""
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -75,7 +74,7 @@ class LOCValidator:
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     start_line = node.lineno
                     end_line = node.end_lineno or start_line
-                    line_count = end_line - start_line + 1
+                    line_count = end_line-start_line + 1
                     functions.append((node.name, line_count, start_line))
 
             return functions

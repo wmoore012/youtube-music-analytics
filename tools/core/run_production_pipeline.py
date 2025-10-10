@@ -2,7 +2,7 @@
 """
 Enterprise YouTube Analytics ETL Pipeline
 
-Production - grade data pipeline with comprehensive monitoring, alerting, and compliance.
+Production-grade data pipeline with comprehensive monitoring, alerting, and compliance.
 Designed for 24 / 7 operation in enterprise environments with SLA requirements.
 
 Features:
@@ -18,15 +18,14 @@ Version: 2.0.0
 License: Enterprise
 """
 
-from datetime import datetime, timedelta
 import json
 import logging
 import os
-from pathlib import Path
 import subprocess
 import sys
-import time
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -58,13 +57,13 @@ audit_logger = logging.getLogger("Audit")
 
 class EnterpriseETLPipeline:
     """
-    Enterprise - grade ETL pipeline with comprehensive monitoring and compliance.
+    Enterprise-grade ETL pipeline with comprehensive monitoring and compliance.
 
     Features:
     - SLA monitoring with performance metrics
     - Automated error recovery and retry logic
     - Comprehensive audit logging for compliance
-    - Real - time alerting and notification system
+    - Real-time alerting and notification system
     - Resource utilization monitoring
     """
 
@@ -131,7 +130,7 @@ class EnterpriseETLPipeline:
                     self.results["errors"].append(f"{stage_name} failed: {result.stderr}")
                     return False
                 else:
-                    logger.warning(f"⚠️  {stage_name}: Non - critical failure, continuing...")
+                    logger.warning(f"⚠️  {stage_name}: Non-critical failure, continuing...")
                     return True
 
         except subprocess.TimeoutExpired:
@@ -208,7 +207,7 @@ class EnterpriseETLPipeline:
 
             # Deduplicate by video_id (natural key)
             clean_data = data.drop_duplicates(["video_id"], keep="first")
-            duplicates_removed = original_count - len(clean_data)
+            duplicates_removed = original_count-len(clean_data)
 
             logger.info(f"📊 Data cleanup results:")
             logger.info(f"   Original records: {original_count:,}")
@@ -245,37 +244,37 @@ class EnterpriseETLPipeline:
         logger.info("🚀 STARTING PRODUCTION ETL PIPELINE")
         logger.info("=" * 50)
 
-        # Stage 1: Pre - flight data quality checks
+        # Stage 1: Pre-flight data quality checks
         if not self.run_stage(
             "pre_flight_quality_check",
-            ["python", "scripts / run_data_quality_checks.py", "--output - format", "json"],
+            ["python", "scripts / run_data_quality_checks.py", "--output-format", "json"],
             critical=False,  # Don't fail pipeline on quality warnings
         ):
-            logger.warning("⚠️  Pre - flight quality check had issues, but continuing...")
+            logger.warning("⚠️  Pre-flight quality check had issues, but continuing...")
 
         # Stage 2: Data cleanup and deduplication
         if not self.run_data_cleanup():
-            logger.error("💥 Data cleanup failed - aborting pipeline")
+            logger.error("💥 Data cleanup failed-aborting pipeline")
             return self.results
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
             if not self.run_stage("main_etl", ["python", "tools / etl / run_focused_etl.py"], critical=True):
-                logger.error("💥 Main ETL failed - aborting pipeline")
+                logger.error("💥 Main ETL failed-aborting pipeline")
                 return self.results
         else:
-            logger.info("⏭️  Skipping ETL - already run today")
+            logger.info("⏭️  Skipping ETL-already run today")
             self.results["stages"]["main_etl"] = {
                 "status": "SKIPPED",
                 "reason": "Already run today",
                 "timestamp": datetime.now().isoformat(),
             }
 
-        # Stage 4: Post - ETL quality validation
+        # Stage 4: Post-ETL quality validation
         if not self.run_stage(
             "post_etl_quality_check", ["python", "scripts / run_data_quality_checks.py"], critical=False
         ):
-            logger.warning("⚠️  Post - ETL quality check had issues, but continuing...")
+            logger.warning("⚠️  Post-ETL quality check had issues, but continuing...")
 
         # Stage 5: Execute notebooks with clean data
         if not self.run_stage(
@@ -288,7 +287,7 @@ class EnterpriseETLPipeline:
         # Stage 6: Final quality validation
         if not self.run_stage(
             "final_quality_check",
-            ["python", "scripts / run_data_quality_checks.py", "--output - format", "json"],
+            ["python", "scripts / run_data_quality_checks.py", "--output-format", "json"],
             critical=False,
         ):
             logger.warning("⚠️  Final quality check had issues")
@@ -317,7 +316,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Run production ETL pipeline")
     parser.add_argument("--config", help="Configuration file path")
-    parser.add_argument("--dry - run", action="store_true", help="Dry run mode")
+    parser.add_argument("--dry-run", action="store_true", help="Dry run mode")
 
     args = parser.parse_args()
 
@@ -328,7 +327,7 @@ def main():
             config = json.load(f)
 
     if args.dry_run:
-        logger.info("🧪 DRY RUN MODE - No actual changes will be made")
+        logger.info("🧪 DRY RUN MODE-No actual changes will be made")
         config["dry_run"] = True
 
     # Run pipeline

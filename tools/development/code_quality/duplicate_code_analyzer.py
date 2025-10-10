@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Duplicate Code Analyzer - YouTube Analytics Platform
+Duplicate Code Analyzer-YouTube Analytics Platform
 
 This script identifies duplicate code patterns across the codebase and suggests
 helper functions to extract. It focuses on:
@@ -17,14 +17,13 @@ Usage:
 """
 
 import ast
-from collections import defaultdict
-from dataclasses import dataclass, field
 import hashlib
-import os
-from pathlib import Path
 import re
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -112,10 +111,10 @@ class DuplicateCodeAnalyzer:
         blocks = []
 
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
-            # Extract function - level blocks
+            # Extract function-level blocks
             tree = ast.parse("".join(lines), filename=str(file_path))
 
             for node in ast.walk(tree):
@@ -123,8 +122,8 @@ class DuplicateCodeAnalyzer:
                     start_line = node.lineno
                     end_line = node.end_lineno or start_line
 
-                    if end_line - start_line >= self.min_duplicate_lines:
-                        content = "".join(lines[start_line - 1 : end_line])
+                    if end_line-start_line >= self.min_duplicate_lines:
+                        content = "".join(lines[start_line-1 : end_line])
 
                         block = CodeBlock(
                             file_path=str(file_path),
@@ -133,11 +132,11 @@ class DuplicateCodeAnalyzer:
                             content=content,
                             hash_value=self._calculate_hash(content),
                             function_name=node.name,
-                            complexity_score=end_line - start_line,
+                            complexity_score=end_line-start_line,
                         )
                         blocks.append(block)
 
-            # Extract multi - line blocks (sliding window)
+            # Extract multi-line blocks (sliding window)
             for i in range(len(lines) - self.min_duplicate_lines + 1):
                 block_lines = lines[i : i + self.min_duplicate_lines]
                 content = "".join(block_lines)
@@ -176,7 +175,7 @@ class DuplicateCodeAnalyzer:
         for hash_value, group_blocks in hash_groups.items():
             if len(group_blocks) > 1:
                 # Calculate potential lines saved
-                lines_per_block = group_blocks[0].end_line - group_blocks[0].start_line + 1
+                lines_per_block = group_blocks[0].end_line-group_blocks[0].start_line + 1
                 lines_saved = lines_per_block * (len(group_blocks) - 1)
 
                 # Determine priority based on duplication count and size
@@ -215,7 +214,7 @@ class DuplicateCodeAnalyzer:
             # Create a structural signature by removing literals and identifiers
             structure = re.sub(r'["\'][^"\']*["\']', '""', block.content)  # Remove string literals
             structure = re.sub(r"\b\d+\b", "0", structure)  # Replace numbers
-            structure = re.sub(r"\b[a - zA - Z_][a - zA - Z0 - 9_]*\b", "VAR", structure)  # Replace identifiers
+            structure = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", "VAR", structure)  # Replace identifiers
 
             structure_hash = self._calculate_hash(structure)
             structure_groups[structure_hash].append(block)
@@ -225,7 +224,7 @@ class DuplicateCodeAnalyzer:
                 # Only consider if blocks are from different locations
                 unique_locations = set((b.file_path, b.start_line) for b in group_blocks)
                 if len(unique_locations) > 1:
-                    lines_saved = sum(b.end_line - b.start_line + 1 for b in group_blocks[1:])
+                    lines_saved = sum(b.end_line-b.start_line + 1 for b in group_blocks[1:])
 
                     group = DuplicationGroup(
                         blocks=group_blocks,
@@ -285,7 +284,7 @@ class DuplicateCodeAnalyzer:
         return self.report
 
     def generate_helper_functions(self) -> Dict[str, str]:
-        """Generate helper function implementations for high - priority duplications."""
+        """Generate helper function implementations for high-priority duplications."""
         if not self.extract_mode:
             print("❌ Extract mode not enabled. Use --extract flag to generate helpers.")
             return {}
@@ -417,16 +416,16 @@ def main():
     # Exit with appropriate code
     if report.total_duplications == 0 and len(report.long_functions) == 0:
         print("\n✅ No significant code duplication found!")
-        print("🎉 Task 2.2: Extract Helper Functions - COMPLETED")
+        print("🎉 Task 2.2: Extract Helper Functions-COMPLETED")
         sys.exit(0)
     else:
         high_priority_count = len([g for g in report.duplication_groups if g.extraction_priority == "HIGH"])
         if high_priority_count > 0:
-            print(f"\n⚠️ Found {high_priority_count} high - priority duplications that should be addressed")
+            print(f"\n⚠️ Found {high_priority_count} high-priority duplications that should be addressed")
             sys.exit(1)
         else:
-            print(f"\n✅ No high - priority duplications found")
-            print("🎉 Task 2.2: Extract Helper Functions - COMPLETED")
+            print(f"\n✅ No high-priority duplications found")
+            print("🎉 Task 2.2: Extract Helper Functions-COMPLETED")
             sys.exit(0)
 
 

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
-import warnings
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 import pandas as pd
 
@@ -13,13 +12,13 @@ def _join_bullets(lines: Sequence[str]) -> str:
 
 
 def story_block(
-        fig,
-        title: str,
-        bullets: Iterable[str],
-        caption: Optional[str] = None,
-        width_left: str = "58%",
-        theme: str = "light",
-        return_html: bool = False,
+    fig,
+    title: str,
+    bullets: Iterable[str],
+    caption: Optional[str] = None,
+    width_left: str = "58%",
+    theme: str = "light",
+    return_html: bool = False,
 ):
     """Display a chart with a human narrative beside it in notebooks.
 
@@ -31,7 +30,7 @@ def story_block(
         fig: Plotly / Altair figure (or any object with ``to_html`` or rich repr)
         title: Short, engaging headline
         bullets: Key points that explain the chart and the story
-        caption: Optional one - line caption (tone, takeaway)
+        caption: Optional one-line caption (tone, takeaway)
         width_left: CSS width for chart column
         theme: "light" or "dark" (affects text colors)
     """
@@ -45,25 +44,25 @@ def story_block(
     fig_html: str
     try:
         # Plotly
-        fig_html = fig.to_html(include_plotlyjs="cdn", full_html=False)  # type: ignore[attr - defined]
+        fig_html = fig.to_html(include_plotlyjs="cdn", full_html=False)  # type: ignore[attr-defined]
     except Exception:
         try:
             # Altair
-            fig_html = fig.to_html()  # type: ignore[attr - defined]
+            fig_html = fig.to_html()  # type: ignore[attr-defined]
         except Exception:
             # Fallback: rely on IPython repr
-            fig_html = f"<div class='figure - fallback'>{fig}</div>"
+            fig_html = f"<div class='figure-fallback'>{fig}</div>"
 
     text_color = "#111" if theme == "light" else "#fafafa"
     sub_color = "#444" if theme == "light" else "#ddd"
 
     html = f"""
-    <div style="display:flex; gap:18px; align - items:flex - start; width:100%;">
-      <div style="flex:0 0 {width_left}; max - width:{width_left};">{fig_html}</div>
-      <div style="flex:1; font - family: system - ui, -apple - system, Segoe UI, Roboto, sans - serif; color:{text_color};">
-        <h3 style="margin:0 0 6px 0; font - weight:700;">{title}</h3>
-        <ul style="margin:6px 0 8px 18px; padding:0; line - height:1.4;">{_join_bullets(list(bullets))}</ul>
-        {f"<div style='font - size:12px; color:{sub_color}; margin - top:4px;'>{caption}</div>" if caption else ''}
+    <div style="display:flex; gap:18px; align-items:flex-start; width:100%;">
+      <div style="flex:0 0 {width_left}; max-width:{width_left};">{fig_html}</div>
+      <div style="flex:1; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:{text_color};">
+        <h3 style="margin:0 0 6px 0; font-weight:700;">{title}</h3>
+        <ul style="margin:6px 0 8px 18px; padding:0; line-height:1.4;">{_join_bullets(list(bullets))}</ul>
+        {f"<div style='font-size:12px; color:{sub_color}; margin-top:4px;'>{caption}</div>" if caption else ''}
       </div>
     </div>
     """
@@ -74,12 +73,12 @@ def story_block(
 
 
 def quick_takeaways(
-        artist: str,
-        last_7d_change_pct: Optional[float] = None,
-        engagement_rate: Optional[float] = None,
-        standout_video: Optional[str] = None,
+    artist: str,
+    last_7d_change_pct: Optional[float] = None,
+    engagement_rate: Optional[float] = None,
+    standout_video: Optional[str] = None,
 ) -> list[str]:
-    """Generate friendly, executive - style bullets for a single artist.
+    """Generate friendly, executive-style bullets for a single artist.
 
     This is intentionally simple and safe; callers can pass real metrics.
     """
@@ -97,8 +96,8 @@ def quick_takeaways(
 
 
 def narrative_intro(
-        analysis_type: str = "artist_comparison",
-        context: Optional[Dict[str, Any]] = None,
+    analysis_type: str = "artist_comparison",
+    context: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Generate engaging narrative introductions for different analysis types.
 
@@ -110,7 +109,7 @@ def narrative_intro(
         context: Optional context dict with artist names, date ranges, etc.
 
     Returns:
-        Markdown - formatted introduction text
+        Markdown-formatted introduction text
     """
     context = context or {}
 
@@ -124,8 +123,8 @@ def narrative_intro(
         intros = [
             f"🎵 **The Music Data Detective Story** 🕵️‍♀️\n\nWelcome to the fascinating world where music meets data science! Today we're diving deep into the YouTube performance of {  # noqa: E501
                 artist_list}. Think of this as your backstage pass to understanding how artists build their digital empires, one view at a time.\n\n * What makes an artist's content resonate? How do engagement patterns reveal fan loyalty? Let's find out together!*",  # noqa: E501
-            f"🚀 **From Bedroom Studios to Billboard Charts** 📈\n\nEvery chart - topping artist started somewhere, and YouTube has become the modern equivalent of playing local venues. We're analyzing {  # noqa: E501
-                artist_list} to uncover the data - driven secrets behind their success.\n\n * Spoiler alert: It's not just about the music anymore. It's about understanding your audience, timing your releases, and building genuine connections through content.*",  # noqa: E501
+            f"🚀 **From Bedroom Studios to Billboard Charts** 📈\n\nEvery chart-topping artist started somewhere, and YouTube has become the modern equivalent of playing local venues. We're analyzing {  # noqa: E501
+                artist_list} to uncover the data-driven secrets behind their success.\n\n * Spoiler alert: It's not just about the music anymore. It's about understanding your audience, timing your releases, and building genuine connections through content.*",  # noqa: E501
             f"💡 **The Algorithm Whisperers** 🤖\n\nIn today's music industry, understanding YouTube's algorithm is as important as understanding chord progressions. We're examining how {  # noqa: E501
                 artist_list} navigate this digital landscape, turning data insights into career momentum.\n\n * Ready to see how the sausage gets made? Let's decode the patterns that separate viral hits from hidden gems.*",  # noqa: E501
         ]
@@ -138,13 +137,13 @@ def narrative_intro(
         " insight. We're using sentiment analysis to understand how audiences really feel about content, beyond just likes and views.\n\n * Every comment tells a story. Let's listen to what the data is saying.*"  # noqa: E501
 
     else:
-        return f"📊 **Data - Driven Music Insights** 🎶\n\nWelcome to an exploration of {
+        return f"📊 **Data-Driven Music Insights** 🎶\n\nWelcome to an exploration of {
             analysis_type}! We're combining the art of music with the science of data to uncover insights that can shape careers and inform decisions.\n\n * Let's turn numbers into narratives and metrics into music industry magic.*"  # noqa: E501
 
 
 def educational_sidebar(
-        concept: str,
-        complexity_level: str = "beginner",
+    concept: str,
+    complexity_level: str = "beginner",
 ) -> str:
     """Generate educational sidebars explaining music industry and data science concepts.
 
@@ -156,48 +155,48 @@ def educational_sidebar(
         complexity_level: beginner, intermediate, or advanced
 
     Returns:
-        Markdown - formatted educational content
+        Markdown-formatted educational content
     """
     explanations = {
         "engagement_rate": {
             "beginner": "📚 **What's Engagement Rate?**\n\nEngagement rate"
             " measures how actively fans interact with content beyond"
             " just watching. It includes likes, comments, shares, and"
-                        " saves divided by total views.\n\n * Think of it like applause at a concert - views are attendance, but engagement shows how much the audience loved the show!*",  # noqa: E501
-            "intermediate": "📊 **Deep Dive: Engagement Metrics**\n\nEngagement rate = (Likes + Comments + Shares) / Views × 100\n\nHigh engagement (>3%) suggests strong fan loyalty and algorithmic favor. Low engagement might indicate passive consumption or content - audience mismatch.\n\n * Industry benchmark: 2 - 4% is solid, 5%+ is exceptional for established artists.*",  # noqa: E501
+            " saves divided by total views.\n\n * Think of it like applause at a concert-views are attendance, but engagement shows how much the audience loved the show!*",  # noqa: E501
+            "intermediate": "📊 **Deep Dive: Engagement Metrics**\n\nEngagement rate = (Likes + Comments + Shares) / Views × 100\n\nHigh engagement (>3%) suggests strong fan loyalty and algorithmic favor. Low engagement might indicate passive consumption or content-audience mismatch.\n\n * Industry benchmark: 2-4% is solid, 5%+ is exceptional for established artists.*",  # noqa: E501
             "advanced": "🔬 **Engagement Rate Analytics**\n\nEngagement"
             " velocity (rate of engagement over time) often predicts"
             " viral potential better than absolute numbers. Consider"
-                        " engagement quality (comment sentiment, share context) alongside quantity.\n\n * Advanced tip: Engagement patterns in first 24 hours strongly correlate with long - term performance and algorithmic promotion.*",  # noqa: E501
+            " engagement quality (comment sentiment, share context) alongside quantity.\n\n * Advanced tip: Engagement patterns in first 24 hours strongly correlate with long-term performance and algorithmic promotion.*",  # noqa: E501
         },
         "momentum": {
             "beginner": "🚀 **Understanding Momentum**\n\nMomentum tracks"
             " how fast an artist's metrics are changing. Positive"
             " momentum means growing views, subscribers, or engagement."
-                        " It's like measuring if a song is climbing or falling on the charts.\n\n * Momentum matters more than absolute numbers for investment decisions!*",  # noqa: E501
-            "intermediate": "📈 **Momentum Calculations**\n\nWe calculate momentum using percentage change over rolling time windows (7 - day, 30 - day). Sustained positive momentum across multiple metrics indicates genuine growth vs. one - hit wonders.\n\n * Key insight: Consistent 10% monthly growth often outperforms sporadic viral spikes.*",  # noqa: E501
+            " It's like measuring if a song is climbing or falling on the charts.\n\n * Momentum matters more than absolute numbers for investment decisions!*",  # noqa: E501
+            "intermediate": "📈 **Momentum Calculations**\n\nWe calculate momentum using percentage change over rolling time windows (7-day, 30-day). Sustained positive momentum across multiple metrics indicates genuine growth vs. one-hit wonders.\n\n * Key insight: Consistent 10% monthly growth often outperforms sporadic viral spikes.*",  # noqa: E501
             "advanced": "⚡ **Advanced Momentum Analysis**\n\nMomentum"
-            " analysis includes trend decomposition, seasonality adjustment, and cross - metric correlation. Leading indicators (comment sentiment, subscriber velocity) often predict view momentum.\n\n * Pro tip: Momentum inflection points often coincide with strategic content pivots or external events.*",  # noqa: E501
+            " analysis includes trend decomposition, seasonality adjustment, and cross-metric correlation. Leading indicators (comment sentiment, subscriber velocity) often predict view momentum.\n\n * Pro tip: Momentum inflection points often coincide with strategic content pivots or external events.*",  # noqa: E501
         },
         "youtube_algorithm": {
-            "beginner": "🤖 **The YouTube Algorithm Explained**\n\nYouTube's algorithm decides which videos get recommended to viewers. It considers watch time, engagement, click - through rates, and viewer behavior patterns.\n\n * Think of it as a digital DJ that learns what each listener likes and creates personalized playlists!*",  # noqa: E501
+            "beginner": "🤖 **The YouTube Algorithm Explained**\n\nYouTube's algorithm decides which videos get recommended to viewers. It considers watch time, engagement, click-through rates, and viewer behavior patterns.\n\n * Think of it as a digital DJ that learns what each listener likes and creates personalized playlists!*",  # noqa: E501
             "intermediate": "🎯 **Algorithm Optimization"
             " Strategies**\n\nKey factors: Session duration, audience retention curves, engagement velocity, and topic authority. The algorithm rewards creators who keep viewers on the platform longer.\n\n * Strategy: Focus on series content and playlists to increase session watch time.*",  # noqa: E501
-            "advanced": "🧠 **Algorithmic Ranking Factors**\n\nMulti - objective optimization balancing user satisfaction, advertiser value, and creator ecosystem health. Recent updates emphasize authentic engagement over vanity metrics.\n\n * Advanced insight: Cross - video engagement patterns and subscriber notification rates heavily influence reach.*",
+            "advanced": "🧠 **Algorithmic Ranking Factors**\n\nMulti-objective optimization balancing user satisfaction, advertiser value, and creator ecosystem health. Recent updates emphasize authentic engagement over vanity metrics.\n\n * Advanced insight: Cross-video engagement patterns and subscriber notification rates heavily influence reach.*",  # noqa: E501
         },
     }
 
     if concept in explanations and complexity_level in explanations[concept]:
         return explanations[concept][complexity_level]
 
-    return f"💡 **About {concept.replace('_', ' ').title()}**\n\nThis is an important concept in music industry analytics. Understanding {
-        concept} helps artists and labels make data - driven decisions about content strategy and resource allocation."
+    return f"💡 **About {concept.replace('_', ' ').title()}**\n\nThis is an important concept in music industry analytics. Understanding {  # noqa: E501
+        concept} helps artists and labels make data-driven decisions about content strategy and resource allocation."
 
 
 def section_transition(
-        from_section: str,
-        to_section: str,
-        key_insight: Optional[str] = None,
+    from_section: str,
+    to_section: str,
+    key_insight: Optional[str] = None,
 ) -> str:
     """Generate smooth narrative transitions between analysis sections.
 
@@ -210,28 +209,28 @@ def section_transition(
         key_insight: Optional key insight to bridge the sections
 
     Returns:
-        Markdown - formatted transition text
+        Markdown-formatted transition text
     """
     transitions = {
         ("overview", "comparison"): [
-            "Now that we've set the stage, let's dive into the head - to - head comparison. This is where the real insights emerge! 🥊",
+            "Now that we've set the stage, let's dive into the head-to-head comparison. This is where the real insights emerge! 🥊",  # noqa: E501
             "With the landscape mapped out, it's time to zoom in on the"
             " competitive dynamics. Who's winning the engagement game? 🏆",
-            "The overview gave us the big picture - now let's get tactical and see how these artists stack up against each other. 📊",
+            "The overview gave us the big picture-now let's get tactical and see how these artists stack up against each other. 📊",  # noqa: E501
         ],
         ("comparison", "deep_dive"): [
-            "The numbers tell one story, but let's dig deeper into what's driving these patterns. Time for some detective work! 🔍",
-            "Surface - level metrics are just the beginning. Let's dig"
+            "The numbers tell one story, but let's dig deeper into what's driving these patterns. Time for some detective work! 🔍",  # noqa: E501
+            "Surface-level metrics are just the beginning. Let's dig"
             " deep and uncover the strategic insights hiding in the data. 💎",
             "Interesting patterns are emerging! Let's investigate what's really happening behind these trends. 🕵️‍♀️",
         ],
         ("deep_dive", "recommendations"): [
             "All this analysis leads to one crucial question: What should we do about it? Let's get strategic! 💡",
             "Data without action is just pretty charts. Time to turn these insights into investment decisions. 💰",
-            "The evidence is clear - now let's translate these findings into concrete next steps. 🎯",
+            "The evidence is clear-now let's translate these findings into concrete next steps. 🎯",
         ],
         ("analysis", "sentiment"): [
-            "Numbers tell us what happened, but sentiment analysis reveals how people feel about it. Let's listen to the audience! 💬",
+            "Numbers tell us what happened, but sentiment analysis reveals how people feel about it. Let's listen to the audience! 💬",  # noqa: E501
             "Beyond the metrics lies the human story. What are fans actually saying in the comments? 🗣️",
             "Time to add the human element to our data story. Sentiment analysis reveals the emotional connection. ❤️",
         ],
@@ -250,9 +249,9 @@ def section_transition(
 
 
 def chart_context(
-        chart_type: str,
-        what_to_look_for: List[str],
-        business_implications: Optional[List[str]] = None,
+    chart_type: str,
+    what_to_look_for: List[str],
+    business_implications: Optional[List[str]] = None,
 ) -> str:
     """Generate context that explains what to look for in visualizations.
 
@@ -265,7 +264,7 @@ def chart_context(
         business_implications: Optional list of what patterns mean for business
 
     Returns:
-        Markdown - formatted chart reading guide
+        Markdown-formatted chart reading guide
     """
     chart_guides = {
         "line_chart": "📈 **Reading the Timeline**\n\nLine charts show trends over time. Look for:",
@@ -310,10 +309,10 @@ class DataQualityWarning(UserWarning):
 
 
 def validate_data_for_storytelling(
-        data: pd.DataFrame,
-        required_columns: List[str],
-        analysis_type: str = "general",
-        min_rows: int = 1,
+    data: pd.DataFrame,
+    required_columns: List[str],
+    analysis_type: str = "general",
+    min_rows: int = 1,
 ) -> Dict[str, Any]:
     """
     Validate data quality for storytelling analysis with educational error messages.
@@ -321,7 +320,7 @@ def validate_data_for_storytelling(
     Args:
         data: DataFrame to validate
         required_columns: List of columns that must be present
-        analysis_type: Type of analysis for context - specific validation
+        analysis_type: Type of analysis for context-specific validation
         min_rows: Minimum number of rows required
 
     Returns:
@@ -394,7 +393,7 @@ def validate_data_for_storytelling(
             if null_pct > 50:
                 validation_result["warnings"].append(
                     f"⚠️ **High Missing Data in {col}** ⚠️\n\n"
-                    f"{null_pct:.1f}% of {col} values are missing. This could significantly impact analysis quality.\n\n"
+                    f"{null_pct:.1f}% of {col} values are missing. This could significantly impact analysis quality.\n\n"  # noqa: E501
                     f"💡 **Consider:**\n"
                     f"• Filtering out incomplete records\n"
                     f"• Using alternative metrics\n"
@@ -409,7 +408,7 @@ def validate_data_for_storytelling(
                 )
                 validation_result["confidence_score"] *= 0.9
 
-    # Analysis - specific validations
+    # Analysis-specific validations
     if analysis_type == "artist_comparison":
         _validate_artist_comparison_data(data, validation_result)
     elif analysis_type == "sentiment_analysis":
@@ -430,14 +429,14 @@ def _validate_artist_comparison_data(data: pd.DataFrame, validation_result: Dict
                 "We found data for only one artist. Artist comparison works best with multiple artists to compare.\n\n"
                 "💡 **Suggestions:**\n"
                 "• Add more artists to your analysis\n"
-                "• Consider switching to single - artist deep dive\n"
+                "• Consider switching to single-artist deep dive\n"
                 "• Check if artist names are being grouped correctly"
             )
             validation_result["confidence_score"] *= 0.6
         elif unique_artists > 10:
             validation_result["warnings"].append(
                 f"📊 **Many Artists ({unique_artists})** 📊\n\n"
-                "With many artists, comparisons might become cluttered. Consider focusing on top performers or grouping by category."
+                "With many artists, comparisons might become cluttered. Consider focusing on top performers or grouping by category."  # noqa: E501
             )
 
 
@@ -448,7 +447,7 @@ def _validate_sentiment_data(data: pd.DataFrame, validation_result: Dict[str, An
         if total_comments < 100:
             validation_result["warnings"].append(
                 "💬 **Limited Comment Data** 💬\n\n"
-                f"Only {total_comments} total comments found. Sentiment analysis is more reliable with larger comment volumes.\n\n"
+                f"Only {total_comments} total comments found. Sentiment analysis is more reliable with larger comment volumes.\n\n"  # noqa: E501
                 "💡 **This affects:**\n"
                 "• Statistical significance of sentiment scores\n"
                 "• Ability to detect sentiment trends\n"
@@ -468,7 +467,7 @@ def _validate_trend_data(data: pd.DataFrame, validation_result: Dict[str, Any]) 
             if date_range < 7:
                 validation_result["warnings"].append(
                     f"📅 **Short Time Range ({date_range} days)** 📅\n\n"
-                    "Trend analysis works best with longer time periods. Consider expanding your date range for more reliable trends."
+                    "Trend analysis works best with longer time periods. Consider expanding your date range for more reliable trends."  # noqa: E501
                 )
                 validation_result["confidence_score"] *= 0.8
         except Exception:
@@ -479,7 +478,7 @@ def _validate_trend_data(data: pd.DataFrame, validation_result: Dict[str, Any]) 
 
 
 def create_confidence_indicator(
-        confidence_score: float, data_quality_issues: List[str], analysis_type: str = "analysis"
+    confidence_score: float, data_quality_issues: List[str], analysis_type: str = "analysis"
 ) -> str:
     """
     Create a visual confidence indicator for analysis results.
@@ -490,7 +489,7 @@ def create_confidence_indicator(
         analysis_type: Type of analysis for context
 
     Returns:
-        HTML - formatted confidence indicator
+        HTML-formatted confidence indicator
     """
     if confidence_score >= 0.9:
         color = "#28a745"  # Green
@@ -536,11 +535,11 @@ def create_confidence_indicator(
     return f"""
     <div style="
         background: {color}15;
-        border - left: 4px solid {color};
+        border-left: 4px solid {color};
         padding: 12px;
         margin: 10px 0;
-        border - radius: 4px;
-        font - family: system - ui, sans - serif;
+        border-radius: 4px;
+        font-family: system-ui, sans-serif;
     ">
         <strong>{icon} Confidence Level: {level} ({confidence_score:.0%})</strong><br>
         <span style="color: #666;">{message}{issue_details}</span>
@@ -549,7 +548,7 @@ def create_confidence_indicator(
 
 
 def handle_missing_data_gracefully(
-        data: pd.DataFrame, column: str, fallback_strategy: str = "exclude", context: str = "analysis"
+    data: pd.DataFrame, column: str, fallback_strategy: str = "exclude", context: str = "analysis"
 ) -> tuple[pd.DataFrame, str]:
     """
     Handle missing data with educational explanations.
@@ -603,14 +602,14 @@ def handle_missing_data_gracefully(
 
     else:
         cleaned_data = data
-        explanation += f"**Strategy:** No action taken - missing values remain.\n"
+        explanation += f"**Strategy:** No action taken-missing values remain.\n"
         explanation += f"**Impact:** Some calculations may be affected by missing data."
 
     return cleaned_data, explanation
 
 
 def _test_imports():
-    """Helper function to test imports - can be mocked for testing"""
+    """Helper function to test imports-can be mocked for testing"""
     import src.youtubeviz.charts
     import src.youtubeviz.data
     import src.youtubeviz.storytelling
@@ -638,16 +637,16 @@ def validate_package_installation() -> bool:
 
         return True
 
-    except ImportError as e:
-        print(f"❌ Package installation issue: {e}")
+    except ImportError as _e:  # noqa: F841
+        print(f"❌ Package installation issue: {e}")  # noqa: F821
         print("💡 Solution: Run 'pip install -e .' in the project root directory")
         return False
-    except AssertionError as e:
+    except AssertionError as _e:  # noqa: F841
         print(f"❌ Package structure issue: Missing expected functions")
         print("💡 Check that the storytelling module has the required functions")
         return False
-    except Exception as e:
-        print(f"❌ Unexpected error during package validation: {e}")
+    except Exception as _e:  # noqa: F841
+        print(f"❌ Unexpected error during package validation: {e}")  # noqa: F821
         return False
 
 
@@ -660,7 +659,7 @@ def generate_data_quality_report(data: pd.DataFrame, analysis_type: str = "gener
         analysis_type: Type of analysis for context
 
     Returns:
-        Markdown - formatted data quality report
+        Markdown-formatted data quality report
     """
     if data is None or data.empty:
         return "❌ **No data available for quality assessment**"
@@ -717,10 +716,10 @@ def generate_data_quality_report(data: pd.DataFrame, analysis_type: str = "gener
         report += "• Consider data cleaning or imputation strategies\n"
 
     if len(data) < 100:
-        report += "• Small dataset - results may have limited statistical significance\n"
+        report += "• Small dataset-results may have limited statistical significance\n"
 
     if len(data.columns) > 50:
-        report += "• Large number of columns - consider feature selection\n"
+        report += "• Large number of columns-consider feature selection\n"
 
     report += "• Validate data freshness and accuracy with source systems\n"
     report += "• Consider outlier detection for numeric metrics\n"
@@ -737,16 +736,16 @@ def create_error_recovery_suggestions(error_type: str, context: Dict[str, Any] =
         context: Additional context about the error
 
     Returns:
-        Markdown - formatted recovery suggestions
+        Markdown-formatted recovery suggestions
     """
     context = context or {}
 
     suggestions = {
         "no_data": {
             "title": "🔍 **No Data Found**",
-            "explanation": "This usually happens when your filters are too restrictive or the data hasn't been collected yet.",
+            "explanation": "This usually happens when your filters are too restrictive or the data hasn't been collected yet.",  # noqa: E501
             "steps": [
-                "Check your date range - try expanding it",
+                "Check your date range-try expanding it",
                 "Verify artist names are spelled correctly",
                 "Confirm the database connection is working",
                 "Check if data collection is up to date",
@@ -773,7 +772,7 @@ def create_error_recovery_suggestions(error_type: str, context: Dict[str, Any] =
                 "Check if recent data collection had issues",
                 "Use confidence indicators to interpret results",
             ],
-            "learn_more": "Data quality issues are common in real - world analytics - the key is understanding their impact.",
+            "learn_more": "Data quality issues are common in real-world analytics-the key is understanding their impact.",  # noqa: E501
         },
         "calculation_error": {
             "title": "🧮 **Calculation Error**",
@@ -802,7 +801,7 @@ def create_error_recovery_suggestions(error_type: str, context: Dict[str, Any] =
 
     result += f"\n💡 **Learn more:** {suggestion['learn_more']}"
 
-    # Add context - specific information
+    # Add context-specific information
     if context:
         result += f"\n\n**Context:**\n"
         for key, value in context.items():

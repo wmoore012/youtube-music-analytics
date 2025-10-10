@@ -174,8 +174,8 @@ class TestUtilityFunctions:
         standardized = standardize_residuals(residuals)
 
         # Standardized residuals should have mean ~0 and std ~1
-        assert abs(np.mean(standardized)) < 1e - 10  # noqa: E999
-        assert abs(np.std(standardized) - 1.0) < 1e - 10
+        assert abs(np.mean(standardized)) < 1e-10
+        assert abs(np.std(standardized) - 1.0) < 1e-10
 
 
 class TestIntegrationScenarios:
@@ -209,7 +209,7 @@ class TestIntegrationScenarios:
 
         # Verify uncertainty handling
         needs_more = detect_needs_more_data(df["total_comments"], min_threshold=5)
-        assert np.any(needs_more)  # Should flag some low - comment videos
+        assert np.any(needs_more)  # Should flag some low-comment videos
 
     def test_standout_video_detection(self):
         """Test pipeline for detecting standout videos using residual analysis."""

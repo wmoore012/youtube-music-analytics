@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 import pymysql
+from dotenv import load_dotenv
 
-ISRC_RE = re.compile(r"ISRC:?\s*([A - Z]{2}[A - Z0 - 9]{10})", re.IGNORECASE)
+ISRC_RE = re.compile(r"ISRC:?\s*([A-Z]{2}[A-Z0-9]{10})", re.IGNORECASE)
 
 
 def main(limit: Optional[int] = None) -> int:
@@ -43,7 +43,7 @@ def main(limit: Optional[int] = None) -> int:
             descr = r.get("descr")
             if isinstance(descr, (bytes, bytearray)):
                 try:
-                    descr = descr.decode("utf - 8", errors="ignore")
+                    descr = descr.decode("utf-8", errors="ignore")
                 except Exception:
                     descr = None
             if descr and isinstance(descr, str):

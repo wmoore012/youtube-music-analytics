@@ -8,7 +8,7 @@ Key Features:
 - Dependency checking before deletion to prevent orphaned data
 - Configurable retention periods via environment variables
 - Detailed deletion reports with dependency information
-- Dry - run mode for safe testing
+- Dry-run mode for safe testing
 - UTC timestamp consistency across all operations
 - Explicit confirmation required for destructive operations
 
@@ -26,13 +26,13 @@ Usage:
     print(f"Deleted {result.videos_deleted} videos")
 """
 
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
 import logging
 import os
-from typing import Dict, List, Optional, Set
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
-from sqlalchemy import Engine, delete, select, text
+from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
 # Constants
@@ -151,7 +151,7 @@ class DataRetentionManager:
             for video in videos:
                 dependencies = self._check_video_dependencies(conn, video["video_id"])
 
-                # Handle timezone - naive datetimes from database
+                # Handle timezone-naive datetimes from database
                 published_at = video["published_at"]
                 if published_at.tzinfo is None:
                     published_at = published_at.replace(tzinfo=timezone.utc)
@@ -228,7 +228,7 @@ class DataRetentionManager:
 
     def cleanup_orphaned_data(self, dry_run: bool = True) -> DeletionResult:
         """
-        Clean up orphaned data that references non - existent videos.
+        Clean up orphaned data that references non-existent videos.
 
         Args:
             dry_run: If True, only report what would be cleaned without actual deletion
@@ -467,7 +467,7 @@ class DataRetentionManager:
         )
 
     def _find_orphaned_metrics(self, conn: Connection) -> List[str]:
-        """Find metrics records that reference non - existent videos."""
+        """Find metrics records that reference non-existent videos."""
         query = text(
             """
             SELECT DISTINCT m.video_id
@@ -481,7 +481,7 @@ class DataRetentionManager:
         return [row[0] for row in result]
 
     def _find_orphaned_comments(self, conn: Connection) -> List[str]:
-        """Find comment records that reference non - existent videos."""
+        """Find comment records that reference non-existent videos."""
         query = text(
             """
             SELECT DISTINCT c.video_id
@@ -495,7 +495,7 @@ class DataRetentionManager:
         return [row[0] for row in result]
 
     def _find_orphaned_isrc_links(self, conn: Connection) -> List[str]:
-        """Find ISRC link records that reference non - existent videos."""
+        """Find ISRC link records that reference non-existent videos."""
         query = text(
             """
             SELECT DISTINCT l.video_id

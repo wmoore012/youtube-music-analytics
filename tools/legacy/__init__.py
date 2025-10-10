@@ -1,5 +1,5 @@
 """
-Legacy tools directory - Deprecated tools with migration guidance.
+Legacy tools directory-Deprecated tools with migration guidance.
 
 This directory contains deprecated tools that are being phased out.
 Each tool includes deprecation warnings and guidance for migrating

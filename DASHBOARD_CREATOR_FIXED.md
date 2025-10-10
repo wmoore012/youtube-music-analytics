@@ -1,4 +1,4 @@
-# 🎯 Dashboard Creator Fixed - Enterprise Ready
+# 🎯 Dashboard Creator Fixed-Enterprise Ready
 
 ## What Was Fixed
 
@@ -19,19 +19,19 @@
 
 ### Before (Fragile)
 ```python
-# Raw JSON surgery - BAD
+# Raw JSON surgery-BAD
 with open(notebook_path, 'r') as f:
     notebook = json.load(f)
-# Rewrite every cell with try/except - BAD
+# Rewrite every cell with try/except-BAD
 cell['source'] = bulletproof_code.split('\n')
 
-# Unsafe subprocess - BAD  
+# Unsafe subprocess-BAD  
 subprocess.run(cmd, capture_output=True)
 ```
 
 ### After (Enterprise)
 ```python
-# Proper subprocess handling - GOOD
+# Proper subprocess handling-GOOD
 def _run(cmd: list[str], critical: bool = True) -> None:
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
@@ -41,11 +41,11 @@ def _run(cmd: list[str], critical: bool = True) -> None:
         else:
             print(f"⚠️  {msg}")
 
-# Tool presence checking - GOOD
+# Tool presence checking-GOOD
 if shutil.which("nbstripout"):
     _run(["nbstripout", str(target_path)], critical=False)
 
-# Papermill best practices - GOOD
+# Papermill best practices-GOOD
 pm.execute_notebook(
     str(target_path),
     str(executed_path),

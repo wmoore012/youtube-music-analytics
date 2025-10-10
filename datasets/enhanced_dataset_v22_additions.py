@@ -76,7 +76,7 @@ def get_v22_additions():
                 SlangCategory.NEUTRAL_QUESTIONS,
                 Aspect.GENERAL,
                 0.75,
-                "NYC confirmation question - neutral unless boosted",
+                "NYC confirmation question-neutral unless boosted",
             ),
         ]
     )
@@ -158,7 +158,7 @@ def get_v22_additions():
                 SlangCategory.CULTURAL_IDENTITY,
                 Aspect.ARTIST,
                 0.95,
-                "Queer vernacular - flawless performance",
+                "Queer vernacular-flawless performance",
                 gen_z_slang=True,
             ),
             EnhancedMusicSlangEntry(
@@ -168,7 +168,7 @@ def get_v22_additions():
                 SlangCategory.PRAISE_GENERAL,
                 Aspect.GENERAL,
                 0.88,
-                "Gen Z template - giving off main character energy",
+                "Gen Z template-giving off main character energy",
                 gen_z_slang=True,
             ),
             EnhancedMusicSlangEntry(
@@ -178,7 +178,7 @@ def get_v22_additions():
                 SlangCategory.PRAISE_PERFORMANCE,
                 Aspect.VOCALS,
                 0.90,
-                "Queer vernacular - delivering excellent vocals",
+                "Queer vernacular-delivering excellent vocals",
                 gen_z_slang=True,
             ),
         ]
@@ -213,7 +213,7 @@ def get_v22_additions():
                 SlangCategory.CRITICISM_NEGATIVE,
                 Aspect.GENERAL,
                 0.85,
-                "Social media criticism - more negative responses than positive",
+                "Social media criticism-more negative responses than positive",
             ),
             EnhancedMusicSlangEntry(
                 "glazing",
@@ -222,7 +222,7 @@ def get_v22_additions():
                 SlangCategory.CRITICISM_NEGATIVE,
                 Aspect.GENERAL,
                 0.84,
-                "Calling out excessive praise - 2024 Gen Z term",
+                "Calling out excessive praise-2024 Gen Z term",
                 gen_z_slang=True,
             ),
         ]
@@ -249,7 +249,7 @@ def get_v22_additions():
                 SlangCategory.CRITICISM_NEGATIVE,
                 Aspect.GENERAL,
                 0.85,
-                "Stop / quit - negative dismissal",
+                "Stop / quit-negative dismissal",
             ),
             EnhancedMusicSlangEntry(
                 "trying too hard",
@@ -350,7 +350,7 @@ def test_v22_additions():
     print(f"   Neutral: {sentiment_counts['neutral']} ({neu_percent:.1f}%)")
 
     # Check if additions help balance
-    balance_score = 1.0 - (max(abs(pos_percent - 33.3), abs(neg_percent - 33.3), abs(neu_percent - 33.3)) / 66.7)
+    balance_score = 1.0 - (max(abs(pos_percent-33.3), abs(neg_percent-33.3), abs(neu_percent-33.3)) / 66.7)
     print(f"   Addition balance score: {balance_score:.3f}")
 
     if balance_score > 0.8:
@@ -398,8 +398,8 @@ def simulate_combined_dataset():
         print(f"     Balance: {combined_quality.balance_score:.3f}")
 
         # Calculate improvement
-        size_improvement = combined_quality.total_samples - current_quality.total_samples
-        balance_improvement = combined_quality.balance_score - current_quality.balance_score
+        size_improvement = combined_quality.total_samples-current_quality.total_samples
+        balance_improvement = combined_quality.balance_score-current_quality.balance_score
 
         print(f"\n📈 Improvements:")
         print(

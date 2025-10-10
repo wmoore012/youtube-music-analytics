@@ -7,8 +7,8 @@ It performs a minimal test run to verify all components work correctly.
 """
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +17,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from dotenv import load_dotenv
 from sqlalchemy import text
 
-from web.etl_entrypoints import run_channel_etl
 
 
 def test_etl_pipeline():
@@ -91,7 +90,7 @@ def test_etl_pipeline():
     # Test 5: Small ETL execution (dry run)
     print("\n5. Testing ETL instantiation...")
     try:
-        _etl = YouTubeChannelETL(
+        _etl = YouTubeChannelETL(  # noqa: F841
             api_key=os.getenv("YOUTUBE_API_KEY"),
             db_host=os.getenv("DB_HOST"),
             db_port=int(os.getenv("DB_PORT", 3306)),
@@ -107,7 +106,7 @@ def test_etl_pipeline():
     # Test 6: Sentiment job instantiation
     print("\n6. Testing sentiment job...")
     try:
-        _sentiment_job = YouTubeCommentSentimentJob()
+        _sentiment_job = YouTubeCommentSentimentJob()  # noqa: F841
         print("   ✅ Sentiment job created successfully")
     except Exception as e:
         print(f"   ❌ Sentiment job creation failed: {e}")

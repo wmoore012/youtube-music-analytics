@@ -16,7 +16,7 @@ def test_extract_collaboration_clauses_handles_multiple_patterns():
 
 
 def test_parse_possessive_title_uses_collaboration_helper():
-    """Possessive - form titles should parse featured artists only once."""
+    """Possessive-form titles should parse featured artists only once."""
 
     result = parse_youtube_title("Singer One's song Bright Lights feat. Guest One", "")
 
@@ -28,7 +28,7 @@ def test_parse_artist_list_title_deduplicates_collaborators():
     """Repeated collaborator names should be reported once in the featured list."""
 
     result = parse_youtube_title(
-        "Singer One & Singer Two - Bright Lights feat. Guest One feat. Guest One",
+        "Singer One & Singer Two-Bright Lights feat. Guest One feat. Guest One",
         "",
     )
 

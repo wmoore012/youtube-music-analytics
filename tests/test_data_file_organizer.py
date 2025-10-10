@@ -1,23 +1,23 @@
 #!/usr / bin / env python3
 """
-Tests for Data File Organizer - TDD Implementation
+Tests for Data File Organizer-TDD Implementation
 
 Tests written FIRST to drive the design of the data file organization system.
 This focuses on the REAL problem: scattered CSV / JSON files throughout the codebase.
 """
 
 import csv
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import tempfile
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-# Import the classes we're going to implement (will fail initially - that's TDD!)
+# Import the classes we're going to implement (will fail initially-that's TDD!)
 try:
     from src.data_organization.data_file_organizer import (
         DataFileInfo,
@@ -27,7 +27,7 @@ try:
         ValidationResult,
     )
 except ImportError:
-    # Expected during TDD - we'll implement these classes
+    # Expected during TDD-we'll implement these classes
     pass
 
 
@@ -195,7 +195,7 @@ class TestDataFileOrganizer:
 
     def test_detect_duplicate_files(self, file_organizer, temp_workspace):
         """Test detection of duplicate files by content hash."""
-        # Arrange - create duplicate file
+        # Arrange-create duplicate file
         duplicate_content = '{"test": "data"}'
         (temp_workspace / "duplicate1.json").write_text(duplicate_content)
         (temp_workspace / "duplicate2.json").write_text(duplicate_content)
@@ -272,7 +272,7 @@ class TestDataFileInfo:
             content_hash = file_info.calculate_content_hash()
 
             assert content_hash is not None
-            assert len(content_hash) == 64  # SHA - 256 hex digest length
+            assert len(content_hash) == 64  # SHA-256 hex digest length
         finally:
             os.unlink(temp_path)
 
@@ -355,7 +355,7 @@ class TestOrganizationResult:
         assert result_dict["files_moved"] == 5
 
     def test_generate_organization_report(self):
-        """Test generating human - readable organization report."""
+        """Test generating human-readable organization report."""
         result = OrganizationResult(
             success=True,
             files_moved=15,
@@ -411,17 +411,17 @@ class TestDataFileOrganizerIntegration:
         """Test complete workflow of file discovery, categorization, and organization."""
         # This test would use real files from the codebase
         # For now, we'll skip it until implementation is ready
-        pytest.skip("Integration test - requires implementation")
+        pytest.skip("Integration test-requires implementation")
 
     @pytest.mark.integration
     def test_real_codebase_file_discovery(self):
         """Test file discovery on the actual codebase."""
-        pytest.skip("Integration test - requires implementation")
+        pytest.skip("Integration test-requires implementation")
 
     @pytest.mark.integration
     def test_backup_and_restore_workflow(self):
         """Test complete backup and restore workflow."""
-        pytest.skip("Integration test - requires implementation")
+        pytest.skip("Integration test-requires implementation")
 
 
 if __name__ == "__main__":

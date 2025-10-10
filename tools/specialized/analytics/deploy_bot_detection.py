@@ -14,12 +14,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from collections import Counter
-from datetime import datetime, timedelta
 import logging
 import re
 
-import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
@@ -84,7 +81,7 @@ class EnhancedBotDetector:
             ],
             "low_effort": [
                 r'^[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]*$',  # Only symbols
-                r"^.{1,2}$",  # Very short (1 - 2 chars)
+                r"^.{1,2}$",  # Very short (1-2 chars)
                 r"^(first|second|third|early|late)!*$",
             ],
         }
@@ -102,7 +99,7 @@ class EnhancedBotDetector:
     def calculate_bot_score(self, comment_data: dict) -> float:  # noqa: C901
         """Calculate bot probability score (0.0 = human, 1.0 = bot)."""
         score = 0.0
-        _text_item = comment_data["comment_text"]
+        _text_item = comment_data["comment_text"]  # noqa: F841
 
         # If whitelisted as fan, very low bot score
         if self.is_whitelisted_fan(text):
@@ -119,9 +116,9 @@ class EnhancedBotDetector:
                     elif category == "repetitive_patterns":
                         score += 0.5  # High penalty for repetitive
                     elif category == "low_effort":
-                        score += 0.4  # Medium - high penalty for low effort
+                        score += 0.4  # Medium-high penalty for low effort
 
-        # Length - based scoring
+        # Length-based scoring
         text_length = len(text.strip())
         if text_length <= 2:
             score += 0.6
@@ -149,7 +146,7 @@ class EnhancedBotDetector:
         return min(score, 1.0)  # Cap at 1.0
 
     def analyze_temporal_patterns(self, user_comments: pd.DataFrame) -> float:
-        """Analyze temporal patterns for bot - like behavior."""
+        """Analyze temporal patterns for bot-like behavior."""
         if len(user_comments) < 2:
             return 0.0
 
@@ -159,7 +156,7 @@ class EnhancedBotDetector:
         else:
             return 0.0
 
-        # Check for rapid - fire commenting (bot indicator)
+        # Check for rapid-fire commenting (bot indicator)
         time_diffs = timestamps.diff().dropna()
         rapid_comments = sum(1 for diff in time_diffs if diff.total_seconds() < 60)  # < 1 minute apart
 
@@ -172,7 +169,7 @@ class EnhancedBotDetector:
 
     def calculate_engagement_authenticity(self, comment_data: dict) -> float:
         """Calculate engagement authenticity score (higher = more authentic)."""
-        _text_item = comment_data["comment_text"]
+        _text_item = comment_data["comment_text"]  # noqa: F841
 
         # Authentic engagement indicators
         authenticity_score = 0.0
@@ -303,7 +300,7 @@ def deploy_bot_detection():
                 authenticity_score = detector.calculate_engagement_authenticity(comment_data)
 
                 # Adjust bot score based on authenticity
-                final_bot_score = bot_score * (1 - authenticity_score * 0.5)
+                final_bot_score = bot_score * (1-authenticity_score * 0.5)
 
                 # Additional penalty for duplicate text
                 if row["has_duplicate_text"]:
@@ -385,7 +382,7 @@ def validate_bot_detection():
         logger.info(f"   - Bot suspected: {bot_suspected}")
         logger.info(f"   - Bot rate: {bot_rate * 100:.1f}%")
 
-        # Sample some bot - suspected comments for review
+        # Sample some bot-suspected comments for review
         sample_bots = conn.execute(
             text(
                 """
@@ -397,7 +394,7 @@ def validate_bot_detection():
             )
         ).fetchall()
 
-        logger.info("🤖 Sample bot - suspected comments:")
+        logger.info("🤖 Sample bot-suspected comments:")
         for i, (comment,) in enumerate(sample_bots, 1):
             logger.info(f"   {i}. '{comment[:50]}{'...' if len(comment) > 50 else ''}'")
 

@@ -2,11 +2,11 @@
 Tests for data migration system that moves CSV / JSON files to database tables.
 """
 
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import tempfile
+from datetime import datetime
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pandas as pd

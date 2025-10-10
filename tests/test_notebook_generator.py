@@ -1,5 +1,5 @@
 """
-Tests for production - ready notebook template system.
+Tests for production-ready notebook template system.
 
 This module tests the NotebookTemplateManager to ensure it generates
 notebooks with correct chart counts and bulletproof CI / CD validation.
@@ -88,7 +88,7 @@ class TestNotebookTemplateManager:
         ]
         assert len(chart_markdown_cells) == 20
 
-        # Check that chart IDs are sequential 1 - 20
+        # Check that chart IDs are sequential 1-20
         chart_numbers = []
         for cell in chart_markdown_cells:
             source = "".join(cell["source"])
@@ -106,7 +106,7 @@ class TestNotebookTemplateManager:
 
         source_code = "".join(validation_cell["source"])
 
-        # Check that it loops through 1 - 21 (range(1, 21))
+        # Check that it loops through 1-21 (range(1, 21))
         assert "range(1, 21)" in source_code
 
         # Check that it reports correct totals
@@ -124,7 +124,7 @@ class TestNotebookTemplateManager:
         source = "".join(header_cell["source"])
 
         # Should mention 20 charts
-        assert "20 Data - Science Grade Charts" in source
+        assert "20 Data-Science Grade Charts" in source
         assert "Total Charts**: 20" in source
 
     def test_imports_cell_includes_all_modules(self):
@@ -197,7 +197,7 @@ class TestNotebookTemplateManager:
             manager.save_notebook(notebook, temp_path)
 
             # Load and verify
-            with open(temp_path, "r", encoding="utf - 8") as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 loaded_notebook = json.load(f)
 
             assert loaded_notebook == notebook
@@ -219,7 +219,7 @@ class TestNotebookTemplateManager:
             assert os.path.exists(temp_path)
 
             # Load and verify structure
-            with open(temp_path, "r", encoding="utf - 8") as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 notebook = json.load(f)
 
             # Should have all 20 charts

@@ -5,12 +5,9 @@ Integrates the advanced scoring system with notebook visualizations.
 Uses REAL database data with bulletproof execution patterns.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict
 
-import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -374,7 +371,7 @@ def get_scoring_insights(momentum_df: pd.DataFrame, engagement_df: pd.DataFrame)
         high_momentum = momentum_df[momentum_df.get("momentum_category", "") == "high_momentum"]
         if not high_momentum.empty:
             insights["recommendations"].append(
-                f"🚀 {len(high_momentum)} artists showing high momentum - consider increased investment"
+                f"🚀 {len(high_momentum)} artists showing high momentum-consider increased investment"
             )
 
     if not engagement_df.empty:
@@ -393,7 +390,7 @@ def get_scoring_insights(momentum_df: pd.DataFrame, engagement_df: pd.DataFrame)
         high_engagement = engagement_df[engagement_df["score_value"] > 0.8]
         if not high_engagement.empty:
             insights["recommendations"].append(
-                f"📊 {len(high_engagement)} videos with exceptional engagement - analyze for patterns"
+                f"📊 {len(high_engagement)} videos with exceptional engagement-analyze for patterns"
             )
 
     return insights

@@ -6,12 +6,12 @@ Ensures all comment sampling across the codebase uses UNIQUE comments.
 Prevents data leakage between training, testing, classification, and benchmarking.
 """
 
-from datetime import datetime
 import hashlib
 import re
 import sqlite3
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import datetime
+from typing import Dict, List, Optional
 
 import pandas as pd
 from sqlalchemy import text
@@ -98,7 +98,7 @@ class UniqueCommentManager:
         """Create a consistent hash for a comment."""
         # Normalize text for consistent hashing
         normalized = comment_text.strip().lower()
-        return hashlib.sha256(normalized.encode("utf - 8")).hexdigest()[:16]
+        return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
 
     def is_comment_used(self, comment_text: str) -> bool:
         """Check if a comment has already been used."""
@@ -242,7 +242,7 @@ class UniqueCommentManager:
                         video_id=row[1],
                         channel_title=row[2],
                         like_count=row[3],
-                        notes=f"Auto - allocated for {system_name}",
+                        notes=f"Auto-allocated for {system_name}",
                     ):
                         unique_comments.append(
                             {
@@ -350,17 +350,17 @@ class UniqueCommentManager:
         self, system_name: str, usage_type: str, count: int, music_domain_filter: bool = True, min_engagement: int = 1
     ) -> List[Dict]:
         """
-        Get ML - ready comments with enhanced metadata and music domain filtering.
+        Get ML-ready comments with enhanced metadata and music domain filtering.
 
         Args:
             system_name: Name of the system requesting data
             usage_type: Type of usage (training, testing, evaluation)
             count: Number of comments to retrieve
-            music_domain_filter: Whether to filter for music - related content
+            music_domain_filter: Whether to filter for music-related content
             min_engagement: Minimum like count threshold
 
         Returns:
-            List of comment dictionaries with ML - ready metadata
+            List of comment dictionaries with ML-ready metadata
         """
         try:
             engine = get_engine()
@@ -428,7 +428,7 @@ class UniqueCommentManager:
                         like_count=row[3],
                         notes=f"ML export for {system_name}",
                     ):
-                        # Create ML - ready comment data
+                        # Create ML-ready comment data
                         ml_comment_data = {
                             "comment_text": comment_text_item,
                             "normalized_text": self._normalize_for_ml(comment_text_item),
@@ -440,7 +440,7 @@ class UniqueCommentManager:
                             "video_title": row[6],
                             "view_count": row[7] or 0,
                             "video_published_at": row[8],
-                            # ML - specific metadata
+                            # ML-specific metadata
                             "unique_hash": comment_hash,
                             "music_domain": self._classify_music_domain(comment_text_item, row[2], row[6]),
                             "contains_music_slang": self._contains_music_slang(comment_text_item),
@@ -458,11 +458,11 @@ class UniqueCommentManager:
                         if len(ml_ready_comments) >= count:
                             break
 
-            print(f"✅ Retrieved {len(ml_ready_comments)} ML - ready comments for {system_name}")
+            print(f"✅ Retrieved {len(ml_ready_comments)} ML-ready comments for {system_name}")
             return ml_ready_comments
 
         except Exception as e:
-            print(f"❌ Error fetching ML - ready comments: {e}")
+            print(f"❌ Error fetching ML-ready comments: {e}")
             return []
 
     def export_ml_dataset(
@@ -630,14 +630,14 @@ class UniqueCommentManager:
 
             # Calculate quality metrics
             avg_text_length = sum(text_lengths) / len(text_lengths) if text_lengths else 0
-            label_imbalance_score = 0.5  # Placeholder - would need actual labels
+            label_imbalance_score = 0.5  # Placeholder-would need actual labels
 
             # Create quality report
             report = DataQualityReport(
                 dataset_id=dataset_id,
                 total_samples=total_samples,
                 valid_samples=valid_samples,
-                invalid_samples=total_samples - valid_samples,
+                invalid_samples=total_samples-valid_samples,
                 empty_text_count=empty_text_count,
                 duplicate_count=duplicate_count,
                 low_confidence_count=0,  # Placeholder
@@ -672,7 +672,7 @@ class UniqueCommentManager:
         normalized = text.strip()
 
         # Preserve music slang terms (don't lowercase these)
-        _music_slang_terms = [
+        _music_slang_terms = [  # noqa: F841
             "GOAT",
             "GOATED",
             "PERIODT",
@@ -685,7 +685,7 @@ class UniqueCommentManager:
             "HITS DIFFERENT",
         ]
 
-        # Simple normalization - more sophisticated version would use proper NLP
+        # Simple normalization-more sophisticated version would use proper NLP
         normalized = re.sub(r"\s+", " ", normalized)  # Collapse whitespace
         normalized = re.sub(
             r"[^\w\s\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]",
@@ -787,7 +787,7 @@ class UniqueCommentManager:
         """Export dataset to JSONL format."""
         import json
 
-        with open(filename, "w", encoding="utf - 8") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             for comment in dataset.comments:
                 f.write(json.dumps(comment.dict(), ensure_ascii=False) + "\n")
 

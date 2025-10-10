@@ -55,7 +55,7 @@ class TestEnhanceChartBeauty:
 
         # Verify the result is not None and methods were called
         assert result is not None
-        # For now, just check that we get a result - the exact method calls
+        # For now, just check that we get a result-the exact method calls
         # depend on the internal implementation details
 
     def test_emotional_themes(self):
@@ -248,9 +248,9 @@ class TestCreateChartAnnotations:
         insights = ["Test"]
         highlight_points = [
             {"x": 5, "y": 100},  # Valid
-            {"x": 10},  # Invalid - missing y
-            {"y": 50},  # Invalid - missing x
-            "invalid",  # Invalid - not a dict
+            {"x": 10},  # Invalid-missing y
+            {"y": 50},  # Invalid-missing x
+            "invalid",  # Invalid-not a dict
         ]
 
         annotations = create_chart_annotations(insights, "line", highlight_points)

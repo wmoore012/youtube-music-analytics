@@ -14,19 +14,19 @@ Key Features:
 - Data quality validation
 """
 
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import re
 import sys
 import time
+from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 import pandas as pd
 import pytest
+from nbconvert.preprocessors import ExecutePreprocessor
 
 # Import our validation system
 from src.data_organization.notebook_validator import NotebookValidator, ValidationResult
@@ -91,7 +91,7 @@ class RobustNotebookTester:
             raise NotebookExecutionError(f"Notebook not found: {notebook_path}")
 
         # Load notebook
-        with open(notebook_path, "r", encoding="utf - 8") as f:
+        with open(notebook_path, "r", encoding="utf-8") as f:
             nb = nbformat.read(f, as_version=4)
 
         # Execute notebook
@@ -102,7 +102,7 @@ class RobustNotebookTester:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         executed_path = output_dir / f"{notebook_path.stem}-executed.ipynb"
-        with open(executed_path, "w", encoding="utf - 8") as f:
+        with open(executed_path, "w", encoding="utf-8") as f:
             nbformat.write(executed_nb, f)
 
         # Validate execution results
@@ -464,7 +464,7 @@ class RobustNotebookTester:
         report_path = Path(output_path)
         report_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(report_path, "w", encoding="utf - 8") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
 
         return str(report_path)

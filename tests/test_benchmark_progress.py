@@ -41,7 +41,7 @@ def test_summarize_series_returns_expected_keys(benchmark_module):
 
     assert result is not None
     assert result["n"] == 4
-    assert pytest.approx(result["mean"], rel=1e - 6) == 2.5  # noqa: E999
+    assert pytest.approx(result["mean"], rel=1e-6) == 2.5
     assert result["median"] == 2.5
     assert set(result) >= {
         "n",
@@ -96,7 +96,7 @@ def test_analyze_history_prints_table_header(benchmark_module, capsys):
     """History analysis should render a compact table for known metrics."""
 
     data = {
-        "date": "2024 - 01 - 01T00:00:00",
+        "date": "2024-01-01T00:00:00",
         "test_coverage": 75.0,
         "duplicate_functions": 3,
     }

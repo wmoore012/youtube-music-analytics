@@ -15,11 +15,10 @@ Usage:
     archiver.archive_executed_notebook("MusicScope™_Professional_Dashboard.ipynb")
 """
 
-from datetime import datetime
 import logging
-import os
-from pathlib import Path
 import shutil
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Set up logging
@@ -129,7 +128,7 @@ class NotebookArchiver:
         Returns:
             Dictionary with operation results
         """
-        logger.info(f"🔄 Auto - archiving workflow for {notebook_name}")
+        logger.info(f"🔄 Auto-archiving workflow for {notebook_name}")
 
         # Archive executed notebook
         archived_path = self.archive_executed_notebook(notebook_name)
@@ -145,7 +144,7 @@ class NotebookArchiver:
             "timestamp": datetime.now().isoformat(),
         }
 
-        logger.info(f"✅ Auto - archiving complete for {notebook_name}")
+        logger.info(f"✅ Auto-archiving complete for {notebook_name}")
         return result
 
     def get_archive_status(self) -> Dict[str, Any]:
@@ -186,7 +185,7 @@ def setup_auto_archiving():
     for notebook in essential_notebooks:
         archiver.auto_archive_and_cleanup(notebook)
 
-    logger.info("🎯 Auto - archiving setup complete")
+    logger.info("🎯 Auto-archiving setup complete")
 
 
 def main():

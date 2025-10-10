@@ -1,20 +1,19 @@
 #!/usr / bin / env python3
 """
-Environment Safety Checker - Repository Security Validation
+Environment Safety Checker-Repository Security Validation
 =========================================================
 
 Ensures sensitive files (.env, credentials, etc.) are only committed to staging repository.
 Critical security check for preventing accidental exposure of secrets.
 
-Built by Grammy - nominated producer + M.S. Data Science student.
+Built by Grammy-nominated producer + M.S. Data Science student.
 """
 
 import json
-import os
-from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Set
+from pathlib import Path
+from typing import Dict, List
 
 
 class EnvironmentSafetyChecker:
@@ -58,7 +57,7 @@ class EnvironmentSafetyChecker:
         """Get list of files staged for commit."""
         try:
             result = subprocess.run(
-                ["git", "diff", "--cached", "--name - only"], capture_output=True, text=True, check=True
+                ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, check=True
             )
             return result.stdout.strip().split("\n") if result.stdout.strip() else []
         except subprocess.CalledProcessError:
@@ -75,7 +74,7 @@ class EnvironmentSafetyChecker:
         status = {}
         for pattern in self.sensitive_patterns:
             # Check if pattern is commented out (not ignored)
-            __pattern_escaped = pattern.replace("*", r"\*").replace(".", r"\.")
+            __pattern_escaped = pattern.replace("*", r"\*").replace(".", r"\.")  # noqa: F841
             is_ignored = f"\n{pattern}\n" in gitignore_content or gitignore_content.startswith(f"{pattern}\n")
             is_commented = f"# {pattern}" in gitignore_content
 
@@ -212,11 +211,11 @@ class EnvironmentSafetyChecker:
             recommendations.append("Use: python scripts / repo_switcher.py switch staging")
 
         if target == "staging":
-            recommendations.append("Staging repository active - full agent collaboration enabled")
+            recommendations.append("Staging repository active-full agent collaboration enabled")
             recommendations.append("All development files accessible for agent assistance")
 
         if target == "public":
-            recommendations.append("Public repository active - ensure no sensitive data in commits")
+            recommendations.append("Public repository active-ensure no sensitive data in commits")
             recommendations.append("Use staging repository for development with sensitive data")
 
         return recommendations

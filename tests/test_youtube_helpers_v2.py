@@ -1,4 +1,3 @@
-# tests / icatalog_public / oss / test_youtube_helpers_v2.py
 """
 TDD Tests for YouTube Helpers v2
 
@@ -9,8 +8,7 @@ Following the TDD pattern established by title_credit_parser_v2.
 import os
 
 import pytest
-
-from src.icatalog_public.oss.youtube_helpers_v2 import (
+from src.public.oss.youtube_helpers_v2 import (
     classify_video_version,
     clean_video_title,
     extract_artist_from_channel,
@@ -80,13 +78,13 @@ class TestExtractVideoId:
             extract_video_id(item)
 
     def test_extract_video_id_whitespace_video_id(self):
-        """Test handling whitespace - only video ID."""
+        """Test handling whitespace-only video ID."""
         item = {"id": {"videoId": "   "}}
         with pytest.raises(ValueError, match="Video ID cannot be empty"):
             extract_video_id(item)
 
     def test_extract_video_id_non_string_video_id(self):
-        """Test handling non - string video ID."""
+        """Test handling non-string video ID."""
         item = {"id": {"videoId": 123}}
         with pytest.raises(ValueError, match="Video ID must be string"):
             extract_video_id(item)
@@ -121,7 +119,7 @@ class TestNormalizeString:
             normalize_string(None)
 
     def test_normalize_string_non_string_input(self):
-        """Test handling non - string input."""
+        """Test handling non-string input."""
         with pytest.raises(ValueError, match="Text must be string"):
             normalize_string(123)
 
@@ -131,7 +129,7 @@ class TestNormalizeString:
             normalize_string("")
 
     def test_normalize_string_whitespace_only(self):
-        """Test handling whitespace - only input."""
+        """Test handling whitespace-only input."""
         with pytest.raises(ValueError, match="Text cannot be empty"):
             normalize_string("   ")
 
@@ -146,7 +144,7 @@ class TestClassifyVideoVersion:
 
     def test_classify_video_version_official_audio(self):
         """Test classifying official audio."""
-        result = classify_video_version("Song Title", "Artist - Topic")
+        result = classify_video_version("Song Title", "Artist-Topic")
         assert result == "Official Audio"
 
     def test_classify_video_version_live(self):
@@ -210,7 +208,7 @@ class TestExtractArtistFromChannel:
 
     def test_extract_artist_from_channel_topic(self):
         """Test extraction removing Topic suffix."""
-        result = extract_artist_from_channel("Artist Name - Topic")
+        result = extract_artist_from_channel("Artist Name-Topic")
         assert result == "Artist Name"
 
     def test_extract_artist_from_channel_official(self):
@@ -277,7 +275,7 @@ class TestValidateVideoData:
             validate_video_data(None)
 
     def test_validate_video_data_non_dict_input(self):
-        """Test handling non - dict input."""
+        """Test handling non-dict input."""
         with pytest.raises(ValueError, match="Video data must be dict"):
             validate_video_data("not a dict")
 
@@ -288,7 +286,7 @@ class TestValidatePlaylistData:
     def test_validate_playlist_data_valid(self):
         """Test validating valid playlist data."""
         playlist_data = {
-            "id": "PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q",
+            "id": "PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q",
             "snippet": {"title": "Test Playlist"},
         }
         result = validate_playlist_data(playlist_data)
@@ -320,33 +318,33 @@ class TestCleanVideoTitle:
 
     def test_clean_video_title_basic(self):
         """Test basic title cleaning."""
-        result = clean_video_title("Artist - Song Title")
-        assert result == "Artist - Song Title"
+        result = clean_video_title("Artist-Song Title")
+        assert result == "Artist-Song Title"
 
     def test_clean_video_title_remove_official_music_video(self):
         """Test removing Official Music Video."""
-        result = clean_video_title("Artist - Song Title (Official Music Video)")
-        assert result == "Artist - Song Title"
+        result = clean_video_title("Artist-Song Title (Official Music Video)")
+        assert result == "Artist-Song Title"
 
     def test_clean_video_title_remove_official_audio(self):
         """Test removing Official Audio."""
-        result = clean_video_title("Artist - Song Title (Official Audio)")
-        assert result == "Artist - Song Title"
+        result = clean_video_title("Artist-Song Title (Official Audio)")
+        assert result == "Artist-Song Title"
 
     def test_clean_video_title_remove_multiple_patterns(self):
         """Test removing multiple patterns."""
-        result = clean_video_title("Artist - Song Title (Official Music Video) (HD)")
-        assert result == "Artist - Song Title"
+        result = clean_video_title("Artist-Song Title (Official Music Video) (HD)")
+        assert result == "Artist-Song Title"
 
     def test_clean_video_title_preserve_features(self):
         """Test preserving featured artists."""
-        result = clean_video_title("Artist - Song Title (feat. Guest) (Official Music Video)")
-        assert result == "Artist - Song Title (feat. Guest)"
+        result = clean_video_title("Artist-Song Title (feat. Guest) (Official Music Video)")
+        assert result == "Artist-Song Title (feat. Guest)"
 
     def test_clean_video_title_no_cleaning(self):
         """Test title cleaning with noise removal disabled."""
-        result = clean_video_title("Artist - Song Title (Official Music Video)", remove_youtube_noise=False)
-        assert result == "Artist - Song Title (Official Music Video)"
+        result = clean_video_title("Artist-Song Title (Official Music Video)", remove_youtube_noise=False)
+        assert result == "Artist-Song Title (Official Music Video)"
 
     def test_clean_video_title_null_input(self):
         """Test handling null input."""
@@ -484,7 +482,7 @@ class TestIsQuotaExceededError:
         assert result is True
 
     def test_is_quota_exceeded_error_false(self):
-        """Test detecting non - quota error."""
+        """Test detecting non-quota error."""
 
         class MockError:
             def __init__(self):
@@ -508,7 +506,7 @@ class TestIntegration:
         video_data = {
             "id": "dQw4w9WgXcQ",
             "snippet": {
-                "title": "Rick Astley - Never Gonna Give You Up (Official Music Video)",
+                "title": "Rick Astley-Never Gonna Give You Up (Official Music Video)",
                 "channelTitle": "Rick Astley",
                 "description": "Official music video",
             },
@@ -524,7 +522,7 @@ class TestIntegration:
 
         # Clean the title
         cleaned_title = clean_video_title(video_data["snippet"]["title"])
-        assert cleaned_title == "Rick Astley - Never Gonna Give You Up"
+        assert cleaned_title == "Rick Astley-Never Gonna Give You Up"
 
         # Classify the version
         version = classify_video_version(

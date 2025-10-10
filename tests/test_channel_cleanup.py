@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-
 from tools.maintenance.channel_cleanup import (
     analyze_channel_data,
     create_cleanup_plan,
@@ -40,7 +39,7 @@ class TestChannelConfiguration:
         assert "COBRAH" in channels
         assert "Flyana Boss" in channels
 
-        # Should ignore non - channel variables
+        # Should ignore non-channel variables
         assert "OTHER_VAR" not in str(channels)
 
         # Should ignore empty channels
@@ -88,8 +87,8 @@ class TestChannelAnalysis:
                 "video_count": [10, 5, 2],
                 "metrics_count": [10, 5, 2],
                 "comment_count": [100, 50, 10],
-                "earliest_video": ["2023 - 01 - 01", "2023 - 02 - 01", "2023 - 03 - 01"],
-                "latest_video": ["2023 - 12 - 01", "2023 - 11 - 01", "2023 - 10 - 01"],
+                "earliest_video": ["2023-01-01", "2023-02-01", "2023-03-01"],
+                "latest_video": ["2023-12-01", "2023-11-01", "2023-10-01"],
             }
         )
 
@@ -120,8 +119,8 @@ class TestChannelAnalysis:
                     "video_count": [10, 5, 8],
                     "metrics_count": [10, 5, 8],
                     "comment_count": [100, 50, 80],
-                    "earliest_video": ["2023 - 01 - 01", "2023 - 02 - 01", "2023 - 03 - 01"],
-                    "latest_video": ["2023 - 12 - 01", "2023 - 11 - 01", "2023 - 10 - 01"],
+                    "earliest_video": ["2023-01-01", "2023-02-01", "2023-03-01"],
+                    "latest_video": ["2023-12-01", "2023-11-01", "2023-10-01"],
                 }
             )
         }
@@ -163,8 +162,8 @@ class TestCleanupExecution:
                     "video_count": 5,
                     "metrics_count": 5,
                     "comment_count": 50,
-                    "earliest_video": "2023 - 01 - 01",
-                    "latest_video": "2023 - 12 - 01",
+                    "earliest_video": "2023-01-01",
+                    "latest_video": "2023-12-01",
                 }
             ]
         }
@@ -194,8 +193,8 @@ class TestCleanupExecution:
                     "video_count": 1,
                     "metrics_count": 1,
                     "comment_count": 1,
-                    "earliest_video": "2023 - 01 - 01",
-                    "latest_video": "2023 - 12 - 01",
+                    "earliest_video": "2023-01-01",
+                    "latest_video": "2023-12-01",
                 }
             ]
         }
@@ -246,13 +245,13 @@ class TestChannelCleanupIntegration:
                     "video_count": [100],  # Large number to test safety
                     "metrics_count": [100],
                     "comment_count": [1000],
-                    "earliest_video": ["2023 - 01 - 01"],
-                    "latest_video": ["2023 - 12 - 01"],
+                    "earliest_video": ["2023-01-01"],
+                    "latest_video": ["2023-12-01"],
                 }
             )
         }
 
-        valid_channels = set()  # No valid channels - everything should be removed
+        valid_channels = set()  # No valid channels-everything should be removed
 
         cleanup_plan = create_cleanup_plan(valid_channels, current_analysis)
 

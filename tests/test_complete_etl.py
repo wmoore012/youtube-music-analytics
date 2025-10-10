@@ -11,18 +11,18 @@ This test suite covers:
 - Integration testing
 """
 
-from datetime import datetime
 import json
 import os
 import tempfile
+from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 # Import the modules we're testing
-from src.icatalog_public.oss.extract import ExtractConfig, ExtractOrchestrator
-from src.icatalog_public.oss.load import LoadConfig, LoadOrchestrator
-from src.icatalog_public.oss.transform_complete import (
+from src.public.oss.extract import ExtractConfig, ExtractOrchestrator
+from src.public.oss.load import LoadConfig, LoadOrchestrator
+from src.public.oss.transform_complete import (
     CompleteTransformer,
     TransformConfig,
 )
@@ -34,16 +34,16 @@ class TestExtractPhase:
     def test_extract_config_creation(self):
         """Test ExtractConfig creation with various parameters."""
         config = ExtractConfig(
-            youtube_playlists=["PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q"],
+            youtube_playlists=["PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q"],
             spotify_playlists=["37i9dQZF1DX..."],
-            tidal_playlists=["12345678 - 1234 - 1234 - 1234 - 123456789012"],
+            tidal_playlists=["12345678-1234-1234-1234-123456789012"],
             max_retries=5,
             retry_delay=10,
         )
 
-        assert config.youtube_playlists == ["PLl - ShioB5kaqu8jD43bGi7qX799RIZA3Q"]
+        assert config.youtube_playlists == ["PLl-ShioB5kaqu8jD43bGi7qX799RIZA3Q"]
         assert config.spotify_playlists == ["37i9dQZF1DX..."]
-        assert config.tidal_playlists == ["12345678 - 1234 - 1234 - 1234 - 123456789012"]
+        assert config.tidal_playlists == ["12345678-1234-1234-1234-123456789012"]
         assert config.max_retries == 5
         assert config.retry_delay == 10
 
@@ -63,7 +63,7 @@ class TestExtractPhase:
         mock_youtube = Mock()
         mock_build.return_value = mock_youtube
 
-        from src.icatalog_public.oss.extract import YouTubeExtractor
+        from src.public.oss.extract import YouTubeExtractor
 
         extractor = YouTubeExtractor("test_api_key")
 
@@ -76,7 +76,7 @@ class TestExtractPhase:
         """Test YouTubeExtractor with invalid API key."""
         mock_build.side_effect = Exception("Invalid API key")
 
-        from src.icatalog_public.oss.extract import YouTubeExtractor
+        from src.public.oss.extract import YouTubeExtractor
 
         with pytest.raises(Exception):
             YouTubeExtractor("invalid_key")
@@ -91,9 +91,9 @@ class TestExtractPhase:
         assert orchestrator.spotify_extractor is None
         assert orchestrator.tidal_extractor is None
 
-    @patch("src.icatalog_public.oss.extract.YouTubeExtractor")
-    @patch("src.icatalog_public.oss.extract.SpotifyExtractor")
-    @patch("src.icatalog_public.oss.extract.TidalExtractor")
+    @patch("src.public.oss.extract.YouTubeExtractor")
+    @patch("src.public.oss.extract.SpotifyExtractor")
+    @patch("src.public.oss.extract.TidalExtractor")
     def test_extract_orchestrator_initialization(self, mock_tidal, mock_spotify, mock_youtube):
         """Test ExtractOrchestrator initialization with all extractors."""
         config = ExtractConfig(
@@ -162,7 +162,7 @@ class TestTransformPhase:
         transformer = CompleteTransformer(config)
 
         assert transformer.config == config
-        # Engine is lazy - loaded, so it should be None initially
+        # Engine is lazy-loaded, so it should be None initially
         assert transformer.engine is None
 
     @patch("web.etl_helpers.get_engine")
@@ -323,7 +323,7 @@ class TestLoadPhase:
         assert config.enable_transaction_rollback is True
         assert config.max_retries == 3
 
-    @patch("src.icatalog_public.oss.load.get_engine")
+    @patch("src.public.oss.load.get_engine")
     def test_load_orchestrator_initialization(self, mock_get_engine):
         """Test LoadOrchestrator initialization."""
         mock_engine = Mock()
@@ -341,11 +341,11 @@ class TestLoadPhase:
         """Test YouTubeLoader with empty data."""
         config = LoadConfig()
 
-        with patch("src.icatalog_public.oss.load.get_engine") as mock_get_engine:
+        with patch("src.public.oss.load.get_engine") as mock_get_engine:
             mock_engine = Mock()
             mock_get_engine.return_value = mock_engine
 
-            from src.icatalog_public.oss.load import YouTubeLoader
+            from src.public.oss.load import YouTubeLoader
 
             loader = YouTubeLoader(config)
 
@@ -359,11 +359,11 @@ class TestLoadPhase:
         """Test SpotifyLoader with null values."""
         config = LoadConfig()
 
-        with patch("src.icatalog_public.oss.load.get_engine") as mock_get_engine:
+        with patch("src.public.oss.load.get_engine") as mock_get_engine:
             mock_engine = Mock()
             mock_get_engine.return_value = mock_engine
 
-            from src.icatalog_public.oss.load import SpotifyLoader
+            from src.public.oss.load import SpotifyLoader
 
             loader = SpotifyLoader(config)
 
@@ -443,7 +443,7 @@ class TestIntegration:
         }
 
         # Test extract phase
-        with patch("src.icatalog_public.oss.extract.ExtractOrchestrator.extract_all_data") as mock_extract:
+        with patch("src.public.oss.extract.ExtractOrchestrator.extract_all_data") as mock_extract:
             mock_extract.return_value = mock_raw_data
 
             config = ExtractConfig()
@@ -457,7 +457,7 @@ class TestIntegration:
 
         # Test transform phase
         with patch(
-            "src.icatalog_public.oss.transform_complete.CompleteTransformer.transform_all_data"
+            "src.public.oss.transform_complete.CompleteTransformer.transform_all_data"
         ) as mock_transform:
             mock_transform.return_value = {
                 "youtube": {"success": 1, "error": 0, "total": 1},
@@ -476,7 +476,7 @@ class TestIntegration:
             assert transform_results["artist_roles"]["success"] == 1
 
         # Test load phase
-        with patch("src.icatalog_public.oss.load.LoadOrchestrator.load_all_data") as mock_load:
+        with patch("src.public.oss.load.LoadOrchestrator.load_all_data") as mock_load:
             mock_load.return_value = {
                 "youtube": {"success": 1, "error": 0},
                 "spotify": {"success": 1, "error": 0},
@@ -499,10 +499,10 @@ class TestErrorHandling:
         """Test handling of API rate limiting."""
         config = ExtractConfig(max_retries=2, retry_delay=1)
 
-        with patch("src.icatalog_public.oss.extract.YouTubeExtractor.extract_playlist") as mock_extract:
+        with patch("src.public.oss.extract.YouTubeExtractor.extract_playlist") as mock_extract:
             mock_extract.side_effect = Exception("Rate limit exceeded")
 
-            from src.icatalog_public.oss.extract import YouTubeExtractor
+            from src.public.oss.extract import YouTubeExtractor
 
             extractor = YouTubeExtractor("test_key")
 
@@ -514,7 +514,7 @@ class TestErrorHandling:
         """Test handling of database connection failures."""
         config = TransformConfig()
 
-        with patch("src.icatalog_public.oss.transform_complete.get_engine") as mock_get_engine:
+        with patch("src.public.oss.transform_complete.get_engine") as mock_get_engine:
             mock_get_engine.side_effect = Exception("Database connection failed")
 
             with pytest.raises(Exception):
@@ -527,7 +527,7 @@ class TestErrorHandling:
         # Test with invalid JSON
         invalid_json_data = [{"track_id": "test_1", "raw_data": '{"invalid": json}'}]
 
-        with patch("src.icatalog_public.oss.transform_complete.get_connection"):
+        with patch("src.public.oss.transform_complete.get_connection"):
             transformer = CompleteTransformer(config)
 
             # Should handle invalid JSON gracefully
@@ -560,7 +560,7 @@ class TestNullValueHandling:
 
         null_track_data = [{"track_id": None, "raw_data": None}]
 
-        with patch("src.icatalog_public.oss.transform_complete.get_connection"):
+        with patch("src.public.oss.transform_complete.get_connection"):
             transformer = CompleteTransformer(config)
 
             # Should handle null track data gracefully

@@ -10,13 +10,12 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from datetime import datetime, timedelta
-from decimal import Decimal
 import json
 import logging
+from datetime import datetime
+from decimal import Decimal
 
 import numpy as np
-import pandas as pd
 from sqlalchemy import text
 
 from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
@@ -126,7 +125,7 @@ class SentimentMonitor:
             # Check for anomalies
             expected_bot_rate = 0.057  # 5.7% baseline
             bot_rate_float = float(bot_rate) if bot_rate else 0.0
-            rate_deviation = abs(bot_rate_float - expected_bot_rate) / expected_bot_rate
+            rate_deviation = abs(bot_rate_float-expected_bot_rate) / expected_bot_rate
 
             status = "healthy"
             if rate_deviation > 0.5:  # More than 50% deviation
@@ -186,7 +185,7 @@ class SentimentMonitor:
 
             # Calculate overall quality score
             total_issues = sum(metrics.values())
-            quality_score = max(0, 100 - total_issues)
+            quality_score = max(0, 100-total_issues)
 
             status = (
                 "excellent"
@@ -263,7 +262,7 @@ class SentimentMonitor:
             # Calculate overall system health
             health_scores = []
 
-            # Sentiment accuracy (0 - 100)
+            # Sentiment accuracy (0-100)
             health_scores.append(dashboard["sentiment_accuracy"]["accuracy_percent"])
 
             # Bot detection (100 if healthy, 50 if monitoring, 0 if anomaly)
@@ -395,7 +394,7 @@ def main():
             for alert in alerts:
                 logger.warning(f"   {alert['level'].upper()}: {alert['message']}")
         else:
-            logger.info("✅ No alerts - system operating normally")
+            logger.info("✅ No alerts-system operating normally")
 
         return score >= 60  # Return success if score is acceptable
 

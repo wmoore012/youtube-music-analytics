@@ -12,8 +12,8 @@ No secrets are hardcoded; values are read from .env at runtime.
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv

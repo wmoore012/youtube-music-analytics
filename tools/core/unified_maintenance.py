@@ -11,28 +11,24 @@ Consolidates all maintenance functionality into a single, comprehensive tool tha
 
 Usage:
     python tools / core / unified_maintenance.py                    # Interactive maintenance
-    python tools / core / unified_maintenance.py --cleanup - old     # Clean old data
-    python tools / core / unified_maintenance.py --optimize - db     # Database optimization
+    python tools / core / unified_maintenance.py --cleanup-old     # Clean old data
+    python tools / core / unified_maintenance.py --optimize-db     # Database optimization
     python tools / core / unified_maintenance.py --retention       # Data retention cleanup
-    python tools / core / unified_maintenance.py --full - maintenance # Complete maintenance
+    python tools / core / unified_maintenance.py --full-maintenance # Complete maintenance
 """
 
 import argparse
-from datetime import datetime, timedelta
 import json
-import os
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Optional, Tuple
-import warnings
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from tools.shared.common import (
-    ConfigurationError,
-    ExecutionError,
     ToolBase,
     ToolConfig,
     ValidationError,
@@ -54,7 +50,7 @@ class SystemMaintenance(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="unified - maintenance", version="1.0.0")
+        super().__init__(name="unified-maintenance", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -76,7 +72,7 @@ class SystemMaintenance(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="unified - maintenance",
+            name="unified-maintenance",
             version="1.0.0",
             description="Unified YouTube Analytics system maintenance tool",
             dependencies=[
@@ -92,15 +88,15 @@ class SystemMaintenance(ToolBase):
                 "YOUTUBE_DATA_RETENTION_DAYS",
             ],
             usage_examples=[
-                "python tools / core / unified_maintenance.py --cleanup - old",
-                "python tools / core / unified_maintenance.py --optimize - db",
+                "python tools / core / unified_maintenance.py --cleanup-old",
+                "python tools / core / unified_maintenance.py --optimize-db",
                 "python tools / core / unified_maintenance.py --retention",
             ],
             category="core",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly, use specific maintenance methods."""
+        """Main execution method-should not be called directly, use specific maintenance methods."""
         self.log_progress("Use specific maintenance methods like cleanup_old_data() or optimize_database()")
 
     def cleanup_old_data(self, days: int = None, dry_run: bool = True) -> Dict[str, Any]:
@@ -345,7 +341,7 @@ class SystemMaintenance(ToolBase):
                         """
                         new_size = conn.execute(text(new_size_query), (table_name,)).scalar()
                         optimization_result["new_size_mb"] = float(new_size) if new_size else table_size
-                        optimization_result["size_reduction_mb"] = table_size - optimization_result["new_size_mb"]
+                        optimization_result["size_reduction_mb"] = table_size-optimization_result["new_size_mb"]
 
                         results["optimizations"][table_name] = optimization_result
 
@@ -370,9 +366,9 @@ class SystemMaintenance(ToolBase):
                 results["performance_impact"] = {
                     "total_original_size_mb": total_original_size,
                     "total_new_size_mb": total_new_size,
-                    "total_size_reduction_mb": total_original_size - total_new_size,
+                    "total_size_reduction_mb": total_original_size-total_new_size,
                     "optimization_percentage": (
-                        ((total_original_size - total_new_size) / total_original_size * 100)
+                        ((total_original_size-total_new_size) / total_original_size * 100)
                         if total_original_size > 0
                         else 0
                     ),
@@ -433,7 +429,7 @@ class SystemMaintenance(ToolBase):
             cleanup_results = self.cleanup_old_data(days=retention_days, dry_run=False)
             results["cleanup_results"] = cleanup_results
 
-            # Additional YouTube - specific cleanup
+            # Additional YouTube-specific cleanup
             from sqlalchemy import text
 
             from web.etl_helpers import get_engine
@@ -479,7 +475,7 @@ class SystemMaintenance(ToolBase):
             if results["youtube_tos_compliant"]:
                 self.log_progress("✅ YouTube ToS compliance maintained")
             else:
-                self.log_progress("⚠️ YouTube ToS compliance may be at risk - consider reducing retention period")
+                self.log_progress("⚠️ YouTube ToS compliance may be at risk-consider reducing retention period")
 
             # Log operation
             self.operations_log["operations_performed"].append(
@@ -810,7 +806,7 @@ class SystemMaintenance(ToolBase):
                     text(
                         """
                     SELECT COUNT(*) FROM youtube_videos
-                    WHERE LENGTH(video_id) != 11 OR video_id REGEXP '[^A - Za - z0 - 9_-]'
+                    WHERE LENGTH(video_id) != 11 OR video_id REGEXP '[^A-Za-z0-9_-]'
                 """
                     )
                 ).scalar()
@@ -870,26 +866,27 @@ def main():  # noqa: C901
         epilog="""
 Examples:
   python tools / core / unified_maintenance.py                    # Interactive maintenance
-  python tools / core / unified_maintenance.py --cleanup - old     # Clean old data
-  python tools / core / unified_maintenance.py --optimize - db     # Database optimization
+  python tools / core / unified_maintenance.py --cleanup-old     # Clean old data
+  python tools / core / unified_maintenance.py --optimize-db     # Database optimization
   python tools / core / unified_maintenance.py --retention       # Data retention cleanup
-  python tools / core / unified_maintenance.py --full - maintenance # Complete maintenance
+  python tools / core / unified_maintenance.py --full-maintenance # Complete maintenance
         """,
     )
 
     # Maintenance operations
-    parser.add_argument("--cleanup - old", action="store_true", help="Clean up old data based on retention policy")
-    parser.add_argument("--optimize - db", action="store_true", help="Optimize database performance")
+    parser.add_argument("--cleanup-old", action="store_true", help="Clean up old data based on retention policy")
+    parser.add_argument("--optimize-db", action="store_true", help="Optimize database performance")
     parser.add_argument("--retention", action="store_true", help="YouTube ToS compliant data retention cleanup")
-    parser.add_argument("--health - maintenance", action="store_true", help="System health maintenance")
-    parser.add_argument("--full - maintenance", action="store_true", help="Complete system maintenance")
+    parser.add_argument("--health-maintenance", action="store_true", help="System health maintenance")
+    parser.add_argument("--full-maintenance", action="store_true", help="Complete system maintenance")
     parser.add_argument("--status", action="store_true", help="Show maintenance status")
 
     # Options
     parser.add_argument("--days", type=int, help="Retention period in days (default from YOUTUBE_DATA_RETENTION_DAYS)")
-    parser.add_argument("--dry - run", action="store_true", help="Perform dry run without actual changes")
-    parser.add_argument("--no - optimization", action="store_true",
-                        help="Skip database optimization in full maintenance")
+    parser.add_argument("--dry-run", action="store_true", help="Perform dry run without actual changes")
+    parser.add_argument(
+        "--no-optimization", action="store_true", help="Skip database optimization in full maintenance"
+    )
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
@@ -956,11 +953,11 @@ Examples:
                 print("🔧 YouTube Analytics Maintenance Tool")
                 print("=" * 50)
                 print("Available operations:")
-                print("1. Clean old data (--cleanup - old)")
-                print("2. Optimize database (--optimize - db)")
+                print("1. Clean old data (--cleanup-old)")
+                print("2. Optimize database (--optimize-db)")
                 print("3. Data retention cleanup (--retention)")
-                print("4. System health maintenance (--health - maintenance)")
-                print("5. Full maintenance (--full - maintenance)")
+                print("4. System health maintenance (--health-maintenance)")
+                print("5. Full maintenance (--full-maintenance)")
                 print("\nUse --help for detailed options")
                 return 0
 

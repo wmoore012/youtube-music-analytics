@@ -1,12 +1,11 @@
 """
 Content categorization and analysis functions for YouTube video content.
-Analyzes ISRC vs non - ISRC, content types, duration categories, and artist strategies.
+Analyzes ISRC vs non-ISRC, content types, duration categories, and artist strategies.
 """
 
 from __future__ import annotations
 
-import os
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -131,11 +130,11 @@ def categorize_content_types(df: pd.DataFrame, content_type_col: str) -> pd.Data
         "music_video": "Music Content",
         "lyric_video": "Music Content",
         "visualizer": "Music Content",
-        "content_video": "Non - Music Content",
-        "lifestyle": "Non - Music Content",
-        "behind_scenes": "Non - Music Content",
-        "interview": "Non - Music Content",
-        "vlog": "Non - Music Content",
+        "content_video": "Non-Music Content",
+        "lifestyle": "Non-Music Content",
+        "behind_scenes": "Non-Music Content",
+        "interview": "Non-Music Content",
+        "vlog": "Non-Music Content",
     }
 
     # Apply mapping
@@ -149,12 +148,12 @@ def categorize_content_types(df: pd.DataFrame, content_type_col: str) -> pd.Data
 
 def classify_video_duration(df: pd.DataFrame, duration_col: str, short_form_threshold: int = 300) -> pd.DataFrame:
     """
-    Classify videos by duration (short - form vs long - form).
+    Classify videos by duration (short-form vs long-form).
 
     Args:
         df: DataFrame with duration data
         duration_col: Column name for duration in seconds
-        short_form_threshold: Threshold in seconds for short - form classification
+        short_form_threshold: Threshold in seconds for short-form classification
 
     Returns:
         DataFrame with added duration_category column
@@ -171,7 +170,7 @@ def classify_video_duration(df: pd.DataFrame, duration_col: str, short_form_thre
 
 def analyze_isrc_distribution(df: pd.DataFrame, artist_col: str, isrc_col: str, views_col: str) -> pd.DataFrame:
     """
-    Analyze ISRC vs non - ISRC distribution by artist.
+    Analyze ISRC vs non-ISRC distribution by artist.
 
     Args:
         df: DataFrame with ISRC data
@@ -277,7 +276,7 @@ def analyze_content_strategy_effectiveness(
         # Calculate content type performance
         content_performance = artist_df.groupby(content_type_col)[views_col].agg(["count", "sum", "mean"]).round(2)
 
-        # Calculate ISRC vs non - ISRC performance
+        # Calculate ISRC vs non-ISRC performance
         isrc_performance = artist_df.groupby(isrc_col)[views_col].agg(["count", "sum", "mean"]).round(2)
 
         # Find best performing content type
@@ -286,15 +285,15 @@ def analyze_content_strategy_effectiveness(
         # Calculate strategy insights
         total_views = artist_df[views_col].sum()
         music_content_views = artist_df[artist_df[isrc_col] is True][views_col].sum()
-        _content_video_views = artist_df[artist_df[isrc_col] is False][views_col].sum()
+        _content_video_views = artist_df[artist_df[isrc_col] is False][views_col].sum()  # noqa: F841
 
         music_content_ratio = (music_content_views / total_views) if total_views > 0 else 0
 
         # Determine strategy type
         if music_content_ratio > 0.7:
-            strategy_type = "Music - Focused"
+            strategy_type = "Music-Focused"
         elif music_content_ratio < 0.3:
-            strategy_type = "Content - Focused"
+            strategy_type = "Content-Focused"
         else:
             strategy_type = "Balanced"
 
@@ -435,7 +434,7 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
     for artist in df[artist_col].unique():
         artist_df = df[df[artist_col] == artist]
 
-        # Calculate ISRC vs non - ISRC metrics
+        # Calculate ISRC vs non-ISRC metrics
         isrc_videos = artist_df[artist_df[isrc_col] is True]
         non_isrc_videos = artist_df[artist_df[isrc_col] is False]
 
@@ -452,9 +451,9 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
 
         # Determine strategy type
         if balance_score > 0.8:
-            strategy = "Music - Heavy"
+            strategy = "Music-Heavy"
         elif balance_score < 0.2:
-            strategy = "Content - Heavy"
+            strategy = "Content-Heavy"
         else:
             strategy = "Balanced"
 
@@ -478,9 +477,9 @@ def analyze_isrc_vs_content_balance(df: pd.DataFrame, artist_col: str, isrc_col:
 
     for item in balance_data:
         artist = item["artist"]
-        if item["strategy_type"] == "Music - Heavy":
+        if item["strategy_type"] == "Music-Heavy":
             isrc_analysis[artist] = item
-        elif item["strategy_type"] == "Content - Heavy":
+        elif item["strategy_type"] == "Content-Heavy":
             content_analysis[artist] = item
         else:
             # Balanced artists go to both
@@ -505,14 +504,14 @@ def analyze_video_length_performance(
     short_form_threshold: int = DEFAULT_SHORT_FORM_THRESHOLD,
 ) -> pd.DataFrame:
     """
-    Analyze short - form vs long - form video performance breakdown with view totals.
+    Analyze short-form vs long-form video performance breakdown with view totals.
 
     Args:
         df: DataFrame with duration data
         artist_col: Column name for artist names
         duration_col: Column name for duration in seconds
         views_col: Column name for view counts
-        short_form_threshold: Threshold in seconds for short - form classification
+        short_form_threshold: Threshold in seconds for short-form classification
 
     Returns:
         DataFrame with video length performance analysis
@@ -558,7 +557,7 @@ def create_artist_comparison_chart(
     chart_type: str = "radar",
 ) -> Dict[str, Any]:
     """
-    Create side - by - side artist comparison data structure.
+    Create side-by-side artist comparison data structure.
 
     Args:
         df: DataFrame with artist data
@@ -595,7 +594,7 @@ def create_artist_comparison_chart(
 
         comparison_data.append(artist_metrics)
 
-    # Normalize metrics for radar chart (0 - 100 scale)
+    # Normalize metrics for radar chart (0-100 scale)
     if chart_type == "radar":
         normalized_data = []
         for artist_data in comparison_data:
@@ -644,7 +643,7 @@ def create_roster_overview_chart(
     # Use metrics if provided, otherwise use performance_metrics
     metrics_to_use = metrics or performance_metrics or ["views"]
 
-    # Calculate roster - wide statistics
+    # Calculate roster-wide statistics
     roster_stats = {}
 
     # Overall metrics
@@ -904,7 +903,7 @@ def categorize_video_content(
     else:
         df_copy["content_category"] = df_copy[title_col].apply(lambda title: _categorize_single_content(title))
 
-    # Add duration - based refinement if available
+    # Add duration-based refinement if available
     if duration_col and duration_col in df_copy.columns:
         # Very short videos (< 60s) are likely teasers or clips
         df_copy.loc[
@@ -943,7 +942,7 @@ def generate_content_strategy_recommendations(
             # Sort by performance and recommend top types
             sorted_data = data.sort_values(performance_col, ascending=False)
             top_type = sorted_data.iloc[0][content_type_col] if len(sorted_data) > 0 else "Music Video"
-            recommendations.append(f"Focus on {top_type} content - shows highest performance")
+            recommendations.append(f"Focus on {top_type} content-shows highest performance")
 
             if len(sorted_data) > 1:
                 second_type = sorted_data.iloc[1][content_type_col]
@@ -975,12 +974,12 @@ def generate_content_strategy_recommendations(
         # Find content types artist hasn't tried yet
         tried_types = set(artist_performance.index)
         all_types = set(overall_performance.index)
-        untried_types = all_types - tried_types
+        untried_types = all_types-tried_types
 
         # Recommend top performing untried content types
         for content_type in top_content_types.head(3).index:
             if content_type in untried_types:
-                artist_recommendations.append(f"Try {content_type} content - shows strong performance across roster")
+                artist_recommendations.append(f"Try {content_type} content-shows strong performance across roster")
 
         # Find underperforming content types
         for content_type in artist_performance.index:
@@ -989,7 +988,7 @@ def generate_content_strategy_recommendations(
                 overall_avg = overall_performance.loc[content_type, "avg_performance"]
 
                 if artist_avg < overall_avg * 0.7:  # Significantly underperforming
-                    artist_recommendations.append(f"Improve {content_type} strategy - currently underperforming")
+                    artist_recommendations.append(f"Improve {content_type} strategy-currently underperforming")
 
         # Find artist's strengths
         for content_type in artist_performance.index:
@@ -1003,12 +1002,12 @@ def generate_content_strategy_recommendations(
         # Content frequency recommendations
         total_videos = len(artist_df)
         if total_videos < 10:
-            artist_recommendations.append("Increase content frequency - aim for more consistent uploads")
+            artist_recommendations.append("Increase content frequency-aim for more consistent uploads")
 
         # Diversity recommendations
         content_diversity = len(tried_types)
         if content_diversity < 3:
-            artist_recommendations.append("Diversify content types - experiment with different formats")
+            artist_recommendations.append("Diversify content types-experiment with different formats")
 
         recommendations[artist] = artist_recommendations[:5]  # Limit to top 5 recommendations
 

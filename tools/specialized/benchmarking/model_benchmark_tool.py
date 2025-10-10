@@ -7,8 +7,8 @@ within the tools directory organization framework.
 """
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Dict, List
 
 # Add project root to path
@@ -45,7 +45,7 @@ class ModelBenchmarkTool(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="model - benchmark", version="1.0.0")
+        super().__init__(name="model-benchmark", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -64,29 +64,29 @@ class ModelBenchmarkTool(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="model - benchmark",
+            name="model-benchmark",
             version="1.0.0",
             description="Specialized model performance benchmarking tool for sentiment analysis",
             dependencies=[
                 "python>=3.8",
                 "pandas>=2.0",
                 "numpy>=1.20",
-                "scikit - learn>=1.0",
+                "scikit-learn>=1.0",
                 "sqlalchemy>=2.0",
                 "vaderSentiment>=3.3",
                 "textblob>=0.17",
             ],
             environment_vars=self.get_required_environment_vars(),
             usage_examples=[
-                "python tools / specialized / benchmarking / model_benchmark_tool.py --run - benchmark",
-                "python tools / specialized / benchmarking / model_benchmark_tool.py --list - models",
-                "python tools / specialized / benchmarking / model_benchmark_tool.py --validate - data",
+                "python tools / specialized / benchmarking / model_benchmark_tool.py --run-benchmark",
+                "python tools / specialized / benchmarking / model_benchmark_tool.py --list-models",
+                "python tools / specialized / benchmarking / model_benchmark_tool.py --validate-data",
             ],
             category="specialized",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly."""
+        """Main execution method-should not be called directly."""
         self.log_progress("Use specific methods like run_benchmark() or list_models()")
 
     def _initialize_benchmark_system(self) -> None:
@@ -168,7 +168,7 @@ class ModelBenchmarkTool(ToolBase):
             }
 
         try:
-            # Run pre - benchmark tests
+            # Run pre-benchmark tests
             self.benchmark_system._run_pre_benchmark_tests()
 
             # Fetch and validate dataset
@@ -304,20 +304,20 @@ def main():  # noqa: C901
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python tools / specialized / benchmarking / model_benchmark_tool.py --list - models
-  python tools / specialized / benchmarking / model_benchmark_tool.py --validate - data
-  python tools / specialized / benchmarking / model_benchmark_tool.py --run - benchmark
+  python tools / specialized / benchmarking / model_benchmark_tool.py --list-models
+  python tools / specialized / benchmarking / model_benchmark_tool.py --validate-data
+  python tools / specialized / benchmarking / model_benchmark_tool.py --run-benchmark
         """,
     )
 
     # Operations
-    parser.add_argument("--list - models", action="store_true", help="List all available models for benchmarking")
-    parser.add_argument("--validate - data", action="store_true", help="Validate benchmark data quality")
-    parser.add_argument("--run - benchmark", action="store_true", help="Run comprehensive model benchmark")
+    parser.add_argument("--list-models", action="store_true", help="List all available models for benchmarking")
+    parser.add_argument("--validate-data", action="store_true", help="Validate benchmark data quality")
+    parser.add_argument("--run-benchmark", action="store_true", help="Run comprehensive model benchmark")
 
     # Configuration
-    parser.add_argument("--experiment - name", type=str, help="Name for the benchmark experiment")
-    parser.add_argument("--sample - size", type=int, default=1000, help="Sample size for data validation")
+    parser.add_argument("--experiment-name", type=str, help="Name for the benchmark experiment")
+    parser.add_argument("--sample-size", type=int, default=1000, help="Sample size for data validation")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
@@ -382,8 +382,8 @@ Examples:
                     print(f"   Dataset: {dataset_info['total_samples']} samples ({dataset_info['quality_level']})")
                     print(f"   Models tested: {result['summary']['total_models_tested']}")
                     print(f"   Best model: {result['summary']['best_model']}")
-                    print(f"   Best F1 - score: {result['summary']['best_f1_score']:.3f}")
-                    print(f"   Average F1 - score: {result['summary']['avg_f1_score']:.3f}")
+                    print(f"   Best F1-score: {result['summary']['best_f1_score']:.3f}")
+                    print(f"   Average F1-score: {result['summary']['avg_f1_score']:.3f}")
 
                     print("\n📊 Model Performance:")
                     for model in sorted(result["models"], key=lambda m: m["f1_score"], reverse=True):

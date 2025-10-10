@@ -6,9 +6,8 @@ This script creates the database schema for the scoring system,
 including tables for algorithms, configurations, runs, results, and metrics.
 """
 
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent

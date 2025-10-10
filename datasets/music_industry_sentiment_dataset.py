@@ -6,10 +6,10 @@ A comprehensive, scientifically classified dataset of music industry slang,
 Gen Z language, and fan expressions for sentiment analysis model training and evaluation.
 
 This dataset is designed for:
-- Training music - specific sentiment models
+- Training music-specific sentiment models
 - Evaluating model performance on music industry language
 - Research in cultural linguistics and sentiment analysis
-- Building production - ready music analytics systems
+- Building production-ready music analytics systems
 
 Dataset Statistics:
 - 200+ classified phrases
@@ -62,7 +62,7 @@ class MusicSlangEntry:
     phrase: str
     sentiment: SentimentLabel
     category: SlangCategory
-    confidence: float  # Classification confidence (0 - 1)
+    confidence: float  # Classification confidence (0-1)
     context_notes: str = ""
     beat_appreciation: bool = False  # Indicates beat / production focus
     gen_z_slang: bool = False  # Indicates Gen Z specific language
@@ -101,7 +101,7 @@ class MusicIndustrySentimentDataset:
 
         # ===== POSITIVE SENTIMENT =====
 
-        # PRAISE GENERAL - Traditional music slang
+        # PRAISE GENERAL-Traditional music slang
         entries.extend(
             [
                 MusicSlangEntry(
@@ -232,8 +232,7 @@ class MusicIndustrySentimentDataset:
                     "pure fire", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.95, "Absolute excellence"
                 ),
                 MusicSlangEntry(
-                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE"  # noqa: E999
-                        "_GENERAL, 0.90, "Song hits hard / sounds great"
+                    "slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.90, "Song hits hard / sounds great"
                 ),
                 MusicSlangEntry(
                     "this slaps", SentimentLabel.POSITIVE, SlangCategory.PRAISE_GENERAL, 0.90, "This song hits hard"
@@ -286,7 +285,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # PRAISE PERFORMANCE - Artist - specific praise
+        # PRAISE PERFORMANCE-Artist-specific praise
         entries.extend(
             [
                 MusicSlangEntry(
@@ -472,7 +471,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # PRAISE PRODUCTION - Beat and production appreciation
+        # PRAISE PRODUCTION-Beat and production appreciation
         entries.extend(
             [
                 MusicSlangEntry(
@@ -520,7 +519,7 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.PRAISE_PRODUCTION,
                     0.90,
-                    "Asking about producer - shows appreciation",
+                    "Asking about producer-shows appreciation",
                     beat_appreciation=True,
                 ),
                 MusicSlangEntry(
@@ -566,7 +565,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # HYPE EXCITEMENT - Energy and enthusiasm
+        # HYPE EXCITEMENT-Energy and enthusiasm
         entries.extend(
             [
                 MusicSlangEntry(
@@ -651,7 +650,7 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.85,
-                    "Period with emphasis - end of discussion",
+                    "Period with emphasis-end of discussion",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -667,13 +666,13 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.80,
-                    "No lie / for real - agreement",
+                    "No lie / for real-agreement",
                     gen_z_slang=True,
                 ),
             ]
         )
 
-        # CULTURAL IDENTITY - Cultural and community expressions
+        # CULTURAL IDENTITY-Cultural and community expressions
         entries.extend(
             [
                 MusicSlangEntry(
@@ -763,7 +762,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # ENGAGEMENT BEHAVIORAL - Listening and consumption behavior
+        # ENGAGEMENT BEHAVIORAL-Listening and consumption behavior
         entries.extend(
             [
                 MusicSlangEntry(
@@ -901,7 +900,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # ANTICIPATION DEMAND - Wanting more content
+        # ANTICIPATION DEMAND-Wanting more content
         entries.extend(
             [
                 MusicSlangEntry(
@@ -994,7 +993,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # RATINGS AND AWARDS - Numerical and award expressions
+        # RATINGS AND AWARDS-Numerical and award expressions
         entries.extend(
             [
                 MusicSlangEntry("10 / 10", SentimentLabel.POSITIVE,
@@ -1020,7 +1019,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # COMPLIMENTS AND IDENTITY - Personal appearance / identity praise
+        # COMPLIMENTS AND IDENTITY-Personal appearance / identity praise
         entries.extend(
             [
                 MusicSlangEntry(
@@ -1100,7 +1099,7 @@ class MusicIndustrySentimentDataset:
 
         # ===== NEGATIVE SENTIMENT =====
 
-        # CRITICISM NEGATIVE - Direct negative criticism
+        # CRITICISM NEGATIVE-Direct negative criticism
         entries.extend(
             [
                 MusicSlangEntry(
@@ -1211,7 +1210,7 @@ class MusicIndustrySentimentDataset:
                     "Unwanted remix",
                 ),
                 MusicSlangEntry(
-                    "this ain't real hip - hop",
+                    "this ain't real hip-hop",
                     SentimentLabel.NEGATIVE,
                     SlangCategory.CRITICISM_NEGATIVE,
                     0.70,
@@ -1227,7 +1226,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # CRITICISM CONSTRUCTIVE - Technical / constructive feedback
+        # CRITICISM CONSTRUCTIVE-Technical / constructive feedback
         entries.extend(
             [
                 MusicSlangEntry(
@@ -1265,7 +1264,7 @@ class MusicIndustrySentimentDataset:
 
         # ===== NEUTRAL SENTIMENT =====
 
-        # NEUTRAL REQUESTS - Information / content requests
+        # NEUTRAL REQUESTS-Information / content requests
         entries.extend(
             [
                 MusicSlangEntry(
@@ -1293,7 +1292,7 @@ class MusicIndustrySentimentDataset:
             ]
         )
 
-        # NEUTRAL QUESTIONS - Information seeking
+        # NEUTRAL QUESTIONS-Information seeking
         entries.extend(
             [
                 MusicSlangEntry(
@@ -1339,14 +1338,14 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.PRAISE_PERFORMANCE,
                     0.85,
-                    "Real fan comment - compliment sequence",
+                    "Real fan comment-compliment sequence",
                 ),
                 MusicSlangEntry(
                     "Cuz I willie",
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.70,
-                    "Real fan comment - playful expression",
+                    "Real fan comment-playful expression",
                     gen_z_slang=True,
                 ),
                 MusicSlangEntry(
@@ -1354,7 +1353,7 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.75,
-                    "Real fan comment - excitement / anticipation",
+                    "Real fan comment-excitement / anticipation",
                 ),
                 MusicSlangEntry(
                     "wtfff",
@@ -1376,7 +1375,7 @@ class MusicIndustrySentimentDataset:
                     SentimentLabel.POSITIVE,
                     SlangCategory.HYPE_EXCITEMENT,
                     0.60,
-                    "For real - agreement / emphasis",
+                    "For real-agreement / emphasis",
                     gen_z_slang=True,
                 ),
             ]
@@ -1401,7 +1400,7 @@ class MusicIndustrySentimentDataset:
         shuffled_entries = self.entries.copy()
         random.shuffle(shuffled_entries)
 
-        split_idx = int(len(shuffled_entries) * (1 - test_size))
+        split_idx = int(len(shuffled_entries) * (1-test_size))
         train_entries = shuffled_entries[:split_idx]
         test_entries = shuffled_entries[split_idx:]
 
@@ -1482,7 +1481,7 @@ def get_music_industry_dataset() -> "MusicIndustrySentimentDataset":
     return get_music_industry_sentiment_dataset()
 
 
-# Backward - compat alias if external code expects an older name
+# Backward-compat alias if external code expects an older name
 def get_music_industry_sentiment_dataset() -> "MusicIndustrySentimentDataset":  # type: ignore[override]
     """Prefer v2; gracefully fall back to v1 if v2 deps unavailable."""
     try:

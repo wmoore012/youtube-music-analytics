@@ -23,6 +23,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tools.maintenance.comprehensive_data_cleanup import validate_configured_artists
 from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+
 from web.etl_helpers import get_engine
 from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
 
@@ -59,7 +60,7 @@ class TestEnhancedSentimentAnalysis:
         self.analyzer = WeakSupervisionSentimentAnalyzer()
 
     def test_music_slang_positive_detection(self):
-        """Test detection of music - specific positive slang."""
+        """Test detection of music-specific positive slang."""
         analyzer = WeakSupervisionSentimentAnalyzer()
 
         # Train on minimal data for testing
@@ -171,7 +172,7 @@ class TestBotDetectionVsFanEngagement:
             assert is_whitelisted, f"'{expression}' should be whitelisted as fan expression"
 
     def test_bot_pattern_detection(self):
-        """Test detection of bot - like patterns."""
+        """Test detection of bot-like patterns."""
         detector = EnhancedBotDetector()
 
         bot_patterns = [
@@ -220,14 +221,14 @@ class TestMomentumCalculation:
         )
 
         # Test that momentum scores are calculated
-        # This is a basic test - in practice we'd test the actual momentum analyzer
+        # This is a basic test-in practice we'd test the actual momentum analyzer
         assert len(sample_data) > 0
         assert "view_count" in sample_data.columns
 
     def test_momentum_trend_analysis(self):
         """Test momentum trend analysis over time."""
         # Test momentum trends
-        dates = pd.date_range("2025 - 01 - 01", periods=5, freq="D")
+        dates = pd.date_range("2025-01-01", periods=5, freq="D")
         momentum_data = pd.DataFrame(
             {"date": dates, "momentum_score": [10, 15, 20, 18, 25], "artist_name": ["Test Artist"] * 5}
         )

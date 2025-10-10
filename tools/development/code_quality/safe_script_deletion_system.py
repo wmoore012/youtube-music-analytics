@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-Safe Script Deletion System - YouTube Analytics Platform
+Safe Script Deletion System-YouTube Analytics Platform
 
 This script provides a safe, reversible system for deleting and consolidating scripts.
 It focuses on:
@@ -14,18 +14,17 @@ Usage:
     python tools / code_quality / safe_script_deletion_system.py --validate script.py
     python tools / code_quality / safe_script_deletion_system.py --delete script.py
     python tools / code_quality / safe_script_deletion_system.py --consolidate script1.py script2.py
-    python tools / code_quality / safe_script_deletion_system.py --extract - helpers script.py
+    python tools / code_quality / safe_script_deletion_system.py --extract-helpers script.py
 """
 
 import ast
-from dataclasses import dataclass, field
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
-import tempfile
-from typing import Dict, List, Optional, Set, Tuple, Union
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -112,7 +111,7 @@ class SafeScriptDeletionSystem:
         plan = DeletionPlan(target_file=script_path, safety_assessment=assessment)
 
         if not assessment.is_safe_to_delete:
-            print(f"❌ Cannot create deletion plan - script is not safe to delete")
+            print(f"❌ Cannot create deletion plan-script is not safe to delete")
             return plan
 
         # Create backup location
@@ -138,7 +137,7 @@ class SafeScriptDeletionSystem:
     def execute_deletion(self, plan: DeletionPlan) -> bool:
         """Execute a deletion plan safely."""
         if not plan.safety_assessment.is_safe_to_delete:
-            print(f"❌ Deletion aborted - script is not safe to delete")
+            print(f"❌ Deletion aborted-script is not safe to delete")
             return False
 
         script_path = Path(plan.target_file)
@@ -181,7 +180,7 @@ class SafeScriptDeletionSystem:
             if plan.backup_location and Path(plan.backup_location).exists():
                 try:
                     shutil.copy2(plan.backup_location, script_path)
-                    print(f"🔄 Rollback successful - restored from backup")
+                    print(f"🔄 Rollback successful-restored from backup")
                 except Exception as rollback_error:
                     print(f"💥 Rollback failed: {rollback_error}")
             return False
@@ -204,7 +203,7 @@ class SafeScriptDeletionSystem:
         print(f"📁 Target module: {target_path}")
 
         try:
-            with open(script_file, "r", encoding="utf - 8") as f:
+            with open(script_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content, filename=str(script_file))
@@ -246,7 +245,7 @@ class SafeScriptDeletionSystem:
             return False
 
         # Skip very short functions
-        if node.end_lineno and node.lineno and (node.end_lineno - node.lineno) < 5:
+        if node.end_lineno and node.lineno and (node.end_lineno-node.lineno) < 5:
             return False
 
         # Skip functions with complex dependencies (simplified check)
@@ -263,7 +262,7 @@ class SafeScriptDeletionSystem:
     def _create_helper_module(self, source_file: Path, target_path: Path, function_names: List[str]):
         """Create a helper module with extracted functions."""
         try:
-            with open(source_file, "r", encoding="utf - 8") as f:
+            with open(source_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content, filename=str(source_file))
@@ -300,7 +299,7 @@ Extraction date: {subprocess.run(['date'], capture_output=True, text=True).stdou
 
             # Write helper module
             target_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(target_path, "w", encoding="utf - 8") as f:
+            with open(target_path, "w", encoding="utf-8") as f:
                 f.write(helper_content)
 
             print(f"✅ Created helper module: {target_path}")
@@ -308,7 +307,7 @@ Extraction date: {subprocess.run(['date'], capture_output=True, text=True).stdou
             # Update __init__.py to export the functions
             init_file = target_path.parent / "__init__.py"
             if init_file.exists():
-                with open(init_file, "a", encoding="utf - 8") as f:
+                with open(init_file, "a", encoding="utf-8") as f:
                     f.write(f"\n# Extracted from {source_file.name}\n")
                     for func_name in function_names:
                         f.write(f"from .{target_path.stem} import {func_name}\n")
@@ -339,8 +338,9 @@ Extraction date: {subprocess.run(['date'], capture_output=True, text=True).stdou
 
                 # Create backup location
                 script_name = Path(source_file).name
-                timestamp = subprocess.run(["date", "+%Y % m%d_ % H%M % S"],
-                                           capture_output=True, text=True).stdout.strip()
+                timestamp = subprocess.run(
+                    ["date", "+%Y % m%d_ % H%M % S"], capture_output=True, text=True
+                ).stdout.strip()
                 backup_location = str(self.backup_dir / f"{script_name}.consolidation_backup.{timestamp}")
                 plan.backup_locations[source_file] = backup_location
 
@@ -409,7 +409,7 @@ Extraction date: {subprocess.run(['date'], capture_output=True, text=True).stdou
 
         for source_file in plan.files_to_delete:
             try:
-                with open(source_file, "r", encoding="utf - 8") as f:
+                with open(source_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 tree = ast.parse(content, filename=source_file)
@@ -453,7 +453,7 @@ Consolidation date: {subprocess.run(['date'], capture_output=True, text=True).st
 
         # Write consolidated module
         target_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(target_path, "w", encoding="utf - 8") as f:
+        with open(target_path, "w", encoding="utf-8") as f:
             f.write(consolidated_content)
 
         print(f"✅ Created consolidated module: {target_path}")
@@ -515,7 +515,7 @@ Consolidation date: {subprocess.run(['date'], capture_output=True, text=True).st
         try:
             print(f"🔍 Running linting...")
             lint_result = subprocess.run(
-                ["python", "-m", "flake8", "--max - line - length=120", "--select=E,W,F"],
+                ["python", "-m", "flake8", "--max-line-length=120", "--select=E,W,F"],
                 cwd=PROJECT_ROOT,
                 capture_output=True,
                 text=True,
@@ -560,7 +560,7 @@ Consolidation date: {subprocess.run(['date'], capture_output=True, text=True).st
     def _is_git_repo(self) -> bool:
         """Check if we're in a git repository."""
         try:
-            subprocess.run(["git", "rev - parse", "--git - dir"], cwd=PROJECT_ROOT, check=True, capture_output=True)
+            subprocess.run(["git", "rev-parse", "--git-dir"], cwd=PROJECT_ROOT, check=True, capture_output=True)
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
@@ -574,9 +574,9 @@ def main():
     parser.add_argument("--validate", type=str, help="Validate deletion safety for a script")
     parser.add_argument("--delete", type=str, help="Safely delete a script")
     parser.add_argument("--consolidate", nargs="+", help="Consolidate multiple scripts")
-    parser.add_argument("--extract - helpers", type=str, help="Extract helper functions from a script")
-    parser.add_argument("--dry - run", action="store_true", help="Show what would be done without making changes")
-    parser.add_argument("--target - module", type=str, help="Target module for extracted functions")
+    parser.add_argument("--extract-helpers", type=str, help="Extract helper functions from a script")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be done without making changes")
+    parser.add_argument("--target-module", type=str, help="Target module for extracted functions")
 
     args = parser.parse_args()
 
@@ -599,7 +599,7 @@ def main():
             # Validate after deletion
             validation = system.validate_after_changes()
             if validation.rollback_required:
-                print(f"⚠️ Validation failed - consider rollback")
+                print(f"⚠️ Validation failed-consider rollback")
                 sys.exit(1)
             else:
                 print(f"✅ Deletion completed successfully")
@@ -624,7 +624,7 @@ def main():
             # Validate after consolidation
             validation = system.validate_after_changes()
             if validation.rollback_required:
-                print(f"⚠️ Validation failed - consider rollback")
+                print(f"⚠️ Validation failed-consider rollback")
                 sys.exit(1)
             else:
                 print(f"✅ Consolidation completed successfully")

@@ -1,19 +1,19 @@
 #!/usr / bin / env python3
 """
-Test Suite for Repository Switcher - TDD Implementation
+Test Suite for Repository Switcher-TDD Implementation
 =====================================================
 
 Comprehensive test coverage for repository management functionality.
-Following TDD principles with test - first development.
+Following TDD principles with test-first development.
 """
 
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 sys.path.append("scripts")
@@ -59,7 +59,7 @@ class TestRepositorySwitcher(unittest.TestCase):
         custom_config = {
             "repositories": {
                 "test": {
-                    "name": "test - remote",
+                    "name": "test-remote",
                     "url": "https://github.com / test / repo.git",
                     "description": "Test repository",
                     "excluded_files": ["*.test"],
@@ -109,10 +109,10 @@ class TestRepositorySwitcher(unittest.TestCase):
     @patch("subprocess.run")
     def test_ensure_remote_configured_new_remote(self, mock_run):
         """Test adding a new git remote."""
-        # Mock git commands: git rev - parse (is git repo), get - url fails, add succeeds
+        # Mock git commands: git rev-parse (is git repo), get-url fails, add succeeds
         mock_run.side_effect = [
-            Mock(returncode=0),  # git rev - parse succeeds (is git repo)
-            subprocess.CalledProcessError(1, "git"),  # get - url fails
+            Mock(returncode=0),  # git rev-parse succeeds (is git repo)
+            subprocess.CalledProcessError(1, "git"),  # get-url fails
             Mock(returncode=0),  # add succeeds
         ]
 
@@ -126,19 +126,19 @@ class TestRepositorySwitcher(unittest.TestCase):
     @patch("subprocess.run")
     def test_ensure_remote_configured_update_url(self, mock_run):
         """Test updating existing git remote URL."""
-        # Mock git commands: git rev - parse (is git repo), get - url returns old URL, set - url succeeds
+        # Mock git commands: git rev-parse (is git repo), get-url returns old URL, set-url succeeds
         mock_run.side_effect = [
-            Mock(returncode=0),  # git rev - parse succeeds (is git repo)
-            Mock(stdout="https://github.com / old / repo.git\n", returncode=0),  # get - url returns old URL
-            Mock(returncode=0),  # set - url succeeds
+            Mock(returncode=0),  # git rev-parse succeeds (is git repo)
+            Mock(stdout="https://github.com / old / repo.git\n", returncode=0),  # get-url returns old URL
+            Mock(returncode=0),  # set-url succeeds
         ]
 
         self.switcher._ensure_remote_configured("staging")
 
-        # Verify git remote set - url was called
+        # Verify git remote set-url was called
         mock_run.assert_any_call(
-            ["git", "remote", "set - url", "staging", "https://github.com"
-                " / wmoore012 / staging_yt_analytics.git"], check=True
+            ["git", "remote", "set-url", "staging", "https://github.com" " / wmoore012 / staging_yt_analytics.git"],
+            check=True,
         )
 
     @patch("subprocess.run")
@@ -201,12 +201,12 @@ class TestRepositorySwitcher(unittest.TestCase):
     @patch("subprocess.run")
     def test_status_with_git_info(self, mock_run):
         """Test status method with git information."""
-        # Mock git commands: git rev - parse (is git repo), git remote -v, git branch --show - current
+        # Mock git commands: git rev-parse (is git repo), git remote -v, git branch --show-current
         mock_run.side_effect = [
-            Mock(returncode=0),  # git rev - parse succeeds (is git repo)
+            Mock(returncode=0),  # git rev-parse succeeds (is git repo)
             Mock(stdout="origin\thttps://github.com / test / repo.git (fetch)\n", returncode=0),  # git remote -v
-            Mock(returncode=0),  # git rev - parse succeeds again (for branch check)
-            Mock(stdout="main\n", returncode=0),  # git branch --show - current
+            Mock(returncode=0),  # git rev-parse succeeds again (for branch check)
+            Mock(stdout="main\n", returncode=0),  # git branch --show-current
         ]
 
         with patch("builtins.print") as mock_print:
@@ -224,7 +224,7 @@ class TestRepositorySwitcher(unittest.TestCase):
         """Test listing all configured repositories."""
         with patch("builtins.print") as mock_print:
             with patch("subprocess.run") as mock_run:
-                # Mock git remote get - url to succeed for both remotes
+                # Mock git remote get-url to succeed for both remotes
                 mock_run.return_value = Mock(stdout="https://github.com / test / repo.git\n", returncode=0)
 
                 self.switcher.list_repositories()
@@ -268,13 +268,13 @@ class TestRepositorySwitcherIntegration(unittest.TestCase):
     def test_real_git_remote_operations(self):
         """Test real git remote operations."""
         # Add a test remote
-        subprocess.run(["git", "remote", "add", "test - remote", "https://github.com / test / repo.git"], check=True)
+        subprocess.run(["git", "remote", "add", "test-remote", "https://github.com / test / repo.git"], check=True)
 
         # Test ensuring remote is configured
         self.switcher._ensure_remote_configured("staging")
 
         # Verify staging remote was added
-        result = subprocess.run(["git", "remote", "get - url", "staging"], capture_output=True, text=True)
+        result = subprocess.run(["git", "remote", "get-url", "staging"], capture_output=True, text=True)
 
         self.assertEqual(result.returncode, 0)
         self.assertIn("staging_yt_analytics.git", result.stdout)
@@ -317,7 +317,7 @@ class TestRepositorySwitcherEdgeCases(unittest.TestCase):
 
     def test_config_file_permission_error(self):
         """Test handling of config file permission errors."""
-        # Make config directory read - only
+        # Make config directory read-only
         os.chmod(self.switcher.config_file.parent, 0o444)
 
         try:
@@ -363,7 +363,7 @@ class TestRepositorySwitcherEdgeCases(unittest.TestCase):
 
 
 class TestRepositorySwitcherCLI(unittest.TestCase):
-    """Test command - line interface functionality."""
+    """Test command-line interface functionality."""
 
     def setUp(self):
         """Set up test environment."""

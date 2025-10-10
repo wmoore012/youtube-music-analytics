@@ -1,14 +1,13 @@
 #!/usr / bin / env python3
 import pytest
-
-from src.icatalog_public.oss.etl_helpers_oss import (
+from src.public.oss.etl_helpers_oss import (
     extract_isrc_from_text,
     run_with_timeout,
 )
 
 
 def test_extract_isrc_hyphenated():
-    text = "Great song ISRC US - UM7 - 20 - 12345 appears here"
+    text = "Great song ISRC US-UM7-20-12345 appears here"
     assert extract_isrc_from_text(text) == "USUM72012345"
 
 

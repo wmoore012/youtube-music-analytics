@@ -7,8 +7,8 @@ which keeps the repository clean and prevents merge conflicts.
 """
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import List
 
 
@@ -17,7 +17,7 @@ def check_notebook_outputs(notebook_path: Path) -> List[str]:
     violations = []
 
     try:
-        with open(notebook_path, "r", encoding="utf - 8") as f:
+        with open(notebook_path, "r", encoding="utf-8") as f:
             notebook = json.load(f)
 
         for i, cell in enumerate(notebook.get("cells", [])):
@@ -75,13 +75,13 @@ def main():
     print(f"\n📊 Summary:")
     print(f"   • Total notebooks: {total_notebooks}")
     print(f"   • Notebooks with outputs: {notebooks_with_outputs}")
-    print(f"   • Clean notebooks: {total_notebooks - notebooks_with_outputs}")
+    print(f"   • Clean notebooks: {total_notebooks-notebooks_with_outputs}")
 
     if notebooks_with_outputs > 0:
         print(f"\n⚠️  Found {len(all_violations)} output violations in {notebooks_with_outputs} notebooks")
         print("\n💡 To fix this, run:")
         print("   nbstripout notebooks/**/*.ipynb")
-        print("   # or install pre - commit hook:")
+        print("   # or install pre-commit hook:")
         print("   pip install nbstripout")
         print("   nbstripout --install")
         return 1

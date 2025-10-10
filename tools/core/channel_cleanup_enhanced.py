@@ -10,10 +10,9 @@ IMPORTANT: This tool PERMANENTLY DELETES DATA. Use with caution.
 
 import os
 import sys
-from typing import List, Set
+from typing import Set
 
 from dotenv import load_dotenv
-import pandas as pd
 from sqlalchemy import create_engine, text
 
 
@@ -88,7 +87,7 @@ def identify_channels_to_remove(configured: Set[str], database: Set[str]) -> Set
     Returns:
         Set of channel titles to remove
     """
-    to_remove = database - configured
+    to_remove = database-configured
 
     if to_remove:
         print(f"\n🗑️ Channels to be REMOVED ({len(to_remove)}):")
@@ -97,9 +96,9 @@ def identify_channels_to_remove(configured: Set[str], database: Set[str]) -> Set
     else:
         print("\n✅ No channels need to be removed!")
 
-    if configured - database:
-        print(f"\n📝 Configured channels not yet in database ({len(configured - database)}):")
-        for channel in sorted(configured - database):
+    if configured-database:
+        print(f"\n📝 Configured channels not yet in database ({len(configured-database)}):")
+        for channel in sorted(configured-database):
             print(f"   ➕ {channel}")
 
     return to_remove
@@ -217,12 +216,12 @@ def confirm_deletion(channels_to_remove: Set[str], impact: dict) -> bool:
     response2 = input(f"Type 'DELETE {len(channels_to_remove)} CHANNELS' to confirm: ").strip()
     expected = f"DELETE {len(channels_to_remove)} CHANNELS"
     if response2 != expected:
-        print("❌ Deletion cancelled - confirmation text didn't match.")
+        print("❌ Deletion cancelled-confirmation text didn't match.")
         return False
 
-    response3 = input("Final confirmation - type 'I UNDERSTAND' to proceed: ").strip()
+    response3 = input("Final confirmation-type 'I UNDERSTAND' to proceed: ").strip()
     if response3 != "I UNDERSTAND":
-        print("❌ Deletion cancelled - final confirmation failed.")
+        print("❌ Deletion cancelled-final confirmation failed.")
         return False
 
     return True
@@ -361,7 +360,7 @@ def main():
 
         # Step 6: Perform cleanup
         print("\n📋 Step 6: Performing database cleanup...")
-        _results = perform_cleanup(engine, channels_to_remove)
+        _results = perform_cleanup(engine, channels_to_remove)  # noqa: F841
 
         print("\n🎉 Channel cleanup completed successfully!")
         print("\nNext steps:")

@@ -226,10 +226,10 @@ class ToolTestBase:
 **Rationale**: Ensures no critical functionality is lost
 
 #### Phase-by-Phase Analysis
-1. **Phase 1-3**: Test files and experimental code - likely safe to remove
-2. **Phase 4**: Documentation and reports - archive important docs, remove duplicates
-3. **Phase 5**: Data files and benchmarks - verify data is preserved elsewhere
-4. **Phase 6**: Recent cleanup attempts - carefully review for current relevance
+1. **Phase 1-3**: Test files and experimental code-likely safe to remove
+2. **Phase 4**: Documentation and reports-archive important docs, remove duplicates
+3. **Phase 5**: Data files and benchmarks-verify data is preserved elsewhere
+4. **Phase 6**: Recent cleanup attempts-carefully review for current relevance
 
 #### Verification Process
 ```python
@@ -274,10 +274,10 @@ archive/
 **Rationale**: Focuses testing effort on current functionality
 
 #### Test Categories
-1. **Core System Tests**: Tests for current production functionality - keep
-2. **Feature Tests**: Tests for completed features - evaluate individually
-3. **Experimental Tests**: Tests for abandoned experiments - remove
-4. **Integration Tests**: Tests for deprecated integrations - remove
+1. **Core System Tests**: Tests for current production functionality-keep
+2. **Feature Tests**: Tests for completed features-evaluate individually
+3. **Experimental Tests**: Tests for abandoned experiments-remove
+4. **Integration Tests**: Tests for deprecated integrations-remove
 
 #### Assessment Criteria
 ```python

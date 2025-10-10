@@ -36,7 +36,7 @@ jobs:
     - name: � CRITIcCAL: Syntax Errors (BLOCKING)
       run: |
         echo "🚨 Checking for syntax errors that prevent code execution..."
-        echo "These errors MUST be zero - they break the code!"
+        echo "These errors MUST be zero-they break the code!"
         
         # Check for syntax errors
         SYNTAX_ERRORS=$(flake8 --select=E999 --count 2>/dev/null || echo "0")
@@ -92,7 +92,7 @@ jobs:
         LONG_LINES=$(flake8 --select=E501 --max-line-length=120 --count 2>/dev/null || echo "0")
         echo "📊 Long lines (E501): $LONG_LINES"
         
-        # Warning only - don't fail build for line length
+        # Warning only-don't fail build for line length
         if [ "$LONG_LINES" -gt 100 ]; then
           echo "⚠️  WARNING: Many long lines ($LONG_LINES). Consider refactoring."
         fi
@@ -104,7 +104,7 @@ jobs:
         UNUSED_VARS=$(flake8 --select=F841 --count 2>/dev/null || echo "0")
         echo "📊 Unused variables (F841): $UNUSED_VARS"
         
-        # Warning only - don't fail build for unused variables
+        # Warning only-don't fail build for unused variables
         if [ "$UNUSED_VARS" -gt 50 ]; then
           echo "⚠️  WARNING: Many unused variables ($UNUSED_VARS). Consider cleanup."
         fi
@@ -121,7 +121,7 @@ jobs:
         echo "📊 Error breakdown:"
         flake8 --max-line-length=120 --statistics 2>/dev/null || true
         
-        # Fail if more than 161 total errors (current baseline - gradual improvement target)
+        # Fail if more than 161 total errors (current baseline-gradual improvement target)
         if [ "$ERROR_COUNT" -gt 161 ]; then
           echo "❌ Too many linting errors ($ERROR_COUNT > 161). Please fix issues."
           echo "Focus on critical errors first: E999, F821, F811"

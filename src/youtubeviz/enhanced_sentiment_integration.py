@@ -8,7 +8,7 @@ leveraging database helpers, statistical utilities, and configuration management
 
 import logging
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import pandas as pd
 from sqlalchemy import text
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 class EnhancedSentimentPipeline:
     """
-    Production - ready sentiment analysis pipeline that integrates with existing infrastructure.
+    Production-ready sentiment analysis pipeline that integrates with existing infrastructure.
 
     Uses existing database helpers, statistical utilities, and configuration management
     while adding enhanced VADER capabilities.
@@ -73,7 +73,7 @@ class EnhancedSentimentPipeline:
         self, limit: int = 1000, min_engagement: int = 5, artist_filter: Optional[List[str]] = None
     ) -> pd.DataFrame:
         """
-        Fetch UNIQUE comments for evaluation - ensures no data leakage.
+        Fetch UNIQUE comments for evaluation-ensures no data leakage.
 
         Args:
             limit: Maximum number of comments to fetch
@@ -249,7 +249,7 @@ class EnhancedSentimentPipeline:
             "current_score_variance": current_variance,
             "enhanced_score_variance": enhanced_variance,
             "variance_improvement": (
-                (enhanced_variance - current_variance) / current_variance if current_variance > 0 else 0
+                (enhanced_variance-current_variance) / current_variance if current_variance > 0 else 0
             ),
         }
 

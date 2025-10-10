@@ -4,9 +4,9 @@ Comprehensive data quality tests for the YouTube analytics system.
 Tests for duplicates, data consistency, and notebook data integrity.
 """
 
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-import sys
 
 import pandas as pd
 import pytest
@@ -36,7 +36,7 @@ class TestDataQuality:
         """Ensure no Enchanting data exists in current system."""
         enchanting_count = sample_data["artist_name"].str.contains("Enchanting", case=False, na=False).sum()
 
-        assert enchanting_count == 0, f"Found {enchanting_count} Enchanting records - should be 0"
+        assert enchanting_count == 0, f"Found {enchanting_count} Enchanting records-should be 0"
 
     def test_duplicate_videos_detection(self, sample_data):
         """Detect and report duplicate video entries."""
@@ -63,8 +63,10 @@ class TestDataQuality:
                     print(f"\n   ❌ Video ID: {video_id} - Unexpected duplicates on same date")
 
                 for _, row in group.iterrows():
-                    print(f"      {row['artist_name']} - {row['video_title']
-                                                          } ({row['views']:,} views) | {row['date']}")
+                    print(
+                        f"      {row['artist_name']} - {row['video_title']
+                                                          } ({row['views']:,} views) | {row['date']}"
+                    )
 
             if unexpected_duplicates > 0:
                 print(f"\n❌ CRITICAL: {unexpected_duplicates} unexpected duplicates found on same dates!")
@@ -77,7 +79,7 @@ class TestDataQuality:
                                } video duplicates are expected metric updates across different dates"
                 )
         else:
-            print(f"\n✅ NO DUPLICATE VIDEO IDS - Clean video data!")
+            print(f"\n✅ NO DUPLICATE VIDEO IDS-Clean video data!")
 
         # This should pass if all duplicates are expected (different dates)
 
@@ -94,8 +96,7 @@ class TestDataQuality:
         ]
 
         combined_pattern = "|".join(song_patterns)
-        songs_data = sample_data[sample_data["video_title"].str.contains(
-            combined_pattern, case=False, na=False)].copy()
+        songs_data = sample_data[sample_data["video_title"].str.contains(combined_pattern, case=False, na=False)].copy()
 
         if len(songs_data) == 0:
             pytest.skip("No songs found in data")
@@ -105,7 +106,7 @@ class TestDataQuality:
             r"\s*[\[\(]Official (Music Video|Audio)[\]\)].*", "", regex=True
         )
 
-        # Find songs with same title - check if they're legitimate metric updates or actual duplicates
+        # Find songs with same title-check if they're legitimate metric updates or actual duplicates
         potential_versions = songs_data[songs_data.duplicated(["artist_name", "clean_song_title"], keep=False)]
 
         critical_duplicates = []
@@ -135,13 +136,15 @@ class TestDataQuality:
             print(f"\n⚠️  WARNING: {len(critical_duplicates)} songs with multiple video IDs found!")
             print(f"   These may be legitimate versions (Official Video vs Audio) or data quality issues.")
             print(f"   Review these manually to determine if they should be consolidated or kept separate.")
-            # Don't fail the test - these might be legitimate different versions
+            # Don't fail the test-these might be legitimate different versions
             # assert len(critical_duplicates) == 0,
             f"CRITICAL: {len(critical_duplicates)} duplicate song records with different video IDs found."
 
         if len(legitimate_updates) > 0:
-            print(f"\n✅ GOOD: {len(legitimate_updates)
-                               } legitimate metric updates found (same video, different dates)")
+            print(
+                f"\n✅ GOOD: {len(legitimate_updates)
+                               } legitimate metric updates found (same video, different dates)"
+            )
 
         print(
             f"\n📊 Summary: {len(legitimate_updates)} legitimate updates, {
@@ -172,12 +175,10 @@ class TestDataQuality:
                     print()
 
                 # FAIL the test if comment duplicates found
-                assert (
-                    len(duplicate_comments) == 0
-                ), f"CRITICAL: {len(duplicate_comments)} duplicate comment groups"
+                assert len(duplicate_comments) == 0, f"CRITICAL: {len(duplicate_comments)} duplicate comment groups"
                 " found. This indicates ETL pipeline failure."
             else:
-                print(f"\n✅ NO DUPLICATE COMMENTS - Clean comment data!")
+                print(f"\n✅ NO DUPLICATE COMMENTS-Clean comment data!")
 
         except Exception as e:
             print(f"\n⚠️  Could not check comment duplicates: {e}")
@@ -190,7 +191,7 @@ class TestDataQuality:
         latest_date = pd.to_datetime(sample_data["date"]).max()
         days_old = (datetime.now() - latest_date).days
 
-        assert days_old <= 7, f"Data is {days_old} days old - should be within 7 days"
+        assert days_old <= 7, f"Data is {days_old} days old-should be within 7 days"
 
     def test_required_columns(self, sample_data):
         """Ensure all required columns are present."""
@@ -273,7 +274,7 @@ def test_notebook_data_cleaning():
             ["artist_name", "clean_song_title"], keep="first"
         )
 
-        # Combine with non - song data
+        # Combine with non-song data
         other_data = df[df["is_song"] is False]
         result = pd.concat([songs_deduplicated, other_data], ignore_index=True)
 
@@ -312,7 +313,7 @@ def test_notebook_data_cleaning():
     assert len(remaining_duplicates) == 0, f"Deduplication failed - {len(remaining_duplicates)} duplicates remain"
 
 
-  # noqa: C901  # noqa: E114
+# noqa: C901  # noqa: E114  # noqa: E303
 if __name__ == "__main__":  # noqa: C901
     # Run tests directly
     import warnings

@@ -1,8 +1,8 @@
 #!/usr / bin / env python3
 """
-ETL System Verification - Complete System Test
+ETL System Verification-Complete System Test
 
-This script performs end - to - end verification of the ETL system including:
+This script performs end-to-end verification of the ETL system including:
 1. Health checks for all components
 2. Pipeline component testing
 3. Data quality validation
@@ -12,16 +12,16 @@ This script performs end - to - end verification of the ETL system including:
 This demonstrates that Task 1 (Verify and Fix ETL Pipeline Operation) is complete.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from datetime import datetime
 import json
 import subprocess
+from datetime import datetime
 
 
 def run_health_check():
@@ -102,7 +102,7 @@ def run_data_quality_check():
             cwd=PROJECT_ROOT,
         )
 
-        # Data quality can return non - zero exit codes for quality issues
+        # Data quality can return non-zero exit codes for quality issues
         # but still provide valid JSON output
         if result.stdout:
             try:
@@ -201,11 +201,11 @@ def generate_system_summary():
             "Referential integrity validation",
         ],
         "requirements_satisfied": [
-            "1.1 - ETL health check validates DB, API, schemas, data freshness",
-            "1.2 - All ETL components fixed and tested end - to - end",
-            "1.3 - Data quality validation with completeness, consistency, duplicates, anomalies",
-            "1.4 - Bulletproof error handling with clear failure messages",
-            "1.5 - Recovery instructions for all failure scenarios",
+            "1.1-ETL health check validates DB, API, schemas, data freshness",
+            "1.2-All ETL components fixed and tested end-to-end",
+            "1.3-Data quality validation with completeness, consistency, duplicates, anomalies",
+            "1.4-Bulletproof error handling with clear failure messages",
+            "1.5-Recovery instructions for all failure scenarios",
         ],
     }
 
@@ -244,7 +244,7 @@ def main():
     error_handling_result = test_error_handling()
 
     # Generate summary
-    _summary = generate_system_summary()
+    _summary = generate_system_summary()  # noqa: F841
 
     # Determine overall status
     all_tests_passed = all(
@@ -254,7 +254,7 @@ def main():
     print("\n" + "=" * 60)
     if all_tests_passed:
         print("🎉 ETL SYSTEM VERIFICATION COMPLETE")
-        print("✅ Task 1: Verify and Fix ETL Pipeline Operation - COMPLETED")
+        print("✅ Task 1: Verify and Fix ETL Pipeline Operation-COMPLETED")
         print()
         print("The ETL system is fully operational with:")
         print("  • Comprehensive health monitoring")

@@ -8,14 +8,14 @@ based on the schema provided in the issue description.
 
 import logging
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from dotenv import load_dotenv
 import pymysql
+from dotenv import load_dotenv
 from sqlalchemy import text
 
 from web.etl_helpers import get_engine
@@ -284,7 +284,7 @@ def create_youtube_tables() -> bool:
           `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
           `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           PRIMARY KEY (`isrc`),
-          CONSTRAINT `isrc_format_chk` CHECK (regexp_like(`isrc`,_utf8mb4'^[A - Z]{2}[A - Z0 - 9]{3}[0 - 9]{2}[0 - 9]{5}$'))  # noqa: E501
+          CONSTRAINT `isrc_format_chk` CHECK (regexp_like(`isrc`,_utf8mb4'^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$'))  # noqa: E501
         )
         """,
         """

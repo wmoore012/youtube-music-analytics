@@ -3,8 +3,8 @@
 Legacy wrapper for run_etl.py
 This script is deprecated. Please use the new consolidated tools.
 """
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))

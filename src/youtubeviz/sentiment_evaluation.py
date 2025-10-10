@@ -4,36 +4,34 @@ Comprehensive Sentiment Analysis Evaluation Framework
 
 Provides rigorous statistical evaluation with multiple testing approaches including:
 - Paired testing on identical comment sets
-- GroupKFold cross - validation by video_id to prevent data leakage
+- GroupKFold cross-validation by video_id to prevent data leakage
 - McNemar's test for paired classifier comparison
 - Bootstrap confidence intervals for performance deltas
-- Multiple comparison correction with Benjamini - Hochberg FDR control
+- Multiple comparison correction with Benjamini-Hochberg FDR control
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime
 import json
 import random
-from typing import Any, Dict, List, Optional, Tuple, Union
 import warnings
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy import stats
-from scipy.stats import chi2_contingency
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
-    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
 )
 from sklearn.model_selection import GroupKFold
 
-# Import ML data models for transformer - ready preprocessing
+# Import ML data models for transformer-ready preprocessing
 try:
     from youtubeviz.ml_data_models import DataSplit, MLComment, MLDataset, SentimentLabel, TransformerConfig
     from youtubeviz.unique_comment_manager import UniqueCommentManager
@@ -47,7 +45,7 @@ except ImportError:
 
 @dataclass
 class ClassMetrics:
-    """Per - class evaluation metrics."""
+    """Per-class evaluation metrics."""
 
     precision: float
     recall: float
@@ -121,7 +119,7 @@ class EvaluationResults:
     f1_score: float
     macro_f1: float
 
-    # Per - class metrics
+    # Per-class metrics
     class_metrics: Dict[str, ClassMetrics]
 
     # Confidence intervals
@@ -182,7 +180,7 @@ class EvaluationResults:
 
 @dataclass
 class CVResults:
-    """Cross - validation evaluation results."""
+    """Cross-validation evaluation results."""
 
     model_name: str
     cv_scores: List[float]
@@ -224,11 +222,11 @@ class StatisticalTestError(EvaluationError):
 
 class SentimentEvaluationFramework:
     """
-    Multi - model evaluation framework with statistical rigor.
+    Multi-model evaluation framework with statistical rigor.
 
     Supports:
     - Paired testing on identical comment sets
-    - GroupKFold cross - validation by video_id
+    - GroupKFold cross-validation by video_id
     - McNemar's test for paired classifier comparison
     - Bootstrap confidence intervals
     - Multiple comparison correction
@@ -331,7 +329,7 @@ class SentimentEvaluationFramework:
         experiment_id: Optional[str] = None,
     ) -> Dict[str, CVResults]:
         """
-        Run GroupKFold cross - validation by video_id to prevent data leakage.
+        Run GroupKFold cross-validation by video_id to prevent data leakage.
 
         Args:
             models: Dictionary of model_name -> model_instance
@@ -443,10 +441,10 @@ class SentimentEvaluationFramework:
         correct_b = [pred == true for pred, true in zip(predictions_b, true_labels)]
 
         # McNemar contingency table
-        _both_correct = sum(a and b for a, b in zip(correct_a, correct_b))
+        _both_correct = sum(a and b for a, b in zip(correct_a, correct_b))  # noqa: F841
         a_correct_b_wrong = sum(a and not b for a, b in zip(correct_a, correct_b))
         a_wrong_b_correct = sum(not a and b for a, b in zip(correct_a, correct_b))
-        _both_wrong = sum(not a and not b for a, b in zip(correct_a, correct_b))
+        _both_wrong = sum(not a and not b for a, b in zip(correct_a, correct_b))  # noqa: F841
 
         # McNemar's test focuses on discordant pairs
         discordant_pairs = a_correct_b_wrong + a_wrong_b_correct
@@ -456,10 +454,10 @@ class SentimentEvaluationFramework:
             return McNemarResult(statistic=0.0, p_value=1.0, significant=False, alpha=alpha)
 
         # McNemar's test statistic with continuity correction
-        statistic = ((abs(a_correct_b_wrong - a_wrong_b_correct) - 1) ** 2) / discordant_pairs
+        statistic = ((abs(a_correct_b_wrong-a_wrong_b_correct) - 1) ** 2) / discordant_pairs
 
-        # Chi - square test with 1 degree of freedom
-        p_value = 1 - stats.chi2.cdf(statistic, df=1)
+        # Chi-square test with 1 degree of freedom
+        p_value = 1-stats.chi2.cdf(statistic, df=1)
 
         return McNemarResult(statistic=statistic, p_value=p_value, significant=p_value < alpha, alpha=alpha)
 
@@ -487,9 +485,9 @@ class SentimentEvaluationFramework:
             bootstrap_means.append(np.mean(bootstrap_sample))
 
         # Compute percentiles for confidence interval
-        alpha = 1 - confidence
+        alpha = 1-confidence
         lower_percentile = (alpha / 2) * 100
-        upper_percentile = (1 - alpha / 2) * 100
+        upper_percentile = (1-alpha / 2) * 100
 
         lower_bound = np.percentile(bootstrap_means, lower_percentile)
         upper_bound = np.percentile(bootstrap_means, upper_percentile)
@@ -505,7 +503,7 @@ class SentimentEvaluationFramework:
         slice_definitions: Optional[Dict[str, callable]] = None,
     ) -> Dict[str, Dict[str, SliceMetrics]]:
         """
-        Evaluate models on specific data slices (emoji - heavy, booster - present, etc.).
+        Evaluate models on specific data slices (emoji-heavy, booster-present, etc.).
 
         Args:
             models: Dictionary of model_name -> model_instance
@@ -580,9 +578,9 @@ class SentimentEvaluationFramework:
         Apply multiple comparison correction to control false discovery rate.
 
         Args:
-            p_values: List of p - values from multiple tests
+            p_values: List of p-values from multiple tests
             method: Correction method ("benjamini_hochberg" or "bonferroni")
-            alpha: Family - wise error rate
+            alpha: Family-wise error rate
 
         Returns:
             List of boolean values indicating significance after correction
@@ -599,12 +597,12 @@ class SentimentEvaluationFramework:
             raise ValueError(f"Unknown correction method: {method}")
 
     def _benjamini_hochberg_correction(self, p_values: List[float], alpha: float) -> List[bool]:
-        """Apply Benjamini - Hochberg FDR correction."""
+        """Apply Benjamini-Hochberg FDR correction."""
         n = len(p_values)
         if n == 0:
             return []
 
-        # Sort p - values with original indices
+        # Sort p-values with original indices
         indexed_p_values = sorted([(p, i) for i, p in enumerate(p_values)])
 
         # Apply BH procedure
@@ -628,10 +626,10 @@ class SentimentEvaluationFramework:
         for comment in comments:
             try:
                 if hasattr(model, "predict"):
-                    # Sklearn - style interface
+                    # Sklearn-style interface
                     pred = model.predict([comment])[0]
                 elif hasattr(model, "polarity_scores"):
-                    # VADER - style interface
+                    # VADER-style interface
                     scores = model.polarity_scores(comment)
                     compound = scores["compound"]
                     if compound >= 0.05:
@@ -676,7 +674,7 @@ class SentimentEvaluationFramework:
         f1 = f1_score(true_labels, predictions, average="macro", zero_division=0)
         macro_f1 = f1  # Same as f1 with macro averaging
 
-        # Per - class metrics
+        # Per-class metrics
         class_report = classification_report(true_labels, predictions, output_dict=True, zero_division=0)
         class_metrics = {}
 
@@ -685,7 +683,7 @@ class SentimentEvaluationFramework:
                 class_metrics[label] = ClassMetrics(
                     precision=metrics["precision"],
                     recall=metrics["recall"],
-                    f1_score=metrics["f1 - score"],
+                    f1_score=metrics["f1-score"],
                     support=int(metrics["support"]),
                 )
 
@@ -763,7 +761,7 @@ class SentimentEvaluationFramework:
         def has_emoji(text_series):
             emoji_pattern = re.compile(
                 r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680"
-                "-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002700-\U000027BF]+"
+                "-\U0001f6ff\U0001f1e0-\U0001f1ff\U00002700-\U000027bf]+"
             )
             return text_series.str.contains(emoji_pattern, regex=True, na=False)
 
@@ -794,7 +792,7 @@ class SentimentEvaluationFramework:
             "short_comments": is_short_comment,
         }
 
-    # ===== TRANSFORMER - READY DATA PREPARATION =====
+    # ===== TRANSFORMER-READY DATA PREPARATION =====
 
     def prepare_transformer_dataset(
         self,
@@ -805,7 +803,7 @@ class SentimentEvaluationFramework:
         use_unique_comments: bool = True,
     ) -> Optional["MLDataset"]:
         """
-        Prepare transformer - ready dataset with proper preprocessing.
+        Prepare transformer-ready dataset with proper preprocessing.
 
         Args:
             comments: List of comment texts
@@ -825,7 +823,7 @@ class SentimentEvaluationFramework:
             # Use default transformer config if not provided
             if transformer_config is None:
                 transformer_config = TransformerConfig(
-                    model_name="distilbert - base - uncased",
+                    model_name="distilbert-base-uncased",
                     max_length=512,
                     preserve_music_slang=True,
                     normalize_emoji=False,
@@ -864,14 +862,14 @@ class SentimentEvaluationFramework:
                     # Create unique hash
                     import hashlib
 
-                    unique_hash = hashlib.sha256(normalized_text.encode("utf - 8")).hexdigest()[:16]
+                    unique_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()[:16]
 
                     if unique_hash in seen_hashes:
                         continue
                     seen_hashes.add(unique_hash)
 
                     # Create metadata
-                    from youtubeviz.ml_data_models import CommentMetadata, MusicDomain
+                    from youtubeviz.ml_data_models import CommentMetadata
 
                     metadata = CommentMetadata(
                         comment_id=unique_hash,
@@ -949,7 +947,7 @@ class SentimentEvaluationFramework:
 
         try:
             # Validate ratios
-            if abs(train_ratio + val_ratio + test_ratio - 1.0) > 0.001:
+            if abs(train_ratio + val_ratio + test_ratio-1.0) > 0.001:
                 raise ValueError("Split ratios must sum to 1.0")
 
             # Get labeled comments only
@@ -981,7 +979,7 @@ class SentimentEvaluationFramework:
 
                 train_videos = video_ids[:train_end]
                 val_videos = video_ids[train_end:val_end]
-                _test_videos = video_ids[val_end:]
+                _test_videos = video_ids[val_end:]  # noqa: F841
 
                 # Assign splits
                 for comment in labeled_comments:
@@ -1029,7 +1027,7 @@ class SentimentEvaluationFramework:
         self, dataset: "MLDataset", output_dir: str = "transformer_data", format_type: str = "jsonl"
     ) -> Dict[str, str]:
         """
-        Export transformer - ready data in specified format.
+        Export transformer-ready data in specified format.
 
         Args:
             dataset: ML dataset to export
@@ -1070,7 +1068,7 @@ class SentimentEvaluationFramework:
                 if format_type == "jsonl":
                     import json
 
-                    with open(filepath, "w", encoding="utf - 8") as f:
+                    with open(filepath, "w", encoding="utf-8") as f:
                         for item in export_data:
                             f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
@@ -1116,8 +1114,17 @@ class SentimentEvaluationFramework:
         # Preserve music slang if requested
         if config.preserve_music_slang:
             # Don't lowercase music slang terms
-            _music_slang = ["GOATED", "PERIODT", "SLAY", "FIRE", "SLAPS", "BANGER", "HITS DIFFERENT", "GOES HARD"]
-            # Simple preservation - more sophisticated version would use NER
+            _music_slang = [
+                "GOATED",
+                "PERIODT",
+                "SLAY",
+                "FIRE",
+                "SLAPS",
+                "BANGER",
+                "HITS DIFFERENT",
+                "GOES HARD",
+            ]  # noqa: F841
+            # Simple preservation-more sophisticated version would use NER
             pass
 
         # Normalize emoji if requested

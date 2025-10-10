@@ -1,5 +1,5 @@
 """
-TDD tests for critical import resolution - Task 1
+TDD tests for critical import resolution-Task 1
 These tests will fail initially and drive the implementation to fix import errors.
 """
 
@@ -116,7 +116,8 @@ class TestPipInstallEditable:
         """Test that the package is properly installed in development mode"""
         # Check if package is in sys.path
         import os
-#         import sys
+
+        #         import sys
 
         # Look for the package in installed packages or development paths
         package_found = False
@@ -137,7 +138,7 @@ class TestPipInstallEditable:
 
     def test_changes_to_source_reflect_immediately(self):
         """Test that changes to source code are reflected without reinstall"""
-        # This is more of a documentation test - editable installs should work
+        # This is more of a documentation test-editable installs should work
         # In practice, this would require modifying source and reimporting
         try:
             import src.youtubeviz.storytelling
@@ -145,7 +146,7 @@ class TestPipInstallEditable:
             # If we can import it, editable mode is likely working
             assert True
         except ImportError:
-            pytest.fail("Editable installation not working - run 'pip install -e .'")
+            pytest.fail("Editable installation not working-run 'pip install -e .'")
 
 
 if __name__ == "__main__":

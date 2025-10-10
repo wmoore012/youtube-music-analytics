@@ -6,9 +6,9 @@ This module provides comprehensive data quality checks for the YouTube ETL pipel
 It implements bulletproof validation with clear error messages and detailed context.
 """
 
-from datetime import datetime, timedelta
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from sqlalchemy import Engine, text
@@ -112,7 +112,7 @@ class DataQualityValidator:
         # YouTube video IDs contain only alphanumeric characters, hyphens, and underscores
         import re
 
-        if not re.match(r"^[a - zA - Z0 - 9_-]{11}$", video_id):
+        if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
             raise ValidationError(
                 f"YouTube video ID contains invalid characters: '{
                     video_id}'. Must contain only letters, numbers, hyphens, and underscores",
@@ -155,7 +155,7 @@ class DataQualityValidator:
             # Check if value is numeric
             if not isinstance(value, (int, float)) or value < 0:
                 raise DataQualityError(
-                    f"Metrics field '{field}' must be a non - negative number, got {type(value).__name__}: {value}",
+                    f"Metrics field '{field}' must be a non-negative number, got {type(value).__name__}: {value}",
                     column=field,
                     context=context,
                     severity=ErrorSeverity.HIGH,
@@ -258,7 +258,7 @@ class DataQualityValidator:
 
                 if not result or result[1] == 0:
                     raise DataQualityError(
-                        f"Table '{table_name}' is empty - no data to validate freshness",
+                        f"Table '{table_name}' is empty-no data to validate freshness",
                         table=table_name,
                         context=context,
                         severity=ErrorSeverity.HIGH,
@@ -291,7 +291,7 @@ class DataQualityValidator:
                             severity=ErrorSeverity.HIGH,
                         )
 
-                age_hours = (now - latest_timestamp).total_seconds() / 3600
+                age_hours = (now-latest_timestamp).total_seconds() / 3600
 
                 if age_hours > max_age_hours:
                     raise DataQualityError(
@@ -347,7 +347,7 @@ class DataQualityValidator:
 
                 if total_count == 0:
                     raise DataQualityError(
-                        f"Table '{table_name}' is empty - cannot validate completeness",
+                        f"Table '{table_name}' is empty-cannot validate completeness",
                         table=table_name,
                         context=context,
                         severity=ErrorSeverity.HIGH,
@@ -419,7 +419,7 @@ class DataQualityValidator:
             }
         }
         """
-        _context = ErrorContext(
+        _context = ErrorContext(  # noqa: F841
             component="DataQualityValidator",
             operation="run_comprehensive_validation",
             user_data={"tables": list(tables_config.keys())},

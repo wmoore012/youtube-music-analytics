@@ -1,20 +1,20 @@
 #!/usr / bin / env python3
 """
-Staged Code Formatting - Safe and Trackable
+Staged Code Formatting-Safe and Trackable
 
 This script formats code in small, manageable batches with full tracking
 and the ability to review / rollback changes at each stage.
 
 Usage:
     python tools / code_quality / staged_formatting.py --analyze
-    python tools / code_quality / staged_formatting.py --format - batch 1
-    python tools / code_quality / staged_formatting.py --preview - batch 1
+    python tools / code_quality / staged_formatting.py --format-batch 1
+    python tools / code_quality / staged_formatting.py --preview-batch 1
 """
 
-from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Tuple
+from pathlib import Path
+from typing import Dict, List
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -75,7 +75,7 @@ class StagedFormatter:
                     batch = existing_files[i : i + self.batch_size]
                     batches.append(batch)
 
-        # Add directory - based batches
+        # Add directory-based batches
         for dir_pattern in src_dirs + tools_dirs:
             dir_path = self.project_root / dir_pattern
             if dir_path.exists():
@@ -136,7 +136,7 @@ class StagedFormatter:
     def _check_syntax(self, file_path: Path) -> bool:
         """Check if a Python file has valid syntax."""
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 compile(f.read(), str(file_path), "exec")
             return True
         except SyntaxError:
@@ -150,7 +150,7 @@ class StagedFormatter:
             # Check with black
             cmd = ["python", "-m", "black", "--check", "--quiet"] + [str(f) for f in batch]
             result = subprocess.run(cmd, capture_output=True, cwd=self.project_root)
-            return result.returncode != 0  # Non - zero means formatting needed
+            return result.returncode != 0  # Non-zero means formatting needed
         except Exception:
             return True  # Assume formatting needed if check fails
 
@@ -160,7 +160,7 @@ class StagedFormatter:
             print(f"❌ Invalid batch number. Must be 1-{len(self.file_batches)}")
             return False
 
-        batch = self.file_batches[batch_num - 1]
+        batch = self.file_batches[batch_num-1]
         print(f"\n🔍 PREVIEWING BATCH {batch_num} CHANGES")
         print("=" * 50)
         print(f"Files in batch: {[f.name for f in batch]}")
@@ -173,7 +173,7 @@ class StagedFormatter:
         # Show isort diff
         print("\n📚 Import sorting changes:")
         cmd = ["python", "-m", "isort", "--diff", "--color"] + [str(f) for f in batch]
-        _result = subprocess.run(cmd, cwd=self.project_root)
+        _result = subprocess.run(cmd, cwd=self.project_root)  # noqa: F841
 
         return True
 
@@ -183,7 +183,7 @@ class StagedFormatter:
             print(f"❌ Invalid batch number. Must be 1-{len(self.file_batches)}")
             return False
 
-        batch = self.file_batches[batch_num - 1]
+        batch = self.file_batches[batch_num-1]
 
         if not confirm:
             print(f"\n⚠️ About to format batch {batch_num}:")
@@ -249,15 +249,15 @@ class StagedFormatter:
         if analysis["batches_needing_format"]:
             print(f"\n⚠️ BATCHES NEEDING FORMATTING:")
             for batch_num in analysis["batches_needing_format"]:
-                batch = self.file_batches[batch_num - 1]
+                batch = self.file_batches[batch_num-1]
                 print(f"   • Batch {batch_num}: {[f.name for f in batch]}")
 
         print(f"\n🛡️ SAFETY STATUS: {'✅ SAFE' if analysis['safe_to_format'] else '❌ UNSAFE'}")
 
         if analysis["safe_to_format"] and analysis["batches_needing_format"]:
             print("\n📋 RECOMMENDED WORKFLOW:")
-            print("   1. Preview changes: --preview - batch 1")
-            print("   2. Format batch: --format - batch 1")
+            print("   1. Preview changes: --preview-batch 1")
+            print("   2. Format batch: --format-batch 1")
             print("   3. Review and commit: git diff && git commit")
             print("   4. Repeat for next batch")
 
@@ -270,8 +270,8 @@ def main():
 
     parser = argparse.ArgumentParser(description="Staged Code Formatting")
     parser.add_argument("--analyze", action="store_true", help="Analyze formatting needs")
-    parser.add_argument("--preview - batch", type=int, help="Preview changes for batch N")
-    parser.add_argument("--format - batch", type=int, help="Format batch N")
+    parser.add_argument("--preview-batch", type=int, help="Preview changes for batch N")
+    parser.add_argument("--format-batch", type=int, help="Format batch N")
     parser.add_argument("--confirm", action="store_true", help="Skip confirmation prompts")
 
     args = parser.parse_args()

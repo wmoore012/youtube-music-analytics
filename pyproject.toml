@@ -9,7 +9,7 @@ description = "Professional YouTube Analytics and Sentiment Analysis Platform"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 4-Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -249,3 +249,30 @@ precision = 2
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+[tool.ruff]
+# Start with basic checks, expand gradually
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+]
+
+# Ignore current violations (baseline approach)
+ignore = [
+    "E501",  # Line too long (handled by black)
+]
+
+# Safe automatic fixes only
+fixable = ["F401", "I", "W291", "W292", "W293", "E302", "E303", "E305"]
+unfixable = ["F841"]  # Don't auto-remove unused variables
+
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.per-file-ignores]
+# Tests can be more flexible
+"tests/**/*.py" = ["F401", "F841"]
+# Scripts can use print statements
+"scripts/**/*.py" = ["T201"]

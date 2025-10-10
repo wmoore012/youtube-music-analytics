@@ -28,7 +28,7 @@ except ConnectionError as e:
 try:
     result = risky_operation()
 except:
-    pass  # Silent failure - never do this!
+    pass  # Silent failure-never do this!
 ```
 
 ### ✅ Error Handling with Context

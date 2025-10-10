@@ -12,18 +12,17 @@ This tool implements the TestRelevanceAssessor class to:
 - Ensure critical functionality maintains test coverage
 
 Usage:
-    python tools / development / testing / test_relevance_assessor.py --assess - all
-    python tools / development / testing / test_relevance_assessor.py --remove - outdated
-    python tools / development / testing / test_relevance_assessor.py --consolidate - similar
+    python tools / development / testing / test_relevance_assessor.py --assess-all
+    python tools / development / testing / test_relevance_assessor.py --remove-outdated
+    python tools / development / testing / test_relevance_assessor.py --consolidate-similar
 """
 
 import argparse
 import ast
-from datetime import datetime
-import os
-from pathlib import Path
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
@@ -40,7 +39,7 @@ class TestRelevanceResult:
         self.outdated_tests: List[str] = []
         self.deprecated_tests: List[str] = []
         self.duplicate_tests: List[Tuple[str, str]] = []  # (test1, test2) pairs
-        self.orphaned_tests: List[str] = []  # Tests for non - existent functionality
+        self.orphaned_tests: List[str] = []  # Tests for non-existent functionality
         self.critical_coverage_gaps: List[str] = []
         self.consolidation_candidates: List[List[str]] = []  # Groups of similar tests
         self.total_tests_analyzed: int = 0
@@ -60,7 +59,7 @@ class TestRelevanceAssessor(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="test - relevance - assessor", version="1.0.0")
+        super().__init__(name="test-relevance-assessor", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -105,21 +104,21 @@ class TestRelevanceAssessor(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="test - relevance - assessor",
+            name="test-relevance-assessor",
             version="1.0.0",
             description="Systematic test relevance assessment and cleanup tool",
             dependencies=["python>=3.8", "ast"],
             environment_vars=[],
             usage_examples=[
-                "python tools / development / testing / test_relevance_assessor.py --assess - all",
-                "python tools / development / testing / test_relevance_assessor.py --remove - outdated",
-                "python tools / development / testing / test_relevance_assessor.py --consolidate - similar",
+                "python tools / development / testing / test_relevance_assessor.py --assess-all",
+                "python tools / development / testing / test_relevance_assessor.py --remove-outdated",
+                "python tools / development / testing / test_relevance_assessor.py --consolidate-similar",
             ],
             category="development",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly."""
+        """Main execution method-should not be called directly."""
         self.log_progress("Use specific assessment methods like assess_all_tests()")
 
     def assess_all_tests(self) -> TestRelevanceResult:
@@ -203,7 +202,7 @@ class TestRelevanceAssessor(ToolBase):
                     return "relevant"
 
             # Read file content for deeper analysis
-            with open(test_file, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             # Parse imports to see what's being tested
@@ -272,13 +271,13 @@ class TestRelevanceAssessor(ToolBase):
                     if node.module:
                         modules.append(node.module)
         except Exception:
-            # Fallback to regex - based extraction
+            # Fallback to regex-based extraction
             import re
 
             # Find import statements
             import_patterns = [
-                r"from\s+([a - zA - Z_][a - zA - Z0 - 9_.]*)\s + import",
-                r"import\s+([a - zA - Z_][a - zA - Z0 - 9_.]*)",
+                r"from\s+([a-zA-Z_][a-zA-Z0-9_.]*)\s + import",
+                r"import\s+([a-zA-Z_][a-zA-Z0-9_.]*)",
             ]
 
             for pattern in import_patterns:
@@ -562,7 +561,7 @@ class TestRelevanceAssessor(ToolBase):
             report.append(f"  3. Consider consolidating {len(assessment_result.consolidation_candidates)} test groups")
 
         if removable_count == 0 and not assessment_result.critical_coverage_gaps:
-            report.append("  ✅ Test suite is well - maintained - no major issues found!")
+            report.append("  ✅ Test suite is well-maintained-no major issues found!")
 
         return "\n".join(report)
 
@@ -579,22 +578,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python tools / development / testing / test_relevance_assessor.py --assess - all
-  python tools / development / testing / test_relevance_assessor.py --remove - outdated --dry - run
-  python tools / development / testing / test_relevance_assessor.py --consolidate - similar
+  python tools / development / testing / test_relevance_assessor.py --assess-all
+  python tools / development / testing / test_relevance_assessor.py --remove-outdated --dry-run
+  python tools / development / testing / test_relevance_assessor.py --consolidate-similar
         """,
     )
 
     # Assessment operations
-    parser.add_argument("--assess - all", action="store_true", help="Assess all test files for relevance")
+    parser.add_argument("--assess-all", action="store_true", help="Assess all test files for relevance")
     parser.add_argument(
-        "--remove - outdated", action="store_true", help="Remove tests identified as outdated or deprecated"
+        "--remove-outdated", action="store_true", help="Remove tests identified as outdated or deprecated"
     )
-    parser.add_argument("--consolidate - similar", action="store_true",
-                        help="Identify tests that could be consolidated")
+    parser.add_argument(
+        "--consolidate-similar", action="store_true", help="Identify tests that could be consolidated"
+    )
 
     # Options
-    parser.add_argument("--dry - run", action="store_true", help="Simulate operations without making changes")
+    parser.add_argument("--dry-run", action="store_true", help="Simulate operations without making changes")
     parser.add_argument("--report", type=str, help="Save assessment report to file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 

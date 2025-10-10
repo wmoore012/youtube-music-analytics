@@ -1,5 +1,5 @@
 """
-Tests for tools / core / unified_maintenance.py - unified system maintenance tool.
+Tests for tools / core / unified_maintenance.py-unified system maintenance tool.
 
 This test suite validates:
 - SystemMaintenance class functionality
@@ -10,10 +10,10 @@ This test suite validates:
 - Error handling and recovery
 """
 
-from datetime import datetime, timedelta
 import os
-from pathlib import Path
 import tempfile
+from datetime import datetime, timedelta
+from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -30,7 +30,7 @@ class TestSystemMaintenance:
 
     def test_tool_initialization(self):
         """Test basic tool initialization."""
-        assert self.maintenance_tool.name == "unified - maintenance"
+        assert self.maintenance_tool.name == "unified-maintenance"
         assert self.maintenance_tool.version == "1.0.0"
         assert self.maintenance_tool.logger is not None
 
@@ -43,7 +43,7 @@ class TestSystemMaintenance:
         """Test tool configuration metadata."""
         config = self.maintenance_tool.get_tool_config()
 
-        assert config.name == "unified - maintenance"
+        assert config.name == "unified-maintenance"
         assert config.version == "1.0.0"
         assert config.category == "core"
         assert "python>=3.8" in config.dependencies
@@ -255,7 +255,7 @@ class TestDataRetention:
 
         result = self.maintenance_tool.data_retention_cleanup(compliance_mode=True)
 
-        # Should enforce 30 - day limit in compliance mode
+        # Should enforce 30-day limit in compliance mode
         assert result["retention_days"] == 30
         assert result["youtube_tos_compliant"] is True
         assert result["compliance_mode"] is True
@@ -513,12 +513,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_maintenance.SystemMaintenance")
     def test_main_cleanup_old_option(self, mock_maintenance_class):
-        """Test main function with --cleanup - old option."""
+        """Test main function with --cleanup-old option."""
         mock_maintenance = MagicMock()
         mock_maintenance.cleanup_old_data.return_value = {"total_records_affected": 100}
         mock_maintenance_class.return_value.__enter__.return_value = mock_maintenance
 
-        with patch("sys.argv", ["unified_maintenance.py", "--cleanup - old", "--days", "30"]):
+        with patch("sys.argv", ["unified_maintenance.py", "--cleanup-old", "--days", "30"]):
             result = main()
 
         assert result == 0
@@ -526,12 +526,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_maintenance.SystemMaintenance")
     def test_main_optimize_db_option(self, mock_maintenance_class):
-        """Test main function with --optimize - db option."""
+        """Test main function with --optimize-db option."""
         mock_maintenance = MagicMock()
         mock_maintenance.optimize_database.return_value = {"performance_impact": {"optimization_percentage": 15.5}}
         mock_maintenance_class.return_value.__enter__.return_value = mock_maintenance
 
-        with patch("sys.argv", ["unified_maintenance.py", "--optimize - db"]):
+        with patch("sys.argv", ["unified_maintenance.py", "--optimize-db"]):
             result = main()
 
         assert result == 0
@@ -539,14 +539,14 @@ class TestMainFunction:
 
     @patch("tools.core.unified_maintenance.SystemMaintenance")
     def test_main_full_maintenance_option(self, mock_maintenance_class):
-        """Test main function with --full - maintenance option."""
+        """Test main function with --full-maintenance option."""
         mock_maintenance = MagicMock()
         mock_maintenance.full_maintenance.return_value = {
             "summary": {"overall_status": "SUCCESS", "successful_operations": 3, "total_operations": 3}
         }
         mock_maintenance_class.return_value.__enter__.return_value = mock_maintenance
 
-        with patch("sys.argv", ["unified_maintenance.py", "--full - maintenance"]):
+        with patch("sys.argv", ["unified_maintenance.py", "--full-maintenance"]):
             result = main()
 
         assert result == 0
@@ -575,7 +575,7 @@ class TestMainFunction:
         mock_maintenance.cleanup_old_data.side_effect = KeyboardInterrupt()
         mock_maintenance_class.return_value.__enter__.return_value = mock_maintenance
 
-        with patch("sys.argv", ["unified_maintenance.py", "--cleanup - old"]):
+        with patch("sys.argv", ["unified_maintenance.py", "--cleanup-old"]):
             result = main()
 
         assert result == 1
@@ -592,10 +592,10 @@ class TestIntegration:
         maintenance_tool = SystemMaintenance()
 
         # Find the registered tool
-        found_tool = find_tool("unified - maintenance")
+        found_tool = find_tool("unified-maintenance")
 
         assert found_tool is not None
-        assert found_tool.name == "unified - maintenance"
+        assert found_tool.name == "unified-maintenance"
         assert found_tool.version == "1.0.0"
         assert found_tool.category == "core"
 
@@ -609,6 +609,6 @@ class TestIntegration:
                 cleanup_called = True
 
         with TestMaintenance() as maintenance_tool:
-            assert maintenance_tool.name == "unified - maintenance"
+            assert maintenance_tool.name == "unified-maintenance"
 
         assert cleanup_called

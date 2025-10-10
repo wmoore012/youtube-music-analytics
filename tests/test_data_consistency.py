@@ -130,7 +130,7 @@ class TestConsistencyIntegration:
 
             # Test sentiment separately (might have different count)
             end_date = date.today()
-            start_date = end_date - timedelta(days=30)
+            start_date = end_date-timedelta(days=30)
             sentiment_data = load_sentiment_daily(start=start_date, end=end_date, engine=engine)
 
             if len(sentiment_data) > 0:
@@ -160,5 +160,5 @@ class TestConsistencyIntegration:
                 if len(colors_wrong) != len(unique_artists):
                     pytest.fail("get_artist_color_map should reject DataFrame input or return consistent count")
             except (TypeError, AttributeError):
-                # This is expected - function should reject wrong input type
+                # This is expected-function should reject wrong input type
                 pass

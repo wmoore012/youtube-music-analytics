@@ -10,18 +10,18 @@ This script implements task 9 from the data organization and scoring system spec
 5. Verify all database tables have current data for notebooks
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from datetime import datetime
 import os
 import traceback
+from datetime import datetime
 from typing import Any, Dict
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import text
 
 from src.data_organization.configuration_manager import ConfigurationManager
@@ -128,7 +128,7 @@ class ETLScoringIntegration:
                 migration_results["status"] = "no_files"
                 return migration_results
 
-            # Simple migration approach - just validate files exist and are readable
+            # Simple migration approach-just validate files exist and are readable
             total_records = 0
             migrated_files = 0
 
@@ -531,7 +531,7 @@ class ETLScoringIntegration:
             self.results["migration_results"] = self.run_data_migration()
 
             # Step 3: Register scoring plugins
-            _plugin_results = self.register_scoring_plugins()
+            _plugin_results = self.register_scoring_plugins()  # noqa: F841
 
             # Step 4: Execute scoring algorithms
             self.results["scoring_results"] = self.execute_scoring_algorithms()
@@ -556,7 +556,7 @@ class ETLScoringIntegration:
 
             # Final summary
             end_time = datetime.now()
-            duration = (end_time - start_time).total_seconds()
+            duration = (end_time-start_time).total_seconds()
 
             print("\n" + "=" * 60)
             print("🎉 ETL PIPELINE WITH SCORING INTEGRATION COMPLETE")

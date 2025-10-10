@@ -1,4 +1,4 @@
-# Quick Reference Guide - Development Standards
+# Quick Reference Guide-Development Standards
 
 ## 🚀 Daily Development Cheat Sheet
 

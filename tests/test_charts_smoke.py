@@ -1,10 +1,10 @@
 """
-Smoke tests for MusicScope™ charts - the "soundcheck before the show"
+Smoke tests for MusicScope™ charts-the "soundcheck before the show"
 
 These tests ensure every chart function:
 1. Returns a proper Figure / Chart object (not None)
 2. Completes within timeout
-3. Handles 200 - row fixture data without crashing
+3. Handles 200-row fixture data without crashing
 """
 
 from datetime import datetime, timedelta
@@ -27,7 +27,7 @@ from src.youtubeviz.scoring_analysis import (
 
 @pytest.fixture
 def sample_youtube_data():
-    """Create 200 - row fixture with realistic YouTube data."""
+    """Create 200-row fixture with realistic YouTube data."""
     np.random.seed(42)  # Reproducible test data
 
     artists = ["Taylor Swift", "Drake", "Bad Bunny", "Billie Eilish", "The Weeknd"]
@@ -40,9 +40,9 @@ def sample_youtube_data():
         date = base_date + timedelta(days=np.random.randint(0, 365))
 
         # Realistic YouTube metrics with some correlation
-        views = np.random.lognormal(mean=12, sigma=1.5)  # Log - normal distribution for views
-        likes = views * np.random.uniform(0.01, 0.05)  # 1 - 5% like rate
-        comments = views * np.random.uniform(0.001, 0.01)  # 0.1 - 1% comment rate
+        views = np.random.lognormal(mean=12, sigma=1.5)  # Log-normal distribution for views
+        likes = views * np.random.uniform(0.01, 0.05)  # 1-5% like rate
+        comments = views * np.random.uniform(0.001, 0.01)  # 0.1-1% comment rate
 
         data.append(
             {
@@ -54,7 +54,7 @@ def sample_youtube_data():
                 "video_id": f"video_{i:03d}",
                 "channel_title": artist,
                 "title": f"{artist} - Song {i % 10 + 1}",
-                "duration": np.random.randint(120, 300),  # 2 - 5 minutes
+                "duration": np.random.randint(120, 300),  # 2-5 minutes
                 "has_isrc": np.random.choice([True, False]),
                 "sentiment_score": np.random.uniform(-1, 1),
                 "engagement_rate": (likes + comments) / views if views > 0 else 0,

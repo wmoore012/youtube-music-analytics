@@ -18,13 +18,13 @@ def fix_unterminated_strings():
         "tests/test_schema_validator.py",
         "web/sentiment_job.py",
         "web/youtube_channel_etl.py",
-        "web/youtube_version_parser.py"
+        "web/youtube_version_parser.py",
     ]
 
     for file_path in files_with_errors:
         if os.path.exists(file_path):
             print(f"Fixing unterminated strings in {file_path}")
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 content = f.read()
 
             # Fix common unterminated string patterns
@@ -35,7 +35,7 @@ def fix_unterminated_strings():
             content = re.sub(r'"SELECT ([^"]*)\n\s*([^"]*)"', r'"SELECT \1 \2"', content)
 
             # Pattern 3: Long strings that need proper continuation
-            lines = content.split('\n')
+            lines = content.split("\n")
             fixed_lines = []
             i = 0
             while i < len(lines):
@@ -52,28 +52,28 @@ def fix_unterminated_strings():
                 fixed_lines.append(line)
                 i += 1
 
-            with open(file_path, 'w') as f:
-                f.write('\n'.join(fixed_lines))
+            with open(file_path, "w") as f:
+                f.write("\n".join(fixed_lines))
 
 
 def fix_f_string_errors():
     """Fix f-string syntax errors"""
     files_with_errors = [
         "src/youtubeviz/professional_momentum_scoring.py",
-        "tools/specialized/migration/storage_migrator.py"
+        "tools/specialized/migration/storage_migrator.py",
     ]
 
     for file_path in files_with_errors:
         if os.path.exists(file_path):
             print(f"Fixing f-string errors in {file_path}")
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 content = f.read()
 
             # Fix missing closing braces in f-strings
             content = re.sub(r'f"([^"]*\{[^}]*)"', r'f"\1}"', content)
             content = re.sub(r"f'([^']*\{[^}]*)'", r"f'\1}'", content)
 
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 f.write(content)
 
 
@@ -83,7 +83,7 @@ def fix_indentation_errors():
         "src/youtubeviz/charts.py",
         "src/youtubeviz/storytelling.py",
         "tests/test_data_quality.py",
-        "tests/test_notebook_chart_validation.py"
+        "tests/test_notebook_chart_validation.py",
     ]
 
     for file_path in files_with_errors:
@@ -91,8 +91,11 @@ def fix_indentation_errors():
             print(f"Fixing indentation in {file_path}")
             # Use autopep8 to fix indentation
             try:
-                subprocess.run(['autopep8', '--in-place', '--select=E111,E112,E113,E114', file_path],
-                             check=True, capture_output=True)  # noqa: E128
+                subprocess.run(
+                    ["autopep8", "--in-place", "--select=E111,E112,E113,E114", file_path],
+                    check=True,
+                    capture_output=True,
+                )  # noqa: E128
             except subprocess.CalledProcessError:
                 print(f"Could not auto-fix indentation in {file_path}")
 
@@ -105,8 +108,7 @@ def main():
     fix_indentation_errors()
 
     # Check if syntax errors are fixed
-    result = subprocess.run(['flake8', '--select=E999', '--count'],
-                          capture_output=True, text=True)  # noqa: E128
+    result = subprocess.run(["flake8", "--select=E999", "--count"], capture_output=True, text=True)  # noqa: E128
 
     if result.returncode == 0:
         print("✅ All syntax errors fixed!")

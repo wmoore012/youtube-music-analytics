@@ -8,10 +8,8 @@ Includes momentum prediction, content optimization, market positioning, and ROI 
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import os
-from typing import Any, Dict, List, Optional, Tuple, Union
 import warnings
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -220,7 +218,7 @@ def _calculate_breakthrough_probability(df: pd.DataFrame, metrics_cols: List[str
 
     # Convert performance factors to probability
     avg_factor = np.mean(factors)
-    probability = 1 / (1 + np.exp(-(avg_factor - 1) * 3))  # Sigmoid transformation
+    probability = 1 / (1 + np.exp(-(avg_factor-1) * 3))  # Sigmoid transformation
 
     return max(0.1, min(0.9, probability))
 
@@ -243,7 +241,7 @@ def _predict_growth_rate(df: pd.DataFrame, metrics_cols: List[str], horizon_days
 
                 if first_value > 0 and days_span > 0:
                     daily_growth = (last_value / first_value) ** (1 / days_span) - 1
-                    projected_growth = (1 + daily_growth) ** horizon_days - 1
+                    projected_growth = (1 + daily_growth) ** horizon_days-1
                     growth_rates.append(projected_growth)
 
     return np.mean(growth_rates) if growth_rates else 0.0
@@ -253,7 +251,7 @@ def generate_content_optimization_recommendations(
     df: pd.DataFrame, artist_col: str, content_type_col: str, performance_metrics: List[str]
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Generate ML - powered content optimization recommendations.
+    Generate ML-powered content optimization recommendations.
 
     Args:
         df: DataFrame with content performance data
@@ -366,7 +364,7 @@ def _analyze_posting_patterns(df: pd.DataFrame) -> Dict[str, Any]:
         return {
             "best_posting_days": [day for day, _ in best_days],
             "day_performance": day_performance,
-            "recommended_frequency": "weekly" if len(df) < 30 else "bi - weekly",
+            "recommended_frequency": "weekly" if len(df) < 30 else "bi-weekly",
         }
 
     return {"best_posting_days": ["Tuesday", "Thursday", "Saturday"], "recommended_frequency": "weekly"}
@@ -382,18 +380,18 @@ def _generate_engagement_strategies(df: pd.DataFrame, metrics: List[str]) -> Lis
 
         if avg_engagement < INDUSTRY_AVG_ENGAGEMENT:
             strategies.append("Focus on improving engagement rate through interactive content")
-            strategies.append("Encourage comments with questions and calls - to - action")
+            strategies.append("Encourage comments with questions and calls-to-action")
 
         if avg_engagement > TOP_PERFORMER_THRESHOLD:
             strategies.append("Maintain high engagement with consistent quality content")
-            strategies.append("Leverage high engagement for cross - promotion")
+            strategies.append("Leverage high engagement for cross-promotion")
 
     # Add general strategies
     strategies.extend(
         [
-            "Optimize video thumbnails for higher click - through rates",
+            "Optimize video thumbnails for higher click-through rates",
             "Use trending hashtags and keywords in descriptions",
-            "Collaborate with other artists for cross - audience exposure",
+            "Collaborate with other artists for cross-audience exposure",
         ]
     )
 
@@ -516,12 +514,12 @@ def _generate_positioning_recommendations(landscape: Dict[str, Dict[str, Any]], 
     total_artists = len(landscape)
 
     if tier_1_count / total_artists < 0.3:
-        recommendations.append("Focus on developing tier - 2 artists to tier - 1 status")
+        recommendations.append("Focus on developing tier-2 artists to tier-1 status")
 
     recommendations.extend(
         [
             "Identify underserved market segments for expansion opportunities",
-            "Leverage strong performers for cross - promotion of developing artists",
+            "Leverage strong performers for cross-promotion of developing artists",
             "Consider strategic partnerships within complementary genres",
         ]
     )
@@ -588,7 +586,7 @@ def _calculate_engagement_velocity(df: pd.DataFrame, metrics: List[str], window_
                 previous_avg = values.iloc[:-window_days].mean() if len(values) > window_days else values.mean()
 
                 if previous_avg > 0:
-                    velocity = (recent_avg - previous_avg) / previous_avg
+                    velocity = (recent_avg-previous_avg) / previous_avg
                     velocities.append(max(0, min(1, velocity + 0.5)))  # Normalize to [0, 1]
 
     return np.mean(velocities) if velocities else 0.3
@@ -623,7 +621,7 @@ def perform_audience_segmentation(
     df: pd.DataFrame, artist_col: str, behavioral_features: List[str], n_segments: int = 3
 ) -> Dict[str, Any]:
     """
-    Perform ML - based audience segmentation using clustering.
+    Perform ML-based audience segmentation using clustering.
 
     Args:
         df: DataFrame with behavioral data
@@ -686,7 +684,7 @@ def _fallback_audience_segmentation(
     df: pd.DataFrame, artist_col: str, features: List[str], n_segments: int
 ) -> Dict[str, Any]:
     """Fallback segmentation without sklearn."""
-    # Simple rule - based segmentation
+    # Simple rule-based segmentation
     segments = {}
 
     for i in range(n_segments):
@@ -823,7 +821,7 @@ def _forecast_single_metric(df: pd.DataFrame, date_col: str, metric: str, foreca
     residuals = values - (slope * x + intercept)
     residual_std = np.std(residuals)
 
-    confidence_lower = forecast_values - 1.96 * residual_std
+    confidence_lower = forecast_values-1.96 * residual_std
     confidence_upper = forecast_values + 1.96 * residual_std
 
     return {
@@ -872,13 +870,13 @@ def _detect_metric_anomalies(df: pd.DataFrame, metric: str, sensitivity: float, 
 
     anomalies = []
 
-    # Statistical anomaly detection using z - score
+    # Statistical anomaly detection using z-score
     mean_val = values.mean()
     std_val = values.std()
 
     if std_val > 0:
-        z_scores = np.abs((values - mean_val) / std_val)
-        threshold = stats.norm.ppf(1 - sensitivity / 2)  # Two - tailed test
+        z_scores = np.abs((values-mean_val) / std_val)
+        threshold = stats.norm.ppf(1-sensitivity / 2)  # Two-tailed test
 
         anomaly_indices = np.where(z_scores > threshold)[0]
 
@@ -937,7 +935,7 @@ def perform_statistical_tests(
                     effect_size = _calculate_eta_squared(groups)
                     test_stat = f_stat
                 else:
-                    # T - test for two groups
+                    # T-test for two groups
                     if len(groups) >= 2:
                         t_stat, p_value = stats.ttest_ind(groups[0], groups[1])
                         effect_size = _calculate_cohens_d(groups[0], groups[1])
@@ -966,7 +964,7 @@ def _fallback_statistical_tests(df: pd.DataFrame, group_col: str, metric_cols: L
             # Simple variance analysis
             groups = df.groupby(group_col)[metric].agg(["mean", "std", "count"])
 
-            # Calculate F - statistic approximation
+            # Calculate F-statistic approximation
             between_var = groups["mean"].var()
             within_var = groups["std"].mean()
 
@@ -983,24 +981,24 @@ def _fallback_statistical_tests(df: pd.DataFrame, group_col: str, metric_cols: L
 
 
 def _calculate_eta_squared(groups: List[np.ndarray]) -> float:
-    """Calculate eta - squared effect size for ANOVA."""
+    """Calculate eta-squared effect size for ANOVA."""
     all_values = np.concatenate(groups)
     grand_mean = np.mean(all_values)
 
     ss_between = sum(len(group) * (np.mean(group) - grand_mean) ** 2 for group in groups)
-    ss_total = sum((value - grand_mean) ** 2 for value in all_values)
+    ss_total = sum((value-grand_mean) ** 2 for value in all_values)
 
     return ss_between / ss_total if ss_total > 0 else 0
 
 
 def _calculate_cohens_d(group1: np.ndarray, group2: np.ndarray) -> float:
-    """Calculate Cohen's d effect size for t - test."""
+    """Calculate Cohen's d effect size for t-test."""
     n1, n2 = len(group1), len(group2)
 
     if n1 <= 1 or n2 <= 1:
         return 0
 
-    pooled_std = np.sqrt(((n1 - 1) * np.var(group1, ddof=1) + (n2 - 1) * np.var(group2, ddof=1)) / (n1 + n2 - 2))
+    pooled_std = np.sqrt(((n1-1) * np.var(group1, ddof=1) + (n2-1) * np.var(group2, ddof=1)) / (n1 + n2-2))
 
     return (np.mean(group1) - np.mean(group2)) / pooled_std if pooled_std > 0 else 0
 
@@ -1073,7 +1071,7 @@ def _generate_correlation_insights(correlations: List[Dict[str, Any]]) -> List[s
     # Analyze negative correlations
     negative_corrs = [c for c in correlations if c["correlation"] < 0]
     if negative_corrs:
-        insights.append(f"Found {len(negative_corrs)} negative correlations indicating trade - offs")
+        insights.append(f"Found {len(negative_corrs)} negative correlations indicating trade-offs")
 
     # Highlight strongest correlation
     if correlations:
@@ -1130,8 +1128,8 @@ def analyze_metric_distributions(
                 # Outlier analysis
                 q1 = values.quantile(0.25)
                 q3 = values.quantile(0.75)
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
+                iqr = q3-q1
+                lower_bound = q1-1.5 * iqr
                 upper_bound = q3 + 1.5 * iqr
 
                 outliers = values[(values < lower_bound) | (values > upper_bound)]
@@ -1168,7 +1166,7 @@ def calculate_confidence_intervals(
         DataFrame with confidence intervals
     """
     intervals = []
-    alpha = 1 - confidence_level
+    alpha = 1-confidence_level
 
     for group in df[group_col].unique():
         group_df = df[df[group_col] == group]
@@ -1184,7 +1182,7 @@ def calculate_confidence_intervals(
 
                     # Calculate confidence interval
                     if SCIPY_AVAILABLE:
-                        t_critical = stats.t.ppf(1 - alpha / 2, n - 1)
+                        t_critical = stats.t.ppf(1-alpha / 2, n-1)
                     else:
                         t_critical = 1.96  # Approximate for large samples
 
@@ -1195,7 +1193,7 @@ def calculate_confidence_intervals(
                             group_col: group,
                             "metric": metric,
                             "mean": round(mean_val, 3),
-                            "ci_lower": round(mean_val - margin_error, 3),
+                            "ci_lower": round(mean_val-margin_error, 3),
                             "ci_upper": round(mean_val + margin_error, 3),
                             "sample_size": n,
                         }
@@ -1248,7 +1246,7 @@ def optimize_marketing_roi(
     recommendations = []
     for artist, allocation in optimal_allocation.items():
         current_spend = df_copy[df_copy[artist_col] == artist][spend_col].iloc[0]
-        change = allocation - current_spend
+        change = allocation-current_spend
 
         if change > 0:
             recommendations.append(f"Increase {artist} budget by ${change:,.0f}")
@@ -1348,13 +1346,13 @@ def calculate_investment_priorities(
         current_scores = []
         for metric in performance_metrics:
             if metric in artist_df.columns:
-                # Normalize metric to 0 - 1 scale
+                # Normalize metric to 0-1 scale
                 metric_values = df[metric].dropna()
                 if len(metric_values) > 0:
                     artist_value = artist_df[metric].mean()
                     metric_range = metric_values.max() - metric_values.min()
                     if metric_range > 0:
-                        normalized_score = (artist_value - metric_values.min()) / metric_range
+                        normalized_score = (artist_value-metric_values.min()) / metric_range
                         current_scores.append(max(0, min(1, normalized_score)))
                     else:
                         current_scores.append(0.5)  # Neutral score if no variance
@@ -1427,7 +1425,7 @@ def identify_market_opportunities(
     # Identify performance gaps
     opportunity_gaps = []
 
-    # Genre - based opportunities
+    # Genre-based opportunities
     if "genre" in df.columns:
         genre_performance = (
             df.groupby("genre")[performance_metrics[0]].sum() if performance_metrics[0] in df.columns else pd.Series()
@@ -1444,7 +1442,7 @@ def identify_market_opportunities(
                         "category": genre,
                         "current_performance": genre_total,
                         "potential": genre_potential,
-                        "gap": genre_potential - genre_total,
+                        "gap": genre_potential-genre_total,
                     }
                 )
 
@@ -1466,7 +1464,7 @@ def identify_market_opportunities(
                     "category": artist,
                     "current_performance": artist_perf,
                     "potential": median_performance,
-                    "gap": median_performance - artist_perf,
+                    "gap": median_performance-artist_perf,
                 }
             )
 
@@ -1475,18 +1473,18 @@ def identify_market_opportunities(
         "total_addressable_market": market_size_estimate,
         "current_capture": total_performance,
         "capture_rate": round(market_capture_rate, 3),
-        "untapped_potential": market_size_estimate - total_performance,
+        "untapped_potential": market_size_estimate-total_performance,
     }
 
     # Generate strategic recommendations
     strategic_recommendations = [
         "Focus on underperforming genres with high market potential",
-        "Invest in artist development for below - median performers",
+        "Invest in artist development for below-median performers",
         "Consider market expansion strategies for untapped segments",
     ]
 
     if market_capture_rate < 0.1:
-        strategic_recommendations.append("Significant market opportunity exists - consider aggressive expansion")
+        strategic_recommendations.append("Significant market opportunity exists-consider aggressive expansion")
 
     return {
         "opportunity_gaps": opportunity_gaps,
@@ -1571,7 +1569,7 @@ def create_artist_performance_model(
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    # Cross - validation
+    # Cross-validation
     if model_type != "ensemble":
         cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=CROSS_VALIDATION_FOLDS)
         cv_mean = cv_scores.mean()
@@ -1618,7 +1616,7 @@ def _fallback_performance_model(
     df: pd.DataFrame, artist_col: str, target_metric: str, feature_cols: List[str]
 ) -> Dict[str, Any]:
     """Fallback performance model without sklearn."""
-    # Simple correlation - based model
+    # Simple correlation-based model
     correlations = {}
 
     for feature in feature_cols:
@@ -1800,7 +1798,7 @@ def _generate_viral_indicators(df: pd.DataFrame, artist_col: str, engagement_met
                     # Growth trend
                     if len(values) > 1:
                         growth = values.iloc[-1] / values.iloc[0] if values.iloc[0] > 0 else 1
-                        growth_score = min(1, max(0, (growth - 0.5) * 2))  # Normalize around 1.0
+                        growth_score = min(1, max(0, (growth-0.5) * 2))  # Normalize around 1.0
                     else:
                         growth_score = 0.5
 
@@ -1837,7 +1835,7 @@ def perform_advanced_clustering(
         artist_col: Column name for artist names
         feature_cols: List of feature columns for clustering
         clustering_method: Clustering algorithm ('kmeans', 'hierarchical', 'dbscan')
-        n_clusters: Number of clusters (auto - determined if None)
+        n_clusters: Number of clusters (auto-determined if None)
 
     Returns:
         Dictionary with clustering results and analysis
@@ -2029,7 +2027,7 @@ def _generate_cluster_insights(cluster_analysis: Dict[int, Dict[str, Any]], feat
         f"Largest cluster ({largest_cluster[1]['size']} artists): {', '.join(largest_cluster[1]['characteristics'])}"
     )
 
-    # Find high - performing cluster
+    # Find high-performing cluster
     if "engagement_rate" in feature_names:
         high_engagement_cluster = max(
             cluster_analysis.items(), key=lambda x: x[1]["feature_stats"].get("engagement_rate", {}).get("mean", 0)
@@ -2070,7 +2068,7 @@ def _calculate_feature_importance_clustering(
 
 def _fallback_clustering(df: pd.DataFrame, artist_col: str, feature_cols: List[str], n_clusters: int) -> Dict[str, Any]:
     """Fallback clustering without sklearn."""
-    # Simple rule - based clustering
+    # Simple rule-based clustering
     artists = df[artist_col].unique()
     cluster_size = len(artists) // n_clusters
 
@@ -2083,7 +2081,7 @@ def _fallback_clustering(df: pd.DataFrame, artist_col: str, feature_cols: List[s
         "cluster_analysis": {
             i: {"size": cluster_size, "characteristics": [f"Cluster {i + 1}"]} for i in range(n_clusters)
         },
-        "cluster_insights": ["Simple rule - based clustering applied"],
+        "cluster_insights": ["Simple rule-based clustering applied"],
         "silhouette_score": 0.5,
         "n_clusters": n_clusters,
     }
@@ -2101,7 +2099,7 @@ def integrate_with_youtube_helpers(
         channel_col: Column name for channel titles
 
     Returns:
-        Enhanced DataFrame with ML - derived features
+        Enhanced DataFrame with ML-derived features
     """
     enhanced_df = df.copy()
 
@@ -2156,7 +2154,7 @@ def _calculate_title_complexity(title: str) -> float:
 
     # Factors that contribute to complexity
     factors = {
-        "length": min(len(title) / 100, 1.0),  # Normalize to 0 - 1
+        "length": min(len(title) / 100, 1.0),  # Normalize to 0-1
         "word_count": min(len(title.split()) / 20, 1.0),
         "special_chars": len([c for c in title if not c.isalnum() and c != " "]) / len(title),
         "uppercase_ratio": sum(1 for c in title if c.isupper()) / len(title),

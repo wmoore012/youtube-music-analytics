@@ -1,9 +1,9 @@
 #!/usr / bin / env python3
 """
-Comprehensive Cleanup Orchestrator - YouTube Analytics Platform
+Comprehensive Cleanup Orchestrator-YouTube Analytics Platform
 
 This script orchestrates the systematic cleanup of the massive codebase with:
-1. Safe deletion of unused root - level files
+1. Safe deletion of unused root-level files
 2. Consolidation of duplicate functionality
 3. Archiving of old documentation and reports
 4. Testing after each major change to ensure nothing breaks
@@ -14,13 +14,12 @@ Usage:
     python tools / code_quality / comprehensive_cleanup_orchestrator.py --all
 """
 
-from dataclasses import dataclass, field
-import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import Dict, List, Optional, Set
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import List
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -330,9 +329,9 @@ class ComprehensiveCleanupOrchestrator:
         print(f"📝 {phase.description}")
 
         if self.dry_run:
-            print(f"🔍 DRY RUN MODE - No actual changes will be made")
+            print(f"🔍 DRY RUN MODE-No actual changes will be made")
 
-        # Create phase - specific backup
+        # Create phase-specific backup
         phase_backup_dir = self.backup_dir / f"phase_{phase.name.split()[1].lower()}"
         if not self.dry_run:
             phase_backup_dir.mkdir(exist_ok=True)
@@ -517,10 +516,10 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Comprehensive Cleanup Orchestrator")
-    parser.add_argument("--phase", type=int, help="Execute specific phase (1 - 5)")
+    parser.add_argument("--phase", type=int, help="Execute specific phase (1-5)")
     parser.add_argument("--all", action="store_true", help="Execute all phases")
-    parser.add_argument("--dry - run", action="store_true", help="Show what would be done without making changes")
-    parser.add_argument("--list - phases", action="store_true", help="List all cleanup phases")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be done without making changes")
+    parser.add_argument("--list-phases", action="store_true", help="List all cleanup phases")
 
     args = parser.parse_args()
 
@@ -539,7 +538,7 @@ def main():
     if args.phase:
         phases = orchestrator.define_cleanup_phases()
         if 1 <= args.phase <= len(phases):
-            phase = phases[args.phase - 1]
+            phase = phases[args.phase-1]
             success = orchestrator.execute_phase(phase)
             sys.exit(0 if success else 1)
         else:

@@ -8,16 +8,16 @@ This prevents issues from reaching the repository.
 
 Usage:
     python scripts / run_local_ci.py
-    python scripts / run_local_ci.py --fix - issues
+    python scripts / run_local_ci.py --fix-issues
 """
 
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 
 class LocalCI:
@@ -47,7 +47,7 @@ class LocalCI:
         # Check for notebooks in wrong locations
         problematic_notebooks = [
             "notebooks / quality / 03_appendix_data_quality.ipynb",
-            "notebooks / executed / 03_appendix_data_quality - executed.ipynb",
+            "notebooks / executed / 03_appendix_data_quality-executed.ipynb",
         ]
 
         for notebook in problematic_notebooks:
@@ -289,12 +289,12 @@ except Exception as e:
                 print(f"   {i}. {warning}")
 
         if self.errors:
-            print("\n🚫 DO NOT COMMIT - Fix errors first!")
+            print("\n🚫 DO NOT COMMIT-Fix errors first!")
             if not self.fix_issues:
-                print("💡 Run with --fix - issues to auto - fix some problems")
+                print("💡 Run with --fix-issues to auto-fix some problems")
             return False
         else:
-            print("\n⚠️  WARNINGS ONLY - Safe to commit but consider fixing")
+            print("\n⚠️  WARNINGS ONLY-Safe to commit but consider fixing")
             return True
 
     def run_all_checks(self):
@@ -326,7 +326,7 @@ except Exception as e:
 def main():
     """Main function."""
     parser = argparse.ArgumentParser(description="Run local CI / CD pipeline")
-    parser.add_argument("--fix - issues", action="store_true", help="Automatically fix issues where possible")
+    parser.add_argument("--fix-issues", action="store_true", help="Automatically fix issues where possible")
 
     args = parser.parse_args()
 

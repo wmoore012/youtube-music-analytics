@@ -4,9 +4,7 @@ Fix trailing whitespace in Python files across the codebase.
 This is safer than sed for files with various encodings.
 """
 
-import os
 from pathlib import Path
-import sys
 from typing import List
 
 
@@ -21,12 +19,12 @@ def fix_trailing_whitespace_in_file(file_path: Path) -> bool:
         True if file was modified, False otherwise
     """
     try:
-        # Read file with UTF - 8 encoding, fallback to latin - 1 if needed
+        # Read file with UTF-8 encoding, fallback to latin-1 if needed
         try:
-            with open(file_path, "r", encoding="utf - 8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
         except UnicodeDecodeError:
-            with open(file_path, "r", encoding="latin - 1") as f:
+            with open(file_path, "r", encoding="latin-1") as f:
                 lines = f.readlines()
 
         # Fix trailing whitespace
@@ -49,10 +47,10 @@ def fix_trailing_whitespace_in_file(file_path: Path) -> bool:
         # Write back if modified
         if modified:
             try:
-                with open(file_path, "w", encoding="utf - 8") as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.writelines(fixed_lines)
             except UnicodeEncodeError:
-                with open(file_path, "w", encoding="latin - 1") as f:
+                with open(file_path, "w", encoding="latin-1") as f:
                     f.writelines(fixed_lines)
 
             print(f"Fixed trailing whitespace in: {file_path}")

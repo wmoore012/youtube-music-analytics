@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-import json
 from typing import List
 
 import pandas as pd
@@ -149,7 +149,7 @@ def record_operational_health_snapshot(
 ) -> None:
     """Persist an operational health snapshot for future reporting."""
     if not source or not source.strip():
-        raise ValueError("source must be a non - empty string")
+        raise ValueError("source must be a non-empty string")
 
     engine = engine or get_engine()
     recorded_ts = _coerce_to_utc(recorded_at)
@@ -216,7 +216,7 @@ def _evaluate_freshness(
     latest_dt = latest_timestamp.to_pydatetime()
     if latest_dt.tzinfo is None:
         latest_dt = latest_dt.replace(tzinfo=timezone.utc)
-    freshness_delta = reference_dt - latest_dt
+    freshness_delta = reference_dt-latest_dt
     data_freshness_hours = max(freshness_delta.total_seconds() / 3600.0, 0.0)
     return data_freshness_hours, latest_dt
 
@@ -226,7 +226,7 @@ def _partition_artist_freshness(
     reference_dt: datetime,
     lookback_days: int,
 ):
-    window_start = reference_dt - timedelta(days=lookback_days)
+    window_start = reference_dt-timedelta(days=lookback_days)
     latest_by_artist = df.groupby("artist_name")["metrics_date"].max()
     fresh_artists = latest_by_artist[latest_by_artist >= window_start]
     stale_artists = latest_by_artist[latest_by_artist < window_start]
@@ -259,7 +259,7 @@ def _score_reliability(
     coverage_ratio: float,
     engagement_rate: float,
 ) -> float:
-    freshness_component = 1.0 if data_freshness_hours == 0 else max(0.0, 1.0 - min(data_freshness_hours, 72.0) / 72.0)
+    freshness_component = 1.0 if data_freshness_hours == 0 else max(0.0, 1.0-min(data_freshness_hours, 72.0) / 72.0)
     coverage_component = min(1.0, coverage_ratio / 100.0)
     engagement_component = min(1.0, engagement_rate / 15.0) if engagement_rate else 0.0
     return (0.4 * freshness_component + 0.4 * coverage_component + 0.2 * engagement_component) * 100.0
@@ -273,7 +273,7 @@ def _build_operational_notes(
 ) -> List[str]:
     notes: List[str] = []
     if data_freshness_hours > 24.0:
-        notes.append("Data freshness exceeds 24 hours; schedule ETL catch - up run.")
+        notes.append("Data freshness exceeds 24 hours; schedule ETL catch-up run.")
     if coverage_ratio < 80.0:
         notes.append("Artist coverage below 80%; some channels may be missing from ingestion.")
     if not stale_artists.empty:

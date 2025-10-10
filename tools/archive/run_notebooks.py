@@ -4,8 +4,8 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
 
 
 def run_notebook(path: Path, timeout: int = 180, kernel_name: str = "python3") -> Path:
@@ -18,9 +18,9 @@ def run_notebook(path: Path, timeout: int = 180, kernel_name: str = "python3") -
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(description="Execute notebooks with per - cell timeout")
+    ap = argparse.ArgumentParser(description="Execute notebooks with per-cell timeout")
     ap.add_argument("notebooks", nargs="+", help="Notebook paths to run")
-    ap.add_argument("--timeout", type=int, default=180, help="Per - cell timeout in seconds")
+    ap.add_argument("--timeout", type=int, default=180, help="Per-cell timeout in seconds")
     args = ap.parse_args(argv)
     for nb in args.notebooks:
         out = run_notebook(Path(nb), timeout=args.timeout)

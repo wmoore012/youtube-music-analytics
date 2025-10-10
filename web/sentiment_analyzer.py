@@ -12,21 +12,19 @@ This module provides a robust, bulletproof sentiment analysis system with:
 - Detailed logging and monitoring
 
 Key Features:
-- Fail - fast validation using Pydantic models
+- Fail-fast validation using Pydantic models
 - Graceful degradation when libraries are unavailable
 - Batch processing with configurable batch sizes
 - Progress tracking and performance metrics
 - Comprehensive error handling with retry mechanisms
-- Confidence - based result filtering
+- Confidence-based result filtering
 """
 
-from datetime import datetime, timedelta
-from enum import Enum
 import time
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
-import pandas as pd
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
@@ -120,7 +118,7 @@ class SentimentAnalyzer:
     - Comprehensive error handling and recovery
     - Performance benchmarking and monitoring
     - Batch processing with progress tracking
-    - Confidence - based result validation
+    - Confidence-based result validation
     """
 
     def __init__(self, config: Optional[SentimentAnalysisConfig] = None):
@@ -164,7 +162,7 @@ class SentimentAnalyzer:
 
         # Simple method is always available
         self.available_methods[SentimentMethod.SIMPLE] = self._analyze_with_simple
-        print("✅ Simple rule - based sentiment analysis available")
+        print("✅ Simple rule-based sentiment analysis available")
 
         if not self.available_methods:
             raise ETLError(
@@ -202,7 +200,7 @@ class SentimentAnalyzer:
                     ),
                 )
 
-        # Auto - select best available method
+        # Auto-select best available method
         method_priority = [SentimentMethod.VADER, SentimentMethod.TEXTBLOB, SentimentMethod.SIMPLE]
 
         for method in method_priority:
@@ -248,7 +246,7 @@ class SentimentAnalyzer:
         return sentiment, confidence
 
     def _analyze_with_simple(self, text: str) -> Tuple[float, float]:
-        """Analyze sentiment using simple rule - based approach."""
+        """Analyze sentiment using simple rule-based approach."""
         text_lower = text.lower()
 
         # Positive words and phrases
@@ -342,7 +340,7 @@ class SentimentAnalyzer:
         try:
             return self._analyze_single_comment(comment, method)
         except ETLError as e:
-            # Don't retry validation or data quality errors - they won't improve
+            # Don't retry validation or data quality errors-they won't improve
             if e.category in [ErrorCategory.VALIDATION, ErrorCategory.DATA_QUALITY]:
                 raise
             # Retry other errors with backoff
@@ -394,7 +392,7 @@ class SentimentAnalyzer:
             if not (0.0 <= confidence_score <= 1.0):
                 raise ValueError(f"Invalid confidence score: {confidence_score}")
 
-            # Check confidence threshold - don't retry these as they won't improve
+            # Check confidence threshold-don't retry these as they won't improve
             if confidence_score < self.config.confidence_threshold:
                 raise ETLError(
                     f"Confidence {confidence_score:.3f} below threshold {self.config.confidence_threshold}",
@@ -469,7 +467,7 @@ class SentimentAnalyzer:
 
         # Process comments in batches
         batch_size = self.config.batch_size
-        total_batches = (len(comments) + batch_size - 1) // batch_size
+        total_batches = (len(comments) + batch_size-1) // batch_size
 
         for batch_idx in range(total_batches):
             if timeout_occurred:

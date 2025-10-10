@@ -279,7 +279,7 @@ class TestNotebookValidationIntegration:
         chart_result = self.output_validator.validate_chart_requirements(large_dataset, "scatter")
 
         end_time = time.time()
-        validation_time = end_time - start_time
+        validation_time = end_time-start_time
 
         # Validation should complete in reasonable time (< 5 seconds for 10k rows)
         assert validation_time < 5.0, f"Validation took too long: {validation_time:.2f} seconds"
@@ -311,8 +311,10 @@ class TestNotebookValidationIntegration:
                     "cell_type": "code",
                     "source": ["# Load analytics data", "df = pd.read_sql('SELECT * FROM artist_analytics', engine)"],
                     "outputs": [
-                        {"output_type": "execute_result", "data": {
-                            "text / html": ["<div>DataFrame with 100 rows</div>"]}}
+                        {
+                            "output_type": "execute_result",
+                            "data": {"text / html": ["<div>DataFrame with 100 rows</div>"]},
+                        }
                     ],
                 },
                 {

@@ -1,15 +1,15 @@
 """
-Notebook Guardian - The AI Agent's Best Friend for Data Science Validation
+Notebook Guardian-The AI Agent's Best Friend for Data Science Validation
 
-A lightning - fast, dependency - aware validation system for Jupyter notebooks and data science workflows.
+A lightning-fast, dependency-aware validation system for Jupyter notebooks and data science workflows.
 Perfect for AI agents who need bulletproof data validation without the headache of missing dependencies.
 
 Key Features:
-- 🚀 Ultra - fast validation (50k+ rows in <1 second)
-- 🛡️ Bulletproof dependency management with auto - installation
+- 🚀 Ultra-fast validation (50k+ rows in <1 second)
+- 🛡️ Bulletproof dependency management with auto-installation
 - 📊 Comprehensive data science metric validation
-- 🤖 AI agent - friendly with clear error messages
-- 🔧 Zero - config setup - works out of the box
+- 🤖 AI agent-friendly with clear error messages
+- 🔧 Zero-config setup-works out of the box
 - 📈 Supports all major ML / DL / Stats workflows
 
 Usage:
@@ -18,7 +18,7 @@ Usage:
     # Validate any data science output
     result = validate_data(your_dataframe, expected_schema)
 
-    # Generate human - readable explanations
+    # Generate human-readable explanations
     explanations = explain_metrics(['accuracy', 'precision', 'recall'])
 
     # Validate entire notebooks
@@ -38,12 +38,12 @@ from .smart_installer import SmartInstaller, auto_install_missing, ensure_packag
 
 __version__ = "1.0.0"
 __author__ = "AI Agent Collective"
-__description__ = "Lightning - fast notebook validation for AI agents and data scientists"
+__description__ = "Lightning-fast notebook validation for AI agents and data scientists"
 
 
 # Quick validation functions for immediate use
 def quick_validate(data, schema=None):
-    """Ultra - fast data validation with smart defaults."""
+    """Ultra-fast data validation with smart defaults."""
     return validate_data(data, schema or "auto")
 
 

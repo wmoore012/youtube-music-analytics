@@ -10,7 +10,7 @@ import functools
 import logging
 import random
 import time
-from typing import Any, Callable, List, Optional, Type, TypeVar, Union
+from typing import Any, Callable, List, Optional, Type, TypeVar
 
 from sqlalchemy.exc import (
     DisconnectionError,
@@ -20,9 +20,7 @@ from sqlalchemy.exc import (
 from sqlalchemy.exc import TimeoutError as SQLTimeoutError
 
 from .error_handling import (
-    APIError,
     DatabaseError,
-    ErrorCategory,
     ErrorContext,
     ErrorSeverity,
     ETLError,
@@ -71,7 +69,7 @@ class RetryHandler:
         Calculate delay for the given attempt number.
 
         Args:
-            attempt: Current attempt number (0 - based)
+            attempt: Current attempt number (0-based)
 
         Returns:
             Delay in seconds
@@ -146,12 +144,12 @@ class RetryHandler:
                 last_exception = e
 
                 # Check if this is the last attempt
-                if attempt == self.config.max_attempts - 1:
+                if attempt == self.config.max_attempts-1:
                     break
 
                 # Check if exception is retryable
                 if not self.is_retryable_exception(e):
-                    self.logger.error(f"Non - retryable exception in {operation_name}: {str(e)}")
+                    self.logger.error(f"Non-retryable exception in {operation_name}: {str(e)}")
                     break
 
                 # Calculate delay and wait
@@ -246,7 +244,7 @@ def retry_database_operation(
         base_delay: Base delay in seconds
 
     Returns:
-        Decorated function with database - specific retry logic
+        Decorated function with database-specific retry logic
     """
     return retry_with_backoff(
         max_attempts=max_attempts,
@@ -273,7 +271,7 @@ def retry_api_operation(
         base_delay: Base delay in seconds
 
     Returns:
-        Decorated function with API - specific retry logic
+        Decorated function with API-specific retry logic
     """
     return retry_with_backoff(
         max_attempts=max_attempts,
@@ -282,14 +280,14 @@ def retry_api_operation(
         retryable_exceptions=[
             ConnectionError,
             TimeoutError,
-            # Add HTTP - specific exceptions if using requests
+            # Add HTTP-specific exceptions if using requests
         ],
     )
 
 
-# Progress tracking for long - running operations
+# Progress tracking for long-running operations
 class ProgressTracker:
-    """Tracks progress of long - running operations with logging."""
+    """Tracks progress of long-running operations with logging."""
 
     def __init__(self, operation_name: str, total_items: int, log_interval: int = 100):
         self.operation_name = operation_name
@@ -316,7 +314,7 @@ class ProgressTracker:
 
             if self.processed_items < self.total_items:
                 # Estimate remaining time
-                remaining_items = self.total_items - self.processed_items
+                remaining_items = self.total_items-self.processed_items
                 eta_seconds = remaining_items / rate if rate > 0 else 0
                 eta_str = f", ETA: {eta_seconds:.0f}s" if eta_seconds > 0 else ""
 

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
 import json
 import logging
 import os
 import re
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, cast
 from urllib.parse import urlparse
 
@@ -25,7 +25,7 @@ class ETLSummary:
 
 
 class YouTubeChannelETL:
-    """YouTube channel ETL with batch raw insert and daily - max metrics upsert.
+    """YouTube channel ETL with batch raw insert and daily-max metrics upsert.
 
     Minimal deps (requests + pymysql), no googleapiclient required.
     """
@@ -85,7 +85,7 @@ class YouTubeChannelETL:
     def resolve_channel_id(self, channel_url: str) -> Optional[str]:
         """Return UC... id for /channel / UC..., /@handle, or /user/ style URLs."""
         path = urlparse(channel_url).path.rstrip("/")
-        m = re.match(r"^/channel/(UC[0 - 9A - Za - z_-]{20,})$", path)
+        m = re.match(r"^/channel/(UC[0-9A-Za-z_-]{20,})$", path)
         if m:
             return m.group(1)
 
@@ -148,7 +148,7 @@ class YouTubeChannelETL:
         )
 
     def iter_video_comments(self, video_id: str, max_comments: int = 0) -> Iterator[Dict[str, Any]]:
-        """Yield top - level comments (commentThreads) for a video, newest first.
+        """Yield top-level comments (commentThreads) for a video, newest first.
 
         max_comments: 0 to skip, otherwise limit number of comments.
         """
@@ -305,7 +305,8 @@ class YouTubeChannelETL:
         if not rows:
             return 0
         sql = (
-            "INSERT IGNORE INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "             "VALUES (%s,%s,%s,%s,%s,%s)"  # noqa: E501
+            "INSERT IGNORE INTO youtube_comments (video_id, comment_id, comment_text, author_name, like_count, published_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s)"  # noqa: E501
         )
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
@@ -313,19 +314,27 @@ class YouTubeChannelETL:
 
     def _upsert_daily_metrics(self, conn: Any, video_id: str, v: int, like_count: int, c: int) -> None:
         sql = (
-            "INSERT INTO youtube_metrics (video_id, view_count, like_count, dislike_count, comment_count, "             "subscriber_count, metrics_date, fetched_at) "             "VALUES (%s,%s,%s,%s,%s,NULL,CURDATE(),NOW()) "             "ON DUPLICATE KEY UPDATE "             "view_count = IF(VALUES(view_count) > view_count, VALUES(view_count), view_count), "             "like_count = IF(VALUES(like_count) > like_count, VALUES(like_count), like_count), "             "comment_count = IF(VALUES(comment_count) > comment_count, VALUES(comment_count), comment_count), "             "fetched_at = NOW()"  # noqa: E501
+            "INSERT INTO youtube_metrics (video_id, view_count, like_count, dislike_count, comment_count, "
+            "subscriber_count, metrics_date, fetched_at) "
+            "VALUES (%s,%s,%s,%s,%s,NULL,CURDATE(),NOW()) "
+            "ON DUPLICATE KEY UPDATE "
+            "view_count = IF(VALUES(view_count) > view_count, VALUES(view_count), view_count), "
+            "like_count = IF(VALUES(like_count) > like_count, VALUES(like_count), like_count), "
+            "comment_count = IF(VALUES(comment_count) > comment_count, VALUES(comment_count), comment_count), "
+            "fetched_at = NOW()"  # noqa: E501
         )
         with conn.cursor() as cur:
             cur.execute(sql, (video_id, v, like_count, 0, c))
 
     # --------------------- Run lock helpers ---------------------
     def _acquire_daily_lock(self, conn: Any, channel_id: str) -> bool:
-        """Try to acquire a per - channel per - day run lock.
+        """Try to acquire a per-channel per-day run lock.
 
         Returns True if lock acquired, False if already exists for today.
         """
         sql = (
-            "INSERT IGNORE INTO youtube_etl_runs (channel_id, run_date, started_at, status) "             "VALUES (%s, CURDATE(), NOW(), 'started')"  # noqa: E501
+            "INSERT IGNORE INTO youtube_etl_runs (channel_id, run_date, started_at, status) "
+            "VALUES (%s, CURDATE(), NOW(), 'started')"  # noqa: E501
         )
         with conn.cursor() as cur:
             cur.execute(sql, (channel_id,))
@@ -386,7 +395,9 @@ class YouTubeChannelETL:
             out.append((vid, vv, ll, cc, json.dumps(v)))
         return out
 
-    def load(self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str]]) -> Tuple[int, int]:  # noqa: C901  # noqa: E501
+    def load(
+        self, conn: Any, uploads_pid: str, rows: List[Tuple[str, int, int, int, str]]
+    ) -> Tuple[int, int]:  # noqa: C901  # noqa: E501
         """Load: batch upsert raw and daily metrics.
 
         Returns (raw_upserts_count, metrics_upserts_count)
@@ -425,7 +436,7 @@ class YouTubeChannelETL:
             content: Dict[str, Any] = cast(Dict[str, Any], obj.get("contentDetails", {}))
             title = cast(Optional[str], snippet.get("title"))
             channel_title = cast(Optional[str], snippet.get("channelTitle"))
-            published_at = cast(Optional[str], snippet.get("publishedAt"))  # e.g., 2020 - 01 - 01T12:34:56Z
+            published_at = cast(Optional[str], snippet.get("publishedAt"))  # e.g., 2020-01-01T12:34:56Z
             published_at_sql: Optional[str] = None
             if isinstance(published_at, str):
                 try:
@@ -434,7 +445,7 @@ class YouTubeChannelETL:
                 except Exception:
                     published_at_sql = None
             # Optionally use duration if needed later
-            _duration = cast(Optional[str], content.get("duration"))
+            _duration = cast(Optional[str], content.get("duration"))  # noqa: F841
             summary_rows.append((vid, None, title, channel_title, published_at_sql, vv, ll, cc))
 
             # Optionally fetch comments for each video
@@ -462,7 +473,7 @@ class YouTubeChannelETL:
 
         # Upsert videos summary (youtube_videos)
         # We also need duration; compute from raw contentDetails above if present.
-        # Modify summary rows to include duration by re - parsing raw to keep code simple.
+        # Modify summary rows to include duration by re-parsing raw to keep code simple.
         videos_rows_with_duration: List[
             Tuple[
                 str,

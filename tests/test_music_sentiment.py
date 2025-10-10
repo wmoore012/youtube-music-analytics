@@ -161,7 +161,7 @@ class TestMusicIndustrySentimentAnalyzer:
             "",
             "   ",  # Whitespace only
             pd.NA,
-            123,  # Non - string input
+            123,  # Non-string input
         ]
 
         for case in edge_cases:

@@ -12,12 +12,11 @@ Usage:
     python tools / maintenance / notebook_cleanup.py
 """
 
-from datetime import datetime
 import logging
-import os
-from pathlib import Path
 import shutil
-from typing import Any, Dict, List
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -100,7 +99,7 @@ class NotebookCleanup:
         return removed_count
 
     def consolidate_executed_notebooks(self) -> int:
-        """Consolidate executed notebooks - keep only the latest version of each."""
+        """Consolidate executed notebooks-keep only the latest version of each."""
         logger.info("📦 Consolidating executed notebooks...")
 
         if not self.executed_dir.exists():
@@ -159,7 +158,7 @@ class NotebookCleanup:
                     archive_dirs.append((timestamp, item))
                 except ValueError:
                     # Not a timestamp directory, keep it
-                    logger.info(f"   Keeping non - timestamp directory: {item.name}")
+                    logger.info(f"   Keeping non-timestamp directory: {item.name}")
 
         # Sort by timestamp, newest first
         archive_dirs.sort(key=lambda x: x[0], reverse=True)
@@ -219,8 +218,8 @@ This directory contains the core analytics notebooks for the YouTube ETL system.
 
 - `MusicScope™_Professional_Dashboard.ipynb` - Main analytics dashboard
 - `MusicScope™_20_Chart_Dashboard.ipynb` - Comprehensive chart dashboard
-- `executed/` - Executed notebook outputs (auto - managed)
-- `archive/` - Archived notebook versions (auto - managed)
+- `executed/` - Executed notebook outputs (auto-managed)
+- `archive/` - Archived notebook versions (auto-managed)
 
 ## Usage
 
@@ -284,12 +283,12 @@ def main():
         return 1
 
     try:
-        _results = cleanup.full_cleanup()
+        _results = cleanup.full_cleanup()  # noqa: F841
 
         print("\n✅ CLEANUP COMPLETED SUCCESSFULLY")
         print("\n💡 Recommendations:")
         print("1. Use the notebooks directly from the main directory")
-        print("2. Executed versions will be auto - managed in executed/")
+        print("2. Executed versions will be auto-managed in executed/")
         print("3. Archives are kept minimal (3 recent versions)")
         print("4. No more .md result files cluttering the directory")
 

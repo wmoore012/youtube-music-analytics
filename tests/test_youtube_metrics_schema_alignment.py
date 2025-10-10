@@ -2,7 +2,7 @@
 Test suite for YouTube metrics schema alignment.
 
 This test validates that the Python ETL code correctly uses the actual
-youtube_metrics database schema without referencing non - existent columns.
+youtube_metrics database schema without referencing non-existent columns.
 """
 
 from datetime import date, datetime
@@ -59,7 +59,7 @@ class TestYouTubeMetricsSchemaAlignment:
         assert "metrics_date" in sql_statement
         assert "fetched_at" in sql_statement
 
-        # Check that SQL does NOT use non - existent columns
+        # Check that SQL does NOT use non-existent columns
         assert "isrc" not in sql_statement
         assert "favorite_count" not in sql_statement
 
@@ -158,13 +158,13 @@ class TestYouTubeMetricsSchemaAlignment:
             assert metrics_count == 2
 
     def test_no_references_to_nonexistent_columns(self):
-        """Test that the ETL code doesn't reference non - existent columns in metrics operations."""
+        """Test that the ETL code doesn't reference non-existent columns in metrics operations."""
         import inspect
 
         # Get the source code of the _upsert_daily_metrics method specifically
         etl_method_source = inspect.getsource(YouTubeChannelETL._upsert_daily_metrics)
 
-        # Check that non - existent columns are not referenced in metrics operations
+        # Check that non-existent columns are not referenced in metrics operations
         assert "favorite_count" not in etl_method_source.lower()
 
         # Verify correct columns are used in metrics operations

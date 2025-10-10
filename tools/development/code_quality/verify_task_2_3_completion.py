@@ -6,13 +6,13 @@ This script verifies that Task 2.3 (Remove Fake Data and Improve Error Handling)
 has been completed successfully by checking:
 
 1. No fake data generation in production code
-2. Proper error handling with fail - loud behavior
+2. Proper error handling with fail-loud behavior
 3. Descriptive error messages and logging
 4. Boolean fields replaced with descriptive values where appropriate
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +34,7 @@ def verify_error_handling():
 
         for py_file in dir_path.glob("**/*.py"):
             try:
-                with open(py_file, "r", encoding="utf - 8") as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Count good patterns
@@ -88,7 +88,7 @@ def verify_fake_data_removal():
 
         for py_file in dir_path.glob("**/*.py"):
             try:
-                with open(py_file, "r", encoding="utf - 8") as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read().lower()
 
                 # Check for legitimate usage
@@ -124,7 +124,7 @@ def verify_boolean_field_improvements():
 
     for schema_file in schema_files:
         try:
-            with open(schema_file, "r", encoding="utf - 8") as f:
+            with open(schema_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Count boolean fields
@@ -185,10 +185,10 @@ def main():
 
     print("\n" + "=" * 60)
     if all_passed:
-        print("🎉 TASK 2.3: REMOVE FAKE DATA AND IMPROVE ERROR HANDLING - COMPLETED")
+        print("🎉 TASK 2.3: REMOVE FAKE DATA AND IMPROVE ERROR HANDLING-COMPLETED")
         print("=" * 60)
         print("✅ All verification checks passed")
-        print("✅ Error handling follows fail - loud principles")
+        print("✅ Error handling follows fail-loud principles")
         print("✅ Proper exception handling and logging implemented")
         print("✅ No problematic fake data generation found")
         print("✅ Boolean fields appropriately used")

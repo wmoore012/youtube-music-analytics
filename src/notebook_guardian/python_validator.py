@@ -1,31 +1,29 @@
 """
-Ultra - efficient Python file validator for data science workflows.
+Ultra-efficient Python file validator for data science workflows.
 
-This module provides lightning - fast validation of .py files with smart dependency
-detection and auto - installation. Perfect for AI agents who need bulletproof
+This module provides lightning-fast validation of .py files with smart dependency
+detection and auto-installation. Perfect for AI agents who need bulletproof
 Python script validation.
 
 Key Features:
-- 🚀 Ultra - fast AST - based parsing (10+ files per second)
+- 🚀 Ultra-fast AST-based parsing (10+ files per second)
 - 🔍 Smart import detection and missing dependency identification
 - 🧠 Data science pattern recognition (ML / DL / Stats workflows)
 - 🛠️ Function quality scoring and best practice detection
-- 🔧 Auto - installation of missing packages
+- 🔧 Auto-installation of missing packages
 - 📊 Comprehensive validation reporting
 """
 
 import ast
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
-import importlib
 import logging
-import os
-from pathlib import Path
 import re
 import subprocess
 import sys
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -129,9 +127,9 @@ class PythonValidationResult:
 
 class FastASTAnalyzer(ast.NodeVisitor):
     """
-    Ultra - fast AST analyzer optimized for data science pattern detection.
+    Ultra-fast AST analyzer optimized for data science pattern detection.
 
-    Uses single - pass analysis with efficient pattern matching.
+    Uses single-pass analysis with efficient pattern matching.
     """
 
     def __init__(self):
@@ -158,7 +156,7 @@ class FastASTAnalyzer(ast.NodeVisitor):
             "training_visualization": False,
         }
 
-        # Pre - compiled regex patterns for speed
+        # Pre-compiled regex patterns for speed
         self._data_loading_patterns = re.compile(
             r"(read_csv|read_excel|read_json|read_sql|load_data|pd\.read_|np\.load)", re.IGNORECASE
         )
@@ -177,7 +175,7 @@ class FastASTAnalyzer(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
-        """Fast from - import detection."""
+        """Fast from-import detection."""
         if node.module:
             self.imports.add(node.module)
             for alias in node.names:
@@ -241,7 +239,7 @@ class FastASTAnalyzer(ast.NodeVisitor):
         return None
 
     def _update_patterns_from_call(self, call_str: str) -> None:
-        """Ultra - fast pattern detection from function calls."""
+        """Ultra-fast pattern detection from function calls."""
         call_lower = call_str.lower()
 
         # Data loading patterns
@@ -260,7 +258,7 @@ class FastASTAnalyzer(ast.NodeVisitor):
         if any(pattern in call_lower for pattern in ["plot", "show", "figure", "subplot"]):
             self.patterns["visualization"] = True
 
-        # Train - test split
+        # Train-test split
         if "train_test_split" in call_lower:
             self.patterns["train_test_split"] = True
 
@@ -293,7 +291,7 @@ class FastASTAnalyzer(ast.NodeVisitor):
 
 class ImportValidator:
     """
-    Lightning - fast import validation and missing dependency detection.
+    Lightning-fast import validation and missing dependency detection.
 
     Uses cached lookups and parallel processing for maximum speed.
     """
@@ -307,8 +305,8 @@ class ImportValidator:
             "sns": "seaborn",
             "tf": "tensorflow",
             "torch": "torch",
-            "sk": "scikit - learn",
-            "sklearn": "scikit - learn",
+            "sk": "scikit-learn",
+            "sklearn": "scikit-learn",
         }
 
         # Common data science imports for fast lookup
@@ -317,7 +315,7 @@ class ImportValidator:
             "numpy",
             "matplotlib",
             "seaborn",
-            "scikit - learn",
+            "scikit-learn",
             "tensorflow",
             "torch",
             "plotly",
@@ -331,7 +329,7 @@ class ImportValidator:
         }
 
     def find_missing_imports(self, code: str) -> List[str]:
-        """Ultra - fast missing import detection using regex and AST."""
+        """Ultra-fast missing import detection using regex and AST."""
         try:
             tree = ast.parse(code)
             analyzer = FastASTAnalyzer()
@@ -364,11 +362,11 @@ class ImportValidator:
             return list(missing)
 
         except SyntaxError:
-            # Fallback to regex - only detection for syntax errors
+            # Fallback to regex-only detection for syntax errors
             return self._regex_only_detection(code)
 
     def _regex_missing_detection(self, code: str, declared_imports: Set[str], missing: Set[str]) -> None:
-        """Fast regex - based missing import detection."""
+        """Fast regex-based missing import detection."""
         patterns = {
             r"\bpd\.": "pandas",
             r"\bnp\.": "numpy",
@@ -376,7 +374,7 @@ class ImportValidator:
             r"\bsns\.": "seaborn",
             r"\btf\.": "tensorflow",
             r"\btorch\.": "torch",
-            r"RandomForestClassifier|LogisticRegression|SVC": "scikit - learn",
+            r"RandomForestClassifier|LogisticRegression|SVC": "scikit-learn",
             r"XGBClassifier|XGBRegressor": "xgboost",
             r"LGBMClassifier|LGBMRegressor": "lightgbm",
         }
@@ -386,7 +384,7 @@ class ImportValidator:
                 missing.add(package)
 
     def _regex_only_detection(self, code: str) -> List[str]:
-        """Fallback regex - only detection for files with syntax errors."""
+        """Fallback regex-only detection for files with syntax errors."""
         missing = set()
 
         # Common patterns that indicate missing imports
@@ -415,7 +413,7 @@ class ImportValidator:
                 suggestions.append("import matplotlib.pyplot as plt")
             elif package == "seaborn":
                 suggestions.append("import seaborn as sns")
-            elif package == "scikit - learn":
+            elif package == "scikit-learn":
                 suggestions.append("from sklearn.ensemble import RandomForestClassifier")
             else:
                 suggestions.append(f"import {package}")
@@ -423,7 +421,7 @@ class ImportValidator:
         return suggestions
 
     def auto_install_packages(self, packages: List[str]) -> PythonValidationResult:
-        """Auto - install missing packages with parallel execution."""
+        """Auto-install missing packages with parallel execution."""
         result = PythonValidationResult(is_valid=True, file_path="auto_installer", installed_packages=[])
 
         def install_package(package):
@@ -455,7 +453,7 @@ class ImportValidator:
 
 class FunctionValidator:
     """
-    High - speed function quality analysis and pattern detection.
+    High-speed function quality analysis and pattern detection.
 
     Uses efficient AST analysis with cached scoring.
     """
@@ -464,7 +462,7 @@ class FunctionValidator:
         self._quality_cache = {}
 
     def calculate_quality_score(self, function_code: str) -> float:
-        """Calculate function quality score (0 - 1) with caching."""
+        """Calculate function quality score (0-1) with caching."""
         # Use hash for caching
         code_hash = hash(function_code)
         if code_hash in self._quality_cache:
@@ -570,13 +568,13 @@ class FunctionValidator:
 
 class DataSciencePatternDetector:
     """
-    Ultra - fast data science pattern detection using optimized algorithms.
+    Ultra-fast data science pattern detection using optimized algorithms.
 
     Combines regex, AST analysis, and string matching for maximum speed.
     """
 
     def __init__(self):
-        # Pre - compiled patterns for speed
+        # Pre-compiled patterns for speed
         self._ml_patterns = {
             "data_loading": re.compile(r"(read_csv|read_excel|read_json|read_sql|load_data)", re.I),
             "exploratory_analysis": re.compile(r"(\.info\(\)|\.describe\(\)|\.head\(\)|\.tail\(\))", re.I),
@@ -633,11 +631,11 @@ class DataSciencePatternDetector:
         if any(pattern in code_lower for pattern in ["assert", "check", "validate", "info()", "describe()"]):
             issues["no_data_validation"] = False
 
-        # Check for train - test split
+        # Check for train-test split
         if "train_test_split" in code_lower:
             issues["no_train_test_split"] = False
 
-        # Check for cross - validation
+        # Check for cross-validation
         if any(pattern in code_lower for pattern in ["cross_val", "kfold", "stratified"]):
             issues["no_cross_validation"] = False
 
@@ -725,7 +723,7 @@ class CodeBlockValidator:
 
 class PythonFileValidator:
     """
-    Main validator for Python files with ultra - fast processing.
+    Main validator for Python files with ultra-fast processing.
 
     Combines all validation components for comprehensive analysis.
     Uses parallel processing and caching for maximum performance.
@@ -745,7 +743,7 @@ class PythonFileValidator:
         """
         Validate a Python file with comprehensive analysis.
 
-        Ultra - fast processing with parallel analysis where possible.
+        Ultra-fast processing with parallel analysis where possible.
         """
         start_time = time.time()
 
@@ -770,7 +768,7 @@ class PythonFileValidator:
                 return cached_result
 
             # Read file content
-            with open(file_path, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 code = f.read()
 
             result.lines_of_code = len(code.split("\n"))
@@ -859,7 +857,7 @@ class PythonFileValidator:
                 if isinstance(node, ast.FunctionDef) and node.name == function_name:
                     # Get the function's source code
                     lines = full_code.split("\n")
-                    start_line = node.lineno - 1
+                    start_line = node.lineno-1
 
                     # Find end of function (simple heuristic)
                     end_line = start_line + 1

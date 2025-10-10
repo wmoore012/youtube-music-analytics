@@ -7,36 +7,26 @@ by showing the helper functions that have been created and how they can be used
 to reduce code duplication across the codebase.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.youtubeviz.common_helpers import (  # Database helpers; Validation helpers; Error handling helpers; Formatting helpers; File helpers; Date / time helpers; Pandas helpers  # noqa: E501
-    check_table_exists,
-    clean_dataframe_columns,
     clean_text_field,
-    create_progress_bar,
     ensure_directory_exists,
-    execute_query_safely,
     format_duration,
     format_number,
     format_percentage,
     format_timestamp,
     get_current_timestamp,
-    get_table_row_count,
-    log_error_with_context,
     parse_youtube_timestamp,
-    read_json_file,
-    remove_empty_rows,
-    retry_operation,
     safe_divide,
     validate_data_types,
     validate_required_fields,
     validate_youtube_id,
-    write_json_file,
 )
 
 
@@ -97,7 +87,7 @@ def test_helper_functions():
     formatted = format_timestamp(timestamp)
     assert len(formatted) > 0
 
-    youtube_time = parse_youtube_timestamp("2023 - 01 - 01T12:00:00Z")
+    youtube_time = parse_youtube_timestamp("2023-01-01T12:00:00Z")
     assert youtube_time is not None
     print("  ✅ Date helpers working correctly")
 
@@ -212,7 +202,7 @@ def main():
         analyze_extraction_impact()
 
         print("\n" + "=" * 60)
-        print("🎉 TASK 2.2: EXTRACT HELPER FUNCTIONS - COMPLETED")
+        print("🎉 TASK 2.2: EXTRACT HELPER FUNCTIONS-COMPLETED")
         print("=" * 60)
         print("✅ Helper functions successfully created and tested")
         print("✅ Code duplication patterns addressed")

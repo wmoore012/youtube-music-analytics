@@ -3,11 +3,10 @@
 Benchmark scoring plugins with real database data to verify performance and accuracy.
 """
 
-from datetime import datetime, timedelta
-import os
-from pathlib import Path
 import sys
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
 
 import pandas as pd
 
@@ -35,7 +34,7 @@ def benchmark_momentum_scoring():
 
         # Load larger dataset (last 60 days)
         end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=60)
+        start_date = end_date-timedelta(days=60)
 
         print(f"📊 Loading data from {start_date} to {end_date}...")
         data = load_artist_daily_metrics(start=start_date, end=end_date, engine=engine)
@@ -97,10 +96,10 @@ def benchmark_momentum_scoring():
                                + i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
                     )
         else:
-            print(f"\n📊 All Artists (identical scores - algorithm needs tuning):")
+            print(f"\n📊 All Artists (identical scores-algorithm needs tuning):")
             for i, (_, row) in enumerate(scores.iterrows(), 1):
                 print(f"   #{i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})")
-            print(f"   ⚠️  Algorithm produced identical scores - needs improvement!")
+            print(f"   ⚠️  Algorithm produced identical scores-needs improvement!")
 
         return {
             "execution_time": execution_time,
@@ -181,7 +180,7 @@ def benchmark_engagement_scoring():
         print(f"\n💭 Sentiment Impact:")
         print(f"   Positive sentiment boost: {positive_sentiment} videos")
         print(f"   Negative sentiment impact: {negative_sentiment} videos")
-        print(f"   Neutral sentiment: {len(scores) - positive_sentiment - negative_sentiment} videos")
+        print(f"   Neutral sentiment: {len(scores) - positive_sentiment-negative_sentiment} videos")
 
         # Top engaging videos
         print(f"\n🏆 Top 5 Engaging Videos:")
@@ -221,7 +220,7 @@ def benchmark_scoring_engine_integration():
         # Load test data
         db_engine = get_engine()
         end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=21)
+        start_date = end_date-timedelta(days=21)
 
         data = load_artist_daily_metrics(start=start_date, end=end_date, engine=db_engine)
 
@@ -287,8 +286,8 @@ def benchmark_scoring_engine_integration():
 
 def save_benchmark_results(results, total_records, total_time):
     """Save benchmark results to file for tracking performance over time."""
-    from datetime import datetime
     import json
+    from datetime import datetime
 
     timestamp = datetime.now().isoformat()
 
@@ -341,7 +340,7 @@ def save_benchmark_results(results, total_records, total_time):
 
     print(f"\n💾 Benchmark results saved to: {benchmark_file}")
 
-    # Also create a human - readable report
+    # Also create a human-readable report
     report_file = project_root / "SCORING_SYSTEM_BENCHMARK_REPORT.md"
 
     with open(report_file, "w") as f:
@@ -350,8 +349,10 @@ def save_benchmark_results(results, total_records, total_time):
         f.write("## Executive Summary\n\n")
         f.write(f"- **Total Records Processed:** {total_records:,}\n")
         f.write(f"- **Total Execution Time:** {total_time:.3f} seconds\n")
-        f.write(f"- **Overall Throughput:** {total_records
-                / total_time if total_time > 0 else 0:.0f} records / second\n")
+        f.write(
+            f"- **Overall Throughput:** {total_records
+                / total_time if total_time > 0 else 0:.0f} records / second\n"
+        )
         f.write("- **Data Source:** Real YouTube Analytics Database\n")
         f.write("- **Validation:** No dummy data used\n\n")
 
@@ -372,11 +373,11 @@ def save_benchmark_results(results, total_records, total_time):
         f.write("✅ **Real Artist Names:** BiC Fizzle, COBRAH, Corook, re6ce, Raiche, Flyana Boss\n\n")
         f.write("✅ **Real Video IDs:** MJaL7hO6KYQ, IltcRLPz71Y, YtvC06AgrlU (actual YouTube video IDs)\n\n")
         f.write("✅ **Realistic Metrics:** Engagement rates from 0.000266 to 0.089222 (real percentages)\n\n")
-        f.write("✅ **Varied Scores:** Not dummy values like 0.5, 0.8 - actual calculated scores\n\n")
+        f.write("✅ **Varied Scores:** Not dummy values like 0.5, 0.8-actual calculated scores\n\n")
         f.write("✅ **Production Database:** All data sourced from live YouTube analytics tables\n\n")
 
         f.write("## Performance Achievements\n\n")
-        f.write("- **Sub - second execution** for all scoring operations\n")
+        f.write("- **Sub-second execution** for all scoring operations\n")
         f.write("- **High throughput** processing thousands of records per second\n")
         f.write("- **Efficient storage** with automatic database persistence\n")
         f.write("- **Fast retrieval** of historical scoring data\n")
@@ -387,9 +388,9 @@ def save_benchmark_results(results, total_records, total_time):
         f.write("- **Database:** MySQL with YouTube analytics tables\n")
         f.write("- **Scoring Plugins:** 3 (Momentum, Engagement, Growth Potential)\n")
         f.write("- **Storage System:** Full database persistence with metadata tracking\n")
-        f.write("- **Data Validation:** Real - time schema and data quality checks\n")
+        f.write("- **Data Validation:** Real-time schema and data quality checks\n")
 
-    print(f"📊 Human - readable report saved to: {report_file}")
+    print(f"📊 Human-readable report saved to: {report_file}")
 
 
 def main():
@@ -451,7 +452,7 @@ def main():
     print(f"   - No dummy / synthetic data used")
     print(f"   - Real artist names and video IDs")
     print(f"   - Realistic score distributions")
-    print(f"   - Production - ready performance")
+    print(f"   - Production-ready performance")
 
     # Save benchmark results
     save_benchmark_results(results, total_records, total_time)

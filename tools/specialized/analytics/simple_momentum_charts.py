@@ -14,7 +14,6 @@ import logging
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 from web.etl_helpers import get_engine
 

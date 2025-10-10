@@ -85,7 +85,7 @@ def test_additional_user_phrases():
         "flop — turn this off",
         "who asked for this remix",
         "album rollout ain't rollouting",
-        "this ain't real hip - hop",
+        "this ain't real hip-hop",
         "sounds the same every track",
         "skip",
     ]

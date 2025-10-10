@@ -33,7 +33,7 @@ class TestArtistMomentumScoringPluginWithRealData:
         """Load real YouTube data for testing."""
         try:
             end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=45)
+            start_date = end_date-timedelta(days=45)
 
             data = load_artist_daily_metrics(start=start_date, end=end_date, engine=self.engine)
 
@@ -204,14 +204,14 @@ class TestArtistMomentumScoringPluginMocked:
                 "artist_name": ["Artist A", "Artist A", "Artist B"],
                 "video_id": ["vid1", "vid2", "vid3"],
                 "published_at": [
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=15),
-                    base_date - timedelta(days=10),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=15),
+                    base_date-timedelta(days=10),
                 ],
                 "metrics_date": [
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=15),
-                    base_date - timedelta(days=10),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=15),
+                    base_date-timedelta(days=10),
                 ],
                 "view_count": [5000, 10000, 8000],
                 "like_count": [50, 150, 100],
@@ -263,11 +263,11 @@ class TestArtistMomentumScoringPluginMocked:
                 "artist_name": ["High", "High", "High", "Low", "Low"],
                 "video_id": ["h1", "h2", "h3", "l1", "l2"],
                 "published_at": [
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=20),
-                    base_date - timedelta(days=10),
-                    base_date - timedelta(days=30),
-                    base_date - timedelta(days=25),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=20),
+                    base_date-timedelta(days=10),
+                    base_date-timedelta(days=30),
+                    base_date-timedelta(days=25),
                 ],
                 "view_count": [100000, 150000, 200000, 1000, 900],  # High growth vs decline
                 "like_count": [1000, 1500, 2000, 10, 8],
@@ -359,7 +359,7 @@ class TestEngagementScoringPlugin:
         # Engagement rate should be (100 + 50) / 1000 = 0.15
         expected_rate = 0.15
         actual_rate = scores.iloc[0]["engagement_rate"]
-        assert abs(actual_rate - expected_rate) < 0.01
+        assert abs(actual_rate-expected_rate) < 0.01
 
 
 class TestGrowthPotentialScoringPlugin:
@@ -394,7 +394,7 @@ class TestGrowthPotentialScoringPlugin:
             {
                 "artist_name": ["Artist A"] * 10,
                 "video_id": ["vid1"] * 10,
-                "metrics_date": [base_date - timedelta(days=i) for i in range(9, -1, -1)],
+                "metrics_date": [base_date-timedelta(days=i) for i in range(9, -1, -1)],
                 "view_count": [1000 + i * 500 for i in range(10)],  # Growing views
                 "like_count": [10 + i * 5 for i in range(10)],
                 "comment_count": [5 + i * 2 for i in range(10)],
@@ -422,10 +422,10 @@ class TestGrowthPotentialScoringPlugin:
             {
                 "artist_name": ["Artist B"] * 5,
                 "video_id": ["vid2"] * 5,
-                "metrics_date": [base_date - timedelta(days=i) for i in range(4, -1, -1)],
-                "view_count": [5000 - i * 200 for i in range(5)],  # Declining views
-                "like_count": [50 - i * 2 for i in range(5)],
-                "comment_count": [25 - i * 1 for i in range(5)],
+                "metrics_date": [base_date-timedelta(days=i) for i in range(4, -1, -1)],
+                "view_count": [5000-i * 200 for i in range(5)],  # Declining views
+                "like_count": [50-i * 2 for i in range(5)],
+                "comment_count": [25-i * 1 for i in range(5)],
             }
         )
 
@@ -433,7 +433,7 @@ class TestGrowthPotentialScoringPlugin:
 
         # Should detect negative growth or stability
         assert scores.iloc[0]["trend_direction"] in ["declining", "stagnant", "stable"]
-        assert scores.iloc[0]["score_value"] < 0.8  # Should be lower than high - growth scenarios
+        assert scores.iloc[0]["score_value"] < 0.8  # Should be lower than high-growth scenarios
 
     def test_insufficient_historical_data(self):
         """Test behavior with insufficient historical data."""

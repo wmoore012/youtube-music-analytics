@@ -3,7 +3,7 @@
 Enterprise Monitoring & Alerting System
 
 Comprehensive monitoring solution for YouTube Analytics ETL Pipeline with:
-- Real - time performance metrics
+- Real-time performance metrics
 - SLA monitoring and alerting
 - Data quality dashboards
 - Automated incident response
@@ -14,19 +14,15 @@ Version: 2.0.0
 License: Enterprise
 """
 
-from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import json
 import logging
 import os
-from pathlib import Path
-import smtplib
 import sys
 import time
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, Optional
 
-import pandas as pd
 import requests
 from sqlalchemy import text
 
@@ -48,14 +44,14 @@ logger = logging.getLogger("EnterpriseMonitoring")
 
 class EnterpriseMonitoringSystem:
     """
-    Enterprise - grade monitoring system with comprehensive alerting and reporting.
+    Enterprise-grade monitoring system with comprehensive alerting and reporting.
 
     Features:
     - SLA monitoring with automated escalation
     - Performance metrics collection and analysis
     - Data quality monitoring with trend analysis
     - Executive dashboard generation
-    - Multi - channel alerting (email, Slack, webhook)
+    - Multi-channel alerting (email, Slack, webhook)
     """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
@@ -304,7 +300,7 @@ class EnterpriseMonitoringSystem:
         return sla_status
 
     def send_alert(self, alert_type: str, message: str, severity: str = "WARNING") -> bool:
-        """Send multi - channel alerts for critical issues."""
+        """Send multi-channel alerts for critical issues."""
         logger.info(f"🚨 Sending {severity} alert: {alert_type}")
 
         alert_data = {
@@ -381,7 +377,7 @@ class EnterpriseMonitoringSystem:
         response.raise_for_status()
 
     def generate_executive_report(self) -> Dict[str, Any]:
-        """Generate executive - level monitoring report."""
+        """Generate executive-level monitoring report."""
         logger.info("📊 Generating executive monitoring report...")
 
         report = {
@@ -461,7 +457,7 @@ class EnterpriseMonitoringSystem:
                 report["recommendations"].append("Review SLA violations and implement performance improvements")
 
             if not report["executive_summary"]["data_pipeline_active"]:
-                report["recommendations"].append("Investigate data pipeline issues - no recent data detected")
+                report["recommendations"].append("Investigate data pipeline issues-no recent data detected")
 
             # Next actions
             report["next_actions"] = [

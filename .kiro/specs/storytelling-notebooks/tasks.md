@@ -147,7 +147,7 @@
     signatures
   - _Requirements: 8.1, 8.2, 10.1_
 
-## Data Science Grade Chart Specifications (15 Charts - NEW REQUIREMENTS)
+## Data Science Grade Chart Specifications (15 Charts-NEW REQUIREMENTS)
 
 -
   10. [x] Implement Chart #1: Sentiment Breakdown by Artist (Diverging Stacked

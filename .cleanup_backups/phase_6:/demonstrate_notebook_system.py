@@ -2,7 +2,7 @@
 """
 Demonstration of the Complete Notebook Archiving and DateTime System
 
-Shows the TDD - driven implementation working with real data.
+Shows the TDD-driven implementation working with real data.
 """
 
 import sys
@@ -10,7 +10,6 @@ import sys
 sys.path.insert(0, ".")
 
 from datetime import datetime
-import json
 from pathlib import Path
 
 from notebook_archiver import NotebookArchiver
@@ -21,7 +20,7 @@ def demonstrate_system():
 
     print("🎵 MusicScope™ Notebook Archiving System Demonstration")
     print("=" * 70)
-    print("✅ TDD - Driven Implementation")
+    print("✅ TDD-Driven Implementation")
     print("✅ DateTime Organization")
     print("✅ Professional Archiving")
     print("✅ Real Data Integration")
@@ -77,10 +76,10 @@ def demonstrate_system():
     print(f"\n🎯 Key Features:")
     print(f"   ✅ Automatic datetime stamping (YYYYMMDD_HHMMSS)")
     print(f"   ✅ Professional archiving system")
-    print(f"   ✅ TDD - driven with comprehensive tests")
+    print(f"   ✅ TDD-driven with comprehensive tests")
     print(f"   ✅ Bulletproof error handling")
     print(f"   ✅ Integration with create_notebook.py")
-    print(f"   ✅ Real data only - no fake data ever")
+    print(f"   ✅ Real data only-no fake data ever")
 
     print(f"\n📋 Directory Structure:")
     print(f"   📂 /notebooks/")

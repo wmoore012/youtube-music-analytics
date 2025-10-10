@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Production quality checks - Daily at 6 AM UTC
+    # Production quality checks-Daily at 6 AM UTC
     - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
@@ -386,7 +386,7 @@ jobs:
         ], capture_output=True, text=True, timeout=300)
 
         end_time = time.time()
-        execution_time = end_time - start_time
+        execution_time = end_time-start_time
 
         sla_metrics = {
             'execution_time_seconds': execution_time,

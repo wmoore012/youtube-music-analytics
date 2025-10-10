@@ -10,17 +10,17 @@ IMPORTANT: Always review current YouTube API Terms of Service for your use case:
 - Commercial: Check current ToS requirements
 
 References:
-- YouTube API Terms of Service: https://developers.google.com / youtube / terms / api - services - terms - of - service
-- YouTube Data API Policy: https://developers.google.com / youtube / terms / developer - policies
+- YouTube API Terms of Service: https://developers.google.com / youtube / terms / api-services-terms-of-service
+- YouTube Data API Policy: https://developers.google.com / youtube / terms / developer-policies
 """
 
-from datetime import datetime, timedelta
 import logging
 import os
+from datetime import datetime, timedelta
 from typing import Optional
 
-from dotenv import load_dotenv
 import pymysql
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -86,7 +86,7 @@ class YouTubeDataRetentionManager:
             comment_cutoff = datetime.now() - timedelta(days=self.comment_retention_days)
 
             with conn.cursor() as cur:
-                # 1. Clean up comments (user - generated content - most strict)
+                # 1. Clean up comments (user-generated content-most strict)
                 if dry_run:
                     cur.execute(
                         "SELECT COUNT(*) as count FROM youtube_comments WHERE published_at < %s",

@@ -1,5 +1,5 @@
 """
-Common Helper Functions - YouTube Analytics Platform
+Common Helper Functions-YouTube Analytics Platform
 
 This module contains commonly used helper functions extracted from across the codebase
 to reduce duplication and improve maintainability. These functions follow the single
@@ -13,17 +13,16 @@ Categories:
 - File operation helpers
 """
 
-from datetime import datetime, timezone
 import json
 import logging
-import os
-from pathlib import Path
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from sqlalchemy import text
-from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.engine import Connection
 
 # =============================================================================
 # DATABASE OPERATION HELPERS
@@ -125,7 +124,7 @@ def batch_insert_records(conn: Connection, table_name: str, records: List[Dict],
         query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
 
         try:
-            _result = conn.execute(text(query), batch)
+            _result = conn.execute(text(query), batch)  # noqa: F841
             total_inserted += len(batch)
         except Exception as e:
             logging.error(f"Batch insert failed for {table_name}: {e}")
@@ -219,9 +218,9 @@ def validate_youtube_id(youtube_id: str, id_type: str = "video") -> bool:
         return False
 
     patterns = {
-        "video": r"^[a - zA - Z0 - 9_-]{11}$",
-        "channel": r"^UC[a - zA - Z0 - 9_-]{22}$",
-        "playlist": r"^[a - zA - Z0 - 9_-]{34}$",
+        "video": r"^[a-zA-Z0-9_-]{11}$",
+        "channel": r"^UC[a-zA-Z0-9_-]{22}$",
+        "playlist": r"^[a-zA-Z0-9_-]{34}$",
     }
 
     pattern = patterns.get(id_type, patterns["video"])
@@ -344,7 +343,7 @@ def format_number(number: Union[int, float], precision: int = 1) -> str:
 
 def format_duration(seconds: Union[int, float]) -> str:
     """
-    Format duration in seconds to human - readable format.
+    Format duration in seconds to human-readable format.
 
     Args:
         seconds: Duration in seconds
@@ -391,7 +390,7 @@ def format_percentage(value: Union[int, float], total: Union[int, float], precis
 
 def create_progress_bar(current: int, total: int, width: int = 50) -> str:
     """
-    Create a text - based progress bar.
+    Create a text-based progress bar.
 
     Args:
         current: Current progress value
@@ -406,7 +405,7 @@ def create_progress_bar(current: int, total: int, width: int = 50) -> str:
 
     progress = min(current / total, 1.0)
     filled = int(width * progress)
-    bar = "█" * filled + "░" * (width - filled)
+    bar = "█" * filled + "░" * (width-filled)
     percentage = progress * 100
 
     return f"[{bar}] {percentage:.1f}%"
@@ -444,7 +443,7 @@ def read_json_file(file_path: Union[str, Path], default: Any = None) -> Any:
         Parsed JSON data or default value
     """
     try:
-        with open(file_path, "r", encoding="utf - 8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError) as e:
         logging.warning(f"Could not read JSON file {file_path}: {e}")
@@ -465,7 +464,7 @@ def write_json_file(file_path: Union[str, Path], data: Any, indent: int = 2) -> 
     """
     try:
         ensure_directory_exists(Path(file_path).parent)
-        with open(file_path, "w", encoding="utf - 8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=indent, ensure_ascii=False)
         return True
     except Exception as e:
@@ -522,7 +521,7 @@ def parse_youtube_timestamp(timestamp_str: str) -> Optional[datetime]:
     Parse YouTube API timestamp format.
 
     Args:
-        timestamp_str: YouTube timestamp string (e.g., "2023 - 01 - 01T12:00:00Z")
+        timestamp_str: YouTube timestamp string (e.g., "2023-01-01T12:00:00Z")
 
     Returns:
         Parsed datetime object or None if parsing fails

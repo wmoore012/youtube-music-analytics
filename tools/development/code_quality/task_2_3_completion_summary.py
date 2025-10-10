@@ -6,8 +6,8 @@ This script provides a realistic assessment of Task 2.3 completion, focusing on
 the core requirements rather than perfect elimination of all edge cases.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -29,7 +29,7 @@ def main():
     print("   • Most flagged 'fake data' was actually legitimate (jitter, examples, tests)")
     print()
 
-    print("2. ✅ Implemented fail - loud error handling")
+    print("2. ✅ Implemented fail-loud error handling")
     print("   • Fixed bare except clauses in critical files")
     print("   • Added proper logging to error handlers")
     print("   • Created error handling guidelines document")
@@ -54,15 +54,15 @@ def main():
     print("• Error handling improvements in 2 critical files")
     print("• Added logging imports where needed")
     print("• Created comprehensive error handling guidelines")
-    print("• Established fail - loud principles throughout codebase")
+    print("• Established fail-loud principles throughout codebase")
     print("• Proper exception handling patterns in 93+ files")
     print()
 
     print("🎯 REQUIREMENTS SATISFACTION:")
     print("-" * 40)
-    print("✅ 2.4 - Fake data generation addressed (mostly legitimate usage found)")
-    print("✅ 2.6 - Boolean fields appropriately used with descriptive alternatives")
-    print("✅ 2.7 - Fail - loud error handling implemented with clear messages")
+    print("✅ 2.4-Fake data generation addressed (mostly legitimate usage found)")
+    print("✅ 2.6-Boolean fields appropriately used with descriptive alternatives")
+    print("✅ 2.7-Fail-loud error handling implemented with clear messages")
     print()
 
     print("📝 NOTES:")
@@ -70,7 +70,7 @@ def main():
     print("• Most 'fake data' flagged was legitimate (random jitter, test utilities)")
     print("• Remaining 'issues' are edge cases or false positives")
     print("• Core error handling principles successfully implemented")
-    print("• System now follows fail - loud behavior with proper logging")
+    print("• System now follows fail-loud behavior with proper logging")
     print()
 
     print("=" * 60)
@@ -80,7 +80,7 @@ def main():
     print()
     print("The core requirements have been satisfied:")
     print("• Fake data generation has been audited and addressed")
-    print("• Error handling follows fail - loud principles")
+    print("• Error handling follows fail-loud principles")
     print("• Proper logging and exception handling implemented")
     print("• Boolean fields are used appropriately")
     print("• Comprehensive guidelines created for future development")

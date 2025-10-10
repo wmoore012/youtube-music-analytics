@@ -10,21 +10,13 @@ Key Features:
 - Proprietary formula parameters configurable via .env
 - Statistical validation and confidence intervals
 - Real data validation and fake data detection
-- Industry - relevant engagement categories
+- Industry-relevant engagement categories
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-import os
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
-import numpy as np
-import pandas as pd
-from scipy import stats
-from sqlalchemy.engine import Engine
 
-from .data import load_artist_daily_metrics
-from .unique_comment_integration import enforce_real_data_only
 
 
 @dataclass
@@ -35,12 +27,12 @@ class EngagementScore:
     video_title: Optional[str]
     video_id: str
 
-    # Overall engagement score (0 - 1 normalized)
+    # Overall engagement score (0-1 normalized)
     overall_engagement_score: float
     confidence: float
     category: str
 
-    # Separate metrics (0 - 1 normalized)
+    # Separate metrics (0-1 normalized)
     like_engagement_score: float
     comment_engagement_score: float
 

@@ -6,10 +6,10 @@ This module tests sentiment models against a scientifically classified
 music slang dictionary to determine the best model for music industry analytics.
 """
 
-from dataclasses import dataclass
 import os
 import sys
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 import pandas as pd
 
@@ -17,8 +17,6 @@ import pandas as pd
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from tools.sentiment.music_slang_dictionary import (
-    SentimentLabel,
-    SlangCategory,
     get_music_slang_dictionary,
 )
 
@@ -385,7 +383,7 @@ class SentimentModelTester:
 
             for model_name in ["VADER", "TextBlob", "Enhanced"]:
                 if results[model_name] and phrase in results[model_name]:
-                    _score = results[model_name][phrase]["score"]
+                    _score = results[model_name][phrase]["score"]  # noqa: F841
                     sentiment = results[model_name][phrase]["sentiment"]
                     row += f" | {sentiment[:6]:<8}"
                 else:

@@ -6,20 +6,20 @@ Executes a single notebook and writes outputs to `notebooks / executed/`:
 - `<name>-executed.ipynb`
 - `<name>_results.md` (simple status summary)
 
-Designed to be dependency - light and CI - friendly.
+Designed to be dependency-light and CI-friendly.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import os
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Dict
 
-from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
 
 
 def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> Dict[str, str]:
@@ -35,7 +35,7 @@ def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> 
     executed_path = out_dir / f"{name}-executed.ipynb"
     summary_path = out_dir / f"{name}_results.md"
 
-    with open(in_path, "r", encoding="utf - 8") as fh:
+    with open(in_path, "r", encoding="utf-8") as fh:
         nb = nbformat.read(fh, as_version=4)
 
     # Execute notebook (can be disabled for CI / sandbox via NOTEBOOK_EXECUTE=0)
@@ -49,13 +49,13 @@ def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> 
             # Fallback: proceed without execution to keep CI robust
             pass
 
-    with open(executed_path, "w", encoding="utf - 8") as fh:
+    with open(executed_path, "w", encoding="utf-8") as fh:
         nbformat.write(nb, fh)
 
     # Minimal summary (safe for CI assertions)
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
     summary = f"# Executed Notebook: {name}\n\n" f"- Time (UTC): {ts}\n" f"- Status: SUCCESS\n"
-    with open(summary_path, "w", encoding="utf - 8") as fh:
+    with open(summary_path, "w", encoding="utf-8") as fh:
         fh.write(summary)
 
     return {"executed_path": str(executed_path), "summary_path": str(summary_path)}
@@ -64,7 +64,7 @@ def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Execute a Jupyter notebook")
     parser.add_argument("notebook", help="Path to input .ipynb notebook")
-    parser.add_argument("--output - dir", default="notebooks / executed", help="Output directory for results")
+    parser.add_argument("--output-dir", default="notebooks / executed", help="Output directory for results")
     args = parser.parse_args(argv)
 
     try:

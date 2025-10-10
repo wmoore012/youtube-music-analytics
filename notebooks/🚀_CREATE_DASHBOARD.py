@@ -14,12 +14,11 @@ Usage:
 """
 
 import argparse
-from datetime import datetime
-import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -66,11 +65,11 @@ def create_professional_dashboard(sample_mode=False, execute_after=False):  # no
     target_notebook = "MusicScope™_Professional_Dashboard.ipynb"
     target_path = notebooks_dir / target_notebook
 
-    # Look for template in multiple locations - prioritize 20 - chart dashboard
+    # Look for template in multiple locations-prioritize 20-chart dashboard
     template_locations = [
-        executed_dir / "MusicScope™_20_Chart_Dashboard - executed.ipynb",
+        executed_dir / "MusicScope™_20_Chart_Dashboard-executed.ipynb",
         notebooks_dir / "archive" / "first" / "MusicScope™_20_Chart_Dashboard.ipynb",
-        executed_dir / "MusicScope™_Professional_Dashboard - executed.ipynb",
+        executed_dir / "MusicScope™_Professional_Dashboard-executed.ipynb",
         notebooks_dir / "archive" / "20250918_053054" / "MusicScope™_Professional_Dashboard.ipynb",
         notebooks_dir / "archive" / "first" / "MusicScope™_Complete_Analytics_Dashboard_executed.ipynb",
     ]
@@ -118,7 +117,7 @@ def create_professional_dashboard(sample_mode=False, execute_after=False):  # no
 
         # Step 2: Clear outputs using nbconvert (official ClearOutputPreprocessor)
         print(f"🧹 Clearing outputs with nbconvert...")
-        clear_cmd = ["jupyter", "nbconvert", "--clear - output", "--inplace", str(target_path)]
+        clear_cmd = ["jupyter", "nbconvert", "--clear-output", "--inplace", str(target_path)]
         _run(clear_cmd, critical=True)
         print(f"   ✅ Outputs cleared successfully")
 
@@ -215,7 +214,7 @@ def main():
         print("\n🎯 Next steps:")
         print("   1. Open the notebook in Jupyter")
         print("   2. Run all cells to generate charts")
-        print("   3. Charts use enterprise - grade error handling at function level")
+        print("   3. Charts use enterprise-grade error handling at function level")
 
         if not args.execute:
             print("\n💡 Pro tip: Use --execute to run automatically with papermill")

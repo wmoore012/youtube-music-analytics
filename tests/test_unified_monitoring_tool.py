@@ -1,5 +1,5 @@
 """
-Tests for tools / core / unified_monitor.py - unified system monitoring tool.
+Tests for tools / core / unified_monitor.py-unified system monitoring tool.
 
 This test suite validates:
 - SystemMonitor class functionality
@@ -11,9 +11,9 @@ This test suite validates:
 - Error handling and recovery
 """
 
-from datetime import datetime, timedelta
 import json
 import os
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -30,7 +30,7 @@ class TestSystemMonitor:
 
     def test_tool_initialization(self):
         """Test basic tool initialization."""
-        assert self.monitor.name == "unified - monitor"
+        assert self.monitor.name == "unified-monitor"
         assert self.monitor.version == "1.0.0"
         assert self.monitor.logger is not None
         assert "monitor_" in self.monitor.monitoring_session_id
@@ -44,7 +44,7 @@ class TestSystemMonitor:
         """Test tool configuration metadata."""
         config = self.monitor.get_tool_config()
 
-        assert config.name == "unified - monitor"
+        assert config.name == "unified-monitor"
         assert config.version == "1.0.0"
         assert config.category == "core"
         assert "python>=3.8" in config.dependencies
@@ -561,12 +561,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_monitor.SystemMonitor")
     def test_main_full_check_option(self, mock_monitor_class):
-        """Test main function with --full - check option."""
+        """Test main function with --full-check option."""
         mock_monitor = MagicMock()
         mock_monitor.full_system_check.return_value = {"status": "WARNING"}
         mock_monitor_class.return_value.__enter__.return_value = mock_monitor
 
-        with patch("sys.argv", ["unified_monitor.py", "--full - check", "--days", "14"]):
+        with patch("sys.argv", ["unified_monitor.py", "--full-check", "--days", "14"]):
             result = main()
 
         assert result == 1  # WARNING status
@@ -574,12 +574,12 @@ class TestMainFunction:
 
     @patch("tools.core.unified_monitor.SystemMonitor")
     def test_main_data_quality_option(self, mock_monitor_class):
-        """Test main function with --data - quality option."""
+        """Test main function with --data-quality option."""
         mock_monitor = MagicMock()
         mock_monitor.data_quality_check.return_value = {"status": "CRITICAL"}
         mock_monitor_class.return_value.__enter__.return_value = mock_monitor
 
-        with patch("sys.argv", ["unified_monitor.py", "--data - quality", "--fix - issues"]):
+        with patch("sys.argv", ["unified_monitor.py", "--data-quality", "--fix-issues"]):
             result = main()
 
         assert result == 2  # CRITICAL status
@@ -589,7 +589,7 @@ class TestMainFunction:
     def test_main_json_output(self, mock_monitor_class):
         """Test main function with JSON output."""
         mock_monitor = MagicMock()
-        mock_monitor.quick_health_check.return_value = {"status": "HEALTHY", "timestamp": "2023 - 01 - 01"}
+        mock_monitor.quick_health_check.return_value = {"status": "HEALTHY", "timestamp": "2023-01-01"}
         mock_monitor_class.return_value.__enter__.return_value = mock_monitor
 
         with patch("sys.argv", ["unified_monitor.py", "--json"]):
@@ -621,7 +621,7 @@ class TestReportPrinting:
     def test_print_monitoring_report_basic(self):
         """Test basic monitoring report printing."""
         result = {
-            "timestamp": "2023 - 01 - 01T12:00:00",
+            "timestamp": "2023-01-01T12:00:00",
             "check_type": "quick_health",
             "status": "HEALTHY",
             "summary": {"total_checks": 5, "passed": 5, "overall_status": "HEALTHY"},
@@ -631,7 +631,7 @@ class TestReportPrinting:
             print_monitoring_report(result)
 
         # Verify report sections were printed
-#         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
+        #         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
         printed_content = "\n".join(printed_calls)  # noqa: F821
 
         assert "UNIFIED SYSTEM MONITORING REPORT" in printed_content
@@ -641,7 +641,7 @@ class TestReportPrinting:
     def test_print_monitoring_report_with_issues(self):
         """Test monitoring report printing with issues."""
         result = {
-            "timestamp": "2023 - 01 - 01T12:00:00",
+            "timestamp": "2023-01-01T12:00:00",
             "check_type": "data_quality",
             "status": "WARNING",
             "issues": [
@@ -653,7 +653,7 @@ class TestReportPrinting:
         with patch("builtins.print") as mock_print:
             print_monitoring_report(result, verbose=True)
 
-#         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
+        #         printed_calls = [str(call.args[0]) if call.args else str(call) for call in mock_print.call_args_list]
         printed_content = "\n".join(printed_calls)  # noqa: F821
 
         assert "ISSUES FOUND:" in printed_content
@@ -673,10 +673,10 @@ class TestIntegration:
         monitor = SystemMonitor()
 
         # Find the registered tool
-        found_tool = find_tool("unified - monitor")
+        found_tool = find_tool("unified-monitor")
 
         assert found_tool is not None
-        assert found_tool.name == "unified - monitor"
+        assert found_tool.name == "unified-monitor"
         assert found_tool.version == "1.0.0"
         assert found_tool.category == "core"
 
@@ -690,6 +690,6 @@ class TestIntegration:
                 cleanup_called = True
 
         with TestMonitor() as monitor:
-            assert monitor.name == "unified - monitor"
+            assert monitor.name == "unified-monitor"
 
         assert cleanup_called

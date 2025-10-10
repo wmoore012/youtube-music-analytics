@@ -4,17 +4,12 @@ Bulletproof implementation with proper error handling and validation.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
-import warnings
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from .chart_models import (
-    ChartDataValidationError,
     UMAPClusteringData,
     validate_data_quality,
     validate_dataframe_schema,
@@ -75,13 +70,13 @@ class UMAPClusteringAnalyzer:
     def _validate_dependencies(self) -> None:
         """Validate that required dependencies are available."""
         try:
+            import umap
             from sklearn.cluster import KMeans
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.metrics import silhouette_score
-            import umap
         except ImportError as e:
             raise UMAPNotAvailableError(
-                f"Required dependencies not available: {e}. " "Install with: pip install umap - learn scikit - learn"
+                f"Required dependencies not available: {e}. " "Install with: pip install umap-learn scikit-learn"
             )
 
     def validate_input_data(self, df: pd.DataFrame) -> None:
@@ -113,7 +108,7 @@ class UMAPClusteringAnalyzer:
         # Validate against Pydantic schema
         validate_dataframe_schema(df, UMAPClusteringData, sample_size=50)
 
-        # Check per - artist sample counts
+        # Check per-artist sample counts
         artist_counts = df["artist_name"].value_counts()
         insufficient_artists = artist_counts[artist_counts < self.min_samples_per_artist]
 
@@ -133,13 +128,13 @@ class UMAPClusteringAnalyzer:
 
     def create_text_embeddings(self, texts: List[str]) -> np.ndarray:
         """
-        Create text embeddings using TF - IDF.
+        Create text embeddings using TF-IDF.
 
         Args:
             texts: List of comment texts
 
         Returns:
-            TF - IDF embeddings matrix
+            TF-IDF embeddings matrix
 
         Raises:
             ValueError: If texts are empty or invalid
@@ -159,7 +154,7 @@ class UMAPClusteringAnalyzer:
         try:
             from sklearn.feature_extraction.text import TfidfVectorizer
 
-            # Create TF - IDF embeddings
+            # Create TF-IDF embeddings
             vectorizer = TfidfVectorizer(
                 max_features=1000, stop_words="english", ngram_range=(1, 2), min_df=2, max_df=0.8
             )
@@ -175,7 +170,7 @@ class UMAPClusteringAnalyzer:
         Perform UMAP dimensionality reduction.
 
         Args:
-            embeddings: High - dimensional embeddings
+            embeddings: High-dimensional embeddings
 
         Returns:
             2D UMAP embeddings
@@ -201,7 +196,7 @@ class UMAPClusteringAnalyzer:
                 raise ValueError(f"UMAP should produce 2D embeddings, got {umap_embeddings.shape[1]}D")
 
             if np.any(np.isnan(umap_embeddings)):
-                raise ValueError("UMAP produced NaN values - check input data quality")
+                raise ValueError("UMAP produced NaN values-check input data quality")
 
             return umap_embeddings
 
@@ -210,11 +205,11 @@ class UMAPClusteringAnalyzer:
 
     def perform_clustering(self, embeddings: np.ndarray, n_clusters: Optional[int] = None) -> Tuple[np.ndarray, float]:
         """
-        Perform K - means clustering on embeddings.
+        Perform K-means clustering on embeddings.
 
         Args:
             embeddings: 2D embeddings for clustering
-            n_clusters: Number of clusters (auto - determined if None)
+            n_clusters: Number of clusters (auto-determined if None)
 
         Returns:
             Tuple of (cluster_labels, silhouette_score)
@@ -226,7 +221,7 @@ class UMAPClusteringAnalyzer:
             from sklearn.cluster import KMeans
             from sklearn.metrics import silhouette_score
 
-            # Auto - determine number of clusters if not specified
+            # Auto-determine number of clusters if not specified
             if n_clusters is None:
                 n_clusters = min(max(2, len(np.unique(embeddings, axis=0)) // 10), 8)
 

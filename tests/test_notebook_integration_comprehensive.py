@@ -6,16 +6,16 @@ ensuring notebooks run correctly, produce readable outputs, and maintain
 quality standards throughout the development lifecycle.
 
 This test suite is designed to be run as part of CI / CD and includes:
-- Pre - commit notebook validation
-- Post - archive validation
+- Pre-commit notebook validation
+- Post-archive validation
 - Performance monitoring
 - Quality assurance
 - Regression testing
 """
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Dict, List
 
 import pytest
@@ -65,15 +65,15 @@ class ComprehensiveNotebookIntegrationTester:
             results["phases"]["execution"] = {"status": "FAILED", "error": str(e)}
             print(f"   ❌ Execution tests failed: {str(e)}")
 
-        # Phase 2: Post - archive validation
-        print("\n📋 Phase 2: Post - Archive Validation")
+        # Phase 2: Post-archive validation
+        print("\n📋 Phase 2: Post-Archive Validation")
         try:
             archive_results = self._run_post_archive_validation()
             results["phases"]["post_archive"] = archive_results
-            print(f"   ✅ Post - archive validation: {archive_results['status']}")
+            print(f"   ✅ Post-archive validation: {archive_results['status']}")
         except Exception as e:
             results["phases"]["post_archive"] = {"status": "FAILED", "error": str(e)}
-            print(f"   ❌ Post - archive validation failed: {str(e)}")
+            print(f"   ❌ Post-archive validation failed: {str(e)}")
 
         # Phase 3: Quality assurance
         print("\n📋 Phase 3: Quality Assurance")
@@ -161,7 +161,7 @@ class ComprehensiveNotebookIntegrationTester:
         return results
 
     def _run_post_archive_validation(self) -> Dict[str, any]:
-        """Run post - archive validation tests."""
+        """Run post-archive validation tests."""
         try:
             # Validate archive structure
             archive_results = self.post_archive_validator.validate_archive_structure()
@@ -312,7 +312,7 @@ class ComprehensiveNotebookIntegrationTester:
             summary["recommendations"].append("Review archive structure and current notebook quality")
 
         if not summary["recommendations"]:
-            summary["recommendations"].append("All tests passed - notebooks are ready for production")
+            summary["recommendations"].append("All tests passed-notebooks are ready for production")
 
         return summary
 
@@ -402,7 +402,7 @@ class TestComprehensiveNotebookIntegration:
                 [f"### {phase_name.title()} {status_emoji}", f"Status: {phase_results.get('status', 'UNKNOWN')}"]
             )
 
-            # Add phase - specific details
+            # Add phase-specific details
             if phase_name == "execution" and "execution_details" in phase_results:
                 report_lines.extend(
                     [
@@ -443,7 +443,7 @@ class TestComprehensiveNotebookIntegration:
         report_path = Path("test_reports / comprehensive_notebook_integration_report.md")
         report_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(report_path, "w", encoding="utf - 8") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
 
         print(f"📋 Comprehensive integration report: {report_path}")

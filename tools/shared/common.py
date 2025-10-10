@@ -8,14 +8,13 @@ This module implements the foundation for standardized tool development:
 - Tool discovery and validation system
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-import json
 import logging
 import os
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Optional, Type, Union
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 # Standardized Error Classes
@@ -29,7 +28,7 @@ class ToolError(Exception):
 
 
 class ConfigurationError(ToolError):
-    """Configuration - related errors (missing env vars, invalid config files, etc.)."""
+    """Configuration-related errors (missing env vars, invalid config files, etc.)."""
 
     pass
 
@@ -233,7 +232,7 @@ class ToolBase(ABC):
         # Log the error with full traceback for debugging
         self.logger.error(error_msg, exc_info=True)
 
-        # Re - raise as appropriate tool error type
+        # Re-raise as appropriate tool error type
         if isinstance(error, ToolError):
             raise error
         elif "configuration" in str(error).lower() or "environment" in str(error).lower():

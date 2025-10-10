@@ -3,27 +3,25 @@
 Fix common linting issues across the codebase.
 """
 
-import ast
-import os
-from pathlib import Path
 import re
-from typing import List, Tuple
+from pathlib import Path
+from typing import List
 
 
 def fix_bare_except(file_path: Path) -> bool:
     """Fix bare except clauses by adding Exception."""
     try:
-        with open(file_path, "r", encoding="utf - 8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         original_content = content
 
         # Replace bare except with except Exception
-        # This is a simple regex - for complex cases, AST parsing would be better
+        # This is a simple regex-for complex cases, AST parsing would be better
         content = re.sub(r"\bexcept\s*:", "except Exception:", content)
 
         if content != original_content:
-            with open(file_path, "w", encoding="utf - 8") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"Fixed bare except in: {file_path}")
             return True
@@ -38,7 +36,7 @@ def fix_bare_except(file_path: Path) -> bool:
 def fix_missing_imports(file_path: Path) -> bool:  # noqa: C901
     """Fix common missing imports."""
     try:
-        with open(file_path, "r", encoding="utf - 8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         original_content = content
@@ -95,7 +93,7 @@ def fix_missing_imports(file_path: Path) -> bool:  # noqa: C901
                 content = "\n".join(lines)
 
         if content != original_content:
-            with open(file_path, "w", encoding="utf - 8") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"Fixed missing imports in: {file_path}")
             return True
@@ -110,7 +108,7 @@ def fix_missing_imports(file_path: Path) -> bool:  # noqa: C901
 def fix_shadowed_imports(file_path: Path) -> bool:
     """Fix variable names that shadow imports."""
     try:
-        with open(file_path, "r", encoding="utf - 8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         original_content = content
@@ -123,7 +121,7 @@ def fix_shadowed_imports(file_path: Path) -> bool:
             content = re.sub(r"text_item = ", "text_item = ", content)
 
         if content != original_content:
-            with open(file_path, "w", encoding="utf - 8") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"Fixed shadowed imports in: {file_path}")
             return True

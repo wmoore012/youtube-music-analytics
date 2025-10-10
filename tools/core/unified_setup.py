@@ -7,20 +7,18 @@ Handles environment configuration, database creation, validation, and system ini
 
 Usage:
     python tools / core / unified_setup.py                    # Interactive setup
-    python tools / core / unified_setup.py --create - tables    # Create database tables
-    python tools / core / unified_setup.py --full - setup       # Complete automated setup
+    python tools / core / unified_setup.py --create-tables    # Create database tables
+    python tools / core / unified_setup.py --full-setup       # Complete automated setup
     python tools / core / unified_setup.py --check            # Verify setup
-    python tools / core / unified_setup.py --env - only         # Environment setup only
+    python tools / core / unified_setup.py --env-only         # Environment setup only
 """
 
 import argparse
 import json
 import os
-from pathlib import Path
-import shutil
 import sys
-import tempfile
-from typing import Any, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -28,10 +26,8 @@ sys.path.insert(0, str(project_root))
 
 from tools.shared.common import (
     ConfigurationError,
-    ExecutionError,
     ToolBase,
     ToolConfig,
-    ValidationError,
     register_tool,
 )
 
@@ -49,7 +45,7 @@ class SystemSetup(ToolBase):
     """
 
     def __init__(self):
-        super().__init__(name="unified - setup", version="1.0.0")
+        super().__init__(name="unified-setup", version="1.0.0")
 
         # Register this tool in the global registry
         register_tool(self.get_tool_config())
@@ -70,14 +66,14 @@ class SystemSetup(ToolBase):
     def get_tool_config(self) -> ToolConfig:
         """Return tool configuration metadata."""
         return ToolConfig(
-            name="unified - setup",
+            name="unified-setup",
             version="1.0.0",
             description="Unified YouTube Analytics system setup tool",
             dependencies=[
                 "python>=3.8",
                 "pymysql",
                 "sqlalchemy",
-                "python - dotenv",
+                "python-dotenv",
             ],
             environment_vars=[
                 "YOUTUBE_API_KEY",
@@ -88,15 +84,15 @@ class SystemSetup(ToolBase):
                 "DB_NAME",
             ],
             usage_examples=[
-                "python tools / core / unified_setup.py --full - setup",
+                "python tools / core / unified_setup.py --full-setup",
                 "python tools / core / unified_setup.py --check",
-                "python tools / core / unified_setup.py --create - tables",
+                "python tools / core / unified_setup.py --create-tables",
             ],
             category="core",
         )
 
     def run(self) -> None:
-        """Main execution method - should not be called directly, use specific setup methods."""
+        """Main execution method-should not be called directly, use specific setup methods."""
         self.log_progress("Use specific setup methods like setup_environment() or create_tables()")
 
     def setup_environment(self, interactive: bool = True, force: bool = False) -> bool:
@@ -167,14 +163,14 @@ class SystemSetup(ToolBase):
 
     def _interactive_env_setup(self) -> bool:
         """Interactive environment setup with user prompts."""
-        self.log_progress("🎬 YouTube ETL Pipeline - Environment Setup")
+        self.log_progress("🎬 YouTube ETL Pipeline-Environment Setup")
         self.log_progress("=" * 50)
 
         print("\n📝 Let's set up your .env file:")
         print("You'll need:")
         print("1. YouTube Data API v3 key (from Google Cloud Console)")
         print("2. MySQL database credentials")
-        print("3. Artist channel information (pre - configured)")
+        print("3. Artist channel information (pre-configured)")
         print()
 
         # Get YouTube API key
@@ -258,7 +254,7 @@ DB_NAME_PUBLIC={db_name}_public
 
 # Artist YouTube Channels
 # BicFizzle
-BICDIZZLE_CHANNEL_ID=UCZcMK - f8loeOkk3GX3hsmtQ
+BICDIZZLE_CHANNEL_ID=UCZcMK-f8loeOkk3GX3hsmtQ
 BICDIZZLE_SPOTIFY_URL=https://open.spotify.com / artist / 55zZKMiLQNwu6unkKc8J4y
 
 # Cobrah
@@ -333,8 +329,8 @@ LOG_FILE=youtube_etl.log
     def _ensure_database_exists(self) -> bool:
         """Ensure the target database exists."""
         try:
-            from dotenv import load_dotenv
             import pymysql
+            from dotenv import load_dotenv
 
             # Load environment variables
             load_dotenv()
@@ -437,7 +433,7 @@ LOG_FILE=youtube_etl.log
             try:
                 api_key = os.getenv("YOUTUBE_API_KEY")
                 if api_key:
-                    # Simple API test - just check if key format is valid
+                    # Simple API test-just check if key format is valid
                     if len(api_key) > 30:  # Basic sanity check
                         self.log_progress("✅ YouTube API key format looks valid")
                     else:
@@ -527,23 +523,23 @@ def main():
         epilog="""
 Examples:
   python tools / core / unified_setup.py                    # Interactive setup wizard
-  python tools / core / unified_setup.py --create - tables    # Create database tables only
-  python tools / core / unified_setup.py --full - setup       # Complete automated setup
+  python tools / core / unified_setup.py --create-tables    # Create database tables only
+  python tools / core / unified_setup.py --full-setup       # Complete automated setup
   python tools / core / unified_setup.py --check            # Verify current setup
-  python tools / core / unified_setup.py --env - only         # Environment setup only
+  python tools / core / unified_setup.py --env-only         # Environment setup only
         """,
     )
 
     # Setup options
-    parser.add_argument("--create - tables", action="store_true", help="Create database tables")
-    parser.add_argument("--full - setup", action="store_true", help="Complete automated setup (env + tables)")
-    parser.add_argument("--env - only", action="store_true", help="Environment setup only")
+    parser.add_argument("--create-tables", action="store_true", help="Create database tables")
+    parser.add_argument("--full-setup", action="store_true", help="Complete automated setup (env + tables)")
+    parser.add_argument("--env-only", action="store_true", help="Environment setup only")
     parser.add_argument("--check", action="store_true", help="Verify current setup")
     parser.add_argument("--status", action="store_true", help="Show setup status")
 
     # Control options
     parser.add_argument("--force", action="store_true", help="Force overwrite existing setup")
-    parser.add_argument("--non - interactive", action="store_true", help="Run in non - interactive mode")
+    parser.add_argument("--non-interactive", action="store_true", help="Run in non-interactive mode")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()

@@ -10,7 +10,7 @@ The approach follows Test-Driven Development (TDD) principles: write failing tes
 
 ### Core Components (Prioritized for Git Readiness)
 
-#### 1. Import Resolution System (CRITICAL - Phase 1)
+#### 1. Import Resolution System (CRITICAL-Phase 1)
 **Design Rationale**: Import failures block all notebook execution and prevent git commits. This must be resolved first before any storytelling features can be implemented.
 
 - **Package Installation Validation**: Ensure `pip install -e .` works correctly for `src.youtubeviz` package
@@ -50,7 +50,7 @@ The approach follows Test-Driven Development (TDD) principles: write failing tes
 - **Chart Enhancement**: Apply data visualization best practices and emotional impact
 - **Mobile Compatibility**: Charts work across different screen sizes
 
-#### 6. Educational Content Framework (Phase 3 - Future)
+#### 6. Educational Content Framework (Phase 3-Future)
 **Design Rationale**: Notebooks should serve as learning tools for data science students entering the music industry.
 
 - **Concept Explanations**: Define technical and industry terms
@@ -221,7 +221,7 @@ class StorytellingNotebook:
 
 ### Color System and Visual Consistency
 
-**Design Rationale**: Follow ColorBrewer recommendations from chart specification - blue↔orange diverging palette for sentiment, avoid red/green for color-blind accessibility.
+**Design Rationale**: Follow ColorBrewer recommendations from chart specification-blue↔orange diverging palette for sentiment, avoid red/green for color-blind accessibility.
 
 ```python
 class ColorSystemManager:

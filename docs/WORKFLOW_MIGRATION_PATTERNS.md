@@ -83,7 +83,7 @@ fi
 #!/bin/bash
 python tools/core/unified_setup.py --run-etl --mode focused
 if [ $? -ne 0 ]; then
-    echo "ETL failed - checking logs"
+    echo "ETL failed-checking logs"
     python tools/core/unified_monitor.py --health-check
     # Better error diagnostics available
 fi

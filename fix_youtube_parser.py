@@ -20,22 +20,18 @@ def fix_youtube_parser():
                 j += 1
 
             # Replace all these lines with a single fixed line
-            new_line = '    comma_pattern = r"^([A-Za-z0-9\\s&.\']{{1,  # noqa: E999
-                15}}),
-                \\s+([A-Za-z0-9\\s&.\']{{1,
-                15}})\\s+([A-Za-z0-9\\s\'\""]{{3,  # noqa: E226
-                }})(?:\\s+[Ll]yrics?)?$"\n'
-            
+            new_line = '    comma_pattern = r"^([A-Za-z0-9\\s&.\']{{1,50}}),"  # Fixed pattern\n'
+
             # Replace the problematic lines
             lines[i:j+1] = [new_line]
             break
-    
+
     # Also fix any other problematic regex patterns
     for i, line in enumerate(lines):
-        if "artist_pattern = r'^([A - Za - z0 - 9" in line:
+        if "artist_pattern = r'^([A-Za-z0-9" in line:
             # This is another broken regex pattern
             lines[i] = '    artist_pattern = r"^([A-Za-z0-9\\s&.,\']{{1,50}})\\s+([A-Z][A-Za-z0-9\\s\'\""]{{3,}})(?:\\s+[Ll]yrics?)?$"\n'
-    
+
     with open(file_path, 'w') as f:
         f.writelines(lines)
   # noqa: W292

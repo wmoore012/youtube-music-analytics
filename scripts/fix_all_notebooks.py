@@ -1,6 +1,6 @@
 #!/usr / bin / env python3
 """
-🔧 Fix All Notebooks - Comprehensive Notebook Repair Tool
+🔧 Fix All Notebooks-Comprehensive Notebook Repair Tool
 ========================================================
 
 This script fixes all notebook issues:
@@ -12,10 +12,7 @@ This script fixes all notebook issues:
 
 import json
 import os
-from pathlib import Path
-import shutil
 import subprocess
-import sys
 
 
 def cleanup_duplicate_notebooks():
@@ -155,14 +152,14 @@ def fix_data_quality_notebook():
                     "    completeness_score = kpis.get('completeness_score', 0) * 0.4\\n",
                     "    \\n",
                     "    # Uniqueness (30% weight) - lower duplicate rate is better\\n",
-                    "    uniqueness_score = max(0, 100 - kpis.get('duplicate_rate', 0)) * 0.3\\n",
+                    "    uniqueness_score = max(0, 100-kpis.get('duplicate_rate', 0)) * 0.3\\n",
                     "    \\n",
                     "    # Artist balance (20% weight) - more balanced is better\\n",
                     "    artist_counts = list(kpis.get('artist_distribution', {}).values())\\n",
                     "    if artist_counts:\\n",
                     "        cv = np.std(artist_counts) / np.mean(artist_counts)"
                     " if np.mean(artist_counts) > 0 else 1\\n",
-                    "        balance_score = max(0, 100 - cv * 50) * 0.2\\n",
+                    "        balance_score = max(0, 100-cv * 50) * 0.2\\n",
                     "    else:\\n",
                     "        balance_score = 0\\n",
                     "    \\n",
@@ -176,13 +173,13 @@ def fix_data_quality_notebook():
                     "print(f'🏆 OVERALL DATA QUALITY SCORE: {quality_score:.1f}%')\\n",
                     "\\n",
                     "if quality_score >= 95:\\n",
-                    "    print('🟢 EXCELLENT - Data quality is outstanding')\\n",
+                    "    print('🟢 EXCELLENT-Data quality is outstanding')\\n",
                     "elif quality_score >= 85:\\n",
-                    "    print('🟡 GOOD - Data quality is acceptable with minor issues')\\n",
+                    "    print('🟡 GOOD-Data quality is acceptable with minor issues')\\n",
                     "elif quality_score >= 70:\\n",
-                    "    print('🟠 FAIR - Data quality needs improvement')\\n",
+                    "    print('🟠 FAIR-Data quality needs improvement')\\n",
                     "else:\\n",
-                    "    print('🔴 POOR - Data quality requires immediate attention')",
+                    "    print('🔴 POOR-Data quality requires immediate attention')",
                 ],
             },
             {
@@ -212,7 +209,7 @@ def fix_data_quality_notebook():
             "language_info": {
                 "codemirror_mode": {"name": "ipython", "version": 3},
                 "file_extension": ".py",
-                "mimetype": "text / x - python",
+                "mimetype": "text / x-python",
                 "name": "python",
                 "nbconvert_exporter": "python",
                 "pygments_lexer": "ipython3",

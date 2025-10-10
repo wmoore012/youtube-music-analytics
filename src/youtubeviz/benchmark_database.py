@@ -3,15 +3,14 @@
 Benchmark Database Storage
 
 Provides database storage for benchmark results alongside JSON files.
-Enables SQL queries, trend analysis, and better long - term storage.
+Enables SQL queries, trend analysis, and better long-term storage.
 """
 
-from dataclasses import asdict
-from datetime import datetime
 import json
-from pathlib import Path
 import sqlite3
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 class BenchmarkDatabase:

@@ -43,20 +43,20 @@ c5d33dc4-aa3e-48bf-850a-139cdd97cd83,slay,positive,praise,praise_performance,art
 0bd239f0-4903-4062-92e2-4e78d7e46c1a,oh my,positive,praise,hype_excitement,general,0.8,Excitement/surprise,False,False,none,False
 c4313fd1-8eac-4e1f-8745-cb291269e339,fuck it up,positive,praise,hype_excitement,artist,0.85,Encouragement to perform well,False,False,light,False
 d4b9be9c-8b01-445b-8def-106ab1157ec1,yessir,positive,praise,hype_excitement,general,0.85,Affirmative excitement,False,False,none,False
-1b89cd36-9436-4d85-8de0-3f30741e364d,periodt,positive,praise,hype_excitement,general,0.85,End of discussion - strong agreement,False,True,none,False
-b1ab26ec-866d-4ddf-aed3-cc6e422a1d71,no cap,positive,praise,hype_excitement,general,0.8,No lie/for real - agreement,False,True,none,False
+1b89cd36-9436-4d85-8de0-3f30741e364d,periodt,positive,praise,hype_excitement,general,0.85,End of discussion-strong agreement,False,True,none,False
+b1ab26ec-866d-4ddf-aed3-cc6e422a1d71,no cap,positive,praise,hype_excitement,general,0.8,No lie/for real-agreement,False,True,none,False
 0f16d366-1a9c-493f-b97c-4e4c6607ee09,on repeat,positive,praise,engagement_behavioral,general,0.95,Playing song repeatedly,False,False,none,False
-b5739961-a266-4609-a050-ed79d8026d24,on my gym playlist,positive,praise,engagement_behavioral,general,0.8,Behavioral endorsement - adding to playlist,False,False,none,False
-aa83f1e1-aefb-4830-bb70-2f97e85d165d,no skips,positive,praise,engagement_behavioral,general,0.9,Every song is good - no need to skip,False,False,none,False
+b5739961-a266-4609-a050-ed79d8026d24,on my gym playlist,positive,praise,engagement_behavioral,general,0.8,Behavioral endorsement-adding to playlist,False,False,none,False
+aa83f1e1-aefb-4830-bb70-2f97e85d165d,no skips,positive,praise,engagement_behavioral,general,0.9,Every song is good-no need to skip,False,False,none,False
 402647af-c5e7-4a9c-bed0-6cbfb16d6bc4,saved my life,positive,praise,engagement_behavioral,general,0.9,Song had major emotional impact,False,False,none,False
 b45df3b0-09f9-4836-a52b-a9cc8fae84a4,for the culture,positive,praise,cultural_identity,general,0.9,Supporting cultural representation,False,False,none,False
 b18e0e60-232e-4dbf-b8e0-fcdcf2e48f85,we stan,positive,praise,cultural_identity,artist,0.85,Community support for artist,False,True,none,False
 cc5de3e0-1c53-40f8-87b6-741cfba452b6,real music is back,positive,praise,cultural_identity,general,0.8,Appreciation for authentic music,False,False,none,False
-092836e8-c02b-4e6b-8672-30d17d5e27da,drop the album already!,positive,anticipation,anticipation_demand,artist,0.85,Excited demand for album - exclamation shows enthusiasm,False,False,none,False
-524be9a5-d4a6-4a89-928d-823df617f592,we need the album NOW 🔥,positive,anticipation,anticipation_demand,artist,0.85,Urgent excited request - caps + emoji = positive,False,False,none,False
+092836e8-c02b-4e6b-8672-30d17d5e27da,drop the album already!,positive,anticipation,anticipation_demand,artist,0.85,Excited demand for album-exclamation shows enthusiasm,False,False,none,False
+524be9a5-d4a6-4a89-928d-823df617f592,we need the album NOW 🔥,positive,anticipation,anticipation_demand,artist,0.85,Urgent excited request-caps + emoji = positive,False,False,none,False
 0e1fec08-328d-4f31-ae94-4b47f83bd04e,friday can't come sooner,positive,anticipation,anticipation_demand,general,0.8,Anticipation with clear positive sentiment,False,False,none,False
 a31cdff0-6c23-459f-b24a-c3d3c576b329,I'm adding this to my playlist,positive,anticipation,engagement_behavioral,general,0.85,Behavioral endorsement with future action,False,False,none,False
-928e8628-18ee-403e-8aea-993b064aebd6,drop the album,neutral,request,neutral_requests,artist,0.9,Request without opinion cues - neutral per SemEval,False,False,none,False
+928e8628-18ee-403e-8aea-993b064aebd6,drop the album,neutral,request,neutral_requests,artist,0.9,Request without opinion cues-neutral per SemEval,False,False,none,False
 2d631eb0-b932-424b-9d15-b4c1eba4cfed,we need the album,neutral,request,neutral_requests,artist,0.85,Request without excitement markers,False,False,none,False
 61418e83-eaeb-41e3-9ca0-d3c7c73c1668,need the lyrics,neutral,request,neutral_requests,lyrics,0.8,Content request without opinion,False,False,none,False
 3dee7947-3436-497a-83b1-86c372b5d5e3,drop the visuals,neutral,request,neutral_requests,marketing,0.85,Request for music video,False,False,none,False
@@ -76,8 +76,8 @@ fe45e68a-f295-4b0a-bfbb-bb4068e26990,mid,negative,critique,criticism_negative,ge
 633a7bf4-5b14-40cd-baa6-248bcba807a8,skip,negative,critique,criticism_negative,general,0.85,Not worth listening to,False,False,none,False
 471f737b-7371-48d1-b583-9ec00c91c4b6,mix sounds chaotic,negative,critique,criticism_constructive,mix,0.7,Production feedback,True,False,none,False
 d3eb0396-6333-452e-9aee-84d940d8031a,flow is repetitive,negative,critique,criticism_constructive,vocals,0.75,Technical criticism,False,False,none,False
-01841156-d32f-4fd4-b479-05a13acfdd5f,"Hottie, Baddie, Maddie",positive,praise,praise_performance,artist,0.85,Real fan comment - compliment sequence,False,False,none,False
-92eb1e4c-16bb-489b-bf5f-070aad6f2c7a,Part two pleaseee wtfff,positive,anticipation,anticipation_demand,general,0.75,Excited request - multiple e's + wtf show enthusiasm,False,False,none,False
+01841156-d32f-4fd4-b479-05a13acfdd5f,"Hottie, Baddie, Maddie",positive,praise,praise_performance,artist,0.85,Real fan comment-compliment sequence,False,False,none,False
+92eb1e4c-16bb-489b-bf5f-070aad6f2c7a,Part two pleaseee wtfff,positive,anticipation,anticipation_demand,general,0.75,Excited request-multiple e's + wtf show enthusiasm,False,False,none,False
 12167ef2-b44d-4130-8a11-70d2b958933b,sheeeeesh my nigga snapped 🔥🔥🔥🔥,positive,praise,hype_excitement,artist,0.9,Hype expression with praise,False,True,strong,False
 0e0e307d-be76-4c4d-8042-69eca4ccf897,Bestie goals fr 🤞,positive,praise,cultural_identity,artist,0.8,Cultural praise with emoji,False,True,none,False
 fadbee3b-0a4d-4882-b26d-052a5e141500,this fye,positive,praise,praise_general,general,0.8,This is fire/excellent,False,True,none,False
@@ -166,7 +166,7 @@ dcee25e4-2de3-44b0-a808-4fb9efd3adab,MV teaser got me hyped,positive,anticipatio
 d6357769-f976-4f52-9bbb-c2c807f8b893,Cuz I willie 😖😚💕,positive,praise,hype_excitement,general,0.7,Playful expression with positive emojis,False,False,none,False
 3723ccd4-ddce-4ddf-8eb2-de0b7db1500f,my legs are spread!!,positive,praise,hype_excitement,general,0.75,Excitement/anticipation expression,False,False,none,True
 3928a611-28b3-45c5-886e-f280b3476ca0,wtfff,positive,praise,hype_excitement,general,0.7,Extended WTF showing excitement,False,True,none,False
-5db66787-5870-4359-84ac-b00611f33780,fr,positive,praise,hype_excitement,general,0.6,For real - agreement/emphasis,False,True,none,False
+5db66787-5870-4359-84ac-b00611f33780,fr,positive,praise,hype_excitement,general,0.6,For real-agreement/emphasis,False,True,none,False
 04319314-9bd4-4766-b2e7-f13ceab3dc1b,this hard as fuck,positive,praise,praise_general,general,0.95,"Very impressive, explicit version",False,False,light,False
 36f4c62d-c044-4f08-b998-170db1d98e16,way too hard,positive,praise,praise_general,general,0.9,Extremely impressive,False,False,none,False
 4d7c7188-5e69-4aaa-9a99-de64c0fee89d,so crazy good,positive,praise,praise_general,general,0.85,Very amazing/impressive,False,False,none,False

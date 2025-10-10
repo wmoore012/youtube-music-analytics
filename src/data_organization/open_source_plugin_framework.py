@@ -1,5 +1,5 @@
 """
-Open - source plugin framework for music analytics scoring algorithms.
+Open-source plugin framework for music analytics scoring algorithms.
 
 This module provides a framework for music data researchers to create their own
 scoring algorithms for YouTube music analytics. It includes security validation,
@@ -9,20 +9,15 @@ Designed for the music data community on GitHub to extend and customize
 scoring algorithms for their specific research needs.
 """
 
-from abc import ABC, abstractmethod
 import ast
-from dataclasses import dataclass, field
-from datetime import datetime
-import inspect
 import json
 import logging
-import os
-from pathlib import Path
-import tempfile
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 
 from src.data_organization.notebook_validator import ValidationResult
@@ -163,7 +158,7 @@ class PluginMetadata:
 
 class OpenSourceScoringPlugin(ABC):
     """
-    Abstract base class for open - source music analytics scoring plugins.
+    Abstract base class for open-source music analytics scoring plugins.
 
     This class provides the interface that all music analytics plugins must implement.
     It's designed to be extended by researchers and developers in the music data community.
@@ -444,7 +439,7 @@ class PluginSecurityChecker:
     Security validation for music analytics plugins.
 
     This class ensures that plugins don't contain malicious code and
-    follow security best practices for the open - source community.
+    follow security best practices for the open-source community.
     """
 
     def __init__(self):
@@ -524,7 +519,7 @@ class PluginSecurityChecker:
             result.checked_items += 1
             file_operations_found = self._check_file_operations(tree)
             if file_operations_found:
-                result.add_warning("File operations detected - ensure they are necessary and safe")
+                result.add_warning("File operations detected-ensure they are necessary and safe")
                 result.passed_items += 1
             else:
                 result.passed_items += 1
@@ -589,7 +584,7 @@ class PluginSecurityChecker:
             execution_time = time.time() - start_time
 
             if execution_time > 30:  # 30 second limit for testing
-                result.add_warning(f"Plugin execution took {execution_time:.2f} seconds - consider optimization")
+                result.add_warning(f"Plugin execution took {execution_time:.2f} seconds-consider optimization")
 
             result.passed_items += 1
 

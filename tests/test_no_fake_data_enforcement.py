@@ -114,7 +114,7 @@ class TestNoFakeDataEnforcement:
                     "view_count": [1000, 2000],  # Round numbers
                     "video_id": ["fake_id_123", "test_video"],  # Fake IDs
                     "title": ["Test Video", "Sample Song"],
-                    "published_at": ["2023 - 01 - 01", "2023 - 01 - 02"],
+                    "published_at": ["2023-01-01", "2023-01-02"],
                 }
             )
 
@@ -128,7 +128,7 @@ class TestNoFakeDataEnforcement:
         # 2. Work with any data (but we validate the source separately)
 
         try:
-            # If chart accepts the data, that's OK - we validate data source elsewhere
+            # If chart accepts the data, that's OK-we validate data source elsewhere
             result = views_over_time_plotly(fake_data, "published_at", "view_count")
             print("⚠️  Chart function accepts data (source validation required)")
         except Exception as e:
@@ -188,7 +188,7 @@ class TestNoFakeDataEnforcement:
 
                         if found_patterns:
                             print(f"⚠️  {func_name} contains potential fake data patterns: {found_patterns}")
-                            # Don't fail - might be legitimate use cases
+                            # Don't fail-might be legitimate use cases
                         else:
                             print(f"✅ {func_name} clean of fake data patterns")
 
@@ -205,12 +205,12 @@ class TestNoFakeDataEnforcement:
                 return False, f"{chart_name}: No data provided"
 
             if df.empty:
-                return False, f"{chart_name}: Empty dataset - need real data"
+                return False, f"{chart_name}: Empty dataset-need real data"
 
             # Check for minimum data quality indicators
             quality_checks = []
 
-            # Must have reasonable number of rows (not just 1 - 2 test rows)
+            # Must have reasonable number of rows (not just 1-2 test rows)
             if len(df) < 3:
                 quality_checks.append("Too few rows (likely test data)")
 
@@ -227,7 +227,7 @@ class TestNoFakeDataEnforcement:
             if "video_id" in df.columns:
                 video_ids = df["video_id"].dropna().astype(str)
                 # Real YouTube IDs are 11 characters, alphanumeric
-                invalid_ids = video_ids[~video_ids.str.match(r"^[A - Za - z0 - 9_-]{11}$")]
+                invalid_ids = video_ids[~video_ids.str.match(r"^[A-Za-z0-9_-]{11}$")]
                 if len(invalid_ids) > 0:
                     quality_checks.append(f"Invalid video IDs detected: {invalid_ids.tolist()[:3]}")
 
@@ -335,7 +335,7 @@ class TestRealDataOnlyCharts:
         from src.youtubeviz.charts import views_over_time_plotly
 
         if real_data.empty:
-            print("⚠️  No real data available - charts should show data requirements")
+            print("⚠️  No real data available-charts should show data requirements")
 
             # Charts should handle empty data gracefully
             try:

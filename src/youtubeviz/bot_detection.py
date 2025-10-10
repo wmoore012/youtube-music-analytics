@@ -1,16 +1,16 @@
 """
 Bot Detection System for YouTube Comments
 
-This module provides a production - ready bot suspicion scoring system that:
-- Detects near - duplicate comments using TF - IDF + cosine similarity
+This module provides a production-ready bot suspicion scoring system that:
+- Detects near-duplicate comments using TF-IDF + cosine similarity
 - Identifies burst patterns in comment timing
 - Analyzes author behavior patterns
-- Provides interpretable 0 - 100 bot suspicion scores
+- Provides interpretable 0-100 bot suspicion scores
 - Respects human dignity with constructive language
 
 Key Features:
-- Fail - fast design with explicit error handling
-- Unicode - safe text normalization
+- Fail-fast design with explicit error handling
+- Unicode-safe text normalization
 - Configurable whitelist for legitimate fan expressions
 - Detailed feature breakdown for audit trails
 - Optimized for production use with clear scaling paths
@@ -18,11 +18,11 @@ Key Features:
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from dataclasses import dataclass
 from datetime import timedelta
-import re
 from typing import Optional
-import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -95,7 +95,7 @@ class BotDetectionConfig(BaseModel):
         )
     )
 
-    # Similarity threshold for near - duplicate detection
+    # Similarity threshold for near-duplicate detection
     near_dupe_threshold: float = Field(default=0.90, ge=0.5, le=0.999)
 
     # Minimum cluster size to consider as suspicious
@@ -104,7 +104,7 @@ class BotDetectionConfig(BaseModel):
     # Time window for burst detection (seconds)
     burst_window_seconds: PositiveInt = Field(default=30)
 
-    # Maximum emoji bonus to prevent over - adjustment
+    # Maximum emoji bonus to prevent over-adjustment
     emoji_max_weight: float = Field(default=0.15, ge=0.0, le=0.5)
 
     # Feature weights for final score calculation
@@ -114,7 +114,7 @@ class BotDetectionConfig(BaseModel):
     w_author_diversity: float = 0.15  # Author repetition
     w_low_engagement: float = 0.05  # Engagement patterns
 
-    # Character n - gram range for similarity detection
+    # Character n-gram range for similarity detection
     ngram_min: PositiveInt = 3
     ngram_max: PositiveInt = 5
 
@@ -133,7 +133,7 @@ _emoji_re = re.compile(r"[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U00002600-\
 
 def _normalize_text(text: str) -> str:
     """
-    Unicode - safe text normalization for consistent comparison.
+    Unicode-safe text normalization for consistent comparison.
 
     Uses NFKC normalization + casefold for proper Unicode handling.
     Preserves emojis for separate analysis.
@@ -174,7 +174,7 @@ def _clamp_01(value):
 @dataclass(frozen=True)
 class BotDetector:
     """
-    Production - ready bot detection system for YouTube comments.
+    Production-ready bot detection system for YouTube comments.
 
     Provides interpretable bot suspicion scores based on:
     - Text similarity patterns
@@ -194,14 +194,14 @@ class BotDetector:
                 author_name, like_count, published_at
 
         Returns:
-            DataFrame with bot_score (0 - 100) and interpretable features
+            DataFrame with bot_score (0-100) and interpretable features
 
         Raises:
             ValueError: If required columns are missing or data is invalid
         """
         required_cols = {"comment_id", "video_id", "comment_text", "author_name", "like_count", "published_at"}
 
-        missing_cols = required_cols - set(df.columns)
+        missing_cols = required_cols-set(df.columns)
         if missing_cols:
             raise ValueError(f"Missing required columns: {sorted(missing_cols)}")
 
@@ -226,7 +226,7 @@ class BotDetector:
 
         analysis_df["emoji_count"] = analysis_df["text_normalized"].apply(_count_emojis)
 
-        # Whitelist detection - check if any whitelist phrase is contained in the text
+        # Whitelist detection-check if any whitelist phrase is contained in the text
         whitelist = self.config.whitelist_phrases
 
         def _contains_whitelist_phrase(text: str) -> bool:
@@ -268,16 +268,16 @@ class BotDetector:
         return analysis_df[result_cols].sort_values("bot_score", ascending=False)
 
     def _add_similarity_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add near - duplicate detection features using TF - IDF similarity."""
+        """Add near-duplicate detection features using TF-IDF similarity."""
 
         def _count_similar_comments(group: pd.DataFrame) -> pd.Series:
-            """Count similar comments within a group using TF - IDF + cosine similarity."""
+            """Count similar comments within a group using TF-IDF + cosine similarity."""
             texts = group["text_no_emoji"].tolist()
 
             if len(texts) <= 1:
                 return pd.Series([1], index=group.index)
 
-            # Use character n - grams for short comment similarity
+            # Use character n-grams for short comment similarity
             vectorizer = TfidfVectorizer(
                 analyzer="char",
                 ngram_range=(self.config.ngram_min, self.config.ngram_max),
@@ -358,18 +358,18 @@ class BotDetector:
             for i, current_time in enumerate(timestamps):
                 # Count comments within time window
                 try:
-                    window_start = current_time - window
+                    window_start = current_time-window
                     window_count = sum(1 for t in timestamps if window_start <= t <= current_time)
                 except TypeError:
-                    # Handle timezone - naive timestamps
+                    # Handle timezone-naive timestamps
                     current_ts = pd.Timestamp(current_time)
-                    window_start = current_ts - window
+                    window_start = current_ts-window
                     window_count = sum(
                         1 for t in timestamps if pd.Timestamp(t) >= window_start and pd.Timestamp(t) <= current_ts
                     )
 
-                # Normalize to 0 - 1 scale (10+ comments in window = max burst)
-                burst_score = min((window_count - 1) / 9.0, 1.0)
+                # Normalize to 0-1 scale (10+ comments in window = max burst)
+                burst_score = min((window_count-1) / 9.0, 1.0)
                 burst_scores.append(max(burst_score, 0.0))
 
             return pd.Series(burst_scores, index=sorted_group.index)
@@ -395,26 +395,26 @@ class BotDetector:
         author_stats["text_diversity"] = author_stats["unique_texts"] / author_stats["total_comments"]
 
         # Map back to original dataframe
-        df["author_repetition_score"] = (1.0 - df["author_name"].map(author_stats["text_diversity"])).fillna(0.0)
+        df["author_repetition_score"] = (1.0-df["author_name"].map(author_stats["text_diversity"])).fillna(0.0)
 
         return df
 
     def _add_engagement_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add engagement - based features."""
+        """Add engagement-based features."""
 
         # Normalize like counts (low engagement can be suspicious)
         like_counts = df["like_count"].fillna(0).astype(float)
-        df["engagement_score"] = 1.0 - np.tanh(like_counts / 3.0)
+        df["engagement_score"] = 1.0-np.tanh(like_counts / 3.0)
 
         return df
 
     def _calculate_bot_score(self, df: pd.DataFrame) -> pd.DataFrame:
         """Calculate final bot suspicion score with interpretable components."""
 
-        # Component scores (0 - 1 scale)
+        # Component scores (0-1 scale)
         def _duplicate_component(count_series: pd.Series, is_whitelisted: pd.Series) -> pd.Series:
             """Convert duplicate counts to suspicion score."""
-            base_score = np.clip((count_series - self.config.min_dupe_cluster) / 7.0, 0.0, 1.0)
+            base_score = np.clip((count_series-self.config.min_dupe_cluster) / 7.0, 0.0, 1.0)
             # Reduce suspicion for whitelisted phrases
             return base_score * np.where(is_whitelisted, 0.15, 1.0)
 
@@ -424,7 +424,7 @@ class BotDetector:
         f_author = _clamp_01(df["author_repetition_score"])
         f_engagement = _clamp_01(df["engagement_score"])
 
-        # Emoji bonus (expressive comments are more human - like)
+        # Emoji bonus (expressive comments are more human-like)
         emoji_bonus = np.minimum(df["emoji_count"] / 5.0, self.config.emoji_max_weight)
 
         # Weighted combination
@@ -438,9 +438,9 @@ class BotDetector:
             - emoji_bonus * 0.15  # Small deduction for emoji use
         )
 
-        # Normalize to 0 - 100 scale
+        # Normalize to 0-100 scale
         if raw_score.max() > raw_score.min():
-            normalized_score = (raw_score - raw_score.min()) / (raw_score.max() - raw_score.min())
+            normalized_score = (raw_score-raw_score.min()) / (raw_score.max() - raw_score.min())
         else:
             normalized_score = pd.Series([0.0] * len(raw_score), index=raw_score.index)
 
