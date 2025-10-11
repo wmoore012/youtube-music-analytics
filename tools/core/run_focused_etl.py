@@ -179,7 +179,7 @@ def run_notebooks(notebook_list: list) -> dict:
             print(f"  Executing {notebook}...")
 
             result = subprocess.run(
-                [sys.executable, "tools / run_notebooks.py", notebook],
+                [sys.executable, "tools/development/run_notebooks.py", notebook],
                 capture_output=True,
                 text=True,
                 cwd=".",
@@ -274,7 +274,7 @@ def preflight_setup() -> dict:  # noqa: C901
 
     # 2) Ensure tables exist (call script to avoid import path / package name clashes)
     try:
-        result = subprocess.run([sys.executable, "tools / setup / create_tables.py"], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "tools/core/create_tables.py"], capture_output=True, text=True)
         if result.returncode == 0:
             print("   ✅ Tables ready")
         else:
@@ -296,7 +296,7 @@ def preflight_setup() -> dict:  # noqa: C901
         try:
             # Use subprocess to avoid import collisions on 'scripts' package name
             result = subprocess.run(
-                [sys.executable, "scripts / load_songs_csv.py", csv_path], capture_output=True, text=True
+                [sys.executable, "scripts/load_songs_csv.py", csv_path], capture_output=True, text=True
             )
             if result.returncode == 0:
                 # Try to parse summary line
@@ -376,7 +376,7 @@ def main():
 
         # Step 3: Run analysis notebooks (organized under notebooks / analysis and notebooks / quality)
         notebooks_to_run = [
-            "notebooks / MusicScope™_Professional_Dashboard.ipynb",
+            "notebooks/MusicScope™_Professional_Dashboard.ipynb",
         ]
         notebook_results = run_notebooks(notebooks_to_run)
 

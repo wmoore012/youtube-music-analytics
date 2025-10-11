@@ -366,9 +366,9 @@ class DataQualityValidator:
                 try:
                     # Find duplicates
                     duplicate_query = f"""
-                        SELECT {key_list}, COUNT(*) as duplicate_count  # noqa: F821
+                        SELECT {_key_list}, COUNT(*) as duplicate_count
                         FROM {table}
-                        GROUP BY {key_list}  # noqa: F821
+                        GROUP BY {_key_list}
                         HAVING COUNT(*) > 1
                     """
 

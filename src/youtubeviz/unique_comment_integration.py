@@ -134,12 +134,12 @@ class UniqueCommentEnforcer:
         # Check against global usage tracking
         unique_comments = []
         for _, row in df_unique.iterrows():
-            _comment_text_item = str(row[comment_col]).strip()  # noqa: F841
+            _comment_text_item = str(row[comment_col]).strip()
 
-            if comment_text and not self.manager.is_comment_used(comment_text):  # noqa: F821
+            if _comment_text_item and not self.manager.is_comment_used(_comment_text_item):
                 unique_comments.append(row)
             else:
-                usage_info = self.manager.get_comment_usage(comment_text)  # noqa: F821
+                usage_info = self.manager.get_comment_usage(_comment_text_item)
                 if usage_info:
                     print(f"⚠️  Skipping previously used comment in {context}")
                     print(f"   Used by: {usage_info['system_name']} ({usage_info['usage_type']})")

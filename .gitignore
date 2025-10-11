@@ -202,3 +202,11 @@ yt_cache/
 # Database connection files
 database_url.txt
 db_config.ini
+
+
+# Generated notebooks and reports (keep executed outputs untracked)
+notebooks/executed/**
+notebooks/*_results.md
+
+# Local unique comment tracking database (do not commit local state)
+unique_comment_tracking.db
