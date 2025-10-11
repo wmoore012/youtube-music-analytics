@@ -16,6 +16,7 @@ sys.path.insert(0, str(project_root))
 
 import pandas as pd
 from dotenv import load_dotenv
+from sqlalchemy.engine import URL
 
 from web.etl_helpers import get_engine
 
@@ -67,11 +68,15 @@ def get_database_artists():
             # Fallback to default connection
             from sqlalchemy import create_engine
 
-            url = f"mysql + pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST',
-                '127.0.0.1')}:{  # noqa: E128
-                                                 os.getenv('DB_PORT',  # noqa: E126
-                                                     '3306')}/{os.getenv('DB_NAME',  # noqa: E128
-                                                     'yt_proj')}?charset=utf8mb4"  # noqa: E128
+            url = str(URL.create(
+                "mysql+pymysql",
+                username=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASS'),
+                host=os.getenv('DB_HOST', '127.0.0.1'),
+                port=int(os.getenv('DB_PORT', '3306')),
+                database=os.getenv('DB_NAME', 'yt_proj'),
+                query={"charset": "utf8mb4"},
+            ))
             engine = create_engine(url)
             df = pd.read_sql(query, engine)
             return df
@@ -199,8 +204,15 @@ def main():
     except Exception:
         from sqlalchemy import create_engine
 
-        url = f"mysql + pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST', '127.0.0.1')}:{
-            os.getenv('DB_PORT', '3306')}/{os.getenv('DB_NAME', 'yt_proj')}?charset=utf8mb4"
+        url = str(URL.create(
+            "mysql+pymysql",
+            username=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASS'),
+            host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=int(os.getenv('DB_PORT', '3306')),
+            database=os.getenv('DB_NAME', 'yt_proj'),
+            query={"charset": "utf8mb4"},
+        ))
         engine = create_engine(url)
 
     # Execute cleanup for each artist

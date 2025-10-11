@@ -41,20 +41,9 @@ class TransformConfig:
 class CompleteTransformer:
     def __init__(self, config: TransformConfig):
         self.config = config
-        self.engine = None  # keep lazy attribute for tests
-        # Only trigger DB calls on constructor when get_engine is patched (MagicMock)
-        try:
-            from unittest.mock import MagicMock  # type: ignore
-        except Exception:
-            MagicMock = None  # type: ignore
-        try:
-            if MagicMock is not None and isinstance(get_engine, MagicMock):
-                eng = get_engine()
-                init_tables(eng)
-                _assert_tables_exist(eng)
-        except Exception:
-            # Propagate exceptions from mocked get_engine as tests expect
-            raise
+        # Lazy init: do not touch the database in the constructor. Tests should
+        # explicitly call _init_database() or patch get_engine/init_tables as needed.
+        self.engine = None
 
     def _init_database(self):
         # Initialize engine and ensure tables exist

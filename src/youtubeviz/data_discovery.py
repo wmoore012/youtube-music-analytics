@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import URL
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,7 +48,17 @@ class DatabaseDiscovery:
         password = os.getenv("DB_PASSWORD") or os.getenv("DB_PASS", "")
         database = os.getenv("DB_NAME", "yt_proj")
 
-        return f"mysql + pymysql://{user}:{password}@{host}:{port}/{database}"
+        from sqlalchemy.engine import URL
+        return str(
+            URL.create(
+                "mysql+pymysql",
+                username=user,
+                password=password,
+                host=host,
+                port=int(port),
+                database=database,
+            )
+        )
 
     def discover_tables(self) -> Dict[str, Any]:
         """Discover all tables and their structure."""

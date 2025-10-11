@@ -60,6 +60,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import (
     Connection,  # used for type hints
     Engine,
+    URL,
 )
 
 # ============================================================================
@@ -140,12 +141,21 @@ def get_engine(*, echo: bool = False) -> Engine:
     # Use the unified database name from .env configuration
     db_name = os.getenv("DB_NAME", "yt_proj")
 
-    url = (
-        f"mysql + pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
-        f"@{os.getenv('DB_HOST', '127.0.0.1')}:{os.getenv('DB_PORT', '3306')}/"
-        f"{db_name}?charset=utf8mb4"
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASS")
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    port = int(os.getenv("DB_PORT", "3306"))
+
+    url_obj = URL.create(
+        drivername="mysql+pymysql",
+        username=user,
+        password=password,
+        host=host,
+        port=port,
+        database=db_name,
+        query={"charset": "utf8mb4"},
     )
-    return create_engine(url, echo=echo, pool_pre_ping=True)
+    return create_engine(url_obj, echo=echo, pool_pre_ping=True)
 
 
 @contextmanager

@@ -239,7 +239,7 @@ class ETLConfig(BaseModel):
     @classmethod
     def validate_database_url(cls, v):
         """Validate database URL format."""
-        if not v.startswith(("mysql + pymysql://", "postgresql://", "sqlite:///")):
+        if not v.startswith(("mysql+pymysql://", "postgresql://", "sqlite:///")):
             raise ValueError("Database URL must start with supported scheme")
         return v
 

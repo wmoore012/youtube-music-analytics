@@ -26,5 +26,6 @@ This project is intended as an open-source gift to the community from a develope
 ## Verification steps (post-fix)
 - Search for GPL headers:
   - `grep -R --line-number "SPDX-License-Identifier: GPL-3.0-or-later" web/`  (expect no results)
-- Confirm root LICENSE remains MIT.
+- Confirm root LIC
+- ENSE remains MIT.
 

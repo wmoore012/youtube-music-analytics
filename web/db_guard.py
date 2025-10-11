@@ -10,7 +10,7 @@ from typing import Any, Callable
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, URL
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,16 @@ def get_engine(schema: str | None = None, *, ro: bool = False, echo: bool = Fals
         # Allow explicit schema overrides when provided (treat legacy aliases as public)
         if schema_normalized and schema_normalized != "public":
             db_name = schema
-        url = f"mysql + pymysql://{user}:{password}@{host}:{port}/{db_name}"
+        url = str(
+            URL.create(
+                "mysql+pymysql",
+                username=user,
+                password=password,
+                host=host,
+                port=int(port),
+                database=db_name,
+            )
+        )
 
     if ro:
         # Check if URL already has query parameters

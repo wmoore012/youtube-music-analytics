@@ -517,8 +517,9 @@ class TestErrorHandling:
         with patch("src.public.oss.transform_complete.get_engine") as mock_get_engine:
             mock_get_engine.side_effect = Exception("Database connection failed")
 
+            transformer = CompleteTransformer(config)
             with pytest.raises(Exception):
-                CompleteTransformer(config)
+                transformer._init_database()
 
     def test_invalid_json_handling(self):
         """Test handling of invalid JSON data."""

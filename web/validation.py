@@ -486,7 +486,7 @@ def validate_database_connection_string(connection_string: str) -> bool:
         )
 
     # Check for supported database schemes
-    supported_schemes = ["mysql + pymysql://", "postgresql://", "sqlite:///"]
+    supported_schemes = ["mysql+pymysql://", "postgresql://", "sqlite:///"]
 
     if not any(connection_string.startswith(scheme) for scheme in supported_schemes):
         raise ValidationError(
@@ -496,13 +496,12 @@ def validate_database_connection_string(connection_string: str) -> bool:
         )
 
     # Basic format validation for MySQL
-    if connection_string.startswith("mysql + pymysql://"):
-        # Expected format: mysql + pymysql://user:password@host:port / database
+    if connection_string.startswith("mysql+pymysql://"):
+        # Expected format: mysql+pymysql://user:password@host:port/database
         pattern = r"^mysql\+pymysql://[^:]+:[^@]+@[^:]+:\d+/[^/]+$"
         if not re.match(pattern, connection_string):
             raise ValidationError(
-                "Invalid MySQL connection string format. Expected: mysql +"
-                " pymysql://user:password@host:port / database",
+                "Invalid MySQL connection string format. Expected: mysql+pymysql://user:password@host:port/database",
                 field="database_url",
                 value=connection_string,
             )
