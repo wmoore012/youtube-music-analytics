@@ -8,7 +8,8 @@ from typing import Any, Tuple
 
 
 def _cache_root() -> Path:
-    root = os.getenv("ICATALOG_CACHE_DIR")
+    # Prefer neutral CACHE_DIR, fallback to legacy I CATALOG var for compatibility
+    root = os.getenv("CACHE_DIR") or os.getenv("ICATALOG_CACHE_DIR")
     if root:
         return Path(root)
     # default: repo_root / cache

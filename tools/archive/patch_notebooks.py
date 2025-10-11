@@ -15,8 +15,8 @@ def _has_marker(nb: nbformat.NotebookNode, marker: str) -> bool:
 
 
 def patch_etl_notebook(path: Path) -> bool:
-    """Append a sentiment scoring section to ETL notebook if missing. Gated by ICATALOG_ENABLE_SENTIMENT=1."""
-    if os.getenv("ICATALOG_ENABLE_SENTIMENT") != "1":
+    """Append a sentiment scoring section to ETL notebook if missing. Gated by ENABLE_SENTIMENT=1 (legacy: ICATALOG_ENABLE_SENTIMENT)."""
+    if (os.getenv("ENABLE_SENTIMENT") or os.getenv("ICATALOG_ENABLE_SENTIMENT")) != "1":
         return False
     nb = nbformat.read(str(path), as_version=4)
     marker = "Sentiment Scoring"
@@ -39,8 +39,8 @@ def patch_etl_notebook(path: Path) -> bool:
 
 
 def patch_explore_notebook(path: Path) -> bool:
-    """Append Sentiment vs Plays charts to Explore notebook if missing. Gated by ICATALOG_ENABLE_SENTIMENT=1."""
-    if os.getenv("ICATALOG_ENABLE_SENTIMENT") != "1":
+    """Append Sentiment vs Plays charts to Explore notebook if missing. Gated by ENABLE_SENTIMENT=1 (legacy: ICATALOG_ENABLE_SENTIMENT)."""
+    if (os.getenv("ENABLE_SENTIMENT") or os.getenv("ICATALOG_ENABLE_SENTIMENT")) != "1":
         return False
     nb = nbformat.read(str(path), as_version=4)
     marker = "Sentiment vs Plays"

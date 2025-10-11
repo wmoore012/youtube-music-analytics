@@ -70,7 +70,7 @@ def fetch_playlist_json(playlist_id: str, *, force_fresh: bool | None = None) ->
 
     Environment overrides:
     - SPOTIFY_FORCE_FRESH=1 forces API pull
-    - ICATALOG_CACHE_DIR overrides cache base directory
+    - CACHE_DIR overrides cache base directory (legacy: ICATALOG_CACHE_DIR)
     """
     global FRESH_SPOTIFY_PULL
 
