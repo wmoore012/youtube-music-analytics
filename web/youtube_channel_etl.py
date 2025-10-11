@@ -49,13 +49,14 @@ class YouTubeChannelETL:
         db_pass: str,
         db_name: str,
         session: Optional[requests.Session] = None,
-        api_base_url: str = "https://www.googleapis.com / youtube / v3",
+        api_base_url: str = "https://www.googleapis.com/youtube/v3",
     ) -> None:
         if not api_key:
             raise ValueError("YOUTUBE_API_KEY is required")
         self.api_key = api_key
         self.s = session or requests.Session()
-        self.api_base_url = api_base_url.rstrip("/")
+        # Sanitize any accidental whitespace and trailing slash in API base URL
+        self.api_base_url = api_base_url.replace(" ", "").rstrip("/")
         self.db_args = dict(
             host=db_host or "127.0.0.1",
             port=int(db_port or 3306),
@@ -440,7 +441,7 @@ class YouTubeChannelETL:
             published_at_sql: Optional[str] = None
             if isinstance(published_at, str):
                 try:
-                    dt = datetime.strptime(published_at, "%Y-%m-%dT % H:%M:%SZ")
+                    dt = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
                     published_at_sql = dt.strftime("%Y-%m-%d %H:%M:%S")
                 except Exception:
                     published_at_sql = None
@@ -461,7 +462,7 @@ class YouTubeChannelETL:
                         published_at_sql_c: Optional[str] = None
                         if isinstance(published_at_c, str):
                             try:
-                                dtc = datetime.strptime(published_at_c, "%Y-%m-%dT % H:%M:%SZ")
+                                dtc = datetime.strptime(published_at_c, "%Y-%m-%dT%H:%M:%SZ")
                                 published_at_sql_c = dtc.strftime("%Y-%m-%d %H:%M:%S")
                             except Exception:
                                 published_at_sql_c = None
