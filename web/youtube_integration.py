@@ -202,62 +202,20 @@ def safe_execute(request):
         raise  # any other error → bubble up
 
 
-# YouTube API quota costs (approximate)
-QUOTA_COST = {
-    "videos.list": 1,  # 1 unit per request, regardless of number of videos (up to 50)
-    "search.list": 100,  # 100 units per request
-    "playlistItems.list": 1,  # 1 unit per request
-}
+# YouTube API quota costs moved to web.youtube.constants for reuse
+from web.youtube.constants import QUOTA_COST
 
 
 # Quota tracking is modularized in web.youtube.quota
-from web.youtube.quota import QuotaTracker
-
-# Initialize quota tracker
-quota_tracker = QuotaTracker()
+from web.youtube.quota import quota_tracker
 
 
 # YouTube API client factory is modularized in web.youtube.client
 from web.youtube.client import get_youtube_client
 
 
-def search_youtube_videos(youtube, query: str, max_results: int = 5) -> List[Dict[str, Any]]:
-    """
-    Search for YouTube videos matching the query.
-
-    Args:
-        youtube: YouTube API client
-        query (str): Search query
-        max_results (int): Maximum number of results to return
-
-    Returns:
-        List[Dict[str, Any]]: List of video search results
-    """
-    # Get the required quota units
-    required_units = QUOTA_COST.get("search.list", 100)
-
-    # Check if we've hit the quota limit
-    if not quota_tracker.check_quota(required_units):
-        logger.warning(f"Quota limit nearly exhausted ({quota_tracker.get_usage_str()}). Skipping search.")
-        return []
-
-    try:
-        # Execute the search
-        search_response = (
-            youtube.search().list(q=query, part="id,snippet", maxResults=max_results, type="video").execute()
-        )
-
-        # Track quota usage (search is expensive!)
-        quota_tracker.increment(required_units)
-        logger.info(f"Quota usage: {quota_tracker.get_usage_str()}")
-
-        return search_response.get("items", [])
-    except HttpError as e:
-        if "quotaExceeded" in str(e):
-            logger.error(f"YouTube API quota exceeded. Current usage: {quota_tracker.get_usage_str()}")
-        else:
-            logger.error(f"Error searching YouTube: {e}")
-        return []
+# Search functionality moved to web.youtube.search
+from web.youtube.search import search_youtube_videos
 
 
 def get_playlist_videos(  # noqa: C901

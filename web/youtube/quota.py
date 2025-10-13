@@ -19,6 +19,10 @@ class QuotaTracker:
         self.units = 0
         self.max_units = max_units
 
+
+# Shared singleton tracker used across modules
+quota_tracker = QuotaTracker()
+
     def check_quota(self, required_units: int = 1) -> bool:
         """
         Check if there's enough quota available.
