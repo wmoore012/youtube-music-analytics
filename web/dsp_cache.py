@@ -2,16 +2,39 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Tuple
 
 
 def _cache_root() -> Path:
-    # Prefer neutral CACHE_DIR, fallback to legacy I CATALOG var for compatibility
-    root = os.getenv("CACHE_DIR") or os.getenv("ICATALOG_CACHE_DIR")
+    """
+    Determine the cache root directory.
+    - Prefer neutral CACHE_DIR
+    - Support legacy ICATALOG_CACHE_DIR with deprecation warning
+    - If both are set, prefer CACHE_DIR and warn that legacy is ignored
+    """
+    modern = os.getenv("CACHE_DIR")
+    legacy = os.getenv("ICATALOG_CACHE_DIR")
+
+    if legacy and not modern:
+        warnings.warn(
+            "ICATALOG_CACHE_DIR is deprecated; set CACHE_DIR instead for future compatibility.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    elif legacy and modern:
+        warnings.warn(
+            "ICATALOG_CACHE_DIR is deprecated and will be ignored because CACHE_DIR is set.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    root = modern or legacy
     if root:
         return Path(root)
+
     # default: repo_root / cache
     here = Path(__file__).resolve().parents[1]
     return here / "cache"

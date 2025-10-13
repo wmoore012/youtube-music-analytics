@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 from pathlib import Path
 
 import nbformat
@@ -14,9 +15,33 @@ def _has_marker(nb: nbformat.NotebookNode, marker: str) -> bool:
     return False
 
 
+def _is_sentiment_enabled() -> bool:
+    """Return True if sentiment patching is enabled via env.
+    Emits deprecation warnings when legacy ICATALOG_ENABLE_SENTIMENT is present.
+    """
+    modern = os.getenv("ENABLE_SENTIMENT")
+    legacy = os.getenv("ICATALOG_ENABLE_SENTIMENT")
+
+    if legacy and not modern:
+        warnings.warn(
+            "ICATALOG_ENABLE_SENTIMENT is deprecated; set ENABLE_SENTIMENT instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    elif legacy and modern:
+        warnings.warn(
+            "ICATALOG_ENABLE_SENTIMENT is deprecated and will be ignored because ENABLE_SENTIMENT is set.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    return (modern or legacy) == "1"
+
+
+
 def patch_etl_notebook(path: Path) -> bool:
     """Append a sentiment scoring section to ETL notebook if missing. Gated by ENABLE_SENTIMENT=1 (legacy: ICATALOG_ENABLE_SENTIMENT)."""
-    if (os.getenv("ENABLE_SENTIMENT") or os.getenv("ICATALOG_ENABLE_SENTIMENT")) != "1":
+    if not _is_sentiment_enabled():
         return False
     nb = nbformat.read(str(path), as_version=4)
     marker = "Sentiment Scoring"
@@ -40,7 +65,7 @@ def patch_etl_notebook(path: Path) -> bool:
 
 def patch_explore_notebook(path: Path) -> bool:
     """Append Sentiment vs Plays charts to Explore notebook if missing. Gated by ENABLE_SENTIMENT=1 (legacy: ICATALOG_ENABLE_SENTIMENT)."""
-    if (os.getenv("ENABLE_SENTIMENT") or os.getenv("ICATALOG_ENABLE_SENTIMENT")) != "1":
+    if not _is_sentiment_enabled():
         return False
     nb = nbformat.read(str(path), as_version=4)
     marker = "Sentiment vs Plays"
