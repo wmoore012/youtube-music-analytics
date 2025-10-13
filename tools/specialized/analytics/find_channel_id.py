@@ -73,7 +73,7 @@ def extract_channel_info_from_url(url: str) -> Optional[dict]:
 def search_channel_by_name(api_key: str, search_term: str) -> Optional[dict]:
     """Search for channels by name (useful for Topic channels)."""
 
-    url = "https://www.googleapis.com / youtube / v3 / search"
+    url = "https://www.googleapis.com/youtube/v3/search"
     params = {"key": api_key, "part": "snippet", "type": "channel", "q": search_term, "maxResults": 5}
 
     try:
@@ -105,7 +105,7 @@ def search_channel_by_name(api_key: str, search_term: str) -> Optional[dict]:
 def get_channel_by_handle_or_username(api_key: str, handle: str) -> Optional[dict]:
     """Get channel information by handle or username."""
 
-    url = "https://www.googleapis.com / youtube / v3 / channels"
+    url = "https://www.googleapis.com/youtube/v3/channels"
 
     # Try with handle first (modern format)
     params = {
@@ -167,7 +167,7 @@ def get_channel_by_handle_or_username(api_key: str, handle: str) -> Optional[dic
 def get_channel_by_id(api_key: str, channel_id: str) -> Optional[dict]:
     """Get channel information by channel ID."""
 
-    url = "https://www.googleapis.com / youtube / v3 / channels"
+    url = "https://www.googleapis.com/youtube/v3/channels"
     params = {"key": api_key, "part": "snippet,statistics", "id": channel_id}
 
     try:

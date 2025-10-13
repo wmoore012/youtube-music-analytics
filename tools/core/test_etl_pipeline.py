@@ -51,7 +51,7 @@ def test_etl_pipeline():
         import requests
 
         response = requests.get(
-            "https://www.googleapis.com / youtube / v3 / search",
+            "https://www.googleapis.com/youtube/v3/search",
             params={"key": api_key, "part": "snippet", "q": "test", "type": "video", "maxResults": 1},
             timeout=10,
         )

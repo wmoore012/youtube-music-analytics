@@ -297,7 +297,7 @@ class ETLHealthChecker:
 
         try:
             # Test API with a simple request
-            url = "https://www.googleapis.com / youtube / v3 / search"
+            url = "https://www.googleapis.com/youtube/v3/search"
             params = {"key": api_key, "part": "snippet", "q": "test", "type": "video", "maxResults": 1}
 
             response = requests.get(url, params=params, timeout=10)
@@ -497,10 +497,10 @@ class ETLHealthChecker:
 
         # Check critical ETL files exist
         etl_files = [
-            "web / youtube_channel_etl.py",
-            "web / etl_helpers.py",
-            "web / sentiment_job.py",
-            "tools / etl / run_focused_etl.py",
+            "web/youtube_channel_etl.py",
+            "web/etl_helpers.py",
+            "web/sentiment_job.py",
+            "tools/core/run_focused_etl.py",
         ]
 
         missing_files = []
