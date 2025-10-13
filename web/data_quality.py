@@ -25,6 +25,45 @@ from .error_handling import (
 logger = logging.getLogger(__name__)
 
 
+# Whitelist of allowed tables for validation to prevent SQL injection via identifiers
+ALLOWED_TABLES = {
+    "youtube_videos",
+    "youtube_videos_raw",
+    "youtube_comments",
+    "youtube_metrics",
+    "youtube_etl_runs",
+    "youtube_playlists_raw",
+    "comment_sentiment",
+    "artist_performance_summary",
+}
+
+
+def _validated_identifier(name: str) -> str:
+    """Validate a SQL identifier (column name)."""
+    import re
+    if not isinstance(name, str) or not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+        raise ValidationError(
+            f"Invalid identifier: {name}",
+            field="identifier",
+            value=name,
+            severity=ErrorSeverity.HIGH,
+        )
+    return name
+
+
+def _validated_table_name(name: str) -> str:
+    """Validate and whitelist a SQL table name."""
+    ident = _validated_identifier(name)
+    if ident not in ALLOWED_TABLES:
+        raise ValidationError(
+            f"Invalid or disallowed table name: {name}",
+            field="table_name",
+            value=name,
+            severity=ErrorSeverity.HIGH,
+        )
+    return ident
+
+
 class DataQualityError(ETLError):
     """Specific error for data quality issues."""
 
@@ -201,7 +240,7 @@ class DataQualityValidator:
         try:
             with self.engine.connect() as conn:
                 # Get actual table schema
-                result = conn.execute(text(f"DESCRIBE {table_name}"))
+                result = conn.execute(text(f"DESCRIBE {_validated_table_name(table_name)}"))
                 actual_columns = [row[0] for row in result.fetchall()]
 
                 missing_columns = [col for col in expected_columns if col not in actual_columns]
@@ -247,12 +286,10 @@ class DataQualityValidator:
 
         try:
             with self.engine.connect() as conn:
+                t = _validated_table_name(table_name)
+                c = _validated_identifier(timestamp_column)
                 query = text(
-                    f"""
-                    SELECT MAX({timestamp_column}) as latest_timestamp,
-                           COUNT(*) as total_records
-                    FROM {table_name}
-                """
+                    f"SELECT MAX({c}) as latest_timestamp, COUNT(*) as total_records FROM {t}"
                 )
                 result = conn.execute(query).fetchone()
 
@@ -342,7 +379,7 @@ class DataQualityValidator:
         try:
             with self.engine.connect() as conn:
                 # Get total record count
-                total_count_result = conn.execute(text(f"SELECT COUNT(*) FROM {table_name}")).fetchone()
+                total_count_result = conn.execute(text(f"SELECT COUNT(*) FROM {_validated_table_name(table_name)}")).fetchone()
                 total_count = total_count_result[0] if total_count_result else 0
 
                 if total_count == 0:
@@ -354,8 +391,12 @@ class DataQualityValidator:
                     )
 
                 # Sample records for analysis
-                sample_query = f"SELECT * FROM {table_name} ORDER BY RAND() LIMIT {sample_size}"
-                df = pd.read_sql(sample_query, conn)
+                t = _validated_table_name(table_name)
+                df = pd.read_sql(
+                    text(f"SELECT * FROM {t} ORDER BY RAND() LIMIT :n"),
+                    conn,
+                    params={"n": int(sample_size)},
+                )
 
                 null_percentages = {}
                 issues = []

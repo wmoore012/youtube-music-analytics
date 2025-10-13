@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 
 import pymysql
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 @dataclass
@@ -55,6 +57,11 @@ class YouTubeChannelETL:
             raise ValueError("YOUTUBE_API_KEY is required")
         self.api_key = api_key
         self.s = session or requests.Session()
+        # Attach retry/backoff to session for resiliency
+        retry = Retry(total=5, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504])
+        adapter = HTTPAdapter(max_retries=retry)
+        self.s.mount("https://", adapter)
+        self.s.mount("http://", adapter)
         # Sanitize any accidental whitespace and trailing slash in API base URL
         self.api_base_url = api_base_url.replace(" ", "").rstrip("/")
         self.db_args = dict(

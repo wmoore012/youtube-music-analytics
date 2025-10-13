@@ -555,9 +555,13 @@ class ETLHealthChecker:
         missing_packages = []
         package_versions = {}
 
+        # Map package names to importable module names when they differ
+        import_name_overrides = {"python-dotenv": "dotenv"}
+
         for package in required_packages:
+            import_name = import_name_overrides.get(package, package.replace("-", "_"))
             try:
-                module = __import__(package.replace("-", "_"))
+                module = __import__(import_name)
                 version = getattr(module, "__version__", "unknown")
                 package_versions[package] = version
             except ImportError:
