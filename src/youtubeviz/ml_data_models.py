@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 ML-Ready Data Models with Pydantic Validation
 

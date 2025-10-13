@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 VADER Enhancement Variants for Music Domain
 
@@ -11,6 +11,8 @@ Based on expert analysis of music YouTube comments and VADER's documented extens
 """
 
 import re
+import logging
+logger = logging.getLogger(__name__)
 from enum import Enum
 from hashlib import md5
 from typing import Dict, Tuple
@@ -21,7 +23,7 @@ try:
     VADER_AVAILABLE = True
 except ImportError:
     VADER_AVAILABLE = False
-    print("⚠️ VADER not available-install with: pip install vaderSentiment")
+    logger.warning("VADER not available—install with: pip install vaderSentiment")
 
 
 class VariantType(Enum):
@@ -386,40 +388,40 @@ class MusicVADERNormalizer:
     def __init__(self):
         # Multi-word phrase patterns to join before VADER processing
         self.phrase_patterns = [
-            (re.compile(r"\bthis\s + is\s + sick\b", re.I), "this_is_sick"),
-            (re.compile(r"\bthis\s + slaps\b", re.I), "this_slaps"),
-            (re.compile(r"\bstraight\s + fire\b", re.I), "straight_fire"),
-            (re.compile(r"\bfuck\s + it\s + up\b", re.I), "fuck_it_up"),
-            (re.compile(r"\bbad\s + bish\b", re.I), "bad_bish"),
-            (re.compile(r"\bgo\s + off\b", re.I), "go_off"),
-            (re.compile(r"\bno\s + cap\b", re.I), "no_cap"),
-            (re.compile(r"\bno\s + cap\s + this\s + slaps\b", re.I), "no_cap_this_slaps"),
-            (re.compile(r"\bi'?m\s + obsessed\b", re.I), "im_obsessed"),
-            (re.compile(r"\blowkey\s + fire\b", re.I), "lowkey_fire"),
-            (re.compile(r"\bhighkey\s + obsessed\b", re.I), "highkey_obsessed"),
-            (re.compile(r"\b(the\s+)?vocals\s + are\s + insane\b", re.I), "vocals_are_insane"),
-            (re.compile(r"\bthis\s + song\s + is\s + unmatched\b", re.I), "this_song_is_unmatched"),
-            (re.compile(r"\bthe\s + way\s + i\s + screamed\b", re.I), "the_way_i_screamed"),
-            (re.compile(r"\bit'?s\s + giv(?:in + g|in')\b", re.I), "its_giving"),
-            (re.compile(r"\bbitch[,!]?\s + it'?s\s + giv(?:in + g|in')\b", re.I), "bitch_its_giving"),
-            (re.compile(r"\bleft\s + no\s + crumbs\b", re.I), "left_no_crumbs"),
-            (re.compile(r"\bate\s + and\s + left\s + no\s + crumbs\b", re.I), "ate_and_left_no_crumbs"),
-            (re.compile(r"\bno\s + skips\b", re.I), "no_skips"),
-            (re.compile(r"\bon\s + repeat\b", re.I), "on_repeat"),
-            (re.compile(r"\bgoes\s + hard\b", re.I), "goes_hard"),
-            (re.compile(r"\bmix\s + is\s + clean\b", re.I), "mix_is_clean"),
-            (re.compile(r"\bproduction\s + is\s + clean\b", re.I), "production_is_clean"),
-            (re.compile(r"\bthis\s + ain'?t\s + it\b", re.I), "this_aint_it"),
-            (re.compile(r"\bfell\s + off\b", re.I), "fell_off"),
-            (re.compile(r"\bmix\s + is\s + muddy\b", re.I), "mix_is_muddy"),
+            (re.compile(r"\bthis\s+is\s+sick\b", re.I), "this_is_sick"),
+            (re.compile(r"\bthis\s+slaps\b", re.I), "this_slaps"),
+            (re.compile(r"\bstraight\s+fire\b", re.I), "straight_fire"),
+            (re.compile(r"\bfuck\s+it\s+up\b", re.I), "fuck_it_up"),
+            (re.compile(r"\bbad\s+bish\b", re.I), "bad_bish"),
+            (re.compile(r"\bgo\s+off\b", re.I), "go_off"),
+            (re.compile(r"\bno\s+cap\b", re.I), "no_cap"),
+            (re.compile(r"\bno\s+cap\s+this\s+slaps\b", re.I), "no_cap_this_slaps"),
+            (re.compile(r"\bi'?m\s+obsessed\b", re.I), "im_obsessed"),
+            (re.compile(r"\blowkey\s+fire\b", re.I), "lowkey_fire"),
+            (re.compile(r"\bhighkey\s+obsessed\b", re.I), "highkey_obsessed"),
+            (re.compile(r"\b(the\s+)?vocals\s+are\s+insane\b", re.I), "vocals_are_insane"),
+            (re.compile(r"\bthis\s+song\s+is\s+unmatched\b", re.I), "this_song_is_unmatched"),
+            (re.compile(r"\bthe\s+way\s+i\s+screamed\b", re.I), "the_way_i_screamed"),
+            (re.compile(r"\bit'?s\s+giv(?:in + g|in')\b", re.I), "its_giving"),
+            (re.compile(r"\bbitch[,!]?\s+it'?s\s+giv(?:in + g|in')\b", re.I), "bitch_its_giving"),
+            (re.compile(r"\bleft\s+no\s+crumbs\b", re.I), "left_no_crumbs"),
+            (re.compile(r"\bate\s+and\s+left\s+no\s+crumbs\b", re.I), "ate_and_left_no_crumbs"),
+            (re.compile(r"\bno\s+skips\b", re.I), "no_skips"),
+            (re.compile(r"\bon\s+repeat\b", re.I), "on_repeat"),
+            (re.compile(r"\bgoes\s+hard\b", re.I), "goes_hard"),
+            (re.compile(r"\bmix\s+is\s+clean\b", re.I), "mix_is_clean"),
+            (re.compile(r"\bproduction\s+is\s+clean\b", re.I), "production_is_clean"),
+            (re.compile(r"\bthis\s+ain'?t\s+it\b", re.I), "this_aint_it"),
+            (re.compile(r"\bfell\s+off\b", re.I), "fell_off"),
+            (re.compile(r"\bmix\s+is\s+muddy\b", re.I), "mix_is_muddy"),
             # New patterns based on your feedback
-            (re.compile(r"\bget\s+(my\s+)?son\s + on\s + trending\b", re.I), "get_my_son_on_trending"),
-            (re.compile(r"\bi\s + relate\s + to\s + this\b", re.I), "i_relate_to_this"),
-            (re.compile(r"\bdopest\s + artists?\s + out\b", re.I), "dopest_artists_out"),
-            (re.compile(r"\bmodern\s + beauty\b", re.I), "modern_beauty"),
-            (re.compile(r"\bvintage\s + voice\b", re.I), "vintage_voice"),
-            (re.compile(r"\bperfect\s + balance\b", re.I), "perfect_balance"),
-            (re.compile(r"\bwhy\s+.*not\s + on\s + spotify\b", re.I), "why_not_on_spotify"),
+            (re.compile(r"\bget\s+(my\s+)?son\s+on\s+trending\b", re.I), "get_my_son_on_trending"),
+            (re.compile(r"\bi\s+relate\s+to\s+this\b", re.I), "i_relate_to_this"),
+            (re.compile(r"\bdopest\s+artists?\s+out\b", re.I), "dopest_artists_out"),
+            (re.compile(r"\bmodern\s+beauty\b", re.I), "modern_beauty"),
+            (re.compile(r"\bvintage\s+voice\b", re.I), "vintage_voice"),
+            (re.compile(r"\bperfect\s+balance\b", re.I), "perfect_balance"),
+            (re.compile(r"\bwhy\s+.*not\s+on\s+spotify\b", re.I), "why_not_on_spotify"),
             (re.compile(r"\bwhere\s + can\s + i\s + listen\b", re.I), "where_can_i_listen"),
             (re.compile(r"\bthe\s + outfits?\b", re.I), "the_outfits"),
         ]

@@ -47,7 +47,7 @@ def detect_performance_patterns(df: pd.DataFrame) -> Dict[str, List[str]]:
             "stable_artists": [],
         }
 
-    _config = get_summary_config()  # noqa: F841
+    config = get_summary_config()
     patterns = {
         "growth_artists": [],
         "declining_artists": [],

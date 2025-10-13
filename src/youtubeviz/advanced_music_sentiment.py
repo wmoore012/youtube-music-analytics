@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Advanced Music Industry Sentiment Analysis-Level 2
 
@@ -132,15 +132,15 @@ class AdvancedMusicSentimentAnalyzer:
             # Content requests
             r"\b(drop|post|upload)\s+(the\s+)?(visuals?|video|mv)",
             r"\b(need|want)\s+(the\s+)?(lyrics|instrumental|clean version)",
-            r"\bwho\s+(produced|mixed|made)\s + this",
-            r"\bwhat\'?s\s + the\s + sample",
+            r"\bwho\s+(produced|mixed|made)\s+this",
+            r"\bwhat\'?s\s+the\s+sample",
             # Performance requests
-            r"\b(come\s + to|tour|concert|show)\s+\w+",
-            r"\bplease\s + come\s + to\s+\w+",
+            r"\b(come\s+to|tour|concert|show)\s+\w+",
+            r"\bplease\s+come\s+to\s+\w+",
             # Enhanced request patterns
-            r"\bvisuals?\s + when",
-            r"\bthese\s + lyrics",
-            r"\bpost\s + the\s + link",
+            r"\bvisuals?\s+when",
+            r"\bthese\s+lyrics",
+            r"\bpost\s+the\s+link",
             r"\bdrop.*already",
             r"\bneed.*now",
         }

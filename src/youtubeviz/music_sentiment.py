@@ -131,20 +131,20 @@ class MusicSentimentConfig:
         r"\bwho made\b": 0.6,  # Asking about producer-appreciation
         r"\bproducer\b": 0.5,  # Producer mentions-appreciation
         # Extended patterns for "hard" (positive in music)
-        r"\bthis\s + hard\b": 0.7,  # "this hard"
-        r"\bgoes?\s + hard\b": 0.8,  # "goes hard" / "go hard"
-        r"\bso\s + hard\b": 0.7,  # "so hard"
-        r"\btoo\s + hard\b": 0.8,  # "too hard" - very positive
-        r"\bway\s + too\s + hard\b": 0.9,  # "way too hard" - extremely positive
+        r"\bthis\s+hard\b": 0.7,  # "this hard"
+        r"\bgoes?\s+hard\b": 0.8,  # "goes hard" / "go hard"
+        r"\bso\s+hard\b": 0.7,  # "so hard"
+        r"\btoo\s+hard\b": 0.8,  # "too hard" - very positive
+        r"\bway\s+too\s+hard\b": 0.9,  # "way too hard" - extremely positive
         # "Crazy" in positive music context
-        r"\bthis\s + crazy\b": 0.7,  # "this crazy"
-        r"\bso\s + crazy\b": 0.7,  # "so crazy"
-        r"\btoo\s + crazy\b": 0.8,  # "too crazy"
-        r"\bway\s + crazy\b": 0.8,  # "way crazy"
+        r"\bthis\s+crazy\b": 0.7,  # "this crazy"
+        r"\bso\s+crazy\b": 0.7,  # "so crazy"
+        r"\btoo\s+crazy\b": 0.8,  # "too crazy"
+        r"\bway\s+crazy\b": 0.8,  # "way crazy"
         # Beat appreciation with variations
-        r"\bbeat\s + is\s+(fire|sick|hard|crazy|insane)\b": 0.8,
+        r"\bbeat\s+is\s+(fire|sick|hard|crazy|insane)\b": 0.8,
         r"\bbeat\s+(fire|sick|hard|crazy|insane)\b": 0.8,
-        r"\b(fire|sick|hard|crazy|insane)\s + beat\b": 0.8,
+        r"\b(fire|sick|hard|crazy|insane)\s+beat\b": 0.8,
         # Variations and extensions
         r"\bhottie\b": 0.7,
         r"\bbaddie\b": 0.7,
@@ -235,6 +235,8 @@ class MusicIndustrySentimentAnalyzer:
         if not comment_text or pd.isna(comment_text):
             return {"sentiment_score": 0.0, "confidence": 0.0, "beat_appreciation": False}
 
+        # Bound input length to mitigate catastrophic regex backtracking
+        comment_text = str(comment_text)[:2000]
         comment_lower = comment_text.lower().strip()
 
         # Calculate base sentiment from patterns

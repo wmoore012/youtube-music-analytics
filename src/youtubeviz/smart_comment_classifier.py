@@ -1,6 +1,5 @@
 import re
 
-#!/usr / bin / env python3  # noqa: E265
 """
 Smart Comment Classification Assistant
 

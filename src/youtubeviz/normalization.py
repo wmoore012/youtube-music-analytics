@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Normalization helpers to populate music_videos_normalized and reduce nulls without full ETL.
 

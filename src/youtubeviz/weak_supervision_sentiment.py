@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Weak Supervision Sentiment Analysis for Music Industry
 
@@ -130,8 +130,8 @@ class WeakSupervisionSentimentAnalyzer:
         enthusiastic_requests = [
             (r"\b(drop|release).*\b(already|now|please)\b.*[!]{2,}", 0.8),
             (r"\b(need|want).*\b(now|asap)\b.*🔥", 0.85),
-            (r"\bvisuals\s + when\?+!+", 0.8),
-            (r"\bthese\s + lyrics!+", 0.75),
+            (r"\bvisuals\s+when\?+!+", 0.8),
+            (r"\bthese\s+lyrics!+", 0.75),
         ]
 
         for pattern, conf in enthusiastic_requests:
@@ -147,10 +147,10 @@ class WeakSupervisionSentimentAnalyzer:
 
         # Plain requests = NEUTRAL
         plain_requests = [
-            (r"^\s*(who\s+(produced|mixed|made)\s + this)\s*\??\s*$", 0.8),
-            (r"^\s*(what\'?s\s + the\s + sample)\s*\??\s*$", 0.8),
+            (r"^\s*(who\s+(produced|mixed|made)\s+this)\s*\??\s*$", 0.8),
+            (r"^\s*(what\'?s\s+the\s+sample)\s*\??\s*$", 0.8),
             (r"^\s*(lyrics)\s*\??\s*$", 0.7),
-            (r"^\s*(clean\s + version)\s*\??\s*$", 0.7),
+            (r"^\s*(clean\s+version)\s*\??\s*$", 0.7),
         ]
 
         for pattern, conf in plain_requests:
