@@ -33,6 +33,65 @@ class DatabaseDiscovery:
         self.engine = create_engine(connection_string)
         self.inspector = inspect(self.engine)
 
+    def get_database_summary(self) -> Dict[str, Any]:
+        """Return high-level database summary for notebooks.
+
+        Includes total tables, total artists, discovery timestamp,
+        and basic table details (row/column counts).
+        """
+        summary: Dict[str, Any] = {
+            "discovery_time": datetime.now().isoformat(),
+            "total_tables": 0,
+            "total_artists": 0,
+            "table_details": {},
+        }
+
+        try:
+            tables = self.inspector.get_table_names()
+            summary["total_tables"] = len(tables)
+
+            # Count artists using least expensive available source
+            try:
+                artist_count_query = text(
+                    """
+                    SELECT COUNT(*) AS c FROM (
+                        SELECT channel_title AS artist_name
+                        FROM youtube_videos
+                        WHERE channel_title IS NOT NULL
+                        GROUP BY channel_title
+                    ) t
+                    """
+                )
+                df = pd.read_sql(artist_count_query, self.engine)
+                summary["total_artists"] = int(df["c"].iloc[0]) if not df.empty else 0
+            except Exception:
+                # Fallback to discovery method
+                try:
+                    summary["total_artists"] = len(self.discover_artists(min_videos=1))
+                except Exception:
+                    summary["total_artists"] = 0
+
+            # Table details (best-effort)
+            details: Dict[str, Dict[str, int]] = {}
+            for t in tables:
+                try:
+                    cols = self.inspector.get_columns(t)
+                    col_count = len(cols)
+                except Exception:
+                    col_count = 0
+                row_count = 0
+                try:
+                    df_rows = pd.read_sql(text(f"SELECT COUNT(*) AS c FROM {t}"), self.engine)
+                    row_count = int(df_rows["c"].iloc[0]) if not df_rows.empty else 0
+                except Exception:
+                    row_count = 0
+                details[t] = {"rows": row_count, "columns": col_count}
+            summary["table_details"] = details
+        except Exception as e:
+            logger.error(f"Error building database summary: {e}")
+
+        return summary
+
     def _build_connection_from_env(self) -> str:
         """Build connection string from environment variables."""
         # Check if DATABASE_URL is provided first
@@ -255,6 +314,66 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
             data["videos"] = pd.read_sql(text(videos_query), engine)
             logger.info(f"Loaded {len(data['videos'])} videos")
 
+            # ALSO load time-series metrics data for momentum charts
+            # This is SEPARATE from videos data and used specifically for momentum tracking
+            metrics_query = f"""
+            SELECT
+                m.video_id,
+                v.title,
+                v.channel_title as artist_name,
+                v.published_at,
+                m.metrics_date,
+                m.view_count,
+                m.like_count,
+                m.comment_count,
+                -- Calculate engagement rate
+                CASE
+                    WHEN m.view_count > 0 THEN (COALESCE(m.like_count, 0) + COALESCE(m.comment_count, 0)) / m.view_count
+                    ELSE 0
+                END as engagement_rate,
+                -- Add aliases for backward compatibility
+                COALESCE(m.like_count, 0) as likes,
+                COALESCE(m.comment_count, 0) as comments,
+                COALESCE(m.view_count, 1) as views,
+                v.duration,
+                -- Add content type classification
+                CASE
+                    WHEN v.title LIKE '%live%' OR v.title LIKE '%Live%' THEN 'Live Performance'
+                    WHEN v.title LIKE '%music video%' OR v.title LIKE '%Music Video%' THEN 'Music Video'
+                    WHEN v.title LIKE '%behind%' OR v.title LIKE '%Behind%' THEN 'Behind the Scenes'
+                    WHEN v.title LIKE '%interview%' OR v.title LIKE '%Interview%' THEN 'Interview'
+                    ELSE 'Other'
+                END as content_type,
+                -- Add genre classification
+                CASE
+                    WHEN v.channel_title LIKE '%hip%' OR v.channel_title LIKE '%rap%' THEN 'Hip-Hop'
+                    WHEN v.channel_title LIKE '%pop%' OR v.channel_title LIKE '%Pop%' THEN 'Pop'
+                    WHEN v.channel_title LIKE '%rock%' OR v.channel_title LIKE '%Rock%' THEN 'Rock'
+                    ELSE 'Alternative'
+                END as genre,
+                m.fetched_at
+            FROM youtube_metrics m
+            INNER JOIN youtube_videos v ON m.video_id = v.video_id
+            WHERE v.channel_title IN ('{artist_list}')
+            AND m.metrics_date >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+            AND (m.video_id, m.metrics_date, m.fetched_at) IN (
+                -- Get only the latest snapshot per video per day (handles multiple ETL runs per day)
+                SELECT video_id, metrics_date, MAX(fetched_at)
+                FROM youtube_metrics
+                WHERE metrics_date >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+                GROUP BY video_id, metrics_date
+            )
+            ORDER BY m.metrics_date DESC, v.channel_title
+            """
+
+            try:
+                data["metrics_timeseries"] = pd.read_sql(text(metrics_query), engine)
+                logger.info(f"Loaded {len(data['metrics_timeseries'])} time-series metrics snapshots from youtube_metrics table")
+            except Exception as metrics_error:
+                # If youtube_metrics table doesn't exist, that's OK - momentum charts will use videos data
+                logger.warning(f"Could not load youtube_metrics table: {metrics_error}")
+                logger.info("Momentum charts will use youtube_videos data (legacy behavior)")
+
         # Load comments data
         if "videos" in data and not data["videos"].empty:
             video_ids = data["videos"]["video_id"].tolist()[:100]  # Limit for performance
@@ -399,12 +518,36 @@ def get_dynamic_notebook_config() -> Dict[str, Any]:
             "Ensure youtube_videos or music_videos_normalized tables have data with artist names."
         )
 
-    # Get data summary-FAIL LOUDLY if no data
-    data_summary = discovery.get_data_summary()
-    if data_summary["total_videos"] == 0:
-        raise RuntimeError("🚨 CRITICAL: No video data found! " "Ensure youtube_videos table has data.")
+    return {
+        "database_summary": db_summary,
+        "artists": artists,
+        "data_summary": discovery.get_data_summary(),
+    }
 
-    # Create chart configuration
+
+# Compatibility shim for notebooks that import function directly
+def discover_artists(min_videos: int = 5) -> List[str]:
+    """Discover artists using a default DatabaseDiscovery instance.
+
+    This provides a simple function-level API compatible with
+    `from src.youtubeviz.data_discovery import discover_artists`.
+    """
+    return DatabaseDiscovery().discover_artists(min_videos=min_videos)
+
+
+def get_discovery() -> DatabaseDiscovery:
+    """Provide a simple accessor for a discovery instance (notebook-friendly)."""
+    return DatabaseDiscovery()
+
+
+def discover_data(min_videos: int = 5, limit_per_artist: int = 1000) -> Dict[str, pd.DataFrame]:
+    """Discover artists and load associated data for charting.
+
+    Returns a mapping like {"videos": DataFrame, "comments": DataFrame, ...}.
+    """
+    d = DatabaseDiscovery()
+    artists = d.discover_artists(min_videos=min_videos)
+    return load_dynamic_data(d.engine, artists, limit_per_artist=limit_per_artist)
     chart_config = create_chart_config(artists, data_summary)
 
     config = {

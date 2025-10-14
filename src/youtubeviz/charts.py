@@ -514,6 +514,11 @@ def views_over_time_plotly(
     if "dsp" in df_sorted.columns:
         hover_data.append("dsp")
 
+    # Use global artist color palette for consistency across dashboard
+    from youtubeviz.viz_theme import build_color_discrete_map
+    artists = df_sorted[group_col].unique().tolist()
+    color_map = build_color_discrete_map(artists)
+
     # Create base chart with animation frame
     if animate_by:
         fig = px.line(
@@ -521,6 +526,7 @@ def views_over_time_plotly(
             x=date_col,
             y=value_col,
             color=group_col,
+            color_discrete_map=color_map,
             hover_name=hover_col,
             hover_data=hover_data,
             animation_frame=animate_by,
@@ -534,6 +540,7 @@ def views_over_time_plotly(
             x=date_col,
             y=value_col,
             color=group_col,
+            color_discrete_map=color_map,
             hover_name=hover_col,
             hover_data=hover_data,
             title="📈 Views Over Time",

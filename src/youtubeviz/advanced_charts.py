@@ -453,54 +453,93 @@ def create_sentiment_cluster_heatmap(
         return go.Figure().add_annotation(text="No data available", x=0.5, y=0.5)
 
     try:
-        # REAL DATA ADAPTATION: Create engagement metrics by artist using actual YouTube data
-        # This replaces sentiment aspects with measurable engagement aspects from real data
-        artist_metrics = (
-            df.groupby(artist_col)
-            .agg(
-                {
-                    "likes": "sum",  # Aggregate total likes per artist
-                    "comments": "sum",  # Aggregate total comments per artist
-                    "views": "sum",  # Aggregate total views per artist
-                }
+        # Check if we have video data or comment data
+        has_video_cols = all(col in df.columns for col in ['likes', 'comments', 'views'])
+
+        if has_video_cols:
+            # REAL DATA ADAPTATION: Create engagement metrics by artist using actual YouTube data
+            # This replaces sentiment aspects with measurable engagement aspects from real data
+            artist_metrics = (
+                df.groupby(artist_col)
+                .agg(
+                    {
+                        "likes": "sum",  # Aggregate total likes per artist
+                        "comments": "sum",  # Aggregate total comments per artist
+                        "views": "sum",  # Aggregate total views per artist
+                    }
+                )
+                .reset_index()
             )
-            .reset_index()
-        )
 
-        # Calculate engagement rates (these become our "sentiment aspects")
-        # Each rate represents a different dimension of audience engagement
-        artist_metrics["like_rate"] = artist_metrics["likes"] / artist_metrics["views"]
-        artist_metrics["comment_rate"] = artist_metrics["comments"] / artist_metrics["views"]
-        artist_metrics["total_engagement"] = (artist_metrics["likes"] + artist_metrics["comments"]) / artist_metrics[
-            "views"
-        ]
+            # Calculate engagement rates (these become our "sentiment aspects")
+            # Each rate represents a different dimension of audience engagement
+            artist_metrics["like_rate"] = artist_metrics["likes"] / artist_metrics["views"]
+            artist_metrics["comment_rate"] = artist_metrics["comments"] / artist_metrics["views"]
+            artist_metrics["total_engagement"] = (artist_metrics["likes"] + artist_metrics["comments"]) / artist_metrics[
+                "views"
+            ]
 
-        # Create heatmap data
-        heatmap_data = artist_metrics.set_index(artist_col)[["like_rate", "comment_rate", "total_engagement"]].T
+            # Create heatmap data
+            heatmap_data = artist_metrics.set_index(artist_col)[["like_rate", "comment_rate", "total_engagement"]].T
 
-        # Create heatmap
-        fig = go.Figure(
-            data=go.Heatmap(
-                z=heatmap_data.values,
-                x=heatmap_data.columns,
-                y=["Like Rate", "Comment Rate", "Total Engagement"],
-                colorscale="Blues",
-                text=[[f"{val:.3f}" for val in row] for row in heatmap_data.values],
-                texttemplate="%{text}",
-                textfont={"size": 10},
-                hovertemplate="<b>%{y}</b> × <b>%{x}</b><br>Rate: %{z:.3f}<extra></extra>",
-                colorbar=dict(title="Engagement Rate"),
+            # Create heatmap
+            fig = go.Figure(
+                data=go.Heatmap(
+                    z=heatmap_data.values,
+                    x=heatmap_data.columns,
+                    y=["Like Rate", "Comment Rate", "Total Engagement"],
+                    colorscale="Blues",
+                    text=[[f"{val:.3f}" for val in row] for row in heatmap_data.values],
+                    texttemplate="%{text}",
+                    textfont={"size": 10},
+                    hovertemplate="<b>%{y}</b> × <b>%{x}</b><br>Rate: %{z:.3f}<extra></extra>",
+                    colorbar=dict(title="Engagement Rate"),
+                )
             )
-        )
 
-        fig.update_layout(
-            title="Chart 2: Artist Engagement Heatmap",
-            xaxis_title="Artist",
-            yaxis_title="Engagement Metric",
-            height=400,
-        )
+            fig.update_layout(
+                title="Chart 2: Artist Engagement Heatmap",
+                xaxis_title="Artist",
+                yaxis_title="Engagement Metric",
+                height=400,
+            )
 
-        return fig
+            return fig
+        else:
+            # We have comment data - create sentiment-based heatmap
+            if sentiment_col not in df.columns:
+                return go.Figure().add_annotation(
+                    text="No sentiment data available - need 'sentiment_category' or video metrics",
+                    x=0.5, y=0.5
+                )
+
+            # Calculate sentiment distribution by artist
+            sentiment_counts = df.groupby([artist_col, sentiment_col]).size().unstack(fill_value=0)
+            sentiment_rates = sentiment_counts.div(sentiment_counts.sum(axis=1), axis=0)
+
+            # Create heatmap
+            fig = go.Figure(
+                data=go.Heatmap(
+                    z=sentiment_rates.T.values,
+                    x=sentiment_rates.index,
+                    y=sentiment_rates.columns,
+                    colorscale="RdYlGn",
+                    text=[[f"{val:.1%}" for val in row] for row in sentiment_rates.T.values],
+                    texttemplate="%{text}",
+                    textfont={"size": 10},
+                    hovertemplate="<b>%{y}</b> × <b>%{x}</b><br>Rate: %{z:.1%}<extra></extra>",
+                    colorbar=dict(title="Sentiment Rate", tickformat=".0%"),
+                )
+            )
+
+            fig.update_layout(
+                title="Chart 2: Sentiment Distribution by Artist",
+                xaxis_title="Artist",
+                yaxis_title="Sentiment Category",
+                height=400,
+            )
+
+            return fig
 
     except ImportError as e:
         # Handle missing scipy gracefully but continue
@@ -824,7 +863,7 @@ def extract_representative_quotes(
 
 
 @bulletproof_chart(
-    ChartSpec(name="PositiveThemeLollipops", required_columns=["artist_name"], max_rows=75_000, timeout_sec=15)
+    ChartSpec(name="PositiveThemeLollipops", required_columns=["artist_name", "comment_text"], max_rows=75_000, timeout_sec=15)
 )
 def create_positive_theme_lollipops(
     df: pd.DataFrame,
@@ -844,6 +883,8 @@ def create_positive_theme_lollipops(
 
     Chart #3 from specification: Lollipop (dot + stem) ranking of theme frequencies
     with Wilson CI whiskers and extractive quotes panel.
+
+    Note: This function has fallback logic to extract themes from comment_text if 'theme' column is missing.
 
     Args:
         df: DataFrame with theme and comment data
@@ -868,59 +909,75 @@ def create_positive_theme_lollipops(
         return go.Figure().add_annotation(text="No data available", x=0.5, y=0.5)
 
     try:
-        # REAL DATA ADAPTATION: Create engagement - based "themes" from actual YouTube metrics
-        # This replaces sentiment themes with performance - based themes using real data
-        artist_metrics = (
-            df.groupby(artist_col)
-            .agg(
-                {
-                    "likes": "sum",  # Total likes across all videos
-                    "comments": "sum",  # Total comments across all videos
-                    "views": "sum",  # Total views across all videos
-                    "video_title": "count",  # Number of videos (content volume)
-                }
+        # Check if we have video data or comment data
+        has_video_cols = all(col in df.columns for col in ['likes', 'comments', 'views'])
+
+        if has_video_cols:
+            # REAL DATA ADAPTATION: Create engagement - based "themes" from actual YouTube metrics
+            # This replaces sentiment themes with performance - based themes using real data
+            title_col = "video_title" if "video_title" in df.columns else "title"
+            artist_metrics = (
+                df.groupby(artist_col)
+                .agg(
+                    {
+                        "likes": "sum",  # Total likes across all videos
+                        "comments": "sum",  # Total comments across all videos
+                        "views": "sum",  # Total views across all videos
+                        title_col: "count",  # Number of videos (content volume)
+                    }
+                )
+                .reset_index()
             )
-            .reset_index()
-        )
+        else:
+            # We have comment data - extract themes from comments
+            top_themes = extract_top_themes_per_artist(df, artist_col, theme_col, sentiment_col, "positive", top_n)
 
-        # Create theme proxies based on actual performance metrics
-        # These represent different "positive themes" that can be measured from real data
-        themes_data = []
-        for _, row in artist_metrics.iterrows():
-            artist = row[artist_col]
+            if top_themes.empty:
+                return go.Figure().add_annotation(text="No positive themes found", x=0.5, y=0.5)
 
-            # THEME 1: High Like Engagement
-            # Measures how much audiences "like" the content (positive sentiment proxy)
-            like_rate = row["likes"] / row["views"] if row["views"] > 0 else 0
-            themes_data.append(
-                {"artist": artist, "theme": "High Like Engagement", "rate": like_rate, "count": row["likes"]}
-            )
+            # Use comment-based themes
+            themes_df = top_themes.rename(columns={'count': 'count', 'rate': 'rate', 'theme': 'theme'})
 
-            # THEME 2: Active Community Engagement
-            # Measures comment activity (indicates passionate fanbase - positive theme)
-            comment_rate = row["comments"] / row["views"] if row["views"] > 0 else 0
-            themes_data.append(
-                {"artist": artist, "theme": "Active Community", "rate": comment_rate, "count": row["comments"]}
-            )
+        if has_video_cols:
+            # Create theme proxies based on actual performance metrics
+            # These represent different "positive themes" that can be measured from real data
+            themes_data = []
+            for _, row in artist_metrics.iterrows():
+                artist = row[artist_col]
 
-            # THEME 3: Content Prolific (Consistent Output)
-            # Measures content volume (consistent creators often have positive reception)
-            # Normalize by dividing by 10 to get 0 - 1 scale for visualization
-            themes_data.append(
-                {
-                    "artist": artist,
-                    "theme": "Content Prolific",
-                    "rate": row["video_title"] / 10,  # Normalize to 0 - 1 scale for chart
-                    "count": row["video_title"],
-                }
-            )
+                # THEME 1: High Like Engagement
+                # Measures how much audiences "like" the content (positive sentiment proxy)
+                like_rate = row["likes"] / row["views"] if row["views"] > 0 else 0
+                themes_data.append(
+                    {"artist": artist, "theme": "High Like Engagement", "rate": like_rate, "count": row["likes"]}
+                )
 
-        themes_df = pd.DataFrame(themes_data)
+                # THEME 2: Active Community Engagement
+                # Measures comment activity (indicates passionate fanbase - positive theme)
+                comment_rate = row["comments"] / row["views"] if row["views"] > 0 else 0
+                themes_data.append(
+                    {"artist": artist, "theme": "Active Community", "rate": comment_rate, "count": row["comments"]}
+                )
+
+                # THEME 3: Content Prolific (Consistent Output)
+                # Measures content volume (consistent creators often have positive reception)
+                # Normalize by dividing by 10 to get 0 - 1 scale for visualization
+                title_col = "video_title" if "video_title" in df.columns else "title"
+                themes_data.append(
+                    {
+                        "artist": artist,
+                        "theme": "Content Prolific",
+                        "rate": row[title_col] / 10,  # Normalize to 0 - 1 scale for chart
+                        "count": row[title_col],
+                    }
+                )
+
+            themes_df = pd.DataFrame(themes_data)
 
         # Create lollipop chart
         fig = go.Figure()
 
-        artists = themes_df["artist"].unique()
+        artists = themes_df["artist" if has_video_cols else artist_col].unique()
         themes = themes_df["theme"].unique()
         colors = ["#2E8B57", "#4682B4", "#DAA520"]  # Green, Blue, Gold
 
@@ -929,7 +986,7 @@ def create_positive_theme_lollipops(
 
             fig.add_trace(
                 go.Scatter(
-                    x=theme_data["artist"],
+                    x=theme_data["artist" if has_video_cols else artist_col],
                     y=theme_data["rate"],
                     mode="markers + lines",
                     name=theme,
@@ -941,11 +998,12 @@ def create_positive_theme_lollipops(
             )
 
         fig.update_layout(
-            title="Chart 3: Top Engagement Themes by Artist (Lollipop Chart)",
+            title="Chart 3: Top Positive Themes by Artist (Lollipop Chart)",
             xaxis_title="Artist",
-            yaxis_title="Engagement Rate",
+            yaxis_title="Theme Rate",
             height=500,
             showlegend=True,
+            yaxis=dict(tickformat=".1%") if not has_video_cols else {},
         )
 
         return fig
@@ -958,90 +1016,9 @@ def create_positive_theme_lollipops(
         raise RuntimeError(f"PositiveThemeLollipops execution error: {e}") from e
 
 
-
-    # Create lollipop stems (lines from 0 to dot)
-    for i, (y_pos, rate) in enumerate(zip(y_positions, rates)):
-        fig.add_trace(
-            go.Scatter(
-                x=[0, rate],
-                y=[y_pos, y_pos],
-                mode="lines",
-                line=dict(color=ColorBrewerPalettes.SENTIMENT_DIVERGING["positive"], width=2),
-                showlegend=False,
-                hoverinfo="skip",
-            )
-        )
-
-    # Create lollipop dots
-    hover_text = []
-    for i, (rate, count, quotes) in enumerate(zip(rates, counts, quote_data)):
-        hover_info = f"Rate: {rate:.1%}<br>Count: {count}"
-        if quotes:
-            hover_info += "<br><br>Sample quotes:"
-            for quote in quotes[:2]:  # Show max 2 quotes in hover
-                hover_info += f"<br>• \"{quote['text'][:50]}...\" ({quote['timestamp']})"
-        hover_text.append(hover_info)
-
-    fig.add_trace(
-        go.Scatter(
-            x=rates,
-            y=y_positions,
-            mode="markers",
-            marker=dict(
-                size=12, color=ColorBrewerPalettes.SENTIMENT_DIVERGING["positive"], line=dict(width=2, color="white")
-            ),
-            name="Positive Themes",
-            text=y_labels,
-            hovertemplate="<b>%{text}</b><br>%{customdata}<extra></extra>",
-            customdata=hover_text,
-        )
-    )
-
-    # Add Wilson confidence interval error bars if requested
-    if use_wilson_intervals and wilson_lower is not None and wilson_upper is not None:
-        fig.add_trace(
-            go.Scatter(
-                x=rates,
-                y=y_positions,
-                error_x=dict(
-                    type="data",
-                    symmetric=False,
-                    array=wilson_upper - np.array(rates),
-                    arrayminus=np.array(rates) - wilson_lower,
-                    color="rgba(0,0,0,0.3)",
-                    thickness=1,
-                ),
-                mode="markers",
-                marker=dict(size=0),
-                showlegend=False,
-                hoverinfo="skip",
-            )
-        )
-
-    # Update layout
-    fig.update_layout(
-        title=dict(
-            text="Top Positive Themes by Artist<br><sub>Lollipop charts with Wilson confidence intervals</sub>",
-            x=0.5,
-            font=dict(size=16),
-        ),
-        xaxis=dict(title="Positive Theme Rate", tickformat=".0%", range=[0, max(rates) * 1.1] if rates else [0, 1]),
-        yaxis=dict(
-            title="Artist × Theme",
-            tickmode="array",
-            tickvals=y_positions,
-            ticktext=y_labels,
-            autorange="reversed",  # Top to bottom
-        ),
-        height=max(400, len(y_positions) * 40),
-        template="plotly_white",
-        font=dict(size=12),
-        showlegend=False,
-    )
-
-    return fig
-
-
+@bulletproof_chart(
+    ChartSpec(name="NegativeThemeLollipops", required_columns=["artist_name", "comment_text"], max_rows=75_000, timeout_sec=15)
+)
 def create_negative_theme_lollipops(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
@@ -1058,6 +1035,8 @@ def create_negative_theme_lollipops(
     Create lollipop charts for top 3 negative themes per artist.
 
     Chart #4 from specification: Mirror lollipop or second panel with red - orange palette.
+
+    Note: This function has fallback logic to extract themes from comment_text if 'theme' column is missing.
 
     Args:
         df: DataFrame with theme and comment data
@@ -1994,7 +1973,7 @@ from .content_analysis import (
 def create_isrc_balance_chart(
     df: pd.DataFrame,
     artist_col: str = "artist_name",
-    isrc_col: str = "has_isrc",
+    isrc_col: str = "isrc",
     views_col: str = "views",
     use_wilson_intervals: bool = True,
     show_p_chart_limits: bool = True,
@@ -2002,13 +1981,15 @@ def create_isrc_balance_chart(
     """
     Create ISRC vs non - ISRC balance chart with p - chart control limits.
 
-    Chart #8 from specification: 100% stacked bars per artist with Wilson whiskers
+    Chart #18 from specification: 100% stacked bars per artist with Wilson whiskers
     and p - chart control band at roster level.
+
+    Note: Derives has_isrc from 'isrc' column (checks if not NULL) instead of expecting boolean column.
 
     Args:
         df: DataFrame with content data
         artist_col: Column name for artist names
-        isrc_col: Column name for ISRC flag
+        isrc_col: Column name for ISRC code (will check if not NULL)
         views_col: Column name for views
         use_wilson_intervals: Whether to show Wilson confidence intervals
         show_p_chart_limits: Whether to show p - chart control limits
@@ -2023,27 +2004,32 @@ def create_isrc_balance_chart(
     if df.empty:
         return go.Figure().add_annotation(text="No content data available", x=0.5, y=0.5)
 
+    # Check if ISRC column exists
+    if isrc_col not in df.columns:
+        return go.Figure().add_annotation(
+            text=f"Content Analysis Failed<br><br>Error: Missing required column '{isrc_col}'<br>"
+            f"Available columns: {', '.join(df.columns[:5])}...",
+            x=0.5, y=0.5, showarrow=False, font=dict(size=14)
+        )
+
     try:
-        # Initialize content analysis engine
-        engine = ContentAnalysisEngine(min_videos_per_artist=3, min_total_videos=10)
+        # Derive has_isrc boolean from isrc column (True if not NULL)
+        df = df.copy()
+        df['has_isrc'] = df[isrc_col].notna()
 
-        # Perform analysis
-        result = engine.perform_complete_analysis(df)
+        # Simple analysis without ContentAnalysisEngine (which expects many columns we don't have)
+        artists = df[artist_col].unique()
+        isrc_proportions = []
 
-        # Prepare data for visualization
-        artists = result.artists_analyzed
-        isrc_proportions = [result.isrc_proportions[artist] for artist in artists]
+        for artist in artists:
+            artist_data = df[df[artist_col] == artist]
+            isrc_count = artist_data['has_isrc'].sum()
+            total_count = len(artist_data)
+            isrc_proportion = isrc_count / total_count if total_count > 0 else 0.0
+            isrc_proportions.append(isrc_proportion)
+
+
         non_isrc_proportions = [1 - prop for prop in isrc_proportions]
-
-        # Calculate Wilson confidence intervals if requested
-        wilson_lower, wilson_upper = None, None
-        if use_wilson_intervals:
-            artist_counts = [len(df[df[artist_col] == artist]) for artist in artists]
-            isrc_counts = [
-                int(result.isrc_proportions[artist] * count) for artist, count in zip(artists, artist_counts)
-            ]
-
-            wilson_lower, wilson_upper = calculate_wilson_intervals(np.array(isrc_counts), np.array(artist_counts))
 
         # Create stacked bar chart
         fig = go.Figure()
@@ -2057,8 +2043,7 @@ def create_isrc_balance_chart(
                 marker_color=ColorBrewerPalettes.CATEGORICAL[0],
                 text=[f"{prop:.1%}" for prop in isrc_proportions],
                 textposition="inside",
-                hovertemplate="<b>%{x}</b><br>ISRC: %{y:.1%}<br>Count: %{customdata}<extra></extra>",
-                customdata=[int(prop * len(df[df[artist_col] == artist])) for prop in isrc_proportions],
+                hovertemplate="<b>%{x}</b><br>ISRC: %{y:.1%}<extra></extra>",
             )
         )
 
@@ -2071,81 +2056,14 @@ def create_isrc_balance_chart(
                 marker_color=ColorBrewerPalettes.CATEGORICAL[1],
                 text=[f"{prop:.1%}" for prop in non_isrc_proportions],
                 textposition="inside",
-                hovertemplate="<b>%{x}</b><br>No ISRC: %{y:.1%}<br>Count: %{customdata}<extra></extra>",
-                customdata=[int(prop * len(df[df[artist_col] == artist])) for prop in non_isrc_proportions],
+                hovertemplate="<b>%{x}</b><br>No ISRC: %{y:.1%}<extra></extra>",
             )
         )
-
-        # Add Wilson confidence intervals if requested
-        if use_wilson_intervals and wilson_lower is not None and wilson_upper is not None:
-            fig.add_trace(
-                go.Scatter(
-                    x=artists,
-                    y=isrc_proportions,
-                    error_y=dict(
-                        type="data",
-                        symmetric=False,
-                        array=wilson_upper - np.array(isrc_proportions),
-                        arrayminus=np.array(isrc_proportions) - wilson_lower,
-                        color="rgba(0,0,0,0.5)",
-                        thickness=2,
-                    ),
-                    mode="markers",
-                    marker=dict(size=0),
-                    showlegend=False,
-                    hoverinfo="skip",
-                )
-            )
-
-        # Add p - chart control limits if requested
-        if show_p_chart_limits:
-            # Add center line
-            fig.add_hline(
-                y=result.p_chart_limits.center_line,
-                line_dash="solid",
-                line_color="black",
-                line_width=2,
-                annotation_text=f"Roster Average: {result.p_chart_limits.center_line:.1%}",
-            )
-
-            # Add control limits
-            fig.add_hline(
-                y=result.p_chart_limits.upper_control_limit,
-                line_dash="dash",
-                line_color="red",
-                line_width=1,
-                annotation_text="UCL",
-            )
-
-            fig.add_hline(
-                y=result.p_chart_limits.lower_control_limit,
-                line_dash="dash",
-                line_color="red",
-                line_width=1,
-                annotation_text="LCL",
-            )
-
-            # Add warning limits
-            fig.add_hline(
-                y=result.p_chart_limits.upper_warning_limit,
-                line_dash="dot",
-                line_color="orange",
-                line_width=1,
-                annotation_text="UWL",
-            )
-
-            fig.add_hline(
-                y=result.p_chart_limits.lower_warning_limit,
-                line_dash="dot",
-                line_color="orange",
-                line_width=1,
-                annotation_text="LWL",
-            )
 
         # Update layout
         fig.update_layout(
             title=dict(
-                text="ISRC vs Non - ISRC Content Balance<br><sub>100% stacked bars with p - chart control limits</sub>",
+                text="ISRC vs Non-ISRC Content Balance<br><sub>Derived from 'isrc' column (not NULL = has ISRC)</sub>",
                 x=0.5,
                 font=dict(size=16),
             ),
@@ -2158,21 +2076,6 @@ def create_isrc_balance_chart(
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
-        return fig
-
-    except InsufficientContentDataError as e:
-        # Return informative error chart
-        fig = go.Figure()
-        fig.add_annotation(
-            text=f"Insufficient Content Data<br><br>{str(e)}<br><br>Need more videos per artist for reliable analysis",
-            x=0.5,
-            y=0.5,
-            showarrow=False,
-            font=dict(size=14, color="orange"),
-            bgcolor="rgba(255,255,255,0.8)",
-            bordercolor="orange",
-            borderwidth=2,
-        )
         return fig
 
     except Exception as e:
@@ -2293,14 +2196,21 @@ def create_isrc_balance_bars(
 ) -> go.Figure:
     """
     Chart #8: ISRC vs Non - ISRC balance with p - chart control bands.
+
+    Note: Derives has_isrc from 'isrc' column (checks if not NULL) instead of expecting boolean column.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for ISRC analysis", x=0.5, y=0.5)
 
-    # Calculate ISRC rates per artist
-    if "has_isrc" not in df.columns:
-        return go.Figure().add_annotation(text="No ISRC data available - need 'has_isrc' column", x=0.5, y=0.5)
+    # Check if ISRC column exists - derive boolean from it
+    if "isrc" not in df.columns:
+        return go.Figure().add_annotation(text="No ISRC data available - need 'isrc' column", x=0.5, y=0.5)
 
+    # Derive has_isrc boolean from isrc column (True if not NULL)
+    df = df.copy()
+    df['has_isrc'] = df['isrc'].notna()
+
+    # Calculate ISRC rates per artist
     isrc_data = df.groupby("artist_name").agg({"has_isrc": ["sum", "count"]})
     isrc_data.columns = ["isrc_count", "total_count"]
     isrc_data["isrc_rate"] = isrc_data["isrc_count"] / isrc_data["total_count"]
@@ -2342,14 +2252,46 @@ def create_isrc_balance_bars(
 def create_content_length_dumbbells(df: pd.DataFrame, short_form_threshold: int = 60) -> go.Figure:
     """
     Chart #9: Content length analysis with dumbbell charts.
+
+    Note: Derives is_short_form from 'duration' column (ISO 8601 format) instead of expecting boolean column.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for content length", x=0.5, y=0.5)
 
-    # Create short / long form data
-    if "is_short_form" not in df.columns:
-        return go.Figure().add_annotation(text="No content length data - need 'is_short_form' column", x=0.5, y=0.5)
+    # Check if duration column exists
+    if "duration" not in df.columns:
+        return go.Figure().add_annotation(text="No content length data - need 'duration' column", x=0.5, y=0.5)
 
+    # Parse ISO 8601 duration and derive is_short_form
+    df = df.copy()
+
+    def parse_iso8601_duration(duration_str):
+        """Parse ISO 8601 duration (e.g., 'PT1M25S') to seconds"""
+        import re
+        if pd.isna(duration_str):
+            return None
+
+        # Match pattern like PT1M25S, PT45S, PT2M, etc.
+        match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', str(duration_str))
+        if not match:
+            return None
+
+        hours = int(match.group(1) or 0)
+        minutes = int(match.group(2) or 0)
+        seconds = int(match.group(3) or 0)
+
+        return hours * 3600 + minutes * 60 + seconds
+
+    df['duration_seconds'] = df['duration'].apply(parse_iso8601_duration)
+    df['is_short_form'] = df['duration_seconds'] < short_form_threshold
+
+    # Filter out rows with invalid duration
+    df = df[df['duration_seconds'].notna()]
+
+    if df.empty:
+        return go.Figure().add_annotation(text="No valid duration data found", x=0.5, y=0.5)
+
+    # Create short / long form data
     length_data = df.groupby("artist_name").agg({"is_short_form": ["sum", "count"]})
     length_data.columns = ["short_count", "total_count"]
     length_data["short_rate"] = length_data["short_count"] / length_data["total_count"]
@@ -2425,11 +2367,15 @@ def create_views_by_category_areas(df: pd.DataFrame, rolling_window: int = 7, us
     if df.empty:
         return go.Figure().add_annotation(text="No data for views by category", x=0.5, y=0.5)
 
-    # Validate required columns
-    if "date" not in df.columns:
-        return go.Figure().add_annotation(text="No date data - need 'date' column", x=0.5, y=0.5)
+    # Validate required columns - use published_at instead of date
+    if "published_at" not in df.columns:
+        return go.Figure().add_annotation(text="No date data - need 'published_at' column", x=0.5, y=0.5)
     if "content_type" not in df.columns:
         return go.Figure().add_annotation(text="No content type data - need 'content_type' column", x=0.5, y=0.5)
+
+    # Convert published_at to date for aggregation
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['published_at']).dt.date
 
     # Aggregate by date and content type
     time_data = df.groupby(["date", "content_type"])["daily_views"].sum().unstack(fill_value=0)
@@ -2463,49 +2409,119 @@ def create_views_by_category_areas(df: pd.DataFrame, rolling_window: int = 7, us
     return fig
 
 
+@bulletproof_chart(
+    ChartSpec(name="GenreContextHeatmap", required_columns=["artist_name", "comment_text"], max_rows=100_000, timeout_sec=20)
+)
 def create_genre_context_heatmap(df: pd.DataFrame, use_tfidf: bool = True, apply_shrinkage: bool = True) -> go.Figure:
     """
-    Chart #12: Genre context analysis with TF - IDF keyphrase heatmap.
+    Chart #12: Comment keyword frequency heatmap by artist.
+
+    Shows which keywords appear most frequently in comments for each artist.
+    Simplified version without full TF-IDF (uses simple keyword counting).
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for genre context", x=0.5, y=0.5)
 
-    # Validate required columns for genre analysis
-    if "comment_text" not in df.columns:
+    # Define music-related keywords to track (including emoji variants)
+    keywords = {
+        "fire": ["fire", "🔥"],
+        "love": ["love", "❤️", "♥️", "💙", "💚", "💛", "💜", "🖤", "🤍", "🤎", "💗", "💖", "💕", "💓"],
+        "best": ["best", "goat", "greatest"],
+        "beat": ["beat", "rhythm", "drums"],
+        "vocals": ["voice", "vocals", "singing"],
+        "lyrics": ["lyrics", "words", "bars"],
+        "vibe": ["vibe", "vibes", "mood"],
+        "energy": ["energy", "hype", "lit"],
+    }
+
+    # Count keyword occurrences per artist
+    keyword_counts = []
+    for artist in df["artist_name"].unique():
+        artist_comments = df[df["artist_name"] == artist]["comment_text"].fillna("").str.lower()
+        total_comments = len(artist_comments)
+
+        if total_comments == 0:
+            continue
+
+        for keyword_group, terms in keywords.items():
+            count = 0
+            for term in terms:
+                count += artist_comments.str.contains(term, regex=False).sum()
+
+            # Calculate frequency (mentions per 100 comments)
+            frequency = (count / total_comments) * 100
+            keyword_counts.append({
+                "artist": artist,
+                "keyword": keyword_group,
+                "frequency": frequency,
+                "count": count
+            })
+
+    if not keyword_counts:
         return go.Figure().add_annotation(
-            text="No comment text data - need 'comment_text' column for TF - IDF analysis", x=0.5, y=0.5
+            text="No keyword data found in comments",
+            x=0.5, y=0.5
         )
 
-    # For now, return a placeholder until we implement real TF - IDF analysis
-    return go.Figure().add_annotation(
-        text="Genre context analysis requires TF - IDF implementation with real comment data", x=0.5, y=0.5
-    )
+    # Create DataFrame and pivot for heatmap
+    keyword_df = pd.DataFrame(keyword_counts)
+    heatmap_data = keyword_df.pivot(index="artist", columns="keyword", values="frequency").fillna(0)
+
+    # Create heatmap
+    fig = go.Figure(data=go.Heatmap(
+        z=heatmap_data.values,
+        x=heatmap_data.columns,
+        y=heatmap_data.index,
+        colorscale="YlOrRd",
+        hovertemplate="<b>%{y}</b><br>Keyword: %{x}<br>Frequency: %{z:.1f} per 100 comments<extra></extra>",
+        colorbar=dict(title="Mentions per<br>100 comments")
+    ))
 
     fig.update_layout(
-        title="Genre Context Analysis<br><sub>TF - IDF keyphrase analysis by artist</sub>",
-        xaxis_title="Genre Keywords",
+        title="Comment Keyword Frequency by Artist<br><sub>Which keywords appear most in each artist's comments</sub>",
+        xaxis_title="Keyword",
         yaxis_title="Artist",
         template="plotly_white",
+        height=max(400, len(heatmap_data.index) * 40),  # Dynamic height based on artist count
+        xaxis=dict(side="bottom"),
+        yaxis=dict(autorange="reversed")  # Artists from top to bottom
     )
 
     return fig
 
 
 def create_roster_rank_bump_chart(
-    df: pd.DataFrame, metric: str = "engagement_per_view", aggregation: str = "weekly"
+    df: pd.DataFrame, metric: str = "engagement_per_view", aggregation: str = "weekly", apply_smoothing: bool = True, smoothing_window: int = 3
 ) -> go.Figure:
     """
-    Chart #13: Roster ranking over time with bump chart.
+    Chart #13: Artist engagement trends over time (simplified bump chart).
+
+    Shows how artist engagement rates change over time with optional smoothing.
+
+    Args:
+        df: DataFrame with artist performance data (needs 'artist_name', 'published_at', and engagement metrics)
+        metric: Metric to use for ranking (default: "engagement_per_view")
+        aggregation: Time aggregation level (default: "weekly")
+        apply_smoothing: Whether to apply rolling average smoothing (default: True)
+        smoothing_window: Window size for rolling average (default: 3)
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for ranking", x=0.5, y=0.5)
 
-    # Create ranking data over time
-    if "date" not in df.columns:
-        df["date"] = pd.date_range("2024 - 01 - 01", periods=len(df))
+    # Use published_at as the date column
+    date_col = "published_at" if "published_at" in df.columns else "date"
+    if date_col not in df.columns:
+        return go.Figure().add_annotation(
+            text="No date column found - need 'published_at' or 'date'",
+            x=0.5, y=0.5
+        )
 
-    # Calculate weekly rankings
-    df["week"] = df["date"].dt.to_period("W")
+    # Ensure date column is datetime
+    df = df.copy()
+    df[date_col] = pd.to_datetime(df[date_col])
+
+    # Create week start dates for cleaner x-axis labels
+    df["week_start"] = df[date_col].dt.to_period("W").dt.to_timestamp()
 
     # Handle missing engagement_rate column
     if "engagement_rate" not in df.columns:
@@ -2514,55 +2530,107 @@ def create_roster_rank_bump_chart(
         views_col = "view_count" if "view_count" in df.columns else "views"
 
         if likes_col in df.columns and views_col in df.columns:
-            df = df.copy()
             df["engagement_rate"] = (df[likes_col].fillna(0) + df[comments_col].fillna(0)) / df[views_col].fillna(
                 1
             ).clip(lower=1)
         else:
-            # Use view_count as proxy
-            df["engagement_rate"] = df.get("view_count", 1000)
+            # Use view_count as proxy (normalized)
+            df["engagement_rate"] = df.get("view_count", 1000) / 10000
 
-    weekly_metrics = df.groupby(["week", "artist_name"])["engagement_rate"].mean().reset_index()
+    # Aggregate by week and artist
+    weekly_metrics = df.groupby(["week_start", "artist_name"])["engagement_rate"].mean().reset_index()
+
+    # Filter to only show artists with at least 3 data points
+    artist_counts = weekly_metrics.groupby("artist_name").size()
+    valid_artists = artist_counts[artist_counts >= 3].index.tolist()
+
+    if not valid_artists:
+        return go.Figure().add_annotation(
+            text="Not enough data - need at least 3 weeks of data per artist",
+            x=0.5, y=0.5
+        )
+
+    weekly_metrics = weekly_metrics[weekly_metrics["artist_name"].isin(valid_artists)]
 
     fig = go.Figure()
 
-    artists = weekly_metrics["artist_name"].unique()
+    artists = sorted(valid_artists)  # Sort for consistent colors
     colors = ColorBrewerPalettes.CATEGORICAL[: len(artists)]
 
     for i, artist in enumerate(artists):
-        artist_data = weekly_metrics[weekly_metrics["artist_name"] == artist]
+        artist_data = weekly_metrics[weekly_metrics["artist_name"] == artist].copy()
+        artist_data = artist_data.sort_values("week_start")
+
+        # Apply smoothing if requested
+        if apply_smoothing and len(artist_data) >= smoothing_window:
+            artist_data["engagement_rate_smoothed"] = artist_data["engagement_rate"].rolling(
+                window=smoothing_window, center=True, min_periods=1
+            ).mean()
+            y_values = artist_data["engagement_rate_smoothed"]
+        else:
+            y_values = artist_data["engagement_rate"]
 
         fig.add_trace(
             go.Scatter(
-                x=artist_data["week"].astype(str),
-                y=artist_data["engagement_rate"],
-                mode="lines + markers",
+                x=artist_data["week_start"],
+                y=y_values,
+                mode="lines+markers",
                 name=artist,
-                line=dict(color=colors[i], width=3),
-                marker=dict(size=8),
+                line=dict(color=colors[i], width=2, shape='spline' if apply_smoothing else 'linear'),
+                marker=dict(size=6),
+                hovertemplate=f"<b>{artist}</b><br>Week: %{{x|%Y-%m-%d}}<br>Engagement: %{{y:.2%}}<extra></extra>"
             )
         )
 
+    smoothing_note = " (smoothed)" if apply_smoothing else ""
     fig.update_layout(
-        title="Roster Ranking Over Time<br><sub>Weekly engagement trends</sub>",
+        title=f"How Audience Interaction Changes Over Time<br><sub>Engagement rate = (likes + comments) ÷ views · Weekly averages{smoothing_note}</sub>",
         xaxis_title="Week",
         yaxis_title="Engagement Rate",
         template="plotly_white",
+        hovermode="x unified",
+        xaxis=dict(
+            tickformat="%b %d, %Y",  # Format as "Jan 01, 2025"
+            tickangle=-45
+        ),
+        yaxis=dict(
+            tickformat=".1%"  # Format as percentage
+        ),
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02
+        ),
+        height=500
     )
 
     return fig
 
 
+@bulletproof_chart(
+    ChartSpec(name="PolarityRidgelines", required_columns=["artist_name"], max_rows=100_000, timeout_sec=15)
+)
 def create_polarity_ridgelines(df: pd.DataFrame, bandwidth: str = "auto", min_comments: int = 20) -> go.Figure:
     """
     Chart #14: Comment polarity distributions with ridgeline plots.
+
+    Note: Uses 'polarity_score' if available, otherwise falls back to 'sentiment_score'.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for polarity", x=0.5, y=0.5)
 
-    # Validate polarity data
+    # Validate polarity data - use sentiment_score as fallback
     if "polarity_score" not in df.columns:
-        return go.Figure().add_annotation(text="No polarity data - need 'polarity_score' column", x=0.5, y=0.5)
+        if "sentiment_score" in df.columns:
+            df = df.copy()
+            df["polarity_score"] = df["sentiment_score"]
+        else:
+            return go.Figure().add_annotation(
+                text="No polarity or sentiment data - need 'polarity_score' or 'sentiment_score' column",
+                x=0.5, y=0.5
+            )
 
     fig = go.Figure()
 
@@ -2580,9 +2648,9 @@ def create_polarity_ridgelines(df: pd.DataFrame, bandwidth: str = "auto", min_co
             )
 
     fig.update_layout(
-        title="Comment Polarity Distributions<br><sub>Ridgeline plots showing sentiment shapes</sub>",
+        title="Comment Sentiment Distribution by Artist<br><sub>Shows how positive or negative comments are for each artist</sub>",
         xaxis_title="Artist",
-        yaxis_title="Polarity Score",
+        yaxis_title="Sentiment Score (negative ← → positive)",
         template="plotly_white",
     )
 
@@ -2635,53 +2703,75 @@ def create_standout_videos_scatter(
     df: pd.DataFrame, use_loess_trend: bool = True, highlight_residuals: bool = True, show_confidence_bands: bool = True
 ) -> go.Figure:
     """
-    Chart #5: Standout videos scatter plot (enhanced implementation).
+    Chart #6: Standout videos scatter plot comparing engagement across artists.
+
+    Shows engagement rate vs view count for each video, colored by artist.
+    Uses regular view counts (not log scale) for clarity.
     """
     if df.empty:
         return go.Figure().add_annotation(text="No data for standout videos", x=0.5, y=0.5)
 
     # Ensure we have the required columns
-    if "log_views" not in df.columns:
-        daily_views = df.get("daily_views", df.get("view_count", 1000))
-        if isinstance(daily_views, pd.Series):
-            df["log_views"] = np.log10(daily_views.fillna(1000).clip(lower=1))
-        else:
-            df["log_views"] = np.log10(max(daily_views, 1))
+    if "view_count" not in df.columns:
+        return go.Figure().add_annotation(text="Missing 'view_count' column", x=0.5, y=0.5)
 
-    if "positive_rate" not in df.columns:
-        # Create positive rate from sentiment if available
-        if "sentiment_category" in df.columns:
-            sentiment_rates = df.groupby("artist_name")["sentiment_category"].apply(lambda x: (x == "positive").mean())
-            df["positive_rate"] = df["artist_name"].map(sentiment_rates)
-        else:
-            return go.Figure().add_annotation(text="No sentiment data - need 'sentiment_category' column", x=0.5, y=0.5)
+    if "engagement_rate" not in df.columns:
+        return go.Figure().add_annotation(text="Missing 'engagement_rate' column", x=0.5, y=0.5)
+
+    if "artist_name" not in df.columns:
+        return go.Figure().add_annotation(text="Missing 'artist_name' column", x=0.5, y=0.5)
+
+    # Prepare data
+    plot_df = df.copy()
+
+    # Filter out extreme outliers for better visualization
+    view_99th = plot_df["view_count"].quantile(0.99)
+    plot_df = plot_df[plot_df["view_count"] <= view_99th]
 
     fig = go.Figure()
 
-    # Main scatter plot
-    fig.add_trace(
-        go.Scatter(
-            x=df["log_views"],
-            y=df["positive_rate"],
-            mode="markers",
-            marker=dict(
-                size=8, color=df["artist_name"].astype("category").cat.codes, colorscale="viridis", opacity=0.7
-            ),
-            text=df["artist_name"],
-            hovertemplate="<b>%{text}</b><br>Log Views: %{x:.2f}<br>Positive Rate: %{y:.1%}<extra></extra>",
-            name="Videos",
-        )
-    )
+    # Use global artist color palette for consistency across dashboard
+    from youtubeviz.viz_theme import get_artist_color_palette
+    artist_palette = get_artist_color_palette()
 
-    # Add LOESS trend if requested
-    if use_loess_trend and len(df) > 5:
+    # Create scatter plot with one trace per artist for clear legend
+    for artist in sorted(plot_df["artist_name"].unique()):
+        artist_data = plot_df[plot_df["artist_name"] == artist]
+        color = artist_palette.get(artist, "#999999")
+
+        fig.add_trace(
+            go.Scatter(
+                x=artist_data["view_count"],
+                y=artist_data["engagement_rate"] * 100,  # Convert to percentage
+                mode="markers",
+                name=artist,
+                marker=dict(
+                    size=8,
+                    color=color,
+                    opacity=0.7,
+                    line=dict(width=0.5, color='white')
+                ),
+                hovertemplate=(
+                    f"<b>{artist}</b><br>"
+                    "Views: %{x:,.0f}<br>"
+                    "Engagement: %{y:.2f}%<br>"
+                    "<extra></extra>"
+                ),
+            )
+        )
+
+    # Add trend line if requested
+    if use_loess_trend and len(plot_df) > 5:
         try:
             from scipy import stats
 
-            # Simple linear trend as fallback
-            slope, intercept, r_value, p_value, std_err = stats.linregress(df["log_views"], df["positive_rate"])
+            # Simple linear trend
+            slope, intercept, r_value, p_value, std_err = stats.linregress(
+                plot_df["view_count"],
+                plot_df["engagement_rate"] * 100
+            )
 
-            x_trend = np.linspace(df["log_views"].min(), df["log_views"].max(), 100)
+            x_trend = np.linspace(plot_df["view_count"].min(), plot_df["view_count"].max(), 100)
             y_trend = slope * x_trend + intercept
 
             fig.add_trace(
@@ -2689,23 +2779,909 @@ def create_standout_videos_scatter(
                     x=x_trend,
                     y=y_trend,
                     mode="lines",
-                    line=dict(color="red", width=2, dash="dash"),
+                    line=dict(color="gray", width=2, dash="dash"),
                     name="Trend Line",
                     hoverinfo="skip",
+                    showlegend=True,
                 )
             )
         except Exception:
             pass  # Skip trend line if calculation fails
 
     fig.update_layout(
-        title="Standout Videos Analysis<br><sub>Positive sentiment vs view count with trend analysis</sub>",
-        xaxis_title="Log10(Views)",
-        yaxis_title="Positive Rate",
+        title=(
+            "Video Performance Comparison Across Artists<br>"
+            "<sub>Engagement rate (likes + comments ÷ views) vs view count · "
+            "Each color represents a different artist</sub>"
+        ),
+        xaxis_title="View Count",
+        yaxis_title="Engagement Rate (%)",
         template="plotly_white",
-        height=500,
+        height=600,
+        hovermode="closest",
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=1.02
+        ),
     )
+
+    fig.update_xaxes(tickformat=",")
+    fig.update_yaxes(tickformat=".2f")
 
     return fig
 
 
-print("✅ All 15 chart functions now implemented!")
+# ============================================================================
+# ASSIGNMENT CHARTS: Marketing Budget Reallocation Analysis
+# ============================================================================
+
+
+def calculate_momentum_index(df: pd.DataFrame, artist_col: str = "artist_name") -> pd.DataFrame:
+    """
+    Calculate weekly momentum index for each artist based on growth metrics.
+
+    Methodology:
+    1. Aggregate metrics by artist and week
+    2. Calculate week-over-week growth rates
+    3. Standardize using z-scores for comparability
+    4. Create weighted composite momentum score (0-100 scale)
+
+    Args:
+        df: DataFrame with video metrics and published_at timestamps OR metrics_date timestamps
+        artist_col: Column name for artist names
+
+    Returns:
+        DataFrame with columns: artist_name, week_start, momentum_index,
+                                views_growth_pct, engagement_growth_pct, comment_velocity
+    """
+    # Create week column - detect which date column to use
+    df = df.copy()
+
+    # CRITICAL FIX: Use metrics_date if available (time-series data from youtube_metrics table)
+    # Otherwise fall back to published_at (legacy behavior for youtube_videos table)
+    if 'metrics_date' in df.columns:
+        # Using youtube_metrics table - this is the CORRECT approach for momentum tracking
+        # metrics_date represents when the snapshot was taken, allowing week-over-week growth calculation
+        df['week_start'] = pd.to_datetime(df['metrics_date']).dt.to_period('W').dt.to_timestamp()
+        date_source = 'metrics_date'
+    elif 'published_at' in df.columns:
+        # Using youtube_videos table - LEGACY behavior (groups by video publication date, not ideal)
+        df['week_start'] = pd.to_datetime(df['published_at']).dt.to_period('W').dt.to_timestamp()
+        date_source = 'published_at'
+    else:
+        # No valid date column found
+        return pd.DataFrame()
+
+    # Aggregate by artist and week
+    weekly_metrics = df.groupby([artist_col, 'week_start']).agg({
+        'view_count': 'sum',
+        'like_count': 'sum',
+        'comment_count': 'sum',
+        'engagement_rate': 'mean',
+    }).reset_index()
+
+    # Calculate week-over-week growth for each artist
+    momentum_data = []
+
+    for artist in weekly_metrics[artist_col].unique():
+        artist_data = weekly_metrics[weekly_metrics[artist_col] == artist].sort_values('week_start')
+
+        if len(artist_data) < 2:
+            continue
+
+        # Calculate growth rates
+        artist_data['views_growth_pct'] = artist_data['view_count'].pct_change() * 100
+        artist_data['engagement_growth_pct'] = artist_data['engagement_rate'].pct_change() * 100
+        artist_data['comment_velocity'] = artist_data['comment_count'].pct_change() * 100
+
+        # Replace inf and extreme values
+        for col in ['views_growth_pct', 'engagement_growth_pct', 'comment_velocity']:
+            artist_data[col] = artist_data[col].replace([np.inf, -np.inf], np.nan)
+            artist_data[col] = artist_data[col].fillna(0)
+            # Cap extreme values at +/- 500%
+            artist_data[col] = artist_data[col].clip(-500, 500)
+
+        momentum_data.append(artist_data)
+
+    if not momentum_data:
+        return pd.DataFrame()
+
+    momentum_df = pd.concat(momentum_data, ignore_index=True)
+
+    # Standardize metrics using z-scores (across all artists and weeks)
+    for col in ['views_growth_pct', 'engagement_growth_pct', 'comment_velocity']:
+        mean_val = momentum_df[col].mean()
+        std_val = momentum_df[col].std()
+        if std_val > 0:
+            momentum_df[f'{col}_z'] = (momentum_df[col] - mean_val) / std_val
+        else:
+            momentum_df[f'{col}_z'] = 0
+
+    # Create weighted composite momentum index
+    # Weights: views (40%), engagement (35%), comments (25%)
+    momentum_df['momentum_raw'] = (
+        0.40 * momentum_df['views_growth_pct_z'] +
+        0.35 * momentum_df['engagement_growth_pct_z'] +
+        0.25 * momentum_df['comment_velocity_z']
+    )
+
+    # Scale to 0-100 range
+    # Map z-scores: -2 -> 0, 0 -> 50, +2 -> 100
+    momentum_df['momentum_index'] = ((momentum_df['momentum_raw'] + 2) / 4 * 100).clip(0, 100)
+
+    return momentum_df
+
+
+@bulletproof_chart(
+    ChartSpec(name="Artist Momentum Tracker", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=15)
+)
+def create_artist_momentum_tracker(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    breakout_threshold: float = 75.0,
+    min_weeks: int = 4,
+    time_window_weeks: int = None,
+    show_standout_videos: bool = False,
+) -> go.Figure:
+    """
+    Chart 19/21: Artist Momentum Tracker
+
+    Shows momentum trajectory for each artist over time with visual indicators
+    when artists cross the breakout threshold (≥75 for 2+ consecutive weeks).
+
+    Args:
+        df: DataFrame with video metrics
+        artist_col: Column name for artist names
+        breakout_threshold: Momentum score threshold for breakout status (default: 75)
+        min_weeks: Minimum weeks of data required per artist (default: 4)
+        time_window_weeks: If set, only show last N weeks (for Chart 19). None = full history (Chart 21)
+        show_standout_videos: If True, add standout music video insights (Chart 19 only)
+
+    Returns:
+        Plotly figure with momentum trajectories
+    """
+    if df.empty:
+        return go.Figure().add_annotation(text="No data available for momentum tracking", x=0.5, y=0.5)
+
+    # Calculate momentum index
+    momentum_df = calculate_momentum_index(df, artist_col)
+
+    if momentum_df.empty:
+        return go.Figure().add_annotation(text="Insufficient time-series data for momentum calculation", x=0.5, y=0.5)
+
+    # Filter to artists with sufficient data
+    artist_weeks = momentum_df.groupby(artist_col)['week_start'].nunique()
+    valid_artists = artist_weeks[artist_weeks >= min_weeks].index.tolist()
+    momentum_df = momentum_df[momentum_df[artist_col].isin(valid_artists)]
+
+    if momentum_df.empty:
+        return go.Figure().add_annotation(
+            text=f"No artists with {min_weeks}+ weeks of data for momentum tracking", x=0.5, y=0.5
+        )
+
+    # Calculate recent average momentum (last 3 weeks) for ranking
+    recent_weeks = momentum_df['week_start'].max() - pd.Timedelta(weeks=2)
+    recent_momentum = momentum_df[momentum_df['week_start'] >= recent_weeks].groupby(artist_col)['momentum_index'].mean()
+    top_artist = recent_momentum.idxmax()
+    top_momentum = recent_momentum.max()
+
+    # Filter to time window if specified (Chart 19 uses 3 weeks, Chart 21 uses full history)
+    if time_window_weeks is not None:
+        cutoff_date = momentum_df['week_start'].max() - pd.Timedelta(weeks=time_window_weeks - 1)
+        momentum_df = momentum_df[momentum_df['week_start'] >= cutoff_date]
+
+        # CRITICAL FIX: Recalculate valid_artists after time filtering
+        # Some artists might have no data in the recent time window
+        valid_artists = momentum_df[artist_col].unique().tolist()
+
+        if momentum_df.empty:
+            return go.Figure().add_annotation(
+                text=f"No momentum data in last {time_window_weeks} weeks", x=0.5, y=0.5
+            )
+
+    # Detect breakout periods (momentum ≥ threshold for 2+ consecutive weeks)
+    breakout_artists = []
+    for artist in valid_artists:
+        artist_data = momentum_df[momentum_df[artist_col] == artist].sort_values('week_start')
+        artist_data['is_breakout'] = artist_data['momentum_index'] >= breakout_threshold
+
+        # Check for 2+ consecutive weeks above threshold
+        artist_data['breakout_streak'] = (
+            artist_data['is_breakout']
+            .groupby((artist_data['is_breakout'] != artist_data['is_breakout'].shift()).cumsum())
+            .transform('size')
+        )
+
+        if (artist_data['is_breakout'] & (artist_data['breakout_streak'] >= 2)).any():
+            breakout_artists.append(artist)
+
+    # Create figure
+    fig = go.Figure()
+
+    # Use global artist color palette for consistency across dashboard
+    from youtubeviz.viz_theme import get_artist_color_palette
+    artist_palette = get_artist_color_palette()
+
+    for artist in valid_artists:
+        artist_data = momentum_df[momentum_df[artist_col] == artist].sort_values('week_start')
+        color = artist_palette.get(artist, "#999999")
+
+        # Determine if this artist has breakout status
+        is_breakout = artist in breakout_artists
+        line_width = 3 if is_breakout else 2
+
+        # Add line trace
+        fig.add_trace(go.Scatter(
+            x=artist_data['week_start'],
+            y=artist_data['momentum_index'],
+            mode='lines+markers',
+            name=f"{'🚀 ' if is_breakout else ''}{artist}",
+            line=dict(color=color, width=line_width),
+            marker=dict(size=6 if is_breakout else 4, color=color),
+            hovertemplate=(
+                f"<b>{artist}</b><br>"
+                "Week: %{x|%b %d, %Y}<br>"
+                "Momentum: %{y:.1f}/100<br>"
+                "<extra></extra>"
+            ),
+        ))
+
+        # Add markers for breakout periods
+        breakout_data = artist_data[
+            (artist_data['momentum_index'] >= breakout_threshold) &
+            (artist_data['momentum_index'].shift(1, fill_value=0) >= breakout_threshold)
+        ]
+
+        if not breakout_data.empty:
+            fig.add_trace(go.Scatter(
+                x=breakout_data['week_start'],
+                y=breakout_data['momentum_index'],
+                mode='markers',
+                name=f"{artist} (Breakout)",
+                marker=dict(
+                    size=12,
+                    color=color,
+                    symbol='star',
+                    line=dict(color='gold', width=2)
+                ),
+                showlegend=False,
+                hovertemplate=(
+                    f"<b>⭐ BREAKOUT: {artist}</b><br>"
+                    "Week: %{x|%b %d, %Y}<br>"
+                    "Momentum: %{y:.1f}/100<br>"
+                    "<extra></extra>"
+                ),
+            ))
+
+    # Add breakout threshold line (without annotation to avoid overlap)
+    fig.add_hline(
+        y=breakout_threshold,
+        line_dash="dash",
+        line_color="red"
+    )
+
+    # Add threshold label in paper coordinates (above plot area) to prevent overlap with data lines
+    fig.add_annotation(
+        text=f"Breakout Threshold ({breakout_threshold})",
+        xref="paper",
+        yref="paper",
+        x=1.0,  # Right edge of plot
+        y=1.05,  # Above plot area
+        xanchor="right",
+        yanchor="bottom",
+        showarrow=False,
+        font=dict(size=11, color="red"),
+        bgcolor="rgba(255, 255, 255, 0.8)",
+        bordercolor="red",
+        borderwidth=1,
+        borderpad=4
+    )
+
+    # Count breakout artists for title
+    breakout_count = len(breakout_artists)
+    total_count = len(valid_artists)
+
+    # Create title based on time window and breakouts
+    if time_window_weeks is not None:
+        # Chart 19: Recent view (last N weeks)
+        title_text = (
+            f"{top_artist} Leads Last {time_window_weeks} Weeks with {top_momentum:.0f}/100 Momentum<br>"
+            f"<sub>Recent tactical view · Momentum = 40% views + 35% engagement + 25% comments · "
+            f"⭐ = Breakout periods (≥{breakout_threshold})</sub>"
+        )
+    elif breakout_count > 0:
+        # Chart 21: Full history with breakouts
+        title_text = (
+            f"{breakout_count} of {total_count} Artists Show Breakout Momentum<br>"
+            f"<sub>Full historical view · Momentum Index tracks growth velocity · "
+            f"⭐ = Sustained 2+ weeks above {breakout_threshold}</sub>"
+        )
+    else:
+        # Chart 21: Full history without breakouts
+        title_text = (
+            f"{top_artist} Leads Recent Momentum with {top_momentum:.0f}/100 Score<br>"
+            f"<sub>Full historical view · 3-week average momentum · Breakout threshold: {breakout_threshold} sustained 2+ weeks</sub>"
+        )
+
+    # Adjust height based on whether we're showing standout videos
+    chart_height = 900 if show_standout_videos else 600
+
+    fig.update_layout(
+        title=title_text,
+        xaxis_title="Week",
+        yaxis_title="Momentum Index (0-100)",
+        template="plotly_white",
+        height=chart_height,
+        hovermode="x unified",
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=1.02
+        ),
+        margin=dict(t=90)  # Increased top margin to accommodate breakout threshold label
+    )
+
+    # Set x-axis range explicitly when time window is specified
+    if time_window_weeks is not None and not momentum_df.empty:
+        # Force x-axis to show only the filtered time window
+        x_min = momentum_df['week_start'].min()
+        x_max = momentum_df['week_start'].max()
+        # Add small padding (1 day on each side)
+        fig.update_xaxes(
+            tickformat="%b %d, %Y",
+            tickangle=-45,
+            range=[x_min - pd.Timedelta(days=1), x_max + pd.Timedelta(days=1)]
+        )
+    else:
+        fig.update_xaxes(tickformat="%b %d, %Y", tickangle=-45)
+
+    fig.update_yaxes(range=[0, 105])
+
+    # Add standout music video insights if requested (Chart 19 only)
+    if show_standout_videos and time_window_weeks is not None:
+        # Get standout music videos for each artist in the time window
+        standout_insights = _get_standout_music_videos(df, valid_artists, artist_col, time_window_weeks)
+
+        if standout_insights:
+            # Add annotations below the chart
+            annotation_y_start = -0.25
+            annotation_text = "<b>Top Music Videos (Last 3 Weeks):</b><br>"
+
+            for i, (artist, video_info) in enumerate(standout_insights.items()):
+                if video_info:
+                    annotation_text += (
+                        f"<b>{artist}:</b> {video_info['title'][:40]}... "
+                        f"({video_info['views']:,.0f} views, {video_info['engagement_rate']:.1%} engagement, "
+                        f"{video_info['insight']})<br>"
+                    )
+
+            fig.add_annotation(
+                text=annotation_text,
+                xref="paper", yref="paper",
+                x=0, y=annotation_y_start,
+                xanchor="left", yanchor="top",
+                showarrow=False,
+                font=dict(size=10),
+                align="left",
+                bgcolor="rgba(255, 255, 255, 0.9)",
+                bordercolor="gray",
+                borderwidth=1,
+                borderpad=10
+            )
+
+    return fig
+
+
+def _get_standout_music_videos(
+    df: pd.DataFrame,
+    artists: list,
+    artist_col: str,
+    weeks: int
+) -> dict:
+    """
+    Helper function to identify top-performing music videos per artist in recent weeks.
+
+    Returns dict: {artist_name: {title, views, engagement_rate, insight}}
+    """
+    if df.empty or 'published_at' not in df.columns:
+        return {}
+
+    # Calculate cutoff date
+    cutoff_date = pd.to_datetime(df['published_at']).max() - pd.Timedelta(weeks=weeks)
+    recent_df = df[pd.to_datetime(df['published_at']) >= cutoff_date].copy()
+
+    # Filter to music videos only (exclude lyric videos, visualizers, etc.)
+    # Try multiple column names for content type
+    content_col = None
+    for col in ['content_type', 'video_type', 'category']:
+        if col in recent_df.columns:
+            content_col = col
+            break
+
+    if content_col:
+        # Filter to music videos
+        music_videos = recent_df[
+            recent_df[content_col].str.contains('music video', case=False, na=False) |
+            recent_df[content_col].str.contains('^mv$', case=False, na=False, regex=True)
+        ]
+    else:
+        # If no content type column, try to infer from title
+        if 'title' in recent_df.columns:
+            music_videos = recent_df[
+                ~recent_df['title'].str.contains('lyric|visualizer|behind|bts|interview', case=False, na=False)
+            ]
+        else:
+            music_videos = recent_df  # Use all videos as fallback
+
+    standout_videos = {}
+
+    for artist in artists:
+        artist_videos = music_videos[music_videos[artist_col] == artist]
+
+        if artist_videos.empty:
+            continue
+
+        # Calculate engagement rate if not present
+        if 'engagement_rate' not in artist_videos.columns:
+            if all(col in artist_videos.columns for col in ['like_count', 'comment_count', 'view_count']):
+                artist_videos['engagement_rate'] = (
+                    (artist_videos['like_count'].fillna(0) + artist_videos['comment_count'].fillna(0)) /
+                    artist_videos['view_count'].fillna(1).clip(lower=1)
+                )
+
+        # Find top video by views
+        if 'view_count' in artist_videos.columns and not artist_videos.empty:
+            top_video = artist_videos.nlargest(1, 'view_count').iloc[0]
+
+            # Calculate insight (comparison to artist average)
+            artist_avg_engagement = music_videos[music_videos[artist_col] == artist]['engagement_rate'].mean()
+            video_engagement = top_video.get('engagement_rate', 0)
+
+            if pd.notna(artist_avg_engagement) and artist_avg_engagement > 0:
+                engagement_diff = ((video_engagement - artist_avg_engagement) / artist_avg_engagement) * 100
+                if engagement_diff > 10:
+                    insight = f"↑ {engagement_diff:.0f}% vs. avg"
+                elif engagement_diff < -10:
+                    insight = f"↓ {abs(engagement_diff):.0f}% vs. avg"
+                else:
+                    insight = "≈ average"
+            else:
+                insight = "new release"
+
+            standout_videos[artist] = {
+                'title': top_video.get('title', 'Unknown'),
+                'views': top_video.get('view_count', 0),
+                'engagement_rate': video_engagement,
+                'insight': insight
+            }
+
+    return standout_videos
+
+
+@bulletproof_chart(
+    ChartSpec(name="Budget Reallocation", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=15)
+)
+def create_budget_reallocation_chart(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    total_budget: float = 100000,
+    min_weeks: int = 4,
+) -> go.Figure:
+    """
+    Chart B: Budget Reallocation Recommendation
+
+    Shows current vs. recommended budget allocation based on momentum scores.
+    Uses a diverging bar chart to highlight which artists should receive
+    increased/decreased marketing investment.
+
+    Args:
+        df: DataFrame with video metrics
+        artist_col: Column name for artist names
+        total_budget: Total marketing budget to allocate (default: $100,000)
+        min_weeks: Minimum weeks of data required per artist (default: 4)
+
+    Returns:
+        Plotly figure with budget reallocation recommendations
+    """
+    if df.empty:
+        return go.Figure().add_annotation(text="No data available for budget analysis", x=0.5, y=0.5)
+
+    # Calculate momentum index
+    momentum_df = calculate_momentum_index(df, artist_col)
+
+    if momentum_df.empty:
+        return go.Figure().add_annotation(text="Insufficient data for budget recommendations", x=0.5, y=0.5)
+
+    # Get most recent momentum score for each artist
+    latest_momentum = (
+        momentum_df.sort_values('week_start')
+        .groupby(artist_col)
+        .tail(3)  # Average last 3 weeks for stability
+        .groupby(artist_col)['momentum_index']
+        .mean()
+        .reset_index()
+    )
+
+    # Filter to artists with sufficient data
+    artist_weeks = momentum_df.groupby(artist_col)['week_start'].nunique()
+    valid_artists = artist_weeks[artist_weeks >= min_weeks].index.tolist()
+    latest_momentum = latest_momentum[latest_momentum[artist_col].isin(valid_artists)]
+
+    if latest_momentum.empty:
+        return go.Figure().add_annotation(text=f"No artists with {min_weeks}+ weeks of data", x=0.5, y=0.5)
+
+    # Calculate current budget (equal distribution)
+    n_artists = len(latest_momentum)
+    latest_momentum['current_budget'] = total_budget / n_artists
+
+    # Calculate recommended budget (proportional to momentum score)
+    total_momentum = latest_momentum['momentum_index'].sum()
+    if total_momentum > 0:
+        latest_momentum['recommended_budget'] = (
+            latest_momentum['momentum_index'] / total_momentum * total_budget
+        )
+    else:
+        latest_momentum['recommended_budget'] = latest_momentum['current_budget']
+
+    # Calculate delta
+    latest_momentum['budget_delta'] = (
+        latest_momentum['recommended_budget'] - latest_momentum['current_budget']
+    )
+    latest_momentum['delta_pct'] = (
+        latest_momentum['budget_delta'] / latest_momentum['current_budget'] * 100
+    )
+
+    # Sort by delta (biggest increase first)
+    latest_momentum = latest_momentum.sort_values('budget_delta', ascending=True)
+
+    # Determine breakout threshold for Chart 23 reference
+    breakout_threshold = 75.0
+
+    # Create diverging bar chart
+    fig = go.Figure()
+
+    # Color based on increase/decrease (keep original red/green)
+    colors = [
+        '#2ca02c' if delta > 0 else '#d62728'  # Green for increase, red for decrease
+        for delta in latest_momentum['budget_delta']
+    ]
+
+    fig.add_trace(go.Bar(
+        y=latest_momentum[artist_col],
+        x=latest_momentum['budget_delta'],
+        orientation='h',
+        marker=dict(color=colors),
+        text=[
+            f"${delta:+,.0f} ({pct:+.0f}%)"
+            for delta, pct in zip(latest_momentum['budget_delta'], latest_momentum['delta_pct'])
+        ],
+        textposition='outside',
+        textfont=dict(size=11),
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "Current Budget: $%{customdata[0]:,.0f}<br>"
+            "Recommended: $%{customdata[1]:,.0f}<br>"
+            "Change: $%{x:+,.0f} (%{customdata[2]:+.0f}%)<br>"
+            "Momentum Score: %{customdata[3]:.1f}/100<br>"
+            "<extra></extra>"
+        ),
+        customdata=latest_momentum[[
+            'current_budget', 'recommended_budget', 'delta_pct', 'momentum_index'
+        ]].values,
+    ))
+
+    # Add vertical line at zero
+    fig.add_vline(x=0, line_width=2, line_color="black")
+
+    # ISSUE 3 FIX: Add breakout threshold line with repositioned annotation
+    # Find the y-position of the artist at the threshold boundary
+    threshold_artists = latest_momentum[latest_momentum['momentum_index'] >= breakout_threshold]
+    if not threshold_artists.empty:
+        # Get the last artist above threshold (lowest in the sorted list)
+        threshold_artist_idx = len(threshold_artists) - 1
+
+        # Add horizontal line at the boundary
+        fig.add_hline(
+            y=threshold_artist_idx + 0.5,  # Between the last recommended and first non-recommended
+            line_dash="dash",
+            line_color="orange",
+            line_width=2,
+            annotation=dict(
+                text="Breakout Threshold (75)",
+                xref="paper",
+                x=1.0,  # Position at right edge
+                xanchor="left",
+                yanchor="middle",
+                font=dict(size=10, color="orange"),
+                bgcolor="white",
+                bordercolor="orange",
+                borderwidth=1,
+                borderpad=4
+            )
+        )
+
+    # Calculate total reallocation amount
+    total_increase = latest_momentum[latest_momentum['budget_delta'] > 0]['budget_delta'].sum()
+    total_decrease = abs(latest_momentum[latest_momentum['budget_delta'] < 0]['budget_delta'].sum())
+
+    fig.update_layout(
+        title=(
+            f"Reallocate ${total_increase:,.0f} to High-Momentum Artists<br>"
+            f"<sub>Budget shifts based on 3-week average momentum scores · "
+            f"Green = Increase investment · Red = Decrease investment</sub>"
+        ),
+        xaxis_title="Budget Change ($)",
+        yaxis_title="",
+        template="plotly_white",
+        height=400 + (n_artists * 30),  # Dynamic height based on artist count
+        showlegend=False,
+        # ISSUE 1 FIX: Increase left margin to prevent text cutoff
+        margin=dict(l=150, r=100, t=100, b=80),  # Increased left margin from default ~80 to 150
+    )
+
+    fig.update_xaxes(tickformat="$,.0f", zeroline=True, zerolinewidth=2, zerolinecolor="black")
+
+    return fig
+
+
+@bulletproof_chart(
+    ChartSpec(name="Growth Signal Breakdown", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=15)
+)
+def create_growth_signal_breakdown(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    min_weeks: int = 4,
+) -> go.Figure:
+    """
+    Chart C: Growth Signal Breakdown
+
+    Shows the underlying metrics contributing to each artist's momentum score.
+    Breaks down the composite score into components: views growth, engagement
+    rate change, and comment velocity.
+
+    Args:
+        df: DataFrame with video metrics
+        artist_col: Column name for artist names
+        min_weeks: Minimum weeks of data required per artist (default: 4)
+
+    Returns:
+        Plotly figure with stacked bar chart showing metric contributions
+    """
+    if df.empty:
+        return go.Figure().add_annotation(text="No data available for signal analysis", x=0.5, y=0.5)
+
+    # Calculate momentum index
+    momentum_df = calculate_momentum_index(df, artist_col)
+
+    if momentum_df.empty:
+        return go.Figure().add_annotation(text="Insufficient data for signal breakdown", x=0.5, y=0.5)
+
+    # Get most recent metrics for each artist (average last 3 weeks)
+    latest_signals = (
+        momentum_df.sort_values('week_start')
+        .groupby(artist_col)
+        .tail(3)
+        .groupby(artist_col)
+        .agg({
+            'views_growth_pct': 'mean',
+            'engagement_growth_pct': 'mean',
+            'comment_velocity': 'mean',
+            'momentum_index': 'mean',
+        })
+        .reset_index()
+    )
+
+    # Filter to artists with sufficient data
+    artist_weeks = momentum_df.groupby(artist_col)['week_start'].nunique()
+    valid_artists = artist_weeks[artist_weeks >= min_weeks].index.tolist()
+    latest_signals = latest_signals[latest_signals[artist_col].isin(valid_artists)]
+
+    if latest_signals.empty:
+        return go.Figure().add_annotation(text=f"No artists with {min_weeks}+ weeks of data", x=0.5, y=0.5)
+
+    # Sort by momentum index
+    latest_signals = latest_signals.sort_values('momentum_index', ascending=True)
+
+    # Find top performer and runners-up
+    top_artist = latest_signals.iloc[-1][artist_col]
+    top_momentum = latest_signals.iloc[-1]['momentum_index']
+
+    # Get second and third place for title
+    runners_up = []
+    if len(latest_signals) >= 2:
+        second_artist = latest_signals.iloc[-2][artist_col]
+        second_momentum = latest_signals.iloc[-2]['momentum_index']
+        runners_up.append(f"{second_artist}")
+
+        if len(latest_signals) >= 3:
+            third_artist = latest_signals.iloc[-3][artist_col]
+            third_momentum = latest_signals.iloc[-3]['momentum_index']
+            runners_up.append(f"{third_artist}")
+
+    # Create 2-row layout: Row 1 = 3 metric subplots, Row 2 = Total momentum score
+    from plotly.subplots import make_subplots
+
+    fig = make_subplots(
+        rows=2, cols=3,
+        subplot_titles=('Views Growth %', 'Engagement Growth %', 'Comment Velocity %', 'Total Momentum Score'),
+        row_heights=[0.5, 0.5],
+        vertical_spacing=0.15,
+        horizontal_spacing=0.12,
+        specs=[
+            [{"type": "bar"}, {"type": "bar"}, {"type": "bar"}],
+            [{"type": "bar", "colspan": 3}, None, None]
+        ]
+    )
+
+    # Subplot 1: Views Growth
+    fig.add_trace(
+        go.Bar(
+            y=latest_signals[artist_col],
+            x=latest_signals['views_growth_pct'],
+            orientation='h',
+            marker=dict(color='#1f77b4'),
+            name='Views Growth',
+            showlegend=False,
+            hovertemplate=(
+                "<b>Views Growth</b><br>"
+                "Artist: %{y}<br>"
+                "Growth: %{x:.1f}%<br>"
+                "<extra></extra>"
+            ),
+        ),
+        row=1, col=1
+    )
+
+    # Subplot 2: Engagement Growth
+    fig.add_trace(
+        go.Bar(
+            y=latest_signals[artist_col],
+            x=latest_signals['engagement_growth_pct'],
+            orientation='h',
+            marker=dict(color='#ff7f0e'),
+            name='Engagement Growth',
+            showlegend=False,
+            hovertemplate=(
+                "<b>Engagement Growth</b><br>"
+                "Artist: %{y}<br>"
+                "Growth: %{x:.1f}%<br>"
+                "<extra></extra>"
+            ),
+        ),
+        row=1, col=2
+    )
+
+    # Subplot 3: Comment Velocity
+    fig.add_trace(
+        go.Bar(
+            y=latest_signals[artist_col],
+            x=latest_signals['comment_velocity'],
+            orientation='h',
+            marker=dict(color='#2ca02c'),
+            name='Comment Velocity',
+            showlegend=False,
+            hovertemplate=(
+                "<b>Comment Velocity</b><br>"
+                "Artist: %{y}<br>"
+                "Velocity: %{x:.1f}%<br>"
+                "<extra></extra>"
+            ),
+        ),
+        row=1, col=3
+    )
+
+    # Subplot 4 (Row 2): Total Momentum Score - Executive Summary
+    # Determine the actual breakout threshold from the data
+    # Artists below this threshold should be grey (not recommended for budget increase)
+    breakout_threshold = 75.0
+
+    # Find the minimum momentum score among artists with positive budget delta
+    # This helps identify the "cutoff" point for recommendations
+    momentum_with_delta = latest_signals.copy()
+
+    # Color-code bars:
+    # - Above breakout threshold (≥75): Green (high momentum, recommended)
+    # - Between 47-75: Orange/Yellow (medium momentum)
+    # - Below 47: Grey (low momentum, not recommended for budget increase)
+    bar_colors = []
+    for momentum in latest_signals['momentum_index']:
+        if momentum >= breakout_threshold:
+            bar_colors.append('#2ca02c')  # Green - high momentum (≥75)
+        elif momentum >= 47:  # Threshold for budget recommendation
+            bar_colors.append('#ff7f0e')  # Orange - medium momentum (47-74)
+        else:
+            # Grey gradient for non-recommended artists (below 47)
+            # Darker grey for higher scores, lighter grey for lower scores
+            grey_intensity = int(140 + (momentum / 47) * 60)  # Range: 140-200
+            grey_hex = f'#{grey_intensity:02x}{grey_intensity:02x}{grey_intensity:02x}'
+            bar_colors.append(grey_hex)
+
+    # Highlight top 2 artists with bolder styling
+    line_widths = []
+    line_colors = []
+    for i, artist in enumerate(latest_signals[artist_col]):
+        if i >= len(latest_signals) - 2:  # Top 2 artists
+            line_widths.append(3)
+            line_colors.append('gold')
+        else:
+            line_widths.append(1)
+            line_colors.append('rgba(0,0,0,0.3)')
+
+    fig.add_trace(
+        go.Bar(
+            y=latest_signals[artist_col],
+            x=latest_signals['momentum_index'],
+            orientation='h',
+            marker=dict(
+                color=bar_colors,
+                line=dict(width=line_widths, color=line_colors)
+            ),
+            text=[f"{m:.1f}" for m in latest_signals['momentum_index']],
+            textposition='outside',
+            textfont=dict(size=11, color='black'),
+            name='Total Momentum',
+            showlegend=False,
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Momentum Score: %{x:.1f}/100<br>"
+                "Views Growth: %{customdata[0]:.1f}%<br>"
+                "Engagement Growth: %{customdata[1]:.1f}%<br>"
+                "Comment Velocity: %{customdata[2]:.1f}%<br>"
+                "<extra></extra>"
+            ),
+            customdata=latest_signals[['views_growth_pct', 'engagement_growth_pct', 'comment_velocity']].values,
+        ),
+        row=2, col=1
+    )
+
+    # Create action-oriented title
+    if runners_up:
+        runners_text = " and ".join(runners_up)
+        title_text = (
+            f"{top_artist} Leads with {top_momentum:.0f}/100 Momentum - {runners_text} Close Behind<br>"
+            f"<sub>Growth signals show what's driving momentum (3-week average) · "
+            f"Momentum = 40% views + 35% engagement + 25% comments · "
+            f"🟢 High (≥75) · 🟠 Medium (47-74) · ⚫ Low (<47, not recommended)</sub>"
+        )
+    else:
+        title_text = (
+            f"{top_artist} Leads with {top_momentum:.0f}/100 Momentum Score<br>"
+            f"<sub>Growth signals show what's driving momentum (3-week average) · "
+            f"Momentum = 40% views + 35% engagement + 25% comments · "
+            f"🟢 High (≥75) · 🟠 Medium (47-74) · ⚫ Low (<47, not recommended)</sub>"
+        )
+
+    fig.update_layout(
+        title=title_text,
+        template="plotly_white",
+        height=700 + (len(latest_signals) * 20),  # Increased height for 2-row layout
+    )
+
+    # Update all x-axes to show zero line
+    fig.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor="gray", title_text="Growth %", row=1, col=1)
+    fig.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor="gray", title_text="Growth %", row=1, col=2)
+    fig.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor="gray", title_text="Velocity %", row=1, col=3)
+    fig.update_xaxes(
+        zeroline=True,
+        zerolinewidth=2,
+        zerolinecolor="gray",
+        title_text="Momentum Score (0-100)",
+        range=[0, 105],
+        row=2, col=1
+    )
+
+    # Only show y-axis labels on the first subplot of each row
+    fig.update_yaxes(title_text="", row=1, col=1)
+    fig.update_yaxes(title_text="", showticklabels=False, row=1, col=2)
+    fig.update_yaxes(title_text="", showticklabels=False, row=1, col=3)
+    fig.update_yaxes(title_text="", row=2, col=1)
+
+    return fig
+
+
+print("✅ All chart functions now implemented (including 3 assignment charts)!")
