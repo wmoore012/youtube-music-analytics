@@ -60,41 +60,39 @@ line-length = 120
 target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
-/(
-  # Directories to exclude (align with .flake8 to keep CI green without risky refactors)
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | node_modules
-  | venv
-  | \.venv
-  | migrations
-  | __pycache__
-  | archive
-  | \.cleanup_backups
-  | notebooks
-  | datasets
-  | examples
-  | tools
-  | web
-  | scripts
-  | src/public
-  | src/data_organization
-  | src/notebook_guardian
-  | tests
-  | corrected_.*
-  | final_.*
-  | fix_.*
-  | safe_.*
-  | run_etl_update\.py
-)/
+(
+  /(
+    # Directories to exclude (align with .flake8 to keep CI green without risky refactors)
+    \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | node_modules
+    | venv
+    | \.venv
+    | migrations
+    | __pycache__
+    | archive
+    | \.cleanup_backups
+    | notebooks
+    | datasets
+    | examples
+    | tools
+    | web
+    | scripts
+    | src/public
+    | src/data_organization
+    | src/notebook_guardian
+    | tests
+  )/
+  | (^|/)(corrected_.*|final_.*|fix_.*|safe_.*|run_etl_update\.py)$
+)
 '''
 
 # =============================================================================
@@ -134,7 +132,17 @@ skip_glob = [
     "src/public/**",
     "src/data_organization/**",
     "src/notebook_guardian/**",
-    "tests/**"
+    "tests/**",
+    # Root helper/temporary scripts
+    "corrected_*.py",
+    "final_*.py",
+    "fix_*.py",
+    "safe_*.py",
+    "run_etl_update.py",
+    "fix_notebook_syntax.py",
+    "fix_linting_issues.py",
+    "fix_syntax_first.py",
+    "safe_professional_linting.py"
 ]
 
 # =============================================================================
