@@ -312,7 +312,7 @@ class BulletproofETLRunner:
             )
             raise ETLError(
                 "Failed to run sentiment analysis",
-                context=context,
+                context={"error": str(e), "duration_seconds": duration},
                 original_error=e,
                 severity=ErrorSeverity.HIGH,  # noqa: F821  # noqa: E501
             )
