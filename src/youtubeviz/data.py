@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
-import os
 from dataclasses import dataclass
 from datetime import date, timedelta
+import json
+import os
 from time import perf_counter
 from typing import Iterable, Optional
 
@@ -149,6 +149,11 @@ def load_artist_daily_metrics(  # noqa: C901
     if end:
         conds.append("m.metrics_date <= :d1")
         params["d1"] = end
+
+    # Ensure essential metadata is present (defensive against partial rows)
+    conds.append("v.title IS NOT NULL")
+    conds.append("v.channel_title IS NOT NULL")
+    conds.append("v.published_at IS NOT NULL")
 
     where = f"WHERE {' AND '.join(conds)}" if conds else ""
 
@@ -329,8 +334,8 @@ def detect_outliers_iqr(
     def _outliers(sub: pd.DataFrame) -> pd.DataFrame:
         q1 = sub[value_col].quantile(0.25)
         q3 = sub[value_col].quantile(0.75)
-        iqr = q3-q1
-        lower = q1-factor * iqr
+        iqr = q3 - q1
+        lower = q1 - factor * iqr
         upper = q3 + factor * iqr
         return sub[(sub[value_col] < lower) | (sub[value_col] > upper)]
 
@@ -637,7 +642,7 @@ def load_recent_window_days(
     if pd.isna(maxd):
         return pd.DataFrame()
     maxd = pd.to_datetime(maxd).date()
-    start = maxd-timedelta(days=days)
+    start = maxd - timedelta(days=days)
     return load_artist_daily_metrics(artists=artists, start=start, end=maxd, engine=eng)
 
 
@@ -900,7 +905,7 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
 
         # Count artists in sentiment data
         end_date = date.today()
-        start_date = end_date-timedelta(days=days)
+        start_date = end_date - timedelta(days=days)
         sentiment_data = load_sentiment_daily(start=start_date, end=end_date, engine=eng)
         sentiment_count = sentiment_data["artist_name"].nunique() if len(sentiment_data) > 0 else 0
 
@@ -943,7 +948,7 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
         if len(sentiment_data) > 0:
             latest_sentiment = sentiment_data["date"].max()
             latest_main_data = recent_data["date"].max()
-            date_diff = (latest_main_data-latest_sentiment).days
+            date_diff = (latest_main_data - latest_sentiment).days
             if date_diff > 1:  # More than 1 day lag
                 temporal_issues.append(f"Sentiment data is {date_diff} days behind main data")
 
