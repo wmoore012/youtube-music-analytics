@@ -1,0 +1,25 @@
+[flake8]
+max-line-length = 120
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    notebooks,
+    datasets,
+    examples,
+    tools,
+    web,
+    scripts,
+    src/public,
+    src/data_organization,
+    src/notebook_guardian
+# Relax non-critical rules to focus CI on correctness first
+ignore =
+    E121,E126,E128,E225,E226,E302,E303,E305,E741,
+    W291,W293,W391,
+    C901,
+    E501
+
