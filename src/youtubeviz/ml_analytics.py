@@ -8,8 +8,8 @@ Includes momentum prediction, content optimization, market positioning, and ROI 
 
 from __future__ import annotations
 
-import warnings
 from typing import Any, Dict, List, Optional
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -218,7 +218,7 @@ def _calculate_breakthrough_probability(df: pd.DataFrame, metrics_cols: List[str
 
     # Convert performance factors to probability
     avg_factor = np.mean(factors)
-    probability = 1 / (1 + np.exp(-(avg_factor-1) * 3))  # Sigmoid transformation
+    probability = 1 / (1 + np.exp(-(avg_factor - 1) * 3))  # Sigmoid transformation
 
     return max(0.1, min(0.9, probability))
 
@@ -241,7 +241,7 @@ def _predict_growth_rate(df: pd.DataFrame, metrics_cols: List[str], horizon_days
 
                 if first_value > 0 and days_span > 0:
                     daily_growth = (last_value / first_value) ** (1 / days_span) - 1
-                    projected_growth = (1 + daily_growth) ** horizon_days-1
+                    projected_growth = (1 + daily_growth) ** horizon_days - 1
                     growth_rates.append(projected_growth)
 
     return np.mean(growth_rates) if growth_rates else 0.0
@@ -586,7 +586,7 @@ def _calculate_engagement_velocity(df: pd.DataFrame, metrics: List[str], window_
                 previous_avg = values.iloc[:-window_days].mean() if len(values) > window_days else values.mean()
 
                 if previous_avg > 0:
-                    velocity = (recent_avg-previous_avg) / previous_avg
+                    velocity = (recent_avg - previous_avg) / previous_avg
                     velocities.append(max(0, min(1, velocity + 0.5)))  # Normalize to [0, 1]
 
     return np.mean(velocities) if velocities else 0.3
@@ -821,7 +821,7 @@ def _forecast_single_metric(df: pd.DataFrame, date_col: str, metric: str, foreca
     residuals = values - (slope * x + intercept)
     residual_std = np.std(residuals)
 
-    confidence_lower = forecast_values-1.96 * residual_std
+    confidence_lower = forecast_values - 1.96 * residual_std
     confidence_upper = forecast_values + 1.96 * residual_std
 
     return {
@@ -875,8 +875,8 @@ def _detect_metric_anomalies(df: pd.DataFrame, metric: str, sensitivity: float, 
     std_val = values.std()
 
     if std_val > 0:
-        z_scores = np.abs((values-mean_val) / std_val)
-        threshold = stats.norm.ppf(1-sensitivity / 2)  # Two-tailed test
+        z_scores = np.abs((values - mean_val) / std_val)
+        threshold = stats.norm.ppf(1 - sensitivity / 2)  # Two-tailed test
 
         anomaly_indices = np.where(z_scores > threshold)[0]
 
@@ -986,7 +986,7 @@ def _calculate_eta_squared(groups: List[np.ndarray]) -> float:
     grand_mean = np.mean(all_values)
 
     ss_between = sum(len(group) * (np.mean(group) - grand_mean) ** 2 for group in groups)
-    ss_total = sum((value-grand_mean) ** 2 for value in all_values)
+    ss_total = sum((value - grand_mean) ** 2 for value in all_values)
 
     return ss_between / ss_total if ss_total > 0 else 0
 
@@ -998,7 +998,7 @@ def _calculate_cohens_d(group1: np.ndarray, group2: np.ndarray) -> float:
     if n1 <= 1 or n2 <= 1:
         return 0
 
-    pooled_std = np.sqrt(((n1-1) * np.var(group1, ddof=1) + (n2-1) * np.var(group2, ddof=1)) / (n1 + n2-2))
+    pooled_std = np.sqrt(((n1 - 1) * np.var(group1, ddof=1) + (n2 - 1) * np.var(group2, ddof=1)) / (n1 + n2 - 2))
 
     return (np.mean(group1) - np.mean(group2)) / pooled_std if pooled_std > 0 else 0
 
@@ -1128,8 +1128,8 @@ def analyze_metric_distributions(
                 # Outlier analysis
                 q1 = values.quantile(0.25)
                 q3 = values.quantile(0.75)
-                iqr = q3-q1
-                lower_bound = q1-1.5 * iqr
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
                 upper_bound = q3 + 1.5 * iqr
 
                 outliers = values[(values < lower_bound) | (values > upper_bound)]
@@ -1166,7 +1166,7 @@ def calculate_confidence_intervals(
         DataFrame with confidence intervals
     """
     intervals = []
-    alpha = 1-confidence_level
+    alpha = 1 - confidence_level
 
     for group in df[group_col].unique():
         group_df = df[df[group_col] == group]
@@ -1182,7 +1182,7 @@ def calculate_confidence_intervals(
 
                     # Calculate confidence interval
                     if SCIPY_AVAILABLE:
-                        t_critical = stats.t.ppf(1-alpha / 2, n-1)
+                        t_critical = stats.t.ppf(1 - alpha / 2, n - 1)
                     else:
                         t_critical = 1.96  # Approximate for large samples
 
@@ -1193,7 +1193,7 @@ def calculate_confidence_intervals(
                             group_col: group,
                             "metric": metric,
                             "mean": round(mean_val, 3),
-                            "ci_lower": round(mean_val-margin_error, 3),
+                            "ci_lower": round(mean_val - margin_error, 3),
                             "ci_upper": round(mean_val + margin_error, 3),
                             "sample_size": n,
                         }
@@ -1246,7 +1246,7 @@ def optimize_marketing_roi(
     recommendations = []
     for artist, allocation in optimal_allocation.items():
         current_spend = df_copy[df_copy[artist_col] == artist][spend_col].iloc[0]
-        change = allocation-current_spend
+        change = allocation - current_spend
 
         if change > 0:
             recommendations.append(f"Increase {artist} budget by ${change:,.0f}")
@@ -1352,7 +1352,7 @@ def calculate_investment_priorities(
                     artist_value = artist_df[metric].mean()
                     metric_range = metric_values.max() - metric_values.min()
                     if metric_range > 0:
-                        normalized_score = (artist_value-metric_values.min()) / metric_range
+                        normalized_score = (artist_value - metric_values.min()) / metric_range
                         current_scores.append(max(0, min(1, normalized_score)))
                     else:
                         current_scores.append(0.5)  # Neutral score if no variance
@@ -1442,7 +1442,7 @@ def identify_market_opportunities(
                         "category": genre,
                         "current_performance": genre_total,
                         "potential": genre_potential,
-                        "gap": genre_potential-genre_total,
+                        "gap": genre_potential - genre_total,
                     }
                 )
 
@@ -1464,7 +1464,7 @@ def identify_market_opportunities(
                     "category": artist,
                     "current_performance": artist_perf,
                     "potential": median_performance,
-                    "gap": median_performance-artist_perf,
+                    "gap": median_performance - artist_perf,
                 }
             )
 
@@ -1473,7 +1473,7 @@ def identify_market_opportunities(
         "total_addressable_market": market_size_estimate,
         "current_capture": total_performance,
         "capture_rate": round(market_capture_rate, 3),
-        "untapped_potential": market_size_estimate-total_performance,
+        "untapped_potential": market_size_estimate - total_performance,
     }
 
     # Generate strategic recommendations
@@ -1798,7 +1798,7 @@ def _generate_viral_indicators(df: pd.DataFrame, artist_col: str, engagement_met
                     # Growth trend
                     if len(values) > 1:
                         growth = values.iloc[-1] / values.iloc[0] if values.iloc[0] > 0 else 1
-                        growth_score = min(1, max(0, (growth-0.5) * 2))  # Normalize around 1.0
+                        growth_score = min(1, max(0, (growth - 0.5) * 2))  # Normalize around 1.0
                     else:
                         growth_score = 0.5
 

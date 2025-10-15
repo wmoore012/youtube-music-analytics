@@ -5,8 +5,8 @@ This module provides music industry-specific sentiment analysis that understands
 slang, AAVE, and cultural context in music fan comments.
 """
 
-import re as regex_module
 from dataclasses import dataclass
+import re as regex_module
 from typing import Dict, List
 
 import pandas as pd
@@ -281,7 +281,7 @@ class MusicIndustrySentimentAnalyzer:
             emoji_score = emoji_score / emoji_count
             # Weight emoji score based on frequency
             emoji_weight = min(0.3, emoji_count * 0.1)
-            sentiment_score = (sentiment_score * (1-emoji_weight)) + (emoji_score * emoji_weight)
+            sentiment_score = (sentiment_score * (1 - emoji_weight)) + (emoji_score * emoji_weight)
 
         # Normalize to [-1, 1] range
         sentiment_score = max(-1.0, min(1.0, sentiment_score))

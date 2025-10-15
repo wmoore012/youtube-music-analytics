@@ -3,8 +3,8 @@ Statistical utilities for data-science grade charts with uncertainty handling.
 Implements Wilson confidence intervals, Bayesian shrinkage, and LOESS smoothing.
 """
 
-import warnings
 from typing import Dict, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -88,24 +88,24 @@ def calculate_wilson_intervals(
     if not HAS_SCIPY:
         # Fallback to simple normal approximation when scipy not available
         z_score = 1.96  # Approximate 95% confidence
-        std_error = np.sqrt(p * (1-p) / totals)
+        std_error = np.sqrt(p * (1 - p) / totals)
         margin = z_score * std_error
 
-        lower = np.maximum(0, p-margin)
+        lower = np.maximum(0, p - margin)
         upper = np.minimum(1, p + margin)
 
         return lower, upper
 
     # Z-score for confidence level
-    z = stats.norm.ppf(1 - (1-confidence) / 2)
+    z = stats.norm.ppf(1 - (1 - confidence) / 2)
     z_squared = z**2
 
     # Wilson interval formula
     denominator = 1 + z_squared / totals
     center = (p + z_squared / (2 * totals)) / denominator
-    margin = z * np.sqrt((p * (1-p) + z_squared / (4 * totals)) / totals) / denominator
+    margin = z * np.sqrt((p * (1 - p) + z_squared / (4 * totals)) / totals) / denominator
 
-    lower = center-margin
+    lower = center - margin
     upper = center + margin
 
     # Ensure bounds are in [0, 1]
@@ -163,11 +163,11 @@ def apply_bayesian_shrinkage(
         # Assume prior equivalent to 10 observations at overall rate
         prior_strength = 10
         prior_alpha = overall_rate * prior_strength
-        prior_beta = (1-overall_rate) * prior_strength
+        prior_beta = (1 - overall_rate) * prior_strength
 
     # Apply Bayesian updating: posterior = prior + observed
     posterior_alpha = prior_alpha + successes
-    posterior_beta = prior_beta + (totals-successes)
+    posterior_beta = prior_beta + (totals - successes)
 
     # Posterior mean (shrunken rate)
     shrunken_rates = posterior_alpha / (posterior_alpha + posterior_beta)
@@ -232,14 +232,14 @@ def apply_loess_smoothing(
     if return_confidence_bands:
         # Calculate residuals for confidence bands
         y_interp = np.interp(x_sorted, x_smooth, y_smooth)
-        residuals = y_sorted-y_interp
+        residuals = y_sorted - y_interp
 
         # Estimate standard error (simplified approach)
         residual_std = np.std(residuals)
-        z_score = stats.norm.ppf(1 - (1-confidence) / 2)
+        z_score = stats.norm.ppf(1 - (1 - confidence) / 2)
         margin = z_score * residual_std
 
-        result["lower"] = y_smooth-margin
+        result["lower"] = y_smooth - margin
         result["upper"] = y_smooth + margin
 
     return result
@@ -265,10 +265,10 @@ def _simple_smoothing(
     if return_confidence_bands:
         # Simple confidence bands based on standard deviation
         std_dev = np.std(y_sorted)
-        z_score = stats.norm.ppf(1 - (1-confidence) / 2)
+        z_score = stats.norm.ppf(1 - (1 - confidence) / 2)
         margin = z_score * std_dev
 
-        result["lower"] = y_smooth-margin
+        result["lower"] = y_smooth - margin
         result["upper"] = y_smooth + margin
 
     return result
@@ -313,4 +313,4 @@ def standardize_residuals(residuals: np.ndarray) -> np.ndarray:
         Standardized residuals (z-scores)
     """
     residuals = np.asarray(residuals)
-    return (residuals-np.mean(residuals)) / np.std(residuals)
+    return (residuals - np.mean(residuals)) / np.std(residuals)

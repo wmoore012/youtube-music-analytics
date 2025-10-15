@@ -249,7 +249,7 @@ class EnhancedSentimentPipeline:
             "current_score_variance": current_variance,
             "enhanced_score_variance": enhanced_variance,
             "variance_improvement": (
-                (enhanced_variance-current_variance) / current_variance if current_variance > 0 else 0
+                (enhanced_variance - current_variance) / current_variance if current_variance > 0 else 0
             ),
         }
 

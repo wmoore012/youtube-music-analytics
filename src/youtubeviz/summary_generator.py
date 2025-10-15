@@ -3,8 +3,8 @@ Auto-generated summary system for MusicScope™ analytics.
 Creates intelligent summaries based on data patterns with compassionate insights.
 """
 
-import os
 from datetime import datetime
+import os
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -78,7 +78,7 @@ def detect_performance_patterns(df: pd.DataFrame) -> Dict[str, List[str]]:
             second_half_avg = artist_data[view_col].iloc[mid_point:].mean()
 
             if first_half_avg > 0:
-                growth_rate = (second_half_avg-first_half_avg) / first_half_avg
+                growth_rate = (second_half_avg - first_half_avg) / first_half_avg
 
                 if growth_rate > config["growth_threshold"]:  # noqa: F821
                     patterns["growth_artists"].append(artist)

@@ -974,7 +974,7 @@ def generate_content_strategy_recommendations(
         # Find content types artist hasn't tried yet
         tried_types = set(artist_performance.index)
         all_types = set(overall_performance.index)
-        untried_types = all_types-tried_types
+        untried_types = all_types - tried_types
 
         # Recommend top performing untried content types
         for content_type in top_content_types.head(3).index:

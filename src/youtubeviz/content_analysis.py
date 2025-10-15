@@ -166,15 +166,15 @@ class ContentAnalysisEngine:
         avg_sample_size = np.mean(sample_sizes)
 
         # Standard error for p-chart
-        std_error = np.sqrt(center_line * (1-center_line) / avg_sample_size)
+        std_error = np.sqrt(center_line * (1 - center_line) / avg_sample_size)
 
         # Control limits (3-sigma)
         ucl = center_line + 3 * std_error
-        lcl = center_line-3 * std_error
+        lcl = center_line - 3 * std_error
 
         # Warning limits (2-sigma)
         uwl = center_line + 2 * std_error
-        lwl = center_line-2 * std_error
+        lwl = center_line - 2 * std_error
 
         # Ensure limits are within [0, 1]
         ucl = min(ucl, 1.0)

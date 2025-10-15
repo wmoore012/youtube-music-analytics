@@ -70,10 +70,10 @@ class UMAPClusteringAnalyzer:
     def _validate_dependencies(self) -> None:
         """Validate that required dependencies are available."""
         try:
-            import umap
             from sklearn.cluster import KMeans
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.metrics import silhouette_score
+            import umap
         except ImportError as e:
             raise UMAPNotAvailableError(
                 f"Required dependencies not available: {e}. " "Install with: pip install umap-learn scikit-learn"

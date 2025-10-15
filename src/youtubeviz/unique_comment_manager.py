@@ -6,11 +6,11 @@ Ensures all comment sampling across the codebase uses UNIQUE comments.
 Prevents data leakage between training, testing, classification, and benchmarking.
 """
 
+from datetime import datetime
 import hashlib
 import re
 import sqlite3
 import sys
-from datetime import datetime
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -637,7 +637,7 @@ class UniqueCommentManager:
                 dataset_id=dataset_id,
                 total_samples=total_samples,
                 valid_samples=valid_samples,
-                invalid_samples=total_samples-valid_samples,
+                invalid_samples=total_samples - valid_samples,
                 empty_text_count=empty_text_count,
                 duplicate_count=duplicate_count,
                 low_confidence_count=0,  # Placeholder

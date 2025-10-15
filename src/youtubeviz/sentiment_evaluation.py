@@ -12,12 +12,12 @@ Provides rigorous statistical evaluation with multiple testing approaches includ
 
 from __future__ import annotations
 
-import json
-import random
-import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import random
 from typing import Any, Dict, List, Optional, Tuple
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -454,10 +454,10 @@ class SentimentEvaluationFramework:
             return McNemarResult(statistic=0.0, p_value=1.0, significant=False, alpha=alpha)
 
         # McNemar's test statistic with continuity correction
-        statistic = ((abs(a_correct_b_wrong-a_wrong_b_correct) - 1) ** 2) / discordant_pairs
+        statistic = ((abs(a_correct_b_wrong - a_wrong_b_correct) - 1) ** 2) / discordant_pairs
 
         # Chi-square test with 1 degree of freedom
-        p_value = 1-stats.chi2.cdf(statistic, df=1)
+        p_value = 1 - stats.chi2.cdf(statistic, df=1)
 
         return McNemarResult(statistic=statistic, p_value=p_value, significant=p_value < alpha, alpha=alpha)
 
@@ -485,9 +485,9 @@ class SentimentEvaluationFramework:
             bootstrap_means.append(np.mean(bootstrap_sample))
 
         # Compute percentiles for confidence interval
-        alpha = 1-confidence
+        alpha = 1 - confidence
         lower_percentile = (alpha / 2) * 100
-        upper_percentile = (1-alpha / 2) * 100
+        upper_percentile = (1 - alpha / 2) * 100
 
         lower_bound = np.percentile(bootstrap_means, lower_percentile)
         upper_bound = np.percentile(bootstrap_means, upper_percentile)
@@ -947,7 +947,7 @@ class SentimentEvaluationFramework:
 
         try:
             # Validate ratios
-            if abs(train_ratio + val_ratio + test_ratio-1.0) > 0.001:
+            if abs(train_ratio + val_ratio + test_ratio - 1.0) > 0.001:
                 raise ValueError("Split ratios must sum to 1.0")
 
             # Get labeled comments only

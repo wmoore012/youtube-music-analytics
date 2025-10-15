@@ -5,13 +5,13 @@ Discovers actual database structure, artists, and data without hardcoding.
 Provides dynamic configuration for notebooks and charts.
 """
 
+from datetime import datetime
 import logging
 import os
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
 
@@ -107,7 +107,6 @@ class DatabaseDiscovery:
         password = os.getenv("DB_PASSWORD") or os.getenv("DB_PASS", "")
         database = os.getenv("DB_NAME", "yt_proj")
 
-        from sqlalchemy.engine import URL
         return str(
             URL.create(
                 "mysql+pymysql",
@@ -368,7 +367,9 @@ def load_dynamic_data(engine, artists: List[str], limit_per_artist: int = 1000) 
 
             try:
                 data["metrics_timeseries"] = pd.read_sql(text(metrics_query), engine)
-                logger.info(f"Loaded {len(data['metrics_timeseries'])} time-series metrics snapshots from youtube_metrics table")
+                logger.info(
+                    f"Loaded {len(data['metrics_timeseries'])} time-series metrics snapshots from youtube_metrics table"
+                )
             except Exception as metrics_error:
                 # If youtube_metrics table doesn't exist, that's OK - momentum charts will use videos data
                 logger.warning(f"Could not load youtube_metrics table: {metrics_error}")
@@ -548,18 +549,3 @@ def discover_data(min_videos: int = 5, limit_per_artist: int = 1000) -> Dict[str
     d = DatabaseDiscovery()
     artists = d.discover_artists(min_videos=min_videos)
     return load_dynamic_data(d.engine, artists, limit_per_artist=limit_per_artist)
-    chart_config = create_chart_config(artists, data_summary)
-
-    config = {
-        "database": db_summary,
-        "artists": artists,
-        "data_summary": data_summary,
-        "charts": chart_config,
-        "notebook_title": f"MusicScope™ Real Data Dashboard - {len(artists)} Artists",
-        "generation_time": datetime.now().isoformat(),
-    }
-
-    logger.info(f"✅ REAL DATA CONFIG: {len(artists)} artists, {db_summary['total_tables']} tables")
-    logger.info(f"📊 DATA VOLUME: {data_summary['total_videos']:,} videos, {data_summary['total_comments']:,} comments")
-
-    return config

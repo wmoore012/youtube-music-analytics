@@ -6,10 +6,10 @@ handle missing data gracefully, and provide clear error messages.
 
 from __future__ import annotations
 
-import functools
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
+import functools
+import logging
 from typing import Any, Callable, List, Optional, TypeVar
 
 import pandas as pd

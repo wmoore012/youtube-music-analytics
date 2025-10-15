@@ -7,11 +7,11 @@ Uses machine learning to suggest positive / negative classifications based on
 your existing classifications. Learns from your decisions and gets better over time.
 """
 
+from datetime import datetime
 import os
 import pickle
 import sqlite3
 import sys
-from datetime import datetime
 from typing import Dict, List, Tuple
 
 import numpy as np

@@ -240,7 +240,7 @@ class ProprietarySentimentEnhancer:
         if slang_count > 0:
             # VADER is better for slang-heavy text
             vader_weight = 0.75 + (slang_count * 0.05)
-            textblob_weight = 1.0-vader_weight
+            textblob_weight = 1.0 - vader_weight
         elif emoji_count > 2:
             # Balanced approach for emoji-heavy text
             vader_weight = 0.6
@@ -349,8 +349,8 @@ class ProprietarySentimentEnhancer:
 
         # Confidence factors
         text_quality_factor = min(1.0, len(text.split()) / 10.0)  # Longer text = higher confidence
-        algorithm_agreement = 1.0-abs(vader_score-textblob_score)  # Agreement between methods
-        enhancement_stability = 1.0-abs(final_score-fused_score) * 0.5  # Stability of enhancement
+        algorithm_agreement = 1.0 - abs(vader_score - textblob_score)  # Agreement between methods
+        enhancement_stability = 1.0 - abs(final_score - fused_score) * 0.5  # Stability of enhancement
 
         enhanced_confidence = (
             base_confidence

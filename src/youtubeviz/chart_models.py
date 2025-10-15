@@ -69,7 +69,7 @@ class VideoPerformanceData(BaseModel):
     def validate_rate_consistency(cls, v, values):
         if "positive_comments" in values and "total_comments" in values:
             expected_rate = values["positive_comments"] / values["total_comments"]
-            if abs(v-expected_rate) > 0.01:  # Allow small floating point differences
+            if abs(v - expected_rate) > 0.01:  # Allow small floating point differences
                 raise ValueError(f"Positive rate {v} inconsistent with comment counts")
         return v
 

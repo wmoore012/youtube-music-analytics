@@ -13,11 +13,11 @@ Categories:
 - File operation helpers
 """
 
+from datetime import datetime, timezone
 import json
 import logging
-import re
-from datetime import datetime, timezone
 from pathlib import Path
+import re
 from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
@@ -405,7 +405,7 @@ def create_progress_bar(current: int, total: int, width: int = 50) -> str:
 
     progress = min(current / total, 1.0)
     filled = int(width * progress)
-    bar = "█" * filled + "░" * (width-filled)
+    bar = "█" * filled + "░" * (width - filled)
     percentage = progress * 100
 
     return f"[{bar}] {percentage:.1f}%"

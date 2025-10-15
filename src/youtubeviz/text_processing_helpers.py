@@ -6,11 +6,11 @@ Provides specialized text processing utilities for music industry content,
 including music slang preservation, emoji handling, and transformer-ready preprocessing.
 """
 
-import re
-import unicodedata
 from dataclasses import dataclass
 from enum import Enum
+import re
 from typing import Dict, List, Optional
+import unicodedata
 
 # Import transformer support if available
 try:

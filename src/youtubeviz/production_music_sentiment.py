@@ -182,7 +182,7 @@ class ProductionMusicSentimentAnalyzer:
                 if phrase_matches > 0 and emoji_count > 0:
                     # Both phrases and emojis-weighted average
                     phrase_weight = phrase_matches / (phrase_matches + emoji_count)
-                    emoji_weight = 1-phrase_weight
+                    emoji_weight = 1 - phrase_weight
 
                     avg_phrase_score = sentiment_score / phrase_matches if phrase_matches > 0 else 0
                     avg_emoji_score = emoji_score / emoji_count if emoji_count > 0 else 0

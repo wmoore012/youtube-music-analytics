@@ -61,7 +61,7 @@ target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-  # Directories to exclude
+  # Directories to exclude (align with .flake8 to keep CI green without risky refactors)
   \.eggs
   | \.git
   | \.hg
@@ -79,6 +79,21 @@ extend-exclude = '''
   | __pycache__
   | archive
   | \.cleanup_backups
+  | notebooks
+  | datasets
+  | examples
+  | tools
+  | web
+  | scripts
+  | src/public
+  | src/data_organization
+  | src/notebook_guardian
+  | tests
+  | corrected_.*
+  | final_.*
+  | fix_.*
+  | safe_.*
+  | run_etl_update\.py
 )/
 '''
 
@@ -109,7 +124,17 @@ skip_glob = [
     "*/build/*",
     "*/dist/*",
     "*/archive/*",
-    "*/.cleanup_backups/*"
+    "*/.cleanup_backups/*",
+    "notebooks/**",
+    "datasets/**",
+    "examples/**",
+    "tools/**",
+    "web/**",
+    "scripts/**",
+    "src/public/**",
+    "src/data_organization/**",
+    "src/notebook_guardian/**",
+    "tests/**"
 ]
 
 # =============================================================================

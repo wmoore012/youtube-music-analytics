@@ -10,8 +10,9 @@ Implements multiple VADER enhancement approaches using VADER's official extensio
 Based on expert analysis of music YouTube comments and VADER's documented extension patterns.
 """
 
-import re
 import logging
+import re
+
 logger = logging.getLogger(__name__)
 from enum import Enum
 from hashlib import md5

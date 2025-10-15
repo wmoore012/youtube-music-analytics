@@ -128,7 +128,7 @@ class UniqueCommentEnforcer:
         df_unique = df.drop_duplicates(subset=[comment_col])
 
         if len(df_unique) < original_count:
-            removed = original_count-len(df_unique)
+            removed = original_count - len(df_unique)
             print(f"🔄 Removed {removed} duplicate comments in {context}")
 
         # Check against global usage tracking
@@ -260,7 +260,7 @@ def scan_for_fake_data(df: pd.DataFrame, context: str = "unknown") -> pd.DataFra
                 print(f"🗑️  Removing {rep_count} repetitive entries from {col} in {context}")
                 cleaned_df = cleaned_df[~repetitive_mask]
 
-    removed_count = original_count-len(cleaned_df)
+    removed_count = original_count - len(cleaned_df)
     if removed_count > 0:
         print(f"✅ Removed {removed_count} fake / suspicious entries from {context}")
     else:

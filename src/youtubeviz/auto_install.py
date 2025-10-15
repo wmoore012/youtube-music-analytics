@@ -8,8 +8,8 @@ automatically install any missing Python package on demand.
 import importlib
 import subprocess
 import sys
-import warnings
 from typing import Dict, List, Optional, Union
+import warnings
 
 
 class AutoInstaller:
@@ -511,7 +511,7 @@ def install_missing_dependencies(categories: List[str] = None, auto_install: boo
         return True
     else:
         print(f"⚠️  Installed {success_count}/{total_count} packages")
-        remaining = total_count-success_count
+        remaining = total_count - success_count
         print(f"   {remaining} packages failed to install")
         return False
 

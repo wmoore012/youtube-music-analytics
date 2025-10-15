@@ -1,8 +1,8 @@
 """Plugin system integration for the main youtubeviz package."""
 
 import logging
-import sys
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Optional
 
 import pandas as pd

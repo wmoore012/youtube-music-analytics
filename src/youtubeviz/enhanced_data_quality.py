@@ -407,7 +407,7 @@ class EnhancedDataQualityManager:
         # Add points back for successful cleanup
         cleanup_bonus = min(len(cleanup_ops) * 5, total_deduction)
 
-        quality_score = max(0, 100-total_deduction + cleanup_bonus)
+        quality_score = max(0, 100 - total_deduction + cleanup_bonus)
         return quality_score
 
     def generate_recommendations(self, issues: List[DataIssue], cleanup_ops: List[CleanupOperation]) -> List[str]:

@@ -13,11 +13,10 @@ Implements the enhanced sentiment analysis improvements:
 Based on expert feedback for improving music industry sentiment analysis.
 """
 
-import re
 from dataclasses import dataclass
 from enum import Enum
+import re
 from typing import Dict, Tuple
-
 
 
 class SentimentLabel(Enum):

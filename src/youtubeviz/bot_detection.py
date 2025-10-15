@@ -18,11 +18,11 @@ Key Features:
 
 from __future__ import annotations
 
-import re
-import unicodedata
 from dataclasses import dataclass
 from datetime import timedelta
+import re
 from typing import Optional
+import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -201,7 +201,7 @@ class BotDetector:
         """
         required_cols = {"comment_id", "video_id", "comment_text", "author_name", "like_count", "published_at"}
 
-        missing_cols = required_cols-set(df.columns)
+        missing_cols = required_cols - set(df.columns)
         if missing_cols:
             raise ValueError(f"Missing required columns: {sorted(missing_cols)}")
 
@@ -358,18 +358,18 @@ class BotDetector:
             for i, current_time in enumerate(timestamps):
                 # Count comments within time window
                 try:
-                    window_start = current_time-window
+                    window_start = current_time - window
                     window_count = sum(1 for t in timestamps if window_start <= t <= current_time)
                 except TypeError:
                     # Handle timezone-naive timestamps
                     current_ts = pd.Timestamp(current_time)
-                    window_start = current_ts-window
+                    window_start = current_ts - window
                     window_count = sum(
                         1 for t in timestamps if pd.Timestamp(t) >= window_start and pd.Timestamp(t) <= current_ts
                     )
 
                 # Normalize to 0-1 scale (10+ comments in window = max burst)
-                burst_score = min((window_count-1) / 9.0, 1.0)
+                burst_score = min((window_count - 1) / 9.0, 1.0)
                 burst_scores.append(max(burst_score, 0.0))
 
             return pd.Series(burst_scores, index=sorted_group.index)
@@ -395,7 +395,7 @@ class BotDetector:
         author_stats["text_diversity"] = author_stats["unique_texts"] / author_stats["total_comments"]
 
         # Map back to original dataframe
-        df["author_repetition_score"] = (1.0-df["author_name"].map(author_stats["text_diversity"])).fillna(0.0)
+        df["author_repetition_score"] = (1.0 - df["author_name"].map(author_stats["text_diversity"])).fillna(0.0)
 
         return df
 
@@ -404,7 +404,7 @@ class BotDetector:
 
         # Normalize like counts (low engagement can be suspicious)
         like_counts = df["like_count"].fillna(0).astype(float)
-        df["engagement_score"] = 1.0-np.tanh(like_counts / 3.0)
+        df["engagement_score"] = 1.0 - np.tanh(like_counts / 3.0)
 
         return df
 
@@ -414,7 +414,7 @@ class BotDetector:
         # Component scores (0-1 scale)
         def _duplicate_component(count_series: pd.Series, is_whitelisted: pd.Series) -> pd.Series:
             """Convert duplicate counts to suspicion score."""
-            base_score = np.clip((count_series-self.config.min_dupe_cluster) / 7.0, 0.0, 1.0)
+            base_score = np.clip((count_series - self.config.min_dupe_cluster) / 7.0, 0.0, 1.0)
             # Reduce suspicion for whitelisted phrases
             return base_score * np.where(is_whitelisted, 0.15, 1.0)
 
@@ -440,7 +440,7 @@ class BotDetector:
 
         # Normalize to 0-100 scale
         if raw_score.max() > raw_score.min():
-            normalized_score = (raw_score-raw_score.min()) / (raw_score.max() - raw_score.min())
+            normalized_score = (raw_score - raw_score.min()) / (raw_score.max() - raw_score.min())
         else:
             normalized_score = pd.Series([0.0] * len(raw_score), index=raw_score.index)
 

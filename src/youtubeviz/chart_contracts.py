@@ -168,13 +168,13 @@ def setup_plotly_animation(
         # Set stable ranges with 5% padding
         if all_x_vals:
             x_min, x_max = min(all_x_vals), max(all_x_vals)
-            x_padding = (x_max-x_min) * 0.05
-            fig.update_xaxes(range=[x_min-x_padding, x_max + x_padding])
+            x_padding = (x_max - x_min) * 0.05
+            fig.update_xaxes(range=[x_min - x_padding, x_max + x_padding])
 
         if all_y_vals:
             y_min, y_max = min(all_y_vals), max(all_y_vals)
-            y_padding = (y_max-y_min) * 0.05
-            fig.update_yaxes(range=[y_min-y_padding, y_max + y_padding])
+            y_padding = (y_max - y_min) * 0.05
+            fig.update_yaxes(range=[y_min - y_padding, y_max + y_padding])
 
     # Configure animation controls
     if hasattr(fig.layout, "updatemenus") and fig.layout.updatemenus:

@@ -6,8 +6,8 @@ Professional configuration system for sentiment analysis parameters with
 privacy controls and environment-based secret management.
 """
 
-import os
 from dataclasses import dataclass, field
+import os
 from typing import Dict, Optional
 
 from data_organization.configuration_manager import ValidationResult
@@ -97,7 +97,7 @@ class SentimentEnhancementConfig:
             )
 
         result.checked_items = 6
-        result.passed_items = result.checked_items-len(result.errors)
+        result.passed_items = result.checked_items - len(result.errors)
 
         return result
 

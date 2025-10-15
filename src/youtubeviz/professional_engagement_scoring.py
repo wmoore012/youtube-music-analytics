@@ -17,8 +17,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-
-
 @dataclass
 class EngagementScore:
     """Professional engagement score with separate like / comment metrics."""
