@@ -4074,5 +4074,78 @@ def create_breakout_kpi_card_simple(
 
 
 
+def compute_breakout_kpi_numbers(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    breakout_threshold: float = 75.0,
+) -> dict:
+    """Compute breakout KPI numbers with the exact same logic as the KPI card.
+
+    Returns a dict with averages in weeks and days.
+    """
+    if df is None or df.empty:
+        return {
+            "avg_breakout_weeks": float("nan"),
+            "avg_build_weeks": float("nan"),
+            "avg_breakout_days": float("nan"),
+            "avg_build_days": float("nan"),
+            "n_artists": 0,
+        }
+
+    momentum_df = calculate_momentum_index(df, artist_col)
+    if momentum_df.empty or momentum_df[artist_col].nunique() == 0:
+        return {
+            "avg_breakout_weeks": float("nan"),
+            "avg_build_weeks": float("nan"),
+            "avg_breakout_days": float("nan"),
+            "avg_build_days": float("nan"),
+            "n_artists": 0,
+        }
+
+    durations_breakout: list[int] = []
+    durations_build: list[int] = []
+    for artist, g in momentum_df.groupby(artist_col):
+        g = g.sort_values("week_start")
+        m = g["momentum_index"].to_numpy()
+        # Build window: consecutive increases before first crossing
+        for i, val in enumerate(m):
+            if val >= breakout_threshold:
+                build_weeks = 0
+                j = i - 1
+                while j > 0 and m[j] > m[j-1] and m[j] < breakout_threshold:
+                    build_weeks += 1
+                    j -= 1
+                durations_build.append(build_weeks)
+                break
+        # Breakout run lengths
+        in_breakout, run_len = False, 0
+        for val in m:
+            if val >= breakout_threshold:
+                in_breakout = True
+                run_len += 1
+            else:
+                if in_breakout:
+                    durations_breakout.append(run_len)
+                    in_breakout, run_len = False, 0
+        if in_breakout and run_len > 0:
+            durations_breakout.append(run_len)
+
+    import numpy as np
+    def _avg(v: list[int]) -> float:
+        return float(np.mean(v)) if v else 0.0
+
+    avg_breakout_weeks = _avg(durations_breakout)
+    avg_build_weeks = _avg(durations_build)
+
+    return {
+        "avg_breakout_weeks": avg_breakout_weeks,
+        "avg_build_weeks": avg_build_weeks,
+        "avg_breakout_days": avg_breakout_weeks * 7.0,
+        "avg_build_days": avg_build_weeks * 7.0,
+        "n_artists": int(momentum_df[artist_col].nunique()),
+    }
+
+
+
 
 print("✅ All chart functions now implemented (including 3 assignment charts)!")
