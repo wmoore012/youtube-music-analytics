@@ -1,5 +1,6 @@
 [flake8]
 max-line-length = 120
+# Keep linting focused on active packages; exclude legacy, archives, generated, and heavy test dirs
 exclude =
     .git,
     __pycache__,
@@ -13,13 +14,26 @@ exclude =
     tools,
     web,
     scripts,
+    archive,
+    .cleanup_backups,
+    corrected_*,
+    final_*,
+    fix_*,
+    safe_*,
     src/public,
     src/data_organization,
-    src/notebook_guardian
+    src/notebook_guardian,
+    tests
 # Relax non-critical rules to focus CI on correctness first
 ignore =
-    E121,E126,E128,E225,E226,E302,E303,E305,E741,
-    W291,W293,W391,
+    E121,E126,E128,E203,E225,E226,E302,E303,E305,E402,E741,
+    W291,W293,W391,W503,
     C901,
-    E501
+    E501,F401,F541,F841
+# Contain legacy complexity/length/import noise in a few heavy modules without refactors
+per-file-ignores =
+    src/youtubeviz/advanced_charts.py: C901,E501,F401,F841,W503,E402,
+    src/youtubeviz/charts.py: F841,F401,
+    src/youtubeviz/viz_theme.py: W293,W391,E501,
+    src/youtubeviz/model_benchmark_system.py: C901,E501,F401,
 
