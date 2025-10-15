@@ -214,10 +214,10 @@ def create_momentum_bar_race(
                     }]
                 }
             ],
-            'x': 0.1,
-            'y': 1.15,
+            'x': 1.1,
+            'y': 0.5,
             'xanchor': 'left',
-            'yanchor': 'top'
+            'yanchor': 'middle'
         }],
         sliders=[{
             'active': 0,

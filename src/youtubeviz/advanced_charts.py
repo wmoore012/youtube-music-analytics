@@ -3271,6 +3271,8 @@ def create_budget_reallocation_chart(
     artist_col: str = "artist_name",
     total_budget: float = 100000,
     min_weeks: int = 4,
+    recent_window_weeks: int = 3,
+    show_excluded_note: bool = True,
 ) -> go.Figure:
     """
     Chart B: Budget Reallocation Recommendation
@@ -3297,23 +3299,36 @@ def create_budget_reallocation_chart(
     if momentum_df.empty:
         return go.Figure().add_annotation(text="Insufficient data for budget recommendations", x=0.5, y=0.5)
 
-    # Get most recent momentum score for each artist
+    # Filter to recent window first (mirror Chart 19's recent view)
+    if 'week_start' not in momentum_df.columns or momentum_df['week_start'].isna().all():
+        return go.Figure().add_annotation(text="No weekly momentum dates found", x=0.5, y=0.5)
+
+    last_week = momentum_df['week_start'].max()
+    cutoff_date = last_week - pd.Timedelta(weeks=recent_window_weeks - 1)
+    recent_df = momentum_df[momentum_df['week_start'] >= cutoff_date].copy()
+
+    if recent_df.empty:
+        return go.Figure().add_annotation(text=f"No recent momentum in last {recent_window_weeks} weeks", x=0.5, y=0.5)
+
+    # Average momentum over the recent window; artists with no recent data are excluded
     latest_momentum = (
-        momentum_df.sort_values('week_start')
-        .groupby(artist_col)
-        .tail(3)  # Average last 3 weeks for stability
+        recent_df
         .groupby(artist_col)['momentum_index']
         .mean()
         .reset_index()
     )
 
-    # Filter to artists with sufficient data
+    # Optionally also require overall minimum weeks of history
     artist_weeks = momentum_df.groupby(artist_col)['week_start'].nunique()
     valid_artists = artist_weeks[artist_weeks >= min_weeks].index.tolist()
     latest_momentum = latest_momentum[latest_momentum[artist_col].isin(valid_artists)]
 
+    # Track excluded artists (no recent data or failed min_weeks)
+    recent_artists = set(recent_df[artist_col].unique())
+    excluded_artists = set(momentum_df[artist_col].unique()) - set(latest_momentum[artist_col].unique())
+
     if latest_momentum.empty:
-        return go.Figure().add_annotation(text=f"No artists with {min_weeks}+ weeks of data", x=0.5, y=0.5)
+        return go.Figure().add_annotation(text=f"No artists with recent momentum and {min_weeks}+ total weeks", x=0.5, y=0.5)
 
     # Calculate current budget (equal distribution)
     n_artists = len(latest_momentum)
@@ -3425,6 +3440,19 @@ def create_budget_reallocation_chart(
     )
 
     fig.update_xaxes(tickformat="$,.0f", zeroline=True, zerolinewidth=2, zerolinecolor="black")
+
+    # Optional footnote listing excluded artists (no recent data)
+    try:
+        if show_excluded_note and excluded_artists:
+            names_preview = ", ".join(list(excluded_artists)[:3])
+            ellipsis = "…" if len(excluded_artists) > 3 else ""
+            fig.add_annotation(
+                text=f"Excluded {len(excluded_artists)} artist(s) with no momentum in last {recent_window_weeks} weeks: {names_preview}{ellipsis}",
+                xref="paper", yref="paper", x=0, y=-0.15, xanchor="left", yanchor="top",
+                showarrow=False, font=dict(size=10), bgcolor="rgba(255,255,255,0.9)"
+            )
+    except Exception:
+        pass
 
     return fig
 
@@ -3682,6 +3710,369 @@ def create_growth_signal_breakdown(
     fig.update_yaxes(title_text="", row=2, col=1)
 
     return fig
+
+
+@bulletproof_chart(
+    ChartSpec(name="Breakout KPI Card", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=10)
+)
+def create_breakout_kpi_card(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    breakout_threshold: float = 75.0,
+    unit: str = "weeks",
+    style: str = "default",
+) -> go.Figure:
+    """
+    KPI card summarizing breakout timing.
+      - Primary: average weeks IN breakout (momentum >= threshold)
+      - Secondary: average weeks of momentum build BEFORE first crossing threshold
+    style="urgent" delegates to a bullet-gauge executive card (weeks emphasis, no calendar).
+    """
+    if df is None or df.empty:
+        return go.Figure().add_annotation(text="No data available for KPI card", x=0.5, y=0.5)
+
+    momentum_df = calculate_momentum_index(df, artist_col)
+    if momentum_df.empty or momentum_df[artist_col].nunique() == 0:
+        return go.Figure().add_annotation(text="Insufficient data for KPI card", x=0.5, y=0.5)
+
+    # Compute durations (in weeks)
+    durations_breakout: list[int] = []
+    durations_build: list[int] = []
+    for artist in momentum_df[artist_col].unique():
+        g = momentum_df[momentum_df[artist_col] == artist].sort_values("week_start")
+        m = g["momentum_index"].to_list()
+        in_breakout, run_len = False, 0
+        for i, val in enumerate(m):
+            if val >= breakout_threshold:
+                if not in_breakout:
+                    # Count consecutive weekly increases right before first crossing
+                    build_weeks, j = 0, i - 1
+                    while j > 0 and m[j] > m[j-1] and m[j] < breakout_threshold:
+                        build_weeks += 1
+                        j -= 1
+                    durations_build.append(build_weeks)
+                    in_breakout, run_len = True, 1
+                else:
+                    run_len += 1
+            elif in_breakout:
+                durations_breakout.append(run_len)
+                in_breakout, run_len = False, 0
+        if in_breakout and run_len > 0:
+            durations_breakout.append(run_len)
+
+    import numpy as np
+    def _avg(values: list[int]) -> float:
+        return float(np.mean(values)) if values else float("nan")
+
+    avg_breakout_weeks = _avg(durations_breakout)
+    avg_build_weeks = _avg(durations_build)
+
+    # Urgent path: numbers-first KPI (weeks only). Use style="bullet" for bullet gauges.
+    if style and style.lower() in ("urgent", "numbers", "kpi"):
+        return create_breakout_kpi_card_simple(
+            df,
+            artist_col=artist_col,
+            breakout_threshold=breakout_threshold,
+        )
+    if style and style.lower() == "bullet":
+        return create_breakout_kpi_card_bullet(
+            df,
+            artist_col=artist_col,
+            breakout_threshold=breakout_threshold,
+            target_breakout_weeks=1.0,
+            target_build_weeks=0.5,
+        )
+
+    # Neutral single-number card (respects unit)
+    if unit.lower().startswith("day"):
+        primary_value = avg_breakout_weeks * 7.0
+        secondary_value = avg_build_weeks * 7.0
+        unit_label = "days"
+    else:
+        primary_value = avg_breakout_weeks
+        secondary_value = avg_build_weeks
+        unit_label = "weeks"
+
+    fig = go.Figure()
+    title_text = "Breakout Persistence"
+    subtitle_text = "Avg momentum build before breakout"
+
+    fig.add_shape(type="rect", x0=0, y0=0, x1=1, y1=1, xref="paper", yref="paper",
+                  fillcolor="rgba(245,245,245,0.8)", line=dict(color="rgba(0,0,0,0)"))
+    fig.add_annotation(x=0.5, y=0.72, xref="paper", yref="paper", text=title_text,
+                       showarrow=False, font=dict(size=16, color="#333"))
+    fig.add_annotation(x=0.5, y=0.50, xref="paper", yref="paper",
+                       text=(f"{primary_value:.1f} {unit_label}" if primary_value == primary_value else "\u2014"),
+                       showarrow=False, font=dict(size=44, color="#2E7D32", family="Arial Black"))
+    fig.add_annotation(x=0.5, y=0.26, xref="paper", yref="paper", text=subtitle_text,
+                       showarrow=False, font=dict(size=13, color="#555"))
+    fig.add_annotation(x=0.5, y=0.12, xref="paper", yref="paper",
+                       text=(f"{secondary_value:.1f} {unit_label} of build" if secondary_value == secondary_value else "\u2014"),
+                       showarrow=False, font=dict(size=22, color="#1F4E79"))
+
+    fig.update_layout(template="plotly_white", height=260,
+                      margin=dict(l=30, r=30, t=30, b=30), xaxis=dict(visible=False), yaxis=dict(visible=False))
+
+    return fig
+
+@bulletproof_chart(
+    ChartSpec(name="Breakout KPI Card (Bullet)", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=10)
+)
+def create_breakout_kpi_card_bullet(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    breakout_threshold: float = 75.0,
+    target_breakout_weeks: float = 1.0,
+    target_build_weeks: float = 0.5,
+    width: int = 1100,
+    height: int = 380,
+    size_scale: float = 1.0,
+    font_family: str = "Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+) -> go.Figure:
+    """
+    Executive KPI using two bullet gauges (weeks, urgent):
+      - Left: average time IN breakout (weeks)
+      - Right: average WARNING window BEFORE breakout (weeks)
+    Sized for readability with modern, bold fonts and non-overlapping annotations.
+    """
+    if df is None or df.empty:
+        return go.Figure().add_annotation(text="No data for KPI", x=0.5, y=0.5, showarrow=False)
+
+    momentum_df = calculate_momentum_index(df, artist_col)
+    if momentum_df.empty or momentum_df[artist_col].nunique() == 0:
+        return go.Figure().add_annotation(text="Insufficient data for KPI", x=0.5, y=0.5, showarrow=False)
+
+    durations_breakout: list[int] = []
+    durations_build: list[int] = []
+
+    for artist, g in momentum_df.groupby(artist_col):
+        g = g.sort_values("week_start")
+        m = g["momentum_index"].to_numpy()
+        # Build window = consecutive increases before FIRST crossing
+        for i, val in enumerate(m):
+            if val >= breakout_threshold:
+                build_weeks = 0
+                j = i - 1
+                while j > 0 and m[j] > m[j - 1] and m[j] < breakout_threshold:
+                    build_weeks += 1
+                    j -= 1
+                durations_build.append(build_weeks)
+                break
+        # Breakout run lengths
+        in_breakout, run_len = False, 0
+        for val in m:
+            if val >= breakout_threshold:
+                in_breakout = True
+                run_len += 1
+            else:
+                if in_breakout:
+                    durations_breakout.append(run_len)
+                    in_breakout, run_len = False, 0
+        if in_breakout and run_len > 0:
+            durations_breakout.append(run_len)
+
+    import numpy as np
+    from plotly.subplots import make_subplots
+
+    def _avg(v: list[int]) -> float:
+        return float(np.mean(v)) if v else 0.0
+
+    avg_breakout_weeks = _avg(durations_breakout)
+    avg_build_weeks = _avg(durations_build)
+
+    HOT   = "#B71C1C"
+    WARN  = "#E65100"
+    PAPER = "rgba(255,240,235,0.95)"
+    INK   = "#1b1b1b"
+
+    num_left  = int(44 * size_scale)
+    num_right = int(40 * size_scale)
+    title_sz  = int(20 * size_scale)
+    sub_sz    = int(12 * size_scale)
+    axis_title_sz = int(14 * size_scale)
+
+    fig = make_subplots(
+        rows=1, cols=2, horizontal_spacing=0.10,
+        specs=[[{"type": "domain"}, {"type": "domain"}]],
+        column_widths=[0.58, 0.42],
+    )
+
+    # Left: Time IN Breakout (weeks)
+    max_breakout_axis = max(4.0, target_breakout_weeks * 1.8)
+    fig.add_trace(
+        go.Indicator(
+            mode="number+gauge",
+            value=avg_breakout_weeks,
+            number=dict(valueformat=".1f", suffix=" weeks", font=dict(size=num_left, color=HOT, family="Arial Black, Arial, sans-serif")),
+            title=dict(text="Avg Time IN Breakout", font=dict(size=axis_title_sz, color=INK, family=font_family)),
+            gauge=dict(
+                shape="bullet",
+                axis=dict(range=[0, max_breakout_axis], tickwidth=0, tickcolor="#999"),
+                bar=dict(color=HOT),
+                threshold=dict(value=target_breakout_weeks, line=dict(color=INK, width=2)),
+                steps=[
+                    dict(range=[0, target_breakout_weeks*0.5], color="rgba(183,28,28,0.10)"),
+                    dict(range=[target_breakout_weeks*0.5, target_breakout_weeks], color="rgba(183,28,28,0.18)"),
+                    dict(range=[target_breakout_weeks, max_breakout_axis], color="rgba(27,27,27,0.08)"),
+                ],
+            ),
+            domain={"row": 1, "column": 0},
+        ),
+        row=1, col=1,
+    )
+
+    # Right: WARNING window (weeks)
+    max_build_axis = max(2.0, target_build_weeks * 2.0)
+    fig.add_trace(
+        go.Indicator(
+            mode="number+gauge",
+            value=avg_build_weeks,
+            number=dict(valueformat=".1f", suffix=" weeks", font=dict(size=num_right, color=WARN, family="Arial Black, Arial, sans-serif")),
+            title=dict(text="Avg WARNING Window (pre-breakout)", font=dict(size=axis_title_sz, color=INK, family=font_family)),
+            gauge=dict(
+                shape="bullet",
+                axis=dict(range=[0, max_build_axis], tickwidth=0, tickcolor="#999"),
+                bar=dict(color=WARN),
+                threshold=dict(value=target_build_weeks, line=dict(color=INK, width=2)),
+                steps=[
+                    dict(range=[0, target_build_weeks*0.5], color="rgba(230,81,0,0.10)"),
+                    dict(range=[target_build_weeks*0.5, target_build_weeks], color="rgba(230,81,0,0.18)"),
+                    dict(range=[target_build_weeks, max_build_axis], color="rgba(27,27,27,0.08)"),
+                ],
+            ),
+            domain={"row": 1, "column": 1},
+        ),
+        row=1, col=2,
+    )
+
+    # Layout / annotations (kept above plot to avoid overlap)
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family=font_family, size=int(13*size_scale), color=INK),
+        paper_bgcolor=PAPER,
+        plot_bgcolor=PAPER,
+        margin=dict(l=60, r=60, t=110, b=50),
+        height=height,
+        width=width,
+    )
+
+    fig.add_annotation(
+        x=0, y=1.16, xref="paper", yref="paper", xanchor="left", yanchor="top",
+        text=f"⚠️ Act Fast: breakout heat lasts ~{avg_breakout_weeks:.1f} weeks • warning window ~{avg_build_weeks:.1f} weeks",
+        showarrow=False, font=dict(size=title_sz, color=HOT, family="Arial Black, Arial, sans-serif"),
+    )
+
+@bulletproof_chart(
+    ChartSpec(name="Breakout KPI Card (Numbers)", required_columns=["artist_name", "published_at", "view_count"], timeout_sec=10)
+)
+def create_breakout_kpi_card_simple(
+    df: pd.DataFrame,
+    artist_col: str = "artist_name",
+    breakout_threshold: float = 75.0,
+    width: int = 1180,
+    height: int = 360,
+    size_scale: float = 1.0,
+    font_family: str = "Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+) -> go.Figure:
+    """
+    Numbers-first KPI (no gauges):
+      - Big primary metric: Avg time IN breakout (weeks)
+      - Secondary metric: Avg WARNING window BEFORE breakout (weeks)
+      - "Act Fast" line is subtext, not the headline
+    """
+    if df is None or df.empty:
+        return go.Figure().add_annotation(text="No data for KPI", x=0.5, y=0.5, showarrow=False)
+
+    momentum_df = calculate_momentum_index(df, artist_col)
+    if momentum_df.empty or momentum_df[artist_col].nunique() == 0:
+        return go.Figure().add_annotation(text="Insufficient data for KPI", x=0.5, y=0.5, showarrow=False)
+
+    # Compute durations in weeks (same logic as bullet card)
+    durations_breakout: list[int] = []
+    durations_build: list[int] = []
+    for artist, g in momentum_df.groupby(artist_col):
+        g = g.sort_values("week_start")
+        m = g["momentum_index"].to_numpy()
+        # Build window: consecutive increases before first crossing
+        for i, val in enumerate(m):
+            if val >= breakout_threshold:
+                build_weeks = 0
+                j = i - 1
+                while j > 0 and m[j] > m[j-1] and m[j] < breakout_threshold:
+                    build_weeks += 1
+                    j -= 1
+                durations_build.append(build_weeks)
+                break
+        # Breakout run lengths
+        in_breakout, run_len = False, 0
+        for val in m:
+            if val >= breakout_threshold:
+                in_breakout = True
+                run_len += 1
+            else:
+                if in_breakout:
+                    durations_breakout.append(run_len)
+                    in_breakout, run_len = False, 0
+        if in_breakout and run_len > 0:
+            durations_breakout.append(run_len)
+
+    import numpy as np
+    def _avg(v: list[int]) -> float:
+        return float(np.mean(v)) if v else 0.0
+
+    avg_breakout_weeks = _avg(durations_breakout)
+    avg_build_weeks = _avg(durations_build)
+
+    HOT   = "#B71C1C"
+    WARN  = "#E65100"
+    PAPER = "rgba(255,240,235,0.95)"
+    INK   = "#1b1b1b"
+
+    # Scaled type sizes
+    num_primary = int(68 * size_scale)
+    num_secondary = int(46 * size_scale)
+    label_sz = int(15 * size_scale)
+    sub_sz = int(13 * size_scale)
+
+    fig = go.Figure()
+
+    # Background
+    fig.add_shape(type="rect", x0=0, y0=0, x1=1, y1=1, xref="paper", yref="paper",
+                  fillcolor=PAPER, line=dict(color="rgba(0,0,0,0)"))
+
+    # Left (primary) number & label — align to a clean baseline
+    fig.add_annotation(x=0.08, y=0.66, xref="paper", yref="paper", xanchor="left",
+                       text=f"{avg_breakout_weeks:.1f} weeks",
+                       showarrow=False, font=dict(size=num_primary, color=HOT, family="Arial Black, Arial, sans-serif"))
+    fig.add_annotation(x=0.08, y=0.42, xref="paper", yref="paper", xanchor="left",
+                       text="Avg time IN breakout",
+                       showarrow=False, font=dict(size=label_sz, color="#444", family=font_family))
+
+    # Right (secondary) number & label — aligned to the right column
+    fig.add_annotation(x=0.78, y=0.66, xref="paper", yref="paper", xanchor="left",
+                       text=f"{avg_build_weeks:.1f} weeks",
+                       showarrow=False, font=dict(size=num_secondary, color=WARN, family="Arial Black, Arial, sans-serif"))
+    fig.add_annotation(x=0.78, y=0.42, xref="paper", yref="paper", xanchor="left",
+                       text="Avg WARNING window (pre-breakout)",
+                       showarrow=False, font=dict(size=label_sz, color="#444", family=font_family))
+
+    # Subtext (action line) — subtle, left-aligned
+    fig.add_annotation(x=0.08, y=0.22, xref="paper", yref="paper", xanchor="left",
+                       text=f"Act Fast: breakout heat lasts ~{avg_breakout_weeks:.1f} weeks • warning window ~{avg_build_weeks:.1f} weeks",
+                       showarrow=False, font=dict(size=sub_sz, color=HOT, family=font_family))
+
+    # Clean layout
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family=font_family, size=int(13*size_scale), color=INK),
+        margin=dict(l=56, r=56, t=32, b=28),
+        width=width, height=height,
+        xaxis=dict(visible=False), yaxis=dict(visible=False)
+    )
+
+    return fig
+
+
 
 
 print("✅ All chart functions now implemented (including 3 assignment charts)!")
