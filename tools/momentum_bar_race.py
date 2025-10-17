@@ -4,7 +4,8 @@ This module provides color mapping consistent with the dashboard semantics.
 from typing import List
 
 PRE = 55.0
-BRK = 75.0  # set to 60.0 if using 60+ as breakout across the dashboard
+# Align breakout threshold with KPI-22 across dashboards
+BRK = 60.0  # breakout when momentum_score >= 60
 USE_RED_FOR_BREAKOUT = True
 
 # Palette (avoid red/green pairing)
