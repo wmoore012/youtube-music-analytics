@@ -136,7 +136,18 @@ def plot_diverging_sentiment(d: pd.DataFrame, y_col: str = "artist_name"):
 # KPI-22 episode engine (contiguity + pre-warning)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def compute_kpi22_episodes(md: pd.DataFrame, pre: float = 55, brk: float = 60, cap_hours: int = 720) -> pd.DataFrame:
+def compute_kpi22_video_breakouts(md: pd.DataFrame, pre: float = 55, brk: float = 60, cap_hours: int = 720) -> pd.DataFrame:
+    """Compute video breakout periods with contiguous pre-warning calculation.
+
+    Parameters
+    - md: DataFrame with columns [video_id, date, momentum_score]
+    - pre: pre-breakout threshold (default 55)
+    - brk: breakout threshold (default 60)
+    - cap_hours: cap on pre-warning hours (default 720 = 30 days)
+
+    Returns
+    - DataFrame columns: video_id, start, end, duration_days, pre_warning_hours, capped
+    """
     md = md.copy()
     md["date"] = pd.to_datetime(md["date"]).dt.floor("D")
     md = md.sort_values(["video_id", "date"])
@@ -144,12 +155,12 @@ def compute_kpi22_episodes(md: pd.DataFrame, pre: float = 55, brk: float = 60, c
     for vid, g in md.groupby("video_id", sort=False):
         g = g[["date", "momentum_score"]].sort_values("date").set_index("date")
         dates = g.index.tolist()
-        in_ep, start = False, None
+        in_run, start = False, None
         for i, d in enumerate(dates):
             s = float(g.loc[d, "momentum_score"])
-            if s >= brk and not in_ep:
-                in_ep, start = True, d
-            elif (s < brk or i == len(dates) - 1) and in_ep:
+            if s >= brk and not in_run:
+                in_run, start = True, d
+            elif (s < brk or i == len(dates) - 1) and in_run:
                 end = dates[i] if (s >= brk and i == len(dates) - 1) else dates[i - 1]
                 # contiguous pre-warning directly before start
                 pre_days, step = 0, 1
@@ -173,6 +184,125 @@ def compute_kpi22_episodes(md: pd.DataFrame, pre: float = 55, brk: float = 60, c
                         "capped": pre_days * 24 >= cap_hours,
                     }
                 )
-                in_ep = False
+                in_run = False
     return pd.DataFrame(out)
+
+
+def compute_kpi22_episodes(*args, **kwargs):  # deprecated alias
+    import warnings
+    warnings.warn("Use compute_kpi22_video_breakouts() instead of compute_kpi22_episodes()", DeprecationWarning)
+    return compute_kpi22_video_breakouts(*args, **kwargs)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Matplotlib helpers, accessibility, and preattentive highlighting
+# ──────────────────────────────────────────────────────────────────────────────
+
+def ensure_year_on_dates(ax):
+    """Ensure year is shown on Matplotlib date axes (x-axis).
+    Safe to call repeatedly.
+    """
+    try:
+        from matplotlib.dates import DateFormatter
+        ax.xaxis.set_major_formatter(DateFormatter("%b %d %Y"))
+    except Exception:
+        pass
+
+
+def label_bars(ax, fmt: str = "{:.0f}", color: Optional[str] = None):
+    """Directly label bars on a Matplotlib Axes (horizontal or vertical)."""
+    try:
+        for p in ax.patches:
+            if p.get_width() > 0 and p.get_height() > 0:
+                # Heuristic: decide orientation
+                horiz = p.get_width() >= p.get_height()
+                if horiz:
+                    x = p.get_x() + p.get_width()
+                    y = p.get_y() + p.get_height() / 2
+                    text = fmt.format(p.get_width())
+                    ax.text(x, y, f" {text}", va="center", ha="left", color=color or TXT)
+                else:
+                    x = p.get_x() + p.get_width() / 2
+                    y = p.get_y() + p.get_height()
+                    text = fmt.format(p.get_height())
+                    ax.text(x, y, f" {text}", va="bottom", ha="center", color=color or TXT)
+    except Exception:
+        pass
+
+
+def direct_line_label(ax, line, text: str, pad: float = 6):
+    """Place a text label at the end of a Matplotlib Line2D."""
+    try:
+        x = line.get_xdata()[-1]
+        y = line.get_ydata()[-1]
+        ax.text(x, y, f" {text}", va="center", ha="left", color=TXT, clip_on=False, fontsize=11)
+    except Exception:
+        pass
+
+
+# Accessibility helpers (WCAG contrast)
+
+def hex_to_rgb(hex_str: str):
+    h = hex_str.lstrip('#')
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+
+def rel_luminance(rgb):
+    def _c(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = rgb
+    return 0.2126 * _c(r) + 0.7152 * _c(g) + 0.0722 * _c(b)
+
+
+def contrast_ratio(fg_hex: str, bg_hex: str) -> float:
+    L1 = rel_luminance(hex_to_rgb(fg_hex))
+    L2 = rel_luminance(hex_to_rgb(bg_hex))
+    L_light, L_dark = (L1, L2) if L1 >= L2 else (L2, L1)
+    return (L_light + 0.05) / (L_dark + 0.05)
+
+
+def assert_contrast(fg_hex: str, bg_hex: str, min_ratio: float = 4.5):
+    ratio = contrast_ratio(fg_hex, bg_hex)
+    if ratio < min_ratio:
+        raise ValueError(f"Contrast {ratio:.2f}:1 is below WCAG AA {min_ratio}:1")
+
+
+# Titles/text helpers
+
+def clean_title(ax, title: str):
+    ax.set_title(title, fontsize=12, color=TXT)
+    return ax
+
+
+def action_title(headline: str, why: Optional[str] = None, action: Optional[str] = None) -> str:
+    parts = [headline]
+    if why:
+        parts.append(f"→ {why}")
+    if action:
+        parts.append(f"→ {action}")
+    return " ".join(parts)
+
+
+# Preattentive highlighting
+
+def artist_color_map(artists, palette=None):
+    palette = palette or [BLUE, ORNG, PURP, "#E6AB02", "#A6761D", "#66A61E", "#7570B3"]
+    uniq = list(dict.fromkeys(list(artists)))
+    return {a: palette[i % len(palette)] for i, a in enumerate(uniq)}
+
+
+def highlight_top_n(values, n: int, highlight_color: str = ORNG, context_color: str = GREY):
+    if n <= 0:
+        return [context_color] * len(values)
+    idx = np.argsort(np.array(values))[-n:]
+    colors = [context_color] * len(values)
+    for i in idx:
+        colors[i] = highlight_color
+    return colors
+
+
+def selective_highlight(df, metric_col: str, threshold: float, highlight_color: str = ORNG, context_color: str = GREY):
+    vals = df[metric_col].values
+    return np.where(vals >= threshold, highlight_color, context_color)
 
