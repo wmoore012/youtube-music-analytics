@@ -1,4 +1,4 @@
-"""
+ """
 Tests for data-science grade chart implementations.
 """
 
@@ -914,10 +914,21 @@ class TestUMAPClusteringChart:
 class TestUMAPClusteringImplementation:
     """Test UMAP clustering implementation (now implemented)."""
 
-    def test_umap_clustering_class_implemented(self):
+    def test_umap_clustering_class_implemented(self, monkeypatch):
         """Test that UMAPClusteringAnalyzer class exists and fails loudly without dependencies."""
         from src.youtubeviz.advanced_charts import UMAPClusteringAnalyzer
         from src.youtubeviz.clustering_analysis import UMAPNotAvailableError
+
+        import builtins
+
+        real_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "umap":
+                raise ImportError("No module named 'umap'")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
 
         # Should fail loudly with clear error message when dependencies missing
         with pytest.raises(UMAPNotAvailableError, match="Required dependencies not available"):
