@@ -183,7 +183,7 @@ jobs:
       env:
         ENV_FILE: .env.enterprise.test
       run: |
-        python tools/setup/create_tables.py
+        python tools/core/create_tables.py
         echo "✅ Enterprise database schema initialized"
 
     - name: Create enterprise test data fixtures
@@ -280,7 +280,7 @@ jobs:
         ENV_FILE: .env.enterprise.test
       run: |
         echo "🚀 Testing enterprise ETL pipeline..."
-        timeout 600 python tools/etl/run_focused_etl.py || {
+        timeout 600 python tools/core/run_focused_etl.py || {
           echo "❌ ETL pipeline test failed or timed out"
           exit 1
         }
@@ -330,7 +330,7 @@ jobs:
       run: |
         echo "🤖 Testing bot detection performance..."
         python -c "
-        from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+        from tools.specialized.analytics.deploy_bot_detection import EnhancedBotDetector
         detector = EnhancedBotDetector()
 
         # Test bot detection
@@ -382,7 +382,7 @@ jobs:
         # Simulate ETL performance test
         import subprocess
         result = subprocess.run([
-            'python', 'tools/etl/run_focused_etl.py'
+            'python', 'tools/core/run_focused_etl.py'
         ], capture_output=True, text=True, timeout=300)
 
         end_time = time.time()
@@ -507,8 +507,8 @@ jobs:
           ".env.example"
           "requirements.txt"
           "scripts/setup_cron.sh"
-          "tools/etl/run_production_pipeline.py"
-          "tools/setup/create_tables.py"
+          "tools/core/run_production_pipeline.py"
+          "tools/core/create_tables.py"
         )
 
         for file in "${required_files[@]}"; do

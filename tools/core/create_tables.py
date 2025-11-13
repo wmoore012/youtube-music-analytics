@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Create tables script for YouTube ETL pipeline.
 
@@ -45,8 +45,8 @@ def create_youtube_tables() -> bool:
         conn.close()
         logger.info(f"Ensured database exists: {db_name}")
     except Exception as e:  # noqa: BLE001
-        logger.error(f"Failed ensuring database exists: {e}")
-        return False
+        logger.warning(f"Could not ensure database exists (continuing): {e}")
+        # Proceed to table creation; database may already exist in CI environment
 
     # Get database engine
     try:
