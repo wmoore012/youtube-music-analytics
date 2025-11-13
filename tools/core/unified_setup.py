@@ -6,11 +6,11 @@ Consolidates all setup functionality into a single, robust tool using standardiz
 Handles environment configuration, database creation, validation, and system initialization.
 
 Usage:
-    python tools / core / unified_setup.py                    # Interactive setup
-    python tools / core / unified_setup.py --create-tables    # Create database tables
-    python tools / core / unified_setup.py --full-setup       # Complete automated setup
-    python tools / core / unified_setup.py --check            # Verify setup
-    python tools / core / unified_setup.py --env-only         # Environment setup only
+    python tools/core/unified_setup.py                    # Interactive setup
+    python tools/core/unified_setup.py --create-tables    # Create database tables
+    python tools/core/unified_setup.py --full-setup       # Complete automated setup
+    python tools/core/unified_setup.py --check            # Verify setup
+    python tools/core/unified_setup.py --env-only         # Environment setup only
 """
 
 import argparse
@@ -84,9 +84,9 @@ class SystemSetup(ToolBase):
                 "DB_NAME",
             ],
             usage_examples=[
-                "python tools / core / unified_setup.py --full-setup",
-                "python tools / core / unified_setup.py --check",
-                "python tools / core / unified_setup.py --create-tables",
+                "python tools/core/unified_setup.py --full-setup",
+                "python tools/core/unified_setup.py --check",
+                "python tools/core/unified_setup.py --create-tables",
             ],
             category="core",
         )
@@ -255,23 +255,23 @@ DB_NAME_PUBLIC={db_name}_public
 # Artist YouTube Channels
 # BicFizzle
 BICDIZZLE_CHANNEL_ID=UCZcMK-f8loeOkk3GX3hsmtQ
-BICDIZZLE_SPOTIFY_URL=https://open.spotify.com / artist / 55zZKMiLQNwu6unkKc8J4y
+BICDIZZLE_SPOTIFY_URL=https://open.spotify.com/artist/55zZKMiLQNwu6unkKc8J4y
 
 # Cobrah
 COBRAH_CHANNEL_ID=@COBRAH
-COBRAH_SPOTIFY_URL=https://open.spotify.com / artist / 1AHswQqsDNmu1xaE8KpBne
+COBRAH_SPOTIFY_URL=https://open.spotify.com/artist/1AHswQqsDNmu1xaE8KpBne
 
 # Corook
 COROOK_CHANNEL_ID=@hicorook
-COROOK_SPOTIFY_URL=https://open.spotify.com / artist / 1rNVlQNJSIESCd5mixdqMt
+COROOK_SPOTIFY_URL=https://open.spotify.com/artist/1rNVlQNJSIESCd5mixdqMt
 
 # Enchanting
 ENCHANTING_CHANNEL_ID=@Enchanting
-ENCHANTING_SPOTIFY_URL=https://open.spotify.com / artist / 26XGM4cZDcTgrXo1nis5HT
+ENCHANTING_SPOTIFY_URL=https://open.spotify.com/artist/26XGM4cZDcTgrXo1nis5HT
 
 # Flyana Boss
 FLYANA_BOSS_CHANNEL_ID=@FlyanaBoss
-FLYANA_BOSS_SPOTIFY_URL=https://open.spotify.com / artist / 0CLW5934vy2XusynS1px1S
+FLYANA_BOSS_SPOTIFY_URL=https://open.spotify.com/artist/0CLW5934vy2XusynS1px1S
 
 # YouTube API Quota Settings
 YOUTUBE_QUOTA_LIMIT=10000
@@ -491,7 +491,7 @@ LOG_FILE=youtube_etl.log
 
             self.log_progress("✅ Complete setup finished successfully!")
             self.log_progress("💡 Next steps:")
-            print("   • Run 'python tools / core / etl.py --help' to see ETL options")
+            print("   • Run 'python tools/core/etl.py --help' to see ETL options")
             print("   • Check 'notebooks/' directory for analysis examples")
             print("   • Review 'docs/' for detailed documentation")
 
@@ -522,11 +522,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python tools / core / unified_setup.py                    # Interactive setup wizard
-  python tools / core / unified_setup.py --create-tables    # Create database tables only
-  python tools / core / unified_setup.py --full-setup       # Complete automated setup
-  python tools / core / unified_setup.py --check            # Verify current setup
-  python tools / core / unified_setup.py --env-only         # Environment setup only
+  python tools/core/unified_setup.py                    # Interactive setup wizard
+  python tools/core/unified_setup.py --create-tables    # Create database tables only
+  python tools/core/unified_setup.py --full-setup       # Complete automated setup
+  python tools/core/unified_setup.py --check            # Verify current setup
+  python tools/core/unified_setup.py --env-only         # Environment setup only
         """,
     )
 

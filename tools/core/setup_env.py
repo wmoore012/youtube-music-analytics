@@ -68,23 +68,23 @@ DB_NAME_PUBLIC={db_name}_public
 # Artist YouTube Channels
 # BicFizzle
 BICDIZZLE_CHANNEL_ID=UCZcMK-f8loeOkk3GX3hsmtQ
-BICDIZZLE_SPOTIFY_URL=https://open.spotify.com / artist / 55zZKMiLQNwu6unkKc8J4y
+BICDIZZLE_SPOTIFY_URL=https://open.spotify.com/artist/55zZKMiLQNwu6unkKc8J4y
 
 # Cobrah
 COBRAH_CHANNEL_ID=@COBRAH
-COBRAH_SPOTIFY_URL=https://open.spotify.com / artist / 1AHswQqsDNmu1xaE8KpBne
+COBRAH_SPOTIFY_URL=https://open.spotify.com/artist/1AHswQqsDNmu1xaE8KpBne
 
 # Corook
 COROOK_CHANNEL_ID=@hicorook
-COROOK_SPOTIFY_URL=https://open.spotify.com / artist / 1rNVlQNJSIESCd5mixdqMt
+COROOK_SPOTIFY_URL=https://open.spotify.com/artist/1rNVlQNJSIESCd5mixdqMt
 
 # Enchanting
 ENCHANTING_CHANNEL_ID=@Enchanting
-ENCHANTING_SPOTIFY_URL=https://open.spotify.com / artist / 26XGM4cZDcTgrXo1nis5HT
+ENCHANTING_SPOTIFY_URL=https://open.spotify.com/artist/26XGM4cZDcTgrXo1nis5HT
 
 # Flyana Boss
 FLYANA_BOSS_CHANNEL_ID=@FlyanaBoss
-FLYANA_BOSS_SPOTIFY_URL=https://open.spotify.com / artist / 0CLW5934vy2XusynS1px1S
+FLYANA_BOSS_SPOTIFY_URL=https://open.spotify.com/artist/0CLW5934vy2XusynS1px1S
 
 # YouTube API Quota Settings
 YOUTUBE_QUOTA_LIMIT=10000

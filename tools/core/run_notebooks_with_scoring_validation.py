@@ -369,7 +369,7 @@ class NotebookScoringValidator:
         }
 
         # Save the notebook
-        notebook_path = "notebooks / Scoring_System_Real_Data_Demo.ipynb"
+        notebook_path = "notebooks/Scoring_System_Real_Data_Demo.ipynb"
         with open(notebook_path, "w") as f:
             json.dump(notebook_content, f, indent=2)
 
@@ -478,8 +478,8 @@ class NotebookScoringValidator:
 
                         # Check for display outputs (charts)
                         if output.output_type in ["display_data", "execute_result"]:
-                            if hasattr(output, "data") and "text / html" in output.data:
-                                if "plotly" in output.data["text / html"].lower():
+                            if hasattr(output, "data") and "text/html" in output.data:
+                                if "plotly" in output.data["text/html"].lower():
                                     validation_result["charts_generated"] = True
                                     validation_result["validation_details"].append("Found Plotly chart")
 
@@ -543,8 +543,8 @@ class NotebookScoringValidator:
             print("-" * 40)
 
             existing_notebooks = [
-                "notebooks / Simple_Scoring_Demo.ipynb",
-                "notebooks / Validated_Analytics_Dashboard.ipynb",
+                "notebooks/Simple_Scoring_Demo.ipynb",
+                "notebooks/Validated_Analytics_Dashboard.ipynb",
             ]
 
             for notebook_path in existing_notebooks:

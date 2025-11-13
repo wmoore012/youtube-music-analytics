@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 🔒 Pre-Commit Hook
 =================
@@ -8,10 +8,10 @@ This runs automatically before each commit to ensure code quality.
 
 Usage:
     # Install as git hook
-    ln -sf ../../scripts / pre_commit_hook.py .git / hooks / pre-commit
+    ln -sf ../../scripts/pre_commit_hook.py .git/hooks/pre-commit
 
     # Run manually
-    python scripts / pre_commit_hook.py
+    python scripts/pre_commit_hook.py
 """
 
 import os
