@@ -137,14 +137,15 @@ jobs:
     
     - name: 🧪 Run Tests (BLOCKING)
       run: |
-        echo "🧪 Running test suite..."
-        PYTHONPATH=. pytest -v --tb=short
-        
+        echo "🧪 Running test suite (unit-only; DB/integration excluded here)..."
+        PYTHONPATH=. pytest -v --tb=short -k "not youtube_channel_etl"
+
         if [ $? -ne 0 ]; then
           echo "❌ CRITICAL: Tests are failing!"
           exit 1
         fi
-        echo "✅ All tests pass"
+        echo "✅ All unit tests pass"
+        echo "ℹ️ DB-heavy tests run in dedicated jobs with MySQL service"
     
     - name: 📊 Generate Quality Report
       if: always()
@@ -176,7 +177,7 @@ jobs:
         
         echo "" >> quality-report.md
         echo "### Test Results" >> quality-report.md
-        PYTHONPATH=. pytest --tb=no -q >> quality-report.md 2>/dev/null || true
+        PYTHONPATH=. pytest --tb=no -q -k "not youtube_channel_etl" >> quality-report.md 2>/dev/null || true
     
     - name: 📋 Upload Quality Report
       if: always()
