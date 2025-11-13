@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 🚀 Local CI / CD Pipeline
 ======================
@@ -59,7 +59,7 @@ class LocalCI:
                     self.log_error(f"Duplicate notebook found: {notebook}")
 
         # Check for empty executed notebooks
-        executed_dir = Path("notebooks / executed")
+        executed_dir = Path("notebooks/executed")
         if executed_dir.exists():
             for notebook in executed_dir.glob("*.ipynb"):
                 if notebook.stat().st_size == 0:
@@ -211,7 +211,7 @@ except Exception as e:
 
         try:
             result = subprocess.run(
-                [sys.executable, "scripts / validate_artist_data.py"], capture_output=True, text=True, timeout=60
+                [sys.executable, "scripts/validate_artist_data.py"], capture_output=True, text=True, timeout=60
             )
 
             if result.returncode == 0:

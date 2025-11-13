@@ -33,7 +33,7 @@ jobs:
         pip install flake8 black isort mypy pytest autopep8
         pip install -e .
     
-    - name: � CRITIcCAL: Syntax Errors (BLOCKING)
+    - name: "Critical: Syntax errors (blocking)"
       run: |
         echo "🚨 Checking for syntax errors that prevent code execution..."
         echo "These errors MUST be zero-they break the code!"
@@ -49,9 +49,9 @@ jobs:
         fi
         echo "✅ No syntax errors found"
     
-    - name: �  CRITICAL: Undefined Names (BLOCKING)
+    - name: "Critical: Undefined names (blocking)"
       run: |
-        echo "� RChecking for undefined variables that cause runtime crashes..."
+        echo "Checking for undefined variables that cause runtime crashes..."
         
         # Check for undefined names
         UNDEFINED_NAMES=$(flake8 --select=F821 --count 2>/dev/null || echo "0")
@@ -64,9 +64,9 @@ jobs:
         fi
         echo "✅ No undefined names found"
     
-    - name: � CRITICCAL: Import Redefinitions (BLOCKING)
+    - name: "Critical: Import redefinitions (blocking)"
       run: |
-        echo "� Checkning for import redefinitions that cause confusion..."
+        echo "Checking for import redefinitions that cause confusion..."
         
         # Check for redefined imports
         REDEFINITIONS=$(flake8 --select=F811 --count 2>/dev/null || echo "0")

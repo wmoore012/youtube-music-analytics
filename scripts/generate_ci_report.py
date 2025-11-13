@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Generate comprehensive CI validation report.
 
@@ -57,7 +57,7 @@ class CIReportGenerator:
             "flake8_linting": self.run_command(
                 ["flake8", "--max-line-length=120", "--exclude=.git,__pycache__,notebooks,venv,.venv"]
             ),
-            "loc_limits": self.run_command(["python", "scripts / validate_loc_limits.py"]),
+            "loc_limits": self.run_command(["python", "scripts/validate_loc_limits.py"]),
         }
 
         # Count Python files
@@ -102,7 +102,7 @@ class CIReportGenerator:
                 return {
                     "connectivity": connectivity,
                     "tables": tables_info,
-                    "schema_validation": self.run_command(["python", "scripts / test_schema_alignment.py"]),
+                    "schema_validation": self.run_command(["python", "-m", "pytest", "-q", "tests/test_youtube_metrics_schema_alignment.py"]),
                 }
 
         except Exception as e:
@@ -116,8 +116,8 @@ class CIReportGenerator:
     def check_notebook_status(self) -> Dict[str, Any]:
         """Check notebook validation status."""
         notebook_checks = {
-            "syntax_validation": self.run_command(["python", "scripts / validate_notebooks.py"]),
-            "outputs_stripped": self.run_command(["python", "scripts / check_notebook_outputs.py"]),
+            "syntax_validation": self.run_command(["python", "scripts/validate_notebooks.py"]),
+            "outputs_stripped": self.run_command(["python", "scripts/check_notebook_outputs.py"]),
         }
 
         # Count notebooks

@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Professional Database Cleanup Utility for YouTube Channel Data Management
 
