@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Automation Manager-Explicit User Control Over Scheduled Tasks
 
@@ -31,11 +31,11 @@ class AutomationManager:
     transparent automation without surprises.
     """
 
-    def __init__(self, config_path: str = "config / automation / schedule_templates.yml"):
+    def __init__(self, config_path: str = "config/automation/schedule_templates.yml"):
         self.config_path = Path(config_path)
-        self.cron_backup_path = Path("config / automation / cron_backup.txt")
-        self.active_config_path = Path("config / automation / active_schedule.yml")
-        self.log_path = Path("logs / automation.log")
+        self.cron_backup_path = Path("config/automation/cron_backup.txt")
+        self.active_config_path = Path("config/automation/active_schedule.yml")
+        self.log_path = Path("logs/automation.log")
 
         # Ensure directories exist
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -114,8 +114,8 @@ class AutomationManager:
         cron_lines.append("")
 
         # Add explicit environment configuration so cron executes reliably
-        env_shell = os.getenv("CRON_SHELL", "/bin / bash")
-        env_path = os.getenv("CRON_PATH", os.getenv("PATH", "/usr / local / bin:/usr / bin:/bin"))
+        env_shell = os.getenv("CRON_SHELL", "/bin/bash")
+        env_path = os.getenv("CRON_PATH", os.getenv("PATH", "/usr/local/bin:/usr/bin:/bin"))
         env_mailto = os.getenv("CRON_EMAIL", "admin@yourdomain.com")
 
         cron_lines.append("# Environment configuration for cron jobs")
@@ -139,7 +139,7 @@ class AutomationManager:
                 cron_lines.append(f"# User Control: {user_control}")
 
             # Create full command with proper paths and logging
-            full_command = f"cd {current_dir} && {command} >> logs / automation.log 2>&1"
+            full_command = f"cd {current_dir} && {command} >> logs/automation.log 2>&1"
 
             # Add CRON line
             cron_lines.append(f"{schedule_time} {full_command}")
@@ -153,10 +153,10 @@ class AutomationManager:
             print(cron_config)
             print("=" * 60)
             print("\n💡 To apply this configuration:")
-            print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
+            print(f"   python scripts/automation_manager.py apply-cron {schedule_name}")
         else:
             # Save configuration for review
-            config_file = Path(f"config / automation / generated_{schedule_name}_cron.txt")
+            config_file = Path(f"config/automation/generated_{schedule_name}_cron.txt")
             with open(config_file, "w") as f:
                 f.write(cron_config)
 
@@ -164,7 +164,7 @@ class AutomationManager:
             print("\n📋 Review the configuration before applying:")
             print(f"   cat {config_file}")
             print("\n🚀 Apply the configuration:")
-            print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
+            print(f"   python scripts/automation_manager.py apply-cron {schedule_name}")
 
         return cron_config
 
@@ -189,11 +189,11 @@ class AutomationManager:
 
     def apply_cron_schedule(self, schedule_name: str, force: bool = False) -> bool:
         """Apply generated CRON schedule to system."""
-        config_file = Path(f"config / automation / generated_{schedule_name}_cron.txt")
+        config_file = Path(f"config/automation/generated_{schedule_name}_cron.txt")
 
         if not config_file.exists():
             print(f"❌ Generated configuration not found: {config_file}")
-            print(f"Run: python scripts / automation_manager.py generate-cron {schedule_name}")
+            print(f"Run: python scripts/automation_manager.py generate-cron {schedule_name}")
             return False
 
         # Show what will be applied
@@ -237,7 +237,7 @@ class AutomationManager:
                 self.log_action("CRON_APPLIED", f"Schedule: {schedule_name}")
                 print(f"✅ CRON schedule '{schedule_name}' applied successfully")
                 print("\n📊 Monitor automation with:")
-                print("   python scripts / automation_manager.py status")
+                print("   python scripts/automation_manager.py status")
                 return True
             else:
                 self.log_action("CRON_APPLY_FAILED", f"Return code: {process.returncode}")
@@ -271,7 +271,7 @@ class AutomationManager:
                 self.log_action("AUTOMATION_DISABLED", "All CRON jobs removed")
                 print("✅ All automation disabled")
                 print("\n🔄 To re-enable automation:")
-                print("   python scripts / automation_manager.py restore-cron")
+                print("   python scripts/automation_manager.py restore-cron")
                 return True
             else:
                 print("❌ Failed to disable automation")
@@ -406,8 +406,8 @@ class AutomationManager:
             print()
 
         print("💡 To apply this schedule:")
-        print(f"   python scripts / automation_manager.py generate-cron {schedule_name}")
-        print(f"   python scripts / automation_manager.py apply-cron {schedule_name}")
+        print(f"   python scripts/automation_manager.py generate-cron {schedule_name}")
+        print(f"   python scripts/automation_manager.py apply-cron {schedule_name}")
 
 
 def main():

@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Run ETL for all YouTube channels defined in .env (keys starting with YT_ and value is a YouTube URL).
 

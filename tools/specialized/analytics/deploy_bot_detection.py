@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Deploy Enhanced Bot Detection System
 
@@ -99,7 +99,7 @@ class EnhancedBotDetector:
     def calculate_bot_score(self, comment_data: dict) -> float:  # noqa: C901
         """Calculate bot probability score (0.0 = human, 1.0 = bot)."""
         score = 0.0
-        _text_item = comment_data["comment_text"]  # noqa: F841
+        text = str(comment_data.get("comment_text", "") or "")
 
         # If whitelisted as fan, very low bot score
         if self.is_whitelisted_fan(text):
@@ -169,7 +169,7 @@ class EnhancedBotDetector:
 
     def calculate_engagement_authenticity(self, comment_data: dict) -> float:
         """Calculate engagement authenticity score (higher = more authentic)."""
-        _text_item = comment_data["comment_text"]  # noqa: F841
+        text = str(comment_data.get("comment_text", "") or "")
 
         # Authentic engagement indicators
         authenticity_score = 0.0

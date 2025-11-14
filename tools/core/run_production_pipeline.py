@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Enterprise YouTube Analytics ETL Pipeline
 
@@ -69,7 +69,7 @@ class EnterpriseETLPipeline:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
-        self.pipeline_id = f"pipeline_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
+        self.pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.start_time = datetime.now()
 
         # Initialize comprehensive results tracking
@@ -247,7 +247,7 @@ class EnterpriseETLPipeline:
         # Stage 1: Pre-flight data quality checks
         if not self.run_stage(
             "pre_flight_quality_check",
-            ["python", "scripts / run_data_quality_checks.py", "--output-format", "json"],
+            ["python", "scripts/run_data_quality_checks.py", "--output-format", "json"],
             critical=False,  # Don't fail pipeline on quality warnings
         ):
             logger.warning("⚠️  Pre-flight quality check had issues, but continuing...")
@@ -259,7 +259,7 @@ class EnterpriseETLPipeline:
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
-            if not self.run_stage("main_etl", ["python", "tools / etl / run_focused_etl.py"], critical=True):
+            if not self.run_stage("main_etl", ["python", "tools/core/run_focused_etl.py"], critical=True):
                 logger.error("💥 Main ETL failed-aborting pipeline")
                 return self.results
         else:
@@ -272,14 +272,14 @@ class EnterpriseETLPipeline:
 
         # Stage 4: Post-ETL quality validation
         if not self.run_stage(
-            "post_etl_quality_check", ["python", "scripts / run_data_quality_checks.py"], critical=False
+            "post_etl_quality_check", ["python", "scripts/run_data_quality_checks.py"], critical=False
         ):
             logger.warning("⚠️  Post-ETL quality check had issues, but continuing...")
 
         # Stage 5: Execute notebooks with clean data
         if not self.run_stage(
             "notebook_execution",
-            ["python", "tools / run_notebooks.py"],
+            ["python", "tools/development/run_notebooks.py"],
             critical=False,  # Notebook failures shouldn't kill the pipeline
         ):
             logger.warning("⚠️  Notebook execution had issues")
@@ -287,7 +287,7 @@ class EnterpriseETLPipeline:
         # Stage 6: Final quality validation
         if not self.run_stage(
             "final_quality_check",
-            ["python", "scripts / run_data_quality_checks.py", "--output-format", "json"],
+            ["python", "scripts/run_data_quality_checks.py", "--output-format", "json"],
             critical=False,
         ):
             logger.warning("⚠️  Final quality check had issues")
@@ -331,7 +331,7 @@ def main():
         config["dry_run"] = True
 
     # Run pipeline
-    pipeline = ProductionPipeline(config)  # noqa: F821
+    pipeline = EnterpriseETLPipeline(config)
     results = pipeline.run_pipeline()
 
     # Exit with appropriate code

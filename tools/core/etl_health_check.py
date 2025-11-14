@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 ETL System Health Check-YouTube Analytics Platform
 

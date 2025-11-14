@@ -79,13 +79,13 @@ jobs:
         echo "DB_HOST=127.0.0.1" >> .env.test
         echo "DB_PORT=3306" >> .env.test
         echo "DB_USER=root" >> .env.test
-        echo "DB_PASSWORD=test_password" >> .env.test
+        echo "DB_PASS=test_password" >> .env.test
         echo "DB_NAME=youtube_analytics_test" >> .env.test
 
     - name: Create database schema
       run: |
         export $(cat .env.test | xargs)
-        python tools/setup/create_tables.py
+        python tools/core/create_tables.py
 
     - name: Run database tests
       run: |

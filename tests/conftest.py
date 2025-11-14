@@ -487,6 +487,8 @@ def setup_test_environment():
     # Set test environment variables
     test_env = {
         "YOUTUBE_API_KEY": "test_api_key_123456789",
+        "DATABASE_URL": "sqlite:///test.db",
+
         "DB_HOST": "localhost",
         "DB_PORT": "3306",
         "DB_USER": "test_user",

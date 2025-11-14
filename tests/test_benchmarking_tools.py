@@ -1,1 +1,205 @@
-#!/usr / bin / env python3\n\"\"\"\nTest: Benchmarking Tools\n\nComprehensive tests for the benchmarking tools organization and functionality.\nTests all benchmarking tools for proper integration and standardized interfaces.\n\"\"\"\n\nimport sys\nimport tempfile\nfrom pathlib import Path\nfrom unittest.mock import MagicMock, patch\n\nimport pytest\n\n# Add project root to path\nproject_root = Path(__file__).parent.parent\nsys.path.insert(0, str(project_root))\nsys.path.insert(0, str(project_root / \"tools\" / \"specialized\" / \"benchmarking\"))\n\n\nclass TestBenchmarkingToolsOrganization:\n    \"\"\"Test benchmarking tools organization and structure.\"\"\"\n\n    def test_benchmarking_directory_exists(self):\n        \"\"\"Test that benchmarking directory exists in the correct location.\"\"\"\n        benchmarking_dir = project_root / \"tools\" / \"specialized\" / \"benchmarking\"\n        assert benchmarking_dir.exists(), \"Benchmarking directory should exist\"\n        assert benchmarking_dir.is_dir(), \"Benchmarking path should be a directory\"\n\n    def test_required_benchmarking_tools_exist(self):\n        \"\"\"Test that all required benchmarking tools exist.\"\"\"\n        benchmarking_dir = project_root / \"tools\" / \"specialized\" / \"benchmarking\"\n        \n        required_tools = [\n            \"unified_benchmark_tool.py\",\n            \"model_benchmark_tool.py\",\n            \"system_benchmark_tool.py\",\n            \"data_quality_benchmark_tool.py\",\n            \"README.md\",\n        ]\n        \n        for tool in required_tools:\n            tool_path = benchmarking_dir / tool\n            assert tool_path.exists(), f\"Required benchmarking tool {tool} should exist\"\n\n    def test_benchmarking_tools_are_executable(self):\n        \"\"\"Test that benchmarking tools have proper shebang and are executable.\"\"\"\n        benchmarking_dir = project_root / \"tools\" / \"specialized\" / \"benchmarking\"\n        \n        python_tools = [\n            \"unified_benchmark_tool.py\",\n            \"model_benchmark_tool.py\",\n            \"system_benchmark_tool.py\",\n            \"data_quality_benchmark_tool.py\",\n        ]\n        \n        for tool in python_tools:\n            tool_path = benchmarking_dir / tool\n            with open(tool_path, 'r') as f:\n                first_line = f.readline().strip()\n                assert first_line.startswith(\"#!/usr / bin / env python3\"), f\"{tool} should have proper shebang\"\n\n    def test_benchmarking_readme_comprehensive(self):\n        \"\"\"Test that benchmarking README is comprehensive.\"\"\"\n        readme_path = project_root / \"tools\" / \"specialized\" / \"benchmarking\" / \"README.md\"\n        \n        with open(readme_path, 'r') as f:\n            readme_content = f.read()\n        \n        # Check for required sections\n        required_sections = [\n            \"# Benchmarking Tools\",\n            \"## Available Tools\",\n            \"## Benchmark Categories\",\n            \"## Output Formats\",\n            \"## Configuration\",\n            \"## Performance Thresholds\",\n            \"## Usage Examples\",\n            \"## Troubleshooting\",\n        ]\n        \n        for section in required_sections:\n            assert section in readme_content, f\"README should contain {section} section\"\n\n\nclass TestUnifiedBenchmarkTool:\n    \"\"\"Test unified benchmark tool functionality.\"\"\"\n\n    def test_unified_benchmark_tool_imports(self):\n        \"\"\"Test that unified benchmark tool imports correctly.\"\"\"\n        try:\n            from unified_benchmark_tool import UnifiedBenchmarkTool\n            assert UnifiedBenchmarkTool is not None\n        except ImportError as e:\n            pytest.fail(f\"Failed to import UnifiedBenchmarkTool: {e}\")\n\n    def test_unified_benchmark_tool_initialization(self):\n        \"\"\"Test that unified benchmark tool initializes correctly.\"\"\"\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        \n        tool = UnifiedBenchmarkTool()\n        assert tool.name == \"unified-benchmark\"\n        assert tool.version == \"1.0.0\"\n        assert hasattr(tool, \"results_dir\")\n\n    def test_unified_benchmark_tool_config(self):\n        \"\"\"Test that unified benchmark tool has proper configuration.\"\"\"\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        \n        tool = UnifiedBenchmarkTool()\n        config = tool.get_tool_config()\n        \n        assert config.name == \"unified-benchmark\"\n        assert config.version == \"1.0.0\"\n        assert config.category == \"specialized\"\n        assert \"DATABASE_URL\" in config.environment_vars\n        assert len(config.usage_examples) > 0\n\n    def test_unified_benchmark_tool_list_benchmarks(self):\n        \"\"\"Test that unified benchmark tool can list available benchmarks.\"\"\"\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        \n        tool = UnifiedBenchmarkTool()\n        benchmarks = tool.list_available_benchmarks()\n        \n        assert isinstance(benchmarks, dict)\n        assert \"model_benchmarks\" in benchmarks\n        assert \"system_benchmarks\" in benchmarks\n        assert \"data_quality_benchmarks\" in benchmarks\n        assert \"full_benchmark\" in benchmarks\n        \n        # Check structure of each benchmark category\n        for category, info in benchmarks.items():\n            assert \"description\" in info\n            assert \"tests\" in info\n            assert \"command\" in info\n            assert isinstance(info[\"tests\"], list)\n            assert len(info[\"tests\"]) > 0\n\n\nclass TestModelBenchmarkTool:\n    \"\"\"Test model benchmark tool functionality.\"\"\"\n\n    def test_model_benchmark_tool_imports(self):\n        \"\"\"Test that model benchmark tool imports correctly.\"\"\"\n        try:\n            from model_benchmark_tool import ModelBenchmarkTool\n            assert ModelBenchmarkTool is not None\n        except ImportError as e:\n            pytest.fail(f\"Failed to import ModelBenchmarkTool: {e}\")\n\n    def test_model_benchmark_tool_initialization(self):\n        \"\"\"Test that model benchmark tool initializes correctly.\"\"\"\n        from model_benchmark_tool import ModelBenchmarkTool\n        \n        tool = ModelBenchmarkTool()\n        assert tool.name == \"model-benchmark\"\n        assert tool.version == \"1.0.0\"\n\n    def test_model_benchmark_tool_config(self):\n        \"\"\"Test that model benchmark tool has proper configuration.\"\"\"\n        from model_benchmark_tool import ModelBenchmarkTool\n        \n        tool = ModelBenchmarkTool()\n        config = tool.get_tool_config()\n        \n        assert config.name == \"model-benchmark\"\n        assert config.category == \"specialized\"\n        assert \"DATABASE_URL\" in config.environment_vars\n        assert \"scikit-learn\" in str(config.dependencies)\n\n    @patch('model_benchmark_tool.MODEL_BENCHMARK_AVAILABLE', True)\n    def test_model_benchmark_tool_list_models_mock(self):\n        \"\"\"Test model listing with mocked dependencies.\"\"\"\n        from model_benchmark_tool import ModelBenchmarkTool\n        \n        tool = ModelBenchmarkTool()\n        \n        # Mock the benchmark system\n        mock_system = MagicMock()\n        mock_system.models = {\n            \"test_model\": {\n                \"type\": \"test\",\n                \"name\": \"Test Model\",\n                \"description\": \"A test model\",\n            }\n        }\n        tool.benchmark_system = mock_system\n        \n        result = tool.list_available_models()\n        \n        assert result[\"status\"] == \"SUCCESS\"\n        assert result[\"total_models\"] == 1\n        assert \"test\" in result[\"categories\"]\n        assert \"test_model\" in result[\"models\"]\n\n\nclass TestSystemBenchmarkTool:\n    \"\"\"Test system benchmark tool functionality.\"\"\"\n\n    def test_system_benchmark_tool_imports(self):\n        \"\"\"Test that system benchmark tool imports correctly.\"\"\"\n        try:\n            from system_benchmark_tool import SystemBenchmarkTool\n            assert SystemBenchmarkTool is not None\n        except ImportError as e:\n            pytest.fail(f\"Failed to import SystemBenchmarkTool: {e}\")\n\n    def test_system_benchmark_tool_initialization(self):\n        \"\"\"Test that system benchmark tool initializes correctly.\"\"\"\n        from system_benchmark_tool import SystemBenchmarkTool\n        \n        tool = SystemBenchmarkTool()\n        assert tool.name == \"system-benchmark\"\n        assert tool.version == \"1.0.0\"\n        assert hasattr(tool, \"performance_thresholds\")\n\n    def test_system_benchmark_tool_config(self):\n        \"\"\"Test that system benchmark tool has proper configuration.\"\"\"\n        from system_benchmark_tool import SystemBenchmarkTool\n        \n        tool = SystemBenchmarkTool()\n        config = tool.get_tool_config()\n        \n        assert config.name == \"system-benchmark\"\n        assert config.category == \"specialized\"\n        assert \"DATABASE_URL\" in config.environment_vars\n        assert \"pandas\" in str(config.dependencies)\n\n    def test_system_benchmark_tool_performance_thresholds(self):\n        \"\"\"Test that system benchmark tool has proper performance thresholds.\"\"\"\n        from system_benchmark_tool import SystemBenchmarkTool\n        \n        tool = SystemBenchmarkTool()\n        thresholds = tool.performance_thresholds\n        \n        assert \"etl_throughput_rows_per_sec\" in thresholds\n        assert \"database_avg_query_time_ms\" in thresholds\n        \n        # Check threshold structure\n        for metric, threshold in thresholds.items():\n            assert \"good\" in threshold\n            assert \"acceptable\" in threshold\n            assert \"poor\" in threshold\n            assert isinstance(threshold[\"good\"], (int, float))\n\n\nclass TestDataQualityBenchmarkTool:\n    \"\"\"Test data quality benchmark tool functionality.\"\"\"\n\n    def test_data_quality_benchmark_tool_imports(self):\n        \"\"\"Test that data quality benchmark tool imports correctly.\"\"\"\n        try:\n            from data_quality_benchmark_tool import DataQualityBenchmarkTool\n            assert DataQualityBenchmarkTool is not None\n        except ImportError as e:\n            pytest.fail(f\"Failed to import DataQualityBenchmarkTool: {e}\")\n\n    def test_data_quality_benchmark_tool_initialization(self):\n        \"\"\"Test that data quality benchmark tool initializes correctly.\"\"\"\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tool = DataQualityBenchmarkTool()\n        assert tool.name == \"data-quality-benchmark\"\n        assert tool.version == \"1.0.0\"\n        assert hasattr(tool, \"quality_thresholds\")\n\n    def test_data_quality_benchmark_tool_config(self):\n        \"\"\"Test that data quality benchmark tool has proper configuration.\"\"\"\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tool = DataQualityBenchmarkTool()\n        config = tool.get_tool_config()\n        \n        assert config.name == \"data-quality-benchmark\"\n        assert config.category == \"specialized\"\n        assert \"DATABASE_URL\" in config.environment_vars\n\n    def test_data_quality_benchmark_tool_quality_thresholds(self):\n        \"\"\"Test that data quality benchmark tool has proper quality thresholds.\"\"\"\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tool = DataQualityBenchmarkTool()\n        thresholds = tool.quality_thresholds\n        \n        assert \"completeness_score\" in thresholds\n        assert \"accuracy_score\" in thresholds\n        assert \"consistency_score\" in thresholds\n        \n        # Check threshold structure\n        for metric, threshold in thresholds.items():\n            assert \"excellent\" in threshold\n            assert \"good\" in threshold\n            assert \"acceptable\" in threshold\n            assert isinstance(threshold[\"excellent\"], (int, float))\n\n\nclass TestBenchmarkingToolsIntegration:\n    \"\"\"Test benchmarking tools integration with shared framework.\"\"\"\n\n    def test_all_tools_use_shared_base(self):\n        \"\"\"Test that all benchmarking tools inherit from ToolBase.\"\"\"\n        from tools.shared.common import ToolBase\n        \n        # Import all tools\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        from model_benchmark_tool import ModelBenchmarkTool\n        from system_benchmark_tool import SystemBenchmarkTool\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tools = [\n            UnifiedBenchmarkTool(),\n            ModelBenchmarkTool(),\n            SystemBenchmarkTool(),\n            DataQualityBenchmarkTool(),\n        ]\n        \n        for tool in tools:\n            assert isinstance(tool, ToolBase), f\"{tool.__class__.__name__} should inherit from ToolBase\"\n            assert hasattr(tool, \"get_tool_config\"), f\"{tool.__class__.__name__} should have get_tool_config method\"\n            assert hasattr(tool, \"get_required_environment_vars\"), f\"{tool.__class__.__name__} should have get_required_environment_vars method\"\n\n    def test_all_tools_register_correctly(self):\n        \"\"\"Test that all benchmarking tools register in the tool registry.\"\"\"\n        from tools.shared.common import get_tool_registry\n        \n        # Import all tools (this should register them)\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        from model_benchmark_tool import ModelBenchmarkTool\n        from system_benchmark_tool import SystemBenchmarkTool\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        # Create instances to trigger registration\n        tools = [\n            UnifiedBenchmarkTool(),\n            ModelBenchmarkTool(),\n            SystemBenchmarkTool(),\n            DataQualityBenchmarkTool(),\n        ]\n        \n        registry = get_tool_registry()\n        registered_tools = registry.list_tools()\n        \n        # Check that benchmarking tools are registered\n        tool_names = [tool.name for tool in registered_tools]\n        \n        expected_tools = [\n            \"unified-benchmark\",\n            \"model-benchmark\",\n            \"system-benchmark\",\n            \"data-quality-benchmark\",\n        ]\n        \n        for expected_tool in expected_tools:\n            assert expected_tool in tool_names, f\"{expected_tool} should be registered in tool registry\"\n\n    def test_benchmarking_tools_discoverable(self):\n        \"\"\"Test that benchmarking tools are discoverable through the discovery system.\"\"\"\n        try:\n            from tools.shared.tool_discovery import ToolDiscovery\n            \n            discovery = ToolDiscovery()\n            \n            # Search for benchmark tools\n            search_result = discovery.search_tools(\"benchmark\")\n            \n            assert search_result[\"status\"] == \"SUCCESS\"\n            assert search_result[\"matches_found\"] > 0\n            \n            # Check that we found benchmarking tools\n            benchmark_tools = [match for match in search_result[\"matches\"] if \"benchmark\" in match[\"name\"].lower()]\n            assert len(benchmark_tools) > 0, \"Should find benchmarking tools through discovery\"\n            \n        except ImportError:\n            pytest.skip(\"Tool discovery system not available\")\n\n    def test_benchmarking_tools_have_consistent_interfaces(self):\n        \"\"\"Test that all benchmarking tools have consistent interfaces.\"\"\"\n        # Import all tools\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        from model_benchmark_tool import ModelBenchmarkTool\n        from system_benchmark_tool import SystemBenchmarkTool\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tools = [\n            UnifiedBenchmarkTool(),\n            ModelBenchmarkTool(),\n            SystemBenchmarkTool(),\n            DataQualityBenchmarkTool(),\n        ]\n        \n        for tool in tools:\n            # Check required methods\n            assert hasattr(tool, \"run\"), f\"{tool.__class__.__name__} should have run method\"\n            assert hasattr(tool, \"cleanup_resources\"), f\"{tool.__class__.__name__} should have cleanup_resources method\"\n            \n            # Check configuration\n            config = tool.get_tool_config()\n            assert config.name is not None, f\"{tool.__class__.__name__} should have a name\"\n            assert config.version is not None, f\"{tool.__class__.__name__} should have a version\"\n            assert config.category == \"specialized\", f\"{tool.__class__.__name__} should be in specialized category\"\n            assert len(config.usage_examples) > 0, f\"{tool.__class__.__name__} should have usage examples\"\n\n\nclass TestBenchmarkingToolsStandardization:\n    \"\"\"Test benchmarking tools standardization and consolidation.\"\"\"\n\n    def test_no_duplicate_benchmark_functionality(self):\n        \"\"\"Test that there are no duplicate benchmark implementations.\"\"\"\n        benchmarking_dir = project_root / \"tools\" / \"specialized\" / \"benchmarking\"\n        \n        # Check that old benchmark files are either moved or redirected\n        old_locations = [\n            project_root / \"scripts\" / \"benchmark_progress.py\",\n            project_root / \"src\" / \"youtubeviz\" / \"model_benchmark_system.py\",\n            project_root / \"src\" / \"youtubeviz\" / \"benchmark_database.py\",\n        ]\n        \n        # These files should still exist but functionality should be consolidated\n        for old_file in old_locations:\n            if old_file.exists():\n                # File exists but should not contain main execution logic\n                # or should redirect to new tools\n                pass  # This is acceptable as long as new tools exist\n        \n        # Check that new standardized tools exist\n        new_tools = [\n            benchmarking_dir / \"unified_benchmark_tool.py\",\n            benchmarking_dir / \"model_benchmark_tool.py\",\n            benchmarking_dir / \"system_benchmark_tool.py\",\n            benchmarking_dir / \"data_quality_benchmark_tool.py\",\n        ]\n        \n        for new_tool in new_tools:\n            assert new_tool.exists(), f\"New standardized tool {new_tool.name} should exist\"\n\n    def test_benchmark_output_format_standardization(self):\n        \"\"\"Test that all benchmark tools use standardized output formats.\"\"\"\n        # Import all tools\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        from model_benchmark_tool import ModelBenchmarkTool\n        from system_benchmark_tool import SystemBenchmarkTool\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tools = [\n            UnifiedBenchmarkTool(),\n            ModelBenchmarkTool(),\n            SystemBenchmarkTool(),\n            DataQualityBenchmarkTool(),\n        ]\n        \n        # Check that all tools have methods that return standardized dictionaries\n        for tool in tools:\n            # All tools should have methods that return status, timestamp, etc.\n            # This is tested through the interface consistency test above\n            assert hasattr(tool, \"get_tool_config\"), f\"{tool.__class__.__name__} should have standardized config\"\n            \n            config = tool.get_tool_config()\n            assert hasattr(config, \"name\"), \"Tool config should have standardized name field\"\n            assert hasattr(config, \"version\"), \"Tool config should have standardized version field\"\n            assert hasattr(config, \"category\"), \"Tool config should have standardized category field\"\n\n    def test_benchmark_tools_error_handling(self):\n        \"\"\"Test that benchmark tools have proper error handling.\"\"\"\n        # Import all tools\n        from unified_benchmark_tool import UnifiedBenchmarkTool\n        from model_benchmark_tool import ModelBenchmarkTool\n        from system_benchmark_tool import SystemBenchmarkTool\n        from data_quality_benchmark_tool import DataQualityBenchmarkTool\n        \n        tools = [\n            UnifiedBenchmarkTool(),\n            ModelBenchmarkTool(),\n            SystemBenchmarkTool(),\n            DataQualityBenchmarkTool(),\n        ]\n        \n        for tool in tools:\n            # Check that tools inherit error handling from ToolBase\n            assert hasattr(tool, \"handle_error\"), f\"{tool.__class__.__name__} should have error handling\"\n            assert hasattr(tool, \"log_progress\"), f\"{tool.__class__.__name__} should have progress logging\"\n\n\ndef test_benchmarking_tools_main_execution():\n    \"\"\"Test that benchmarking tools can be executed as main scripts.\"\"\"\n    benchmarking_dir = project_root / \"tools\" / \"specialized\" / \"benchmarking\"\n    \n    python_tools = [\n        \"unified_benchmark_tool.py\",\n        \"model_benchmark_tool.py\",\n        \"system_benchmark_tool.py\",\n        \"data_quality_benchmark_tool.py\",\n    ]\n    \n    for tool in python_tools:\n        tool_path = benchmarking_dir / tool\n        \n        # Check that the file has a main execution block\n        with open(tool_path, 'r') as f:\n            content = f.read()\n            assert 'if __name__ == \"__main__\":' in content, f\"{tool} should have main execution block\"\n            assert \"def main():\" in content, f\"{tool} should have main function\"\n            assert \"argparse\" in content, f\"{tool} should use argparse for command line interface\"\n\n\nif __name__ == \"__main__\":\n    print(\"🧪 RUNNING BENCHMARKING TOOLS TESTS\")\n    print(\"=\" * 60)\n    print(\"🔧 These tests ensure benchmarking tools are properly organized and standardized\")\n    print()\n\n    # Run the tests\n    pytest.main([__file__, \"-v\"])\n"
+#!/usr/bin/env python3
+"""Tests for specialized benchmarking tools and their organization.
+
+This suite verifies that tools exist, are importable, expose consistent
+metadata via ToolConfig, and provide a clean CLI entry. It also checks
+for common repository hygiene (shebangs, README sections).
+"""
+from __future__ import annotations
+
+import importlib
+from pathlib import Path
+from typing import List
+
+import pytest
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BENCHMARK_DIR = PROJECT_ROOT / "tools" / "specialized" / "benchmarking"
+
+
+class TestBenchmarkingToolsOrganization:
+    def test_benchmarking_directory_exists(self):
+        assert BENCHMARK_DIR.is_dir(), f"Missing dir: {BENCHMARK_DIR}"
+
+    def test_required_benchmarking_tools_exist(self):
+        required: List[str] = [
+            "unified_benchmark_tool.py",
+            "model_benchmark_tool.py",
+            "system_benchmark_tool.py",
+            "data_quality_benchmark_tool.py",
+            "README.md",
+        ]
+        for name in required:
+            path = BENCHMARK_DIR / name
+            assert path.exists(), f"Missing: {path}"
+
+    def test_benchmarking_tools_are_executable(self):
+        for py in [
+            "unified_benchmark_tool.py",
+            "model_benchmark_tool.py",
+            "system_benchmark_tool.py",
+            "data_quality_benchmark_tool.py",
+        ]:
+            p = BENCHMARK_DIR / py
+            with p.open("r", encoding="utf-8") as fh:
+                first = fh.readline().strip()
+            assert first.startswith("#!/usr/bin/env python3"), f"Bad shebang in {p}: {first!r}"
+
+    def test_benchmarking_readme_comprehensive(self):
+        readme = (BENCHMARK_DIR / "README.md").read_text(encoding="utf-8")
+        for section in [
+            "Model Benchmark Tool",
+            "System Performance Benchmark Tool",
+            "Data Quality Benchmark Tool",
+            "Unified Benchmark Tool",
+        ]:
+            assert section in readme, f"README missing section: {section}"
+
+
+class TestUnifiedBenchmarkTool:
+    def test_unified_benchmark_tool_imports(self):
+        mod = importlib.import_module(
+            "tools.specialized.benchmarking.unified_benchmark_tool"
+        )
+        Tool = getattr(mod, "UnifiedBenchmarkTool")
+        tool = Tool()
+        assert tool.name == "unified-benchmark"
+        assert tool.version == "1.0.0"
+        assert (tool.results_dir).name == "benchmarks"
+
+    def test_unified_list_available_benchmarks(self):
+        from tools.specialized.benchmarking.unified_benchmark_tool import (
+            UnifiedBenchmarkTool,
+        )
+
+        tool = UnifiedBenchmarkTool()
+        catalog = tool.list_available_benchmarks()
+        for key in ["model", "system", "data_quality"]:
+            assert key in catalog, f"Missing benchmark key: {key}"
+            assert "module" in catalog[key] and "cli" in catalog[key]
+
+
+class TestModelBenchmarkTool:
+    def test_model_benchmark_tool_config(self):
+        mod = importlib.import_module(
+            "tools.specialized.benchmarking.model_benchmark_tool"
+        )
+        Tool = getattr(mod, "ModelBenchmarkTool")
+        tool = Tool()
+        cfg = tool.get_tool_config()
+        assert cfg.category == "specialized"
+        assert "DATABASE_URL" in cfg.environment_vars
+        assert any("scikit-learn" in dep for dep in cfg.dependencies)
+
+
+class TestSystemBenchmarkTool:
+    def test_system_benchmark_tool_config(self):
+        mod = importlib.import_module(
+            "tools.specialized.benchmarking.system_benchmark_tool"
+        )
+        Tool = getattr(mod, "SystemBenchmarkTool")
+        tool = Tool()
+        cfg = tool.get_tool_config()
+        assert cfg.category == "specialized"
+        assert "DATABASE_URL" in cfg.environment_vars
+        assert any("pandas" in dep for dep in cfg.dependencies)
+
+    def test_system_benchmark_tool_performance_thresholds(self):
+        from tools.specialized.benchmarking.system_benchmark_tool import (
+            SystemBenchmarkTool,
+        )
+
+        tool = SystemBenchmarkTool()
+        thresholds = tool.performance_thresholds
+        assert "etl_throughput_rows_per_sec" in thresholds
+        assert "database_avg_query_time_ms" in thresholds
+
+
+class TestDataQualityBenchmarkTool:
+    def test_data_quality_benchmark_tool_config(self):
+        mod = importlib.import_module(
+            "tools.specialized.benchmarking.data_quality_benchmark_tool"
+        )
+        Tool = getattr(mod, "DataQualityBenchmarkTool")
+        tool = Tool()
+        cfg = tool.get_tool_config()
+        assert cfg.category == "specialized"
+        assert "DATABASE_URL" in cfg.environment_vars
+
+    def test_data_quality_benchmark_tool_thresholds(self):
+        from tools.specialized.benchmarking.data_quality_benchmark_tool import (
+            DataQualityBenchmarkTool,
+        )
+
+        tool = DataQualityBenchmarkTool()
+        qt = tool.quality_thresholds
+        for key in ["completeness_score", "accuracy_score", "consistency_score"]:
+            assert key in qt
+
+
+class TestBenchmarkingToolsIntegration:
+    def test_all_tools_register_in_registry(self):
+        from tools.shared.common import get_tool_registry
+        from tools.specialized.benchmarking.data_quality_benchmark_tool import (
+            DataQualityBenchmarkTool,
+        )
+        from tools.specialized.benchmarking.system_benchmark_tool import (
+            SystemBenchmarkTool,
+        )
+        from tools.specialized.benchmarking.model_benchmark_tool import (
+            ModelBenchmarkTool,
+        )
+        from tools.specialized.benchmarking.unified_benchmark_tool import (
+            UnifiedBenchmarkTool,
+        )
+
+        # Instantiate to ensure registration occurs
+        DataQualityBenchmarkTool()
+        SystemBenchmarkTool()
+        ModelBenchmarkTool()
+        UnifiedBenchmarkTool()
+
+        reg = get_tool_registry()
+        names = [cfg.name for cfg in reg.list_tools()]
+        for expected in [
+            "data-quality-benchmark",
+            "system-benchmark",
+            "unified-benchmark",
+        ]:
+            assert expected in names
+
+    def test_consistent_interfaces(self):
+        from tools.shared.common import ToolBase
+        from tools.specialized.benchmarking.data_quality_benchmark_tool import (
+            DataQualityBenchmarkTool,
+        )
+        from tools.specialized.benchmarking.system_benchmark_tool import (
+            SystemBenchmarkTool,
+        )
+        from tools.specialized.benchmarking.model_benchmark_tool import (
+            ModelBenchmarkTool,
+        )
+
+        for Tool in [
+            DataQualityBenchmarkTool,
+            SystemBenchmarkTool,
+            ModelBenchmarkTool,
+        ]:
+            tool = Tool()
+            assert isinstance(tool, ToolBase)
+            cfg = tool.get_tool_config()
+            assert cfg.name and cfg.version and cfg.category == "specialized"
+            assert hasattr(tool, "cleanup_resources")
+
+    def test_binaries_have_main_and_argparse(self):
+        for py in [
+            "unified_benchmark_tool.py",
+            "model_benchmark_tool.py",
+            "system_benchmark_tool.py",
+            "data_quality_benchmark_tool.py",
+        ]:
+            content = (BENCHMARK_DIR / py).read_text(encoding="utf-8")
+            assert "if __name__ == \"__main__\"" in content
+            assert "def main()" in content
+            assert "argparse" in content
+

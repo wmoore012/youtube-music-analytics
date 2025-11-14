@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Lightweight Notebook Runner
 
@@ -22,7 +22,7 @@ import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 
 
-def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> Dict[str, str]:
+def execute_notebook(in_path: str, output_dir: str = "notebooks/executed") -> Dict[str, str]:
     """Execute `in_path` and write executed notebook + markdown summary to `output_dir`.
 
     Returns a dict with keys: executed_path, summary_path.
@@ -64,7 +64,7 @@ def execute_notebook(in_path: str, output_dir: str = "notebooks / executed") -> 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Execute a Jupyter notebook")
     parser.add_argument("notebook", help="Path to input .ipynb notebook")
-    parser.add_argument("--output-dir", default="notebooks / executed", help="Output directory for results")
+    parser.add_argument("--output-dir", default="notebooks/executed", help="Output directory for results")
     args = parser.parse_args(argv)
 
     try:

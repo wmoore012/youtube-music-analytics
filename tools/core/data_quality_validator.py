@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Data Quality Validation System-YouTube Analytics Platform
 

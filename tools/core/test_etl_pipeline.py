@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 ETL Pipeline Test Script
 
@@ -117,9 +117,9 @@ def test_etl_pipeline():
     print("=" * 50)
     print("\nThe ETL pipeline is ready for production use!")
     print("\nTo run the full pipeline:")
-    print("  python tools / etl / run_focused_etl.py")
+    print("  python tools/core/run_focused_etl.py")
     print("\nTo run ETL for specific channels:")
-    print("  python tools / etl / run_channels_from_env.py")
+    print("  python tools/core/run_channels_from_env.py")
 
     return True
 

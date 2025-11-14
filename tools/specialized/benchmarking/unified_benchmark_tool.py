@@ -1,1 +1,130 @@
-#!/usr / bin / env python3\n\"\"\"\n🚀 Unified Benchmarking Tool\n\nComprehensive benchmarking system for the YouTube Analytics platform that consolidates\nall performance testing, model evaluation, and system health monitoring capabilities.\n\nFeatures:\n- Model performance benchmarking (sentiment analysis, ML classifiers, transformers)\n- System performance testing (ETL throughput, database performance, API response times)\n- Data quality benchmarking (integrity, completeness, accuracy validation)\n- Automated scheduling and monitoring with trend analysis\n- Standardized reporting with JSON and database storage\n- Statistical significance testing and regression detection\n\nUsage:\n    python tools / specialized / benchmarking / unified_benchmark_tool.py --model-benchmark\n    python tools / specialized / benchmarking / unified_benchmark_tool.py --system-benchmark\n    python tools / specialized / benchmarking / unified_benchmark_tool.py --data-quality-benchmark\n    python tools / specialized / benchmarking / unified_benchmark_tool.py --full-benchmark\n    python tools / specialized / benchmarking / unified_benchmark_tool.py --list-benchmarks\n\"\"\"\n\nimport argparse\nimport json\nimport sys\nimport time\nfrom datetime import datetime\nfrom pathlib import Path\nfrom typing import Any, Dict, List, Optional\n\n# Add project root to path\nproject_root = Path(__file__).parent.parent.parent\nsys.path.insert(0, str(project_root))\n\nfrom tools.shared.common import (\n    ToolBase,\n    ToolConfig,\n    register_tool,\n)\n\n\nclass UnifiedBenchmarkTool(ToolBase):\n    \"\"\"\n    Unified benchmarking tool that consolidates all performance testing capabilities.\n    \n    Provides comprehensive benchmarking for:\n    - Model performance (sentiment analysis, ML models, transformers)\n    - System performance (ETL, database, API throughput)\n    - Data quality (integrity, completeness, accuracy)\n    \"\"\"\n\n    def __init__(self):\n        super().__init__(name=\"unified-benchmark\", version=\"1.0.0\")\n        \n        # Register this tool in the global registry\n        register_tool(self.get_tool_config())\n        \n        # Initialize benchmark modules\n        self.model_benchmarker = None\n        self.system_benchmarker = None\n        self.data_quality_benchmarker = None\n        \n        # Results storage\n        self.results_dir = Path(\"benchmark_results\")\n        self.results_dir.mkdir(exist_ok=True)\n\n    def get_required_environment_vars(self) -> List[str]:\n        \"\"\"Return list of required environment variables.\"\"\"\n        return [\n            \"DATABASE_URL\",  # For database performance testing\n            \"YOUTUBE_API_KEY\",  # For API performance testing\n        ]\n\n    def get_tool_config(self) -> ToolConfig:\n        \"\"\"Return tool configuration metadata.\"\"\"\n        return ToolConfig(\n            name=\"unified-benchmark\",\n            version=\"1.0.0\",\n            description=\"Unified benchmarking tool for model, system, and data quality testing\",\n            dependencies=[\n                \"python>=3.8\",\n                \"pandas>=2.0\",\n                \"numpy>=1.20\",\n                \"scikit-learn>=1.0\",\n                \"sqlalchemy>=2.0\",\n                \"plotly>=5.0\",\n            ],\n            environment_vars=self.get_required_environment_vars(),\n            usage_examples=[\n                \"python tools / specialized / benchmarking / unified_benchmark_tool.py --model-benchmark\",\n                \"python tools / specialized / benchmarking / unified_benchmark_tool.py --system-benchmark\",\n                \"python tools / specialized / benchmarking / unified_benchmark_tool.py --full-benchmark\",\n            ],\n            category=\"specialized\"\n        )\n\n    def run(self) -> None:\n        \"\"\"Main execution method-should not be called directly.\"\"\"\n        self.log_progress(\"Use specific benchmark methods like run_model_benchmark()\")\n\n    def list_available_benchmarks(self) -> Dict[str, Any]:\n        \"\"\"\n        List all available benchmark types and their descriptions.\n        \n        Returns:\n            Dictionary with benchmark categories and descriptions\n        \"\"\"\n        self.log_progress(\"📋 Listing available benchmarks\")\n        \n        benchmarks = {\n            \"model_benchmarks\": {\n                \"description\": \"Model performance evaluation and comparison\",\n                \"tests\": [\n                    \"Sentiment Analysis Models (VADER variants, ML classifiers, transformers)\",\n                    \"Model accuracy, precision, recall, F1-score metrics\",\n                    \"Processing time and throughput measurement\",\n                    \"Statistical significance testing\",\n                    \"Model comparison and ranking\",\n                ],\n                \"command\": \"--model-benchmark\",\n            },\n            \"system_benchmarks\": {\n                \"description\": \"System performance and throughput testing\",\n                \"tests\": [\n                    \"ETL pipeline throughput (rows processed per second)\",\n                    \"Database query performance and optimization\",\n                    \"API response times and rate limiting\",\n                    \"Memory usage and resource consumption\",\n                    \"Concurrent operation performance\",\n                ],\n                \"command\": \"--system-benchmark\",\n            },\n            \"data_quality_benchmarks\": {\n                \"description\": \"Data integrity and quality validation\",\n                \"tests\": [\n                    \"Data completeness and missing value analysis\",\n                    \"Data accuracy and consistency validation\",\n                    \"Referential integrity and business rule checking\",\n                    \"Data freshness and timeliness measurement\",\n                    \"Duplicate detection and data quality scoring\",\n                ],\n                \"command\": \"--data-quality-benchmark\",\n            },\n            \"full_benchmark\": {\n                \"description\": \"Comprehensive benchmark suite (all categories)\",\n                \"tests\": [\n                    \"Complete model evaluation suite\",\n                    \"Full system performance testing\",\n                    \"Comprehensive data quality validation\",\n                    \"Trend analysis and regression detection\",\n                    \"Executive summary report generation\",\n                ],\n                \"command\": \"--full-benchmark\",\n            },\n        }\n        \n        return benchmarks\n\n    def cleanup_resources(self) -> None:\n        \"\"\"Clean up any resources used during benchmarking.\"\"\"\n        if self.model_benchmarker:\n            self.model_benchmarker.cleanup_resources()\n\n\ndef main():\n    \"\"\"Main entry point for the unified benchmark tool.\"\"\"\n    parser = argparse.ArgumentParser(\n        description=\"Unified Benchmarking Tool for YouTube Analytics Platform\",\n        formatter_class=argparse.RawDescriptionHelpFormatter,\n        epilog=\"\"\"\nExamples:\n  python tools / specialized / benchmarking / unified_benchmark_tool.py --list-benchmarks\n  python tools / specialized / benchmarking / unified_benchmark_tool.py --model-benchmark\n  python tools / specialized / benchmarking / unified_benchmark_tool.py --system-benchmark\n  python tools / specialized / benchmarking / unified_benchmark_tool.py --full-benchmark\n        \"\"\",\n    )\n\n    # Benchmark operations\n    parser.add_argument(\"--list-benchmarks\", action=\"store_true\", \n                       help=\"List all available benchmark types\")\n    parser.add_argument(\"--model-benchmark\", action=\"store_true\", \n                       help=\"Run model performance benchmarks\")\n    parser.add_argument(\"--system-benchmark\", action=\"store_true\", \n                       help=\"Run system performance benchmarks\")\n    parser.add_argument(\"--data-quality-benchmark\", action=\"store_true\", \n                       help=\"Run data quality benchmarks\")\n    parser.add_argument(\"--full-benchmark\", action=\"store_true\", \n                       help=\"Run complete benchmark suite\")\n\n    # Configuration options\n    parser.add_argument(\"--config\", type=str, \n                       help=\"Path to JSON configuration file\")\n    parser.add_argument(\"--output-dir\", type=str, \n                       help=\"Directory for benchmark results\")\n    parser.add_argument(\"--verbose\", \"-v\", action=\"store_true\", \n                       help=\"Verbose output\")\n\n    args = parser.parse_args()\n\n    # Load configuration if provided\n    config = {}\n    if args.config:\n        try:\n            with open(args.config, 'r') as f:\n                config = json.load(f)\n        except Exception as e:\n            print(f\"❌ Error loading config file: {e}\")\n            return 1\n\n    # Create benchmark tool instance\n    with UnifiedBenchmarkTool() as benchmark_tool:\n        try:\n            if args.output_dir:\n                benchmark_tool.results_dir = Path(args.output_dir)\n                benchmark_tool.results_dir.mkdir(exist_ok=True)\n            \n            if args.list_benchmarks:\n                benchmarks = benchmark_tool.list_available_benchmarks()\n                print(\"🚀 Available Benchmarks:\")\n                print(\"=\" * 50)\n                \n                for category, info in benchmarks.items():\n                    print(f\"\\n📊 {category.replace('_', ' ').title()}\")\n                    print(f\"   Command: {info['command']}\")\n                    print(f\"   Description: {info['description']}\")\n                    print(\"   Tests:\")\n                    for test in info['tests']:\n                        print(f\"     • {test}\")\n                return 0\n            \n            elif args.model_benchmark:\n                print(\"🤖 Model benchmark functionality will be implemented\")\n                return 0\n            \n            elif args.system_benchmark:\n                print(\"⚡ System benchmark functionality will be implemented\")\n                return 0\n            \n            elif args.data_quality_benchmark:\n                print(\"📊 Data quality benchmark functionality will be implemented\")\n                return 0\n            \n            elif args.full_benchmark:\n                print(\"🚀 Full benchmark suite functionality will be implemented\")\n                return 0\n            \n            else:\n                print(\"❌ No benchmark type specified. Use --help for options.\")\n                return 1\n            \n            return 0\n\n        except KeyboardInterrupt:\n            benchmark_tool.log_progress(\"Benchmark cancelled by user\")\n            return 1\n        except Exception as e:\n            benchmark_tool.handle_error(e, \"main execution\")\n            return 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n"
+#!/usr/bin/env python3
+"""
+Unified Benchmark Tool
+
+Provides a single entry point to list and trigger specialized benchmarks
+across the repository (model, system, and data quality).
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+from typing import Dict, List
+
+# Add project root for imports when executed as a script
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from tools.shared.common import ToolBase, ToolConfig, register_tool  # noqa: E402
+
+
+class UnifiedBenchmarkTool(ToolBase):
+    """Coordinator for available benchmarking tools.
+
+    Exposes a consistent interface and metadata via ToolBase/ToolConfig.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(name="unified-benchmark", version="1.0.0")
+        # Register this tool for discovery
+        register_tool(self.get_tool_config())
+        # Simple results directory hint used by tests/tools
+        self.results_dir = PROJECT_ROOT / "reports" / "benchmarks"
+
+    def get_required_environment_vars(self) -> List[str]:
+        # Keep minimal but real requirements used by other tools/tests
+        return [
+            "DATABASE_URL",
+            "YOUTUBE_API_KEY",
+        ]
+
+    def get_tool_config(self) -> ToolConfig:
+        return ToolConfig(
+            name="unified-benchmark",
+            version="1.0.0",
+            description="Unified entry point to model/system/data-quality benchmarks",
+            dependencies=[
+                "python>=3.8",
+                "pandas>=2.0",
+                "numpy>=1.20",
+                "sqlalchemy>=2.0",
+                "scikit-learn>=1.0",
+            ],
+            environment_vars=self.get_required_environment_vars(),
+            usage_examples=[
+                "python tools/specialized/benchmarking/unified_benchmark_tool.py --list-benchmarks",
+                "python tools/specialized/benchmarking/unified_benchmark_tool.py --model-benchmark",
+                "python tools/specialized/benchmarking/unified_benchmark_tool.py --system-benchmark",
+                "python tools/specialized/benchmarking/unified_benchmark_tool.py --data-quality-benchmark",
+            ],
+            category="specialized",
+        )
+
+    def list_available_benchmarks(self) -> Dict[str, Dict[str, str]]:
+        """Return a mapping of available benchmarks and how to invoke them."""
+        return {
+            "model": {
+                "module": "tools.specialized.benchmarking.model_benchmark_tool",
+                "entry": "ModelBenchmarkTool",
+                "cli": "python tools/specialized/benchmarking/model_benchmark_tool.py --help",
+            },
+            "system": {
+                "module": "tools.specialized.benchmarking.system_benchmark_tool",
+                "entry": "SystemBenchmarkTool",
+                "cli": "python tools/specialized/benchmarking/system_benchmark_tool.py --help",
+            },
+            "data_quality": {
+                "module": "tools.specialized.benchmarking.data_quality_benchmark_tool",
+                "entry": "DataQualityBenchmarkTool",
+                "cli": "python tools/specialized/benchmarking/data_quality_benchmark_tool.py --help",
+            },
+        }
+
+    def run(self) -> None:  # pragma: no cover - main entry is through specific sub-tools
+        self.log_progress("Use --model-benchmark/--system-benchmark/--data-quality-benchmark or --list-benchmarks")
+
+    def cleanup_resources(self) -> None:
+        # Nothing to clean up for coordinator
+        pass
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Unified Benchmark Tool",
+    )
+    parser.add_argument("--list-benchmarks", action="store_true", help="List available benchmarks")
+    parser.add_argument("--model-benchmark", action="store_true", help="Print model benchmark entry info")
+    parser.add_argument("--system-benchmark", action="store_true", help="Print system benchmark entry info")
+    parser.add_argument(
+        "--data-quality-benchmark", action="store_true", help="Print data quality benchmark entry info"
+    )
+    args = parser.parse_args()
+
+    tool = UnifiedBenchmarkTool()
+
+    if args.list_benchmarks:
+        for name, meta in tool.list_available_benchmarks().items():
+            print(f"{name}: {meta['cli']}")
+        return 0
+
+    if args.model_benchmark:
+        print(tool.list_available_benchmarks()["model"]["cli"])
+        return 0
+
+    if args.system_benchmark:
+        print(tool.list_available_benchmarks()["system"]["cli"])
+        return 0
+
+    if args.data_quality_benchmark:
+        print(tool.list_available_benchmarks()["data_quality"]["cli"])
+        return 0
+
+    parser.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

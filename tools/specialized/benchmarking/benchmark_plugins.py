@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Benchmark scoring plugins with real database data to verify performance and accuracy.
 """

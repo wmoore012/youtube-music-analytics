@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Database cleanup script to remove old artist data that's no longer in .env configuration.
 

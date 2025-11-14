@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 🚀 Enhanced CI / CD Pipeline – Production-Ready Checks
 ===================================================
@@ -163,7 +163,7 @@ class EnhancedCI:
 
         try:
             result = subprocess.run(
-                ["python", "scripts / env_safety_checker.py"], capture_output=True, text=True, timeout=30
+                ["python", "scripts/env_safety_checker.py"], capture_output=True, text=True, timeout=30
             )
 
             if result.returncode == 0:
@@ -624,7 +624,7 @@ class EnhancedCI:
         issues = []
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
@@ -750,7 +750,7 @@ except Exception as e:
         dq_files_found = 0
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
@@ -785,7 +785,7 @@ except Exception as e:
 
         # Check Python files for comment quality
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
@@ -855,7 +855,7 @@ except Exception as e:
         duplicate_functions = {}  # Track duplicates for recommendations
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
@@ -928,7 +928,7 @@ except Exception as e:
         ]
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
@@ -1286,7 +1286,7 @@ except Exception as e:
         all_compliant = True
 
         for py_file in Path(".").rglob("*.py"):
-            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+            if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
                 continue
 
             try:
