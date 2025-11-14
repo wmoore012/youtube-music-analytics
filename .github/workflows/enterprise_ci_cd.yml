@@ -144,6 +144,12 @@ jobs:
         pip install -e .
         pip install pytest-xdist pytest-cov pytest-benchmark
 
+
+    - name: Install MySQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-client
+
     - name: Validate MySQL enterprise readiness
       run: |
         timeout=120
