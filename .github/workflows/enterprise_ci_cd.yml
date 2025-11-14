@@ -451,11 +451,13 @@ jobs:
           exit 1
         }
 
-        # Check compliance tools exist
-        test -f tools/maintenance/youtube_tos_compliance.py || {
+        # Check compliance tools exist (support legacy and current paths)
+        if [ -f tools/core/youtube_tos_compliance.py ] || [ -f tools/maintenance/youtube_tos_compliance.py ]; then
+          echo "✅ YouTube ToS compliance tool present"
+        else
           echo "❌ Missing YouTube ToS compliance tool"
           exit 1
-        }
+        fi
 
         echo "✅ YouTube ToS compliance validation passed"
 
