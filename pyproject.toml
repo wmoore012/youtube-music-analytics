@@ -52,6 +52,18 @@ dev = [
 "Bug Reports" = "https://github.com/your-org/youtube-analytics-platform/issues"
 "Source" = "https://github.com/your-org/youtube-analytics-platform"
 
+
+# =============================================================================
+# SETUPTOOLS PACKAGE DISCOVERY
+# Ensure src/ packages (e.g., youtubeviz) are installable with `pip install -e .`
+# =============================================================================
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
 # =============================================================================
 # BLACK CONFIGURATION
 # =============================================================================
