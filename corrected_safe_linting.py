@@ -64,7 +64,7 @@ def get_current_error_count():
             for line in reversed(lines):
                 if line.strip().isdigit():
                     return int(line.strip())
-        except:
+        except Exception:
             pass
     return 0
 

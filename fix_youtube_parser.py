@@ -34,7 +34,6 @@ def fix_youtube_parser():
 
     with open(file_path, 'w') as f:
         f.writelines(lines)
-  # noqa: W292
     print(f"Fixed {file_path}")
 
 if __name__ == "__main__":

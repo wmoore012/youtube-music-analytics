@@ -148,8 +148,7 @@ def test_additional_user_phrases():
     negative_accuracy = negative_correct / len(additional_negative) * 100
 
     print(
-        f"\n📊 Additional Negative Phrases Accuracy: {
-            negative_accuracy:.1f}% ({negative_correct}/{len(additional_negative)})"
+        f"\n📊 Additional Negative Phrases Accuracy: {negative_accuracy:.1f}% ({negative_correct}/{len(additional_negative)})"
     )
 
     # Overall results

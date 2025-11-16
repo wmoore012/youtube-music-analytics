@@ -686,8 +686,7 @@ def generate_resume_bullets(data):
     if throughput > 0:
         load_time = data.get("load_time_seconds", 0)
         bullets.append(
-            f"• Achieved {
-                throughput:.0f} rows / sec throughput with p95 data freshness ≤ {load_time:.1f}s for real - time analytics"
+            f"• Achieved {throughput:.0f} rows / sec throughput with p95 data freshness ≤ {load_time:.1f}s for real - time analytics"
         )
 
     # Data quality with specific metrics

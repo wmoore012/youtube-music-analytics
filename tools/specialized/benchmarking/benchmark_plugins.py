@@ -348,10 +348,7 @@ def save_benchmark_results(results, total_records, total_time):
         f.write("## Executive Summary\n\n")
         f.write(f"- **Total Records Processed:** {total_records:,}\n")
         f.write(f"- **Total Execution Time:** {total_time:.3f} seconds\n")
-        f.write(
-            f"- **Overall Throughput:** {total_records
-                / total_time if total_time > 0 else 0:.0f} records / second\n"
-        )
+        f.write(f"- **Overall Throughput:** {total_records / total_time if total_time > 0 else 0:.0f} records / second\n")
         f.write("- **Data Source:** Real YouTube Analytics Database\n")
         f.write("- **Validation:** No dummy data used\n\n")
 

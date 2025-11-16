@@ -310,8 +310,7 @@ def get_playlist_videos(  # noqa: C901
                         using_cached_data = True
                     else:
                         logger.info(
-                            f"🔄 FETCHING FRESH DATA: Cached data is {
-                                age_hours:.1f} hours old (threshold: {cache_threshold_hours})"
+                            f"🔄 FETCHING FRESH DATA: Cached data is {age_hours:.1f} hours old (threshold: {cache_threshold_hours})"
                         )
                         logger.info(f"⚠️ Cache expired-Will use YouTube API quota")
                 else:

@@ -601,8 +601,7 @@ class ModelBenchmarkSystem:
         total_comments = len(dataset)
         if unique_comments < total_comments * 0.8:  # Less than 80% unique suggests synthetic
             print(
-                f"⚠️  Warning: Only {
-                    unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
+                f"⚠️  Warning: Only {unique_comments}/{total_comments} ({unique_comments / total_comments:.1%}) unique comments"
             )
             print("   This might indicate synthetic data, but proceeding with real database validation")
 

@@ -353,8 +353,7 @@ def validate_data_for_storytelling(
     if len(data) < min_rows:
         validation_result["warnings"].append(
             f"📉 **Limited Data Warning** 📉\n\n"
-            f"We found only {len(data)} rows of data, which might not be enough for reliable {
-                analysis_type} analysis. "
+            f"We found only {len(data)} rows of data, which might not be enough for reliable {analysis_type} analysis. "
             f"For best results, we recommend at least {min_rows} data points.\n\n"
             f"💡 **This might affect:**\n"
             f"• Statistical significance of trends\n"

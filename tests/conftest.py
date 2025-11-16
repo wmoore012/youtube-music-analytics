@@ -45,6 +45,7 @@ except Exception:
     class ErrorHandler:
         def __init__(self, logger):
             self.logger = logger
+
         def reset_error_counts(self):
             pass
 

@@ -12,7 +12,7 @@ USE_RED_FOR_BREAKOUT = True
 BLUE = "#1f77b4"
 ORNG = "#ff7f0e"
 GREY = "#CCCCCC"
-RED  = "#FF6B6B"
+RED = "#FF6B6B"
 
 
 def color_for_score(score: float) -> str:

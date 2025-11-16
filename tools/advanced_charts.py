@@ -24,8 +24,8 @@ BLUE = "#1f77b4"   # momentum / scale
 ORNG = "#ff7f0e"   # urgency / engagement
 PURP = "#7b3294"   # pre-warning window
 GREY = "#B0B0B0"   # context
-RED  = "#FF6B6B"   # optional hot (avoid green pairing)
-TXT  = "#222222"
+RED = "#FF6B6B"   # optional hot (avoid green pairing)
+TXT = "#222222"
 
 
 def state_color(score: float, th: Thresholds, use_red_for_breakout: bool = False) -> str:
@@ -125,7 +125,7 @@ def plot_diverging_sentiment(d: pd.DataFrame, y_col: str = "artist_name"):
         raise RuntimeError("Plotly is required for plot_diverging_sentiment")
     fig = go.Figure()
     fig.add_bar(y=d[y_col], x=d["neg_pct"], name="Negative", orientation="h", marker_color="#8c8c8c")
-    fig.add_bar(y=d[y_col], x=d["neu_pct"], name="Neutral",  orientation="h", marker_color="#d9d9d9")
+    fig.add_bar(y=d[y_col], x=d["neu_pct"], name="Neutral", orientation="h", marker_color="#d9d9d9")
     fig.add_bar(y=d[y_col], x=d["pos_pct"], name="Positive", orientation="h", marker_color=BLUE)
     fig.update_layout(barmode="relative", showlegend=False)
     fig.update_xaxes(tickformat=".0%", zeroline=True)

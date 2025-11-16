@@ -222,12 +222,9 @@ class EducationalContentGenerator:
         metric_text = f"focusing on {', '.join(metrics)}" if metrics else "across key performance indicators"
 
         context_templates = [
-            f"Performance analysis {artist_text} {metric_text} over the {
-                time_period} reveals growth patterns and engagement trends that inform strategic decisions.",
-            f"By examining performance data {artist_text} {
-                metric_text}, we can identify momentum shifts and optimization opportunities.",
-            f"This performance review {artist_text} {
-                metric_text} helps us understand what's working and where there's room for improvement.",
+            f"Performance analysis {artist_text} {metric_text} over the {time_period} reveals growth patterns and engagement trends that inform strategic decisions.",
+            f"By examining performance data {artist_text} {metric_text}, we can identify momentum shifts and optimization opportunities.",
+            f"This performance review {artist_text} {metric_text} helps us understand what's working and where there's room for improvement.",
         ]
 
         return random.choice(context_templates)
