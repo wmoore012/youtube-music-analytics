@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 """
@@ -53,9 +52,11 @@ from sqlalchemy import (
     Table,  # used for type hints all over the file
     create_engine,  # used in get_engine()
     insert,
+    update,  # used in label CleanName population
     inspect,  # used in bulk_upsert()
     select,  # already imported later, but safe to add here
     text,  # used in several on_duplicate_key_update() calls
+    func,  # SQL functions (e.g., now(), count())
 )
 from sqlalchemy.engine import (
     Connection,  # used for type hints
@@ -201,7 +202,7 @@ def get_connection():
 # ──────────────────────────────────────────────────────────────────
 # 1A.  GLOBAL TABLE REFLECTION + CONVENIENCE HANDLES
 # ──────────────────────────────────────────────────────────────────
-from typing import Any
+from typing import Any, Optional, List
 
 # ── 1️⃣  Make sure every table you need is listed ────────────────
 ALL_TABLE_NAMES = [
@@ -276,18 +277,8 @@ def get_table(name: str):
     """
     try:
         return _TABLE_HANDLES[name]
-    except AttributeError as exc:
-        # pandas (< 2.2) tries to call .cursor() on the object when it is
-        # not an Engine. SQLAlchemy 2.x Connection objects deliberately
-        # hide that attribute, so we retry with the underlying raw
-        # connection only when the AttributeError is about 'cursor'.
-        if "cursor" not in str(exc):
-            raise
-
-    # --- Fallback: use DB-API connection that *does* have .cursor() ------
-    with contextlib.closing(engine.raw_connection()) as raw:
-        return pd.read_sql_query(sql, con=raw, **kw)
-        raise KeyError(f"Unknown table '{name}'. Check ALL_TABLE_NAMES.") from exc
+    except KeyError:
+        raise KeyError(f"Unknown table '{name}'. Check ALL_TABLE_NAMES.")
 
 
 # ============================================================================
@@ -371,7 +362,7 @@ def detect_version_type(track_title: str, album_title: str = None) -> str:
         _version_text_item = m.group(2).strip()  # noqa: F841
         # Check if the extracted version matches any of our known version types
         for version_type, pattern in version_keywords.items():
-            if re.search(pattern, version_text, re.IGNORECASE):
+            if re.search(pattern, _version_text_item, re.IGNORECASE):
                 return version_type
 
     # If no version found in parentheses, check the full track title
@@ -1977,21 +1968,18 @@ def debug_upsert_spotify_playcounts(conn, df, pc_tbl, tracks_tbl, dsp_id):
             continue
 
         # 2) Build upsert …
-        stmt = (
-            mysql_insert(pc_tbl)
-            .values(
-                TrackID=row.DSPRecordID,
-                Playcount=row.Playcount,
-                DiscNumber=row.DiscNumber,
-                TrackNumber=row.TrackNumber,
-                LastPlaycountUpdate=func.now(),
-            )
-            .on_duplicate_key_update(
-                Playcount=stmt.inserted.Playcount,
-                DiscNumber=stmt.inserted.DiscNumber,
-                TrackNumber=stmt.inserted.TrackNumber,
-                LastPlaycountUpdate=func.now(),
-            )
+        insert_stmt = mysql_insert(pc_tbl).values(
+            TrackID=row.DSPRecordID,
+            Playcount=row.Playcount,
+            DiscNumber=row.DiscNumber,
+            TrackNumber=row.TrackNumber,
+            LastPlaycountUpdate=func.now(),
+        )
+        stmt = insert_stmt.on_duplicate_key_update(
+            Playcount=insert_stmt.inserted.Playcount,
+            DiscNumber=insert_stmt.inserted.DiscNumber,
+            TrackNumber=insert_stmt.inserted.TrackNumber,
+            LastPlaycountUpdate=func.now(),
         )
 
         # 3) Log & execute
@@ -2085,7 +2073,7 @@ if __name__ == "__main__":
 # ETL RUN LOGGING FUNCTIONS
 # ──────────────────────────────────────────────────────────────────
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def detect_run_type() -> str:
