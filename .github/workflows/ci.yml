@@ -156,6 +156,7 @@ jobs:
       run: |
         python -m pytest tests/test_integration.py -v
 
-    - name: Generate CI report
+    - name: Generate CI report (non-blocking)
+      continue-on-error: true
       run: |
         python scripts/generate_ci_report.py
