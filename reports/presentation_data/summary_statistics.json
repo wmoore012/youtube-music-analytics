@@ -1,0 +1,63 @@
+{
+  "generated_at": "2025-11-16T07:22:01.173125",
+  "total_videos": 947,
+  "total_artists": 6,
+  "date_range": {
+    "start": "2017-02-10T07:56:31",
+    "end": "2025-11-13T17:47:34"
+  },
+  "total_views": 277383561,
+  "total_likes": 5473609,
+  "total_comments": 201177,
+  "avg_engagement_rate": 5.87,
+  "artists": [
+    {
+      "artist_name": "Flyana Boss",
+      "total_videos": 286,
+      "total_views": 161731417,
+      "total_likes": 3326285,
+      "total_comments": 126253,
+      "avg_engagement_rate": 6.57
+    },
+    {
+      "artist_name": "BiC Fizzle",
+      "total_videos": 95,
+      "total_views": 53644682,
+      "total_likes": 815673,
+      "total_comments": 13858,
+      "avg_engagement_rate": 3.08
+    },
+    {
+      "artist_name": "COBRAH",
+      "total_videos": 66,
+      "total_views": 26637106,
+      "total_likes": 359215,
+      "total_comments": 10162,
+      "avg_engagement_rate": 4.06
+    },
+    {
+      "artist_name": "hicorook",
+      "total_videos": 352,
+      "total_views": 23918453,
+      "total_likes": 800062,
+      "total_comments": 41837,
+      "avg_engagement_rate": 7.22
+    },
+    {
+      "artist_name": "Raiche",
+      "total_videos": 110,
+      "total_views": 7685551,
+      "total_likes": 90928,
+      "total_comments": 5441,
+      "avg_engagement_rate": 4.13
+    },
+    {
+      "artist_name": "re6ce",
+      "total_videos": 38,
+      "total_views": 3766352,
+      "total_likes": 81446,
+      "total_comments": 3626,
+      "avg_engagement_rate": 3.19
+    }
+  ]
+}
