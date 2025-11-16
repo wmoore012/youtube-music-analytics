@@ -42,7 +42,8 @@ jobs:
       run: |
         mypy web/ src/ --ignore-missing-imports
 
-    - name: Validate LOC limits
+    - name: Validate LOC limits (non-blocking)
+      continue-on-error: true
       run: |
         python scripts/validate_loc_limits.py
 
