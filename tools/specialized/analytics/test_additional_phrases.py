@@ -121,8 +121,7 @@ def test_additional_user_phrases():
     positive_accuracy = positive_correct / len(additional_positive) * 100
 
     print(
-        f"\n📊 Additional Positive Phrases Accuracy: {
-            positive_accuracy:.1f}% ({positive_correct}/{len(additional_positive)})"
+        f"\n📊 Additional Positive Phrases Accuracy: {positive_accuracy:.1f}% ({positive_correct}/{len(additional_positive)})"
     )
     print(f"🎵 Beat Appreciation Detected: {beat_appreciation_detected} phrases")
 

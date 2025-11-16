@@ -277,8 +277,7 @@ class ModelBenchmarkSystem:
         quality_emoji = {"excellent": "🟢", "good": "🟡", "acceptable": "🟠", "poor": "🔴"}
 
         print(
-            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {
-                                                  quality_metrics.quality_level.upper()}"
+            f"Overall Quality: {quality_emoji.get(quality_metrics.quality_level, '⚪')} {quality_metrics.quality_level.upper()}"
         )
         print(f"Balance Score: {quality_metrics.balance_score:.3f} (1.0 = perfect)")
         print()

@@ -209,12 +209,9 @@ class EducationalContentGenerator:
             artist_text = ""
 
         context_templates = [
-            f"Sentiment analysis {
-                artist_text} reveals how fans truly feel about the content beyond just views and likes. Comments provide unfiltered feedback that can guide creative and strategic decisions.",  # noqa: E501
-            f"By analyzing comment sentiment {
-                artist_text}, we can understand the emotional connection between artists and their audiences. This goes deeper than surface-level metrics.",  # noqa: E501
-            f"Comment sentiment analysis {
-                artist_text} helps us understand fan loyalty, content reception, and potential areas for improvement or expansion.",  # noqa: E501
+            f"Sentiment analysis {artist_text} reveals how fans truly feel about the content beyond just views and likes. Comments provide unfiltered feedback that can guide creative and strategic decisions.",  # noqa: E501
+            f"By analyzing comment sentiment {artist_text}, we can understand the emotional connection between artists and their audiences. This goes deeper than surface-level metrics.",  # noqa: E501
+            f"Comment sentiment analysis {artist_text} helps us understand fan loyalty, content reception, and potential areas for improvement or expansion.",  # noqa: E501
         ]
 
         return random.choice(context_templates)

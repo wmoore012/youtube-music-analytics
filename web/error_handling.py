@@ -403,8 +403,7 @@ class PerformanceLogger:
         """Log throughput metrics."""
         rate = items_processed / duration_seconds if duration_seconds > 0 else 0
         self.logger.info(
-            f"📊 {operation}: {items_processed:,} items in {
-                         duration_seconds:.1f}s ({rate:.1f} items / sec)"
+            f"📊 {operation}: {items_processed:,} items in {duration_seconds:.1f}s ({rate:.1f} items / sec)"
         )
 
     def get_performance_summary(self) -> Dict[str, Dict[str, float]]:

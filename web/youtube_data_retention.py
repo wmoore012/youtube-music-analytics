@@ -259,6 +259,5 @@ if __name__ == "__main__":
 
     print("\nTo actually perform cleanup, set dry_run=False")
     print(
-        f"Current retention policy: {manager.data_retention_days} days (data), {
-            manager.comment_retention_days} days (comments)"
+        f"Current retention policy: {manager.data_retention_days} days (data), {manager.comment_retention_days} days (comments)"
     )

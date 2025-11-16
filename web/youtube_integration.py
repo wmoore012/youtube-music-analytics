@@ -286,8 +286,7 @@ def get_playlist_videos(  # noqa: C901
                     # If the data is fresh enough, use it
                     if age_hours < cache_threshold_hours:
                         logger.info(
-                            f"🔄 USING CACHED DATA: Playlist data from {
-                                fetched_at.isoformat()} ({age_hours:.1f} hours old)"
+                            f"🔄 USING CACHED DATA: Playlist data from {fetched_at.isoformat()} ({age_hours:.1f} hours old)"
                         )
                         logger.info(f"💾 Cache threshold: {cache_threshold_hours} hours-No API call needed")
 

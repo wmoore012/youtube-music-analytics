@@ -185,8 +185,7 @@ def educational_sidebar(
     if concept in explanations and complexity_level in explanations[concept]:
         return explanations[concept][complexity_level]
 
-    return f"💡 **About {concept.replace('_', ' ').title()}**\n\nThis is an important concept in music industry analytics. Understanding {  # noqa: E501
-        concept} helps artists and labels make data-driven decisions about content strategy and resource allocation."
+    return f"💡 **About {concept.replace('_', ' ').title()}**\n\nThis is an important concept in music industry analytics. Understanding {concept} helps artists and labels make data-driven decisions about content strategy and resource allocation."
 
 
 def section_transition(

@@ -586,8 +586,7 @@ class DataQualityValidator:
                             severity,
                             check["table"],
                             "stale_data",
-                            f"{check['description']} is stale ({stale_percentage:.1f}% older than {
-                                check['max_age_hours']}h)",
+                            f"{check['description']} is stale ({stale_percentage:.1f}% older than {check['max_age_hours']}h)",
                             stale_count,
                             fix_suggestion="Run ETL pipeline to refresh data",
                         )

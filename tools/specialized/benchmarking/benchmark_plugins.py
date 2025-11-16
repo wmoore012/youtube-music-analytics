@@ -92,8 +92,7 @@ def benchmark_momentum_scoring():
                 bottom_artists = scores.nsmallest(min(3, len(scores)), "score_value")
                 for i, (_, row) in enumerate(bottom_artists.iterrows(), 1):
                     print(
-                        f"   #{len(scores) - len(bottom_artists)
-                               + i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
+                        f"   #{len(scores) - len(bottom_artists) + i} {row['entity_id']}: {row['score_value']:.4f} ({row['momentum_category']})"
                     )
         else:
             print(f"\n📊 All Artists (identical scores-algorithm needs tuning):")

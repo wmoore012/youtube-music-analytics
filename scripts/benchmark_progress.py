@@ -675,13 +675,11 @@ def generate_resume_bullets(data):
     if total_records > 0 and unique_channels > 0:
         if years > 0:
             bullets.append(
-                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {
-                    unique_channels} artists spanning {years:.1f} years of music data"
+                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {unique_channels} artists spanning {years:.1f} years of music data"
             )
         else:
             bullets.append(
-                f"• Built YouTube ETL pipeline processing {
-                    total_records:,} video records across {unique_channels} artists"
+                f"• Built YouTube ETL pipeline processing {total_records:,} video records across {unique_channels} artists"
             )
 
     # Performance and throughput

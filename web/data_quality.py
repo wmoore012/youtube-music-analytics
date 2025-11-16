@@ -153,8 +153,7 @@ class DataQualityValidator:
 
         if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
             raise ValidationError(
-                f"YouTube video ID contains invalid characters: '{
-                    video_id}'. Must contain only letters, numbers, hyphens, and underscores",
+                f"YouTube video ID contains invalid characters: '{video_id}'. Must contain only letters, numbers, hyphens, and underscores",
                 field="video_id",
                 value=video_id,
                 context=context,
