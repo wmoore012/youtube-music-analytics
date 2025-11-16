@@ -718,15 +718,13 @@ def generate_resume_bullets(data):
         precision = data.get("bot_detection_precision", 0)
         if precision > 0:
             bullets.append(
-                f"• Bot detector achieves {precision:.1%} precision, reducing manual content review workload by ~{
-                    (1 - precision) *100:.0f}%"
+                f"• Bot detector achieves {precision:.1%} precision, reducing manual content review workload by ~{(1 - precision) * 100:.0f}%"
             )
 
     # System architecture and scale
     if total_records > 1000:
         bullets.append(
-            f"• Designed scalable architecture handling {
-                total_records:,}+ records with automated monitoring and data quality validation"
+            f"• Designed scalable architecture handling {total_records:,}+ records with automated monitoring and data quality validation"
         )
 
     return bullets
