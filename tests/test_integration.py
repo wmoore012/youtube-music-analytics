@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Integration Tests for ETL Pipeline
 
@@ -288,8 +288,8 @@ class TestDatabaseTransactionIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
                     """
                         ),
                         {
@@ -331,8 +331,8 @@ class TestDatabaseTransactionIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
                     """
                         ),
                         {
@@ -480,8 +480,8 @@ class TestPerformanceIntegration:
                         text(
                             """
                         INSERT INTO youtube_videos
-                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)  # noqa: E501
-                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)  # noqa: E501
+                        (video_id, title, channel_id, channel_title, published_at, view_count, like_count, comment_count)
+                        VALUES (:video_id, :title, :channel_id, :channel_title, :published_at, :view_count, :like_count, :comment_count)
                     """
                         ),
                         {

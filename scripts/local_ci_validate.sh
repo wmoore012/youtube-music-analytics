@@ -18,5 +18,8 @@ PYTHONPATH=. pytest -v tests/test_utils_unit.py tests/test_storytelling.py tests
 echo "📓 Notebook Quality Check (file existence + execute stubs)"
 PYTHONPATH=. pytest -v tests/test_notebook_execution.py::TestNotebookFiles --tb=short
 
+echo "🔗 Integration tests"
+PYTHONPATH=. pytest -v tests/test_integration.py --tb=short
+
 echo "✅ Local CI smoke checks passed"
 

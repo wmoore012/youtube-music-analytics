@@ -56,7 +56,7 @@ class YouTubeVideo(BaseModel):
     channel_id: str = Field(..., pattern=r"^UC[a-zA-Z0-9_-]{22}$", description="YouTube channel ID")
     channel_title: str = Field(..., min_length=1, max_length=255, description="Channel name")
     published_at: datetime = Field(..., description="Video publication timestamp")
-    duration: Optional[str] = Field(None, pattern=r"^PT(\d + H)?(\d + M)?(\d + S)?$", description="ISO 8601 duration")
+    duration: Optional[str] = Field(None, pattern=r"^PT(\d+H)?(\d+M)?(\d+S)?$", description="ISO 8601 duration")
     view_count: int = Field(0, ge=0, description="Total view count")
     like_count: int = Field(0, ge=0, description="Total like count")
     comment_count: int = Field(0, ge=0, description="Total comment count")
