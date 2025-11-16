@@ -931,8 +931,7 @@ class ModelBenchmarkSystem:
 
         if len(dataset) < config.min_samples_per_class * 3:
             raise ValueError(
-                f"Insufficient REAL database data: need at least {
-                    config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
+                f"Insufficient REAL database data: need at least {config.min_samples_per_class * 3} samples, got {len(dataset)}. No fake data will be used."
             )
 
         # NEW: Dataset quality assessment

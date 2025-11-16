@@ -693,8 +693,7 @@ def generate_resume_bullets(data):
     null_pct = data.get("null_percentage", 0)
     if null_pct < 2.0:  # Only mention if it's actually good
         bullets.append(
-            f"• Maintained data quality guardrails: nulls in core fields ≤ {
-                null_pct:.1f}%, referential integrity checks on every load"
+            f"• Maintained data quality guardrails: nulls in core fields ≤ {null_pct:.1f}%, referential integrity checks on every load"
         )
 
     # Model performance with comparison context

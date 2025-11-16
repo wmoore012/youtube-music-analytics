@@ -138,7 +138,7 @@ jobs:
     - name: 🧪 Run Tests (BLOCKING)
       run: |
         echo "🧪 Running test suite (unit-only; DB/integration excluded here)..."
-        PYTHONPATH=. pytest -v --tb=short -k "not youtube_channel_etl"
+        PYTHONPATH=. pytest -v tests --tb=short -k "not youtube_channel_etl"
 
         if [ $? -ne 0 ]; then
           echo "❌ CRITICAL: Tests are failing!"

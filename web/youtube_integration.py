@@ -510,8 +510,7 @@ def get_video_details(  # noqa: C901
         while retry_count <= max_retries:
             try:
                 logger.info(
-                    f"Fetching details for batch {i // batch_size
-                        + 1}/{(len(videos_to_fetch) - 1) // batch_size + 1} ({len(batch)} videos)"  # noqa: E128
+                    f"Fetching details for batch {i // batch_size + 1}/{(len(videos_to_fetch) - 1) // batch_size + 1} ({len(batch)} videos)"  # noqa: E128
                 )
 
                 # Use safe_execute to abort immediately on quota exceeded
