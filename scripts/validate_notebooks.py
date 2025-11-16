@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Validate Jupyter notebooks for CI pipeline.
 
@@ -145,8 +145,8 @@ class NotebookValidator:
         results = {"total_notebooks": 0, "valid_notebooks": 0, "violations": [], "notebooks": {}}
 
         for notebook_path in directory.rglob("*.ipynb"):
-            # Skip checkpoint files
-            if ".ipynb_checkpoints" in str(notebook_path):
+            # Skip checkpoint files and archived notebooks
+            if ".ipynb_checkpoints" in str(notebook_path) or "archive" in notebook_path.parts:
                 continue
 
             results["total_notebooks"] += 1
