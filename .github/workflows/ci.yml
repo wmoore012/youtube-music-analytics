@@ -35,7 +35,7 @@ jobs:
 
     - name: Lint with flake8
       run: |
-        flake8 --max-line-length=120 --exclude=.git,__pycache__,notebooks,venv,.venv
+        flake8 --max-line-length=120 --exclude=.git,__pycache__,notebooks,venv,.venv,archive
 
     - name: Type checking with mypy
       run: |

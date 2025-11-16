@@ -305,8 +305,7 @@ class SentimentModelTester:
 
         for result in available_results:
             print(
-                f"{result.model_name:<15} {result.accuracy:<10.1f}% {
-                    result.correct_predictions:<8} {result.total_tests:<8}"
+                f"{result.model_name:<15} {result.accuracy:<10.1f}% {result.correct_predictions:<8} {result.total_tests:<8}"
             )
 
         # Recommend best model

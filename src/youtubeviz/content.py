@@ -793,8 +793,7 @@ def analyze_genre_context(
     }
 
     # Add new signee context as string
-    new_signee_context = f"All {total_artists} artists are new signees with different genres, representing {
-        unique_genres} unique musical styles in a diverse roster approach."
+    new_signee_context = f"All {total_artists} artists are new signees with different genres, representing {unique_genres} unique musical styles in a diverse roster approach."
 
     return {
         "genre_analysis": genre_insights,

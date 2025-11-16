@@ -125,8 +125,7 @@ def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[
 
     if improved and (abs(z) >= SIGMA_Z_THRESH or abs(rz) >= ROBUST_Z_THRESH):
         flags.append(
-            f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={
-                                                    rz:.2f}). Recheck sample size, caching, and code paths."
+            f"🚩 {metric}: ≥{SIGMA_Z_THRESH}σ swing (z={z:.2f}, rZ={rz:.2f}). Recheck sample size, caching, and code paths."
         )
 
     if latest < low_fence or latest > high_fence:

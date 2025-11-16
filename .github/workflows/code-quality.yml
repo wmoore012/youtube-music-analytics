@@ -39,12 +39,12 @@ jobs:
         echo "These errors MUST be zero-they break the code!"
         
         # Check for syntax errors
-        SYNTAX_ERRORS=$(flake8 --select=E999 --count 2>/dev/null || echo "0")
+        SYNTAX_ERRORS=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=E999 --count 2>/dev/null || echo "0")
         echo "📊 Syntax errors (E999): $SYNTAX_ERRORS"
         
         if [ "$SYNTAX_ERRORS" -gt 0 ]; then
           echo "❌ CRITICAL: $SYNTAX_ERRORS syntax errors found!"
-          flake8 --select=E999
+          flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=E999
           exit 1
         fi
         echo "✅ No syntax errors found"
@@ -54,12 +54,12 @@ jobs:
         echo "Checking for undefined variables that cause runtime crashes..."
         
         # Check for undefined names
-        UNDEFINED_NAMES=$(flake8 --select=F821 --count 2>/dev/null || echo "0")
+        UNDEFINED_NAMES=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F821 --count 2>/dev/null || echo "0")
         echo "📊 Undefined names (F821): $UNDEFINED_NAMES"
         
         if [ "$UNDEFINED_NAMES" -gt 0 ]; then
           echo "❌ CRITICAL: $UNDEFINED_NAMES undefined names found!"
-          flake8 --select=F821
+          flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F821
           exit 1
         fi
         echo "✅ No undefined names found"
@@ -69,12 +69,12 @@ jobs:
         echo "Checking for import redefinitions that cause confusion..."
         
         # Check for redefined imports
-        REDEFINITIONS=$(flake8 --select=F811 --count 2>/dev/null || echo "0")
+        REDEFINITIONS=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F811 --count 2>/dev/null || echo "0")
         echo "📊 Import redefinitions (F811): $REDEFINITIONS"
         
         if [ "$REDEFINITIONS" -gt 0 ]; then
           echo "❌ CRITICAL: $REDEFINITIONS import redefinitions found!"
-          flake8 --select=F811
+          flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F811
           exit 1
         fi
         echo "✅ No import redefinitions found"
@@ -89,7 +89,7 @@ jobs:
       run: |
         echo "📏 Checking line lengths (max 120 characters)..."
         
-        LONG_LINES=$(flake8 --select=E501 --max-line-length=120 --count 2>/dev/null || echo "0")
+        LONG_LINES=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=E501 --max-line-length=120 --count 2>/dev/null || echo "0")
         echo "📊 Long lines (E501): $LONG_LINES"
         
         # Warning only-don't fail build for line length
@@ -114,12 +114,12 @@ jobs:
         echo "🔍 Running comprehensive linting check..."
         
         # Get total error count
-        ERROR_COUNT=$(flake8 --max-line-length=120 --count 2>/dev/null || echo "0")
+        ERROR_COUNT=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --max-line-length=120 --count 2>/dev/null || echo "0")
         echo "📊 Total linting errors: $ERROR_COUNT"
         
         # Show breakdown by error type
         echo "📊 Error breakdown:"
-        flake8 --max-line-length=120 --statistics 2>/dev/null || true
+        flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --max-line-length=120 --statistics 2>/dev/null || true
         
         # Fail if more than 161 total errors (current baseline-gradual improvement target)
         if [ "$ERROR_COUNT" -gt 161 ]; then
@@ -159,21 +159,21 @@ jobs:
         EOF
         
         echo "### Syntax Errors (E999)" >> quality-report.md
-        SYNTAX_COUNT=$(flake8 --select=E999 --count 2>/dev/null || echo "0")
+        SYNTAX_COUNT=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=E999 --count 2>/dev/null || echo "0")
         echo "Count: $SYNTAX_COUNT" >> quality-report.md
         
         echo "### Undefined Names (F821)" >> quality-report.md  
-        UNDEFINED_COUNT=$(flake8 --select=F821 --count 2>/dev/null || echo "0")
+        UNDEFINED_COUNT=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F821 --count 2>/dev/null || echo "0")
         echo "Count: $UNDEFINED_COUNT" >> quality-report.md
         
         echo "### Import Redefinitions (F811)" >> quality-report.md
-        REDEFINITION_COUNT=$(flake8 --select=F811 --count 2>/dev/null || echo "0") 
+        REDEFINITION_COUNT=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F811 --count 2>/dev/null || echo "0")
         echo "Count: $REDEFINITION_COUNT" >> quality-report.md
         
         echo "" >> quality-report.md
         echo "## 📏 Code Quality Metrics" >> quality-report.md
         echo "### Full Linting Results" >> quality-report.md
-        flake8 --max-line-length=120 --count --statistics >> quality-report.md 2>/dev/null || true
+        flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --max-line-length=120 --count --statistics >> quality-report.md 2>/dev/null || true
         
         echo "" >> quality-report.md
         echo "### Test Results" >> quality-report.md

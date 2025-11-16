@@ -630,12 +630,10 @@ Examples:
                 removal_result = assessor.remove_outdated_tests(result, dry_run=args.dry_run)
 
                 print(
-                    f"🗑️  {'Would remove' if args.dry_run else 'Removed'} {
-                        len(removal_result['removed_files'])} test files"
+                    f"🗑️  {'Would remove' if args.dry_run else 'Removed'} {len(removal_result['removed_files'])} test files"
                 )
                 print(
-                    f"💾 {'Would free' if args.dry_run else 'Freed'} {
-                        removal_result['total_size_freed'] / 1024 / 1024:.1f} MB"
+                    f"💾 {'Would free' if args.dry_run else 'Freed'} {removal_result['total_size_freed'] / 1024 / 1024:.1f} MB"
                 )
 
                 if removal_result["errors"]:

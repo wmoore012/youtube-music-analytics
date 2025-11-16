@@ -291,10 +291,7 @@ class TestVADERVariantConsistency:
             # At least one enhanced variant should differ significantly (relaxed threshold)
             significant_difference = any(abs(score-stock_score) > 0.05 for score in enhanced_scores)
             if not significant_difference:
-                print(
-                    f"⚠️  No significant enhancement for '{
-                        phrase}' - Stock: {stock_score:.3f}, Enhanced: {enhanced_scores}"
-                )
+                print(f"⚠️  No significant enhancement for '{phrase}' - Stock: {stock_score:.3f}, Enhanced: {enhanced_scores}")
             # Note: This is informational-some phrases may not show enhancement in all variants
 
     def test_music_vader_normalizer_patterns(self):

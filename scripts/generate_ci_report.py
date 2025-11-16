@@ -181,10 +181,7 @@ class CIReportGenerator:
 
         # System info
         sys_info = self.report["system_info"]
-        print(
-            f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {
-              sys_info.get('platform', 'unknown')}"
-        )
+        print(f"🖥️  System: Python {sys_info.get('python_version', 'unknown')} on {sys_info.get('platform', 'unknown')}")
         if "git_info" in sys_info:
             git = sys_info["git_info"]
             print(f"📝 Git: {git.get('branch', 'unknown')} @ {git.get('commit', 'unknown')}")

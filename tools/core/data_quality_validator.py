@@ -391,8 +391,7 @@ class DataQualityValidator:
                             check["severity"],
                             table,
                             "duplicate_records",
-                            f"{check['description']} ({len(duplicates)} groups, {
-                                total_duplicate_records} excess records)",
+                            f"{check['description']} ({len(duplicates)} groups, {total_duplicate_records} excess records)",
                             total_duplicate_records,
                             samples,
                             f"Remove duplicate records keeping most recent",

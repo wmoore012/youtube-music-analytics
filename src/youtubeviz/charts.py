@@ -641,8 +641,7 @@ def views_over_time_advanced(
                 mode="lines",
                 name=f"{artist} ({rolling_window}d avg)",
                 line=dict(color=color, width=width_roll, dash="solid"),
-                hovertemplate=f"<b>{
-                    artist}</b><br>%{{x|%b %d, %Y}}<br>{rolling_window}d avg: %{{y:,.0f}} views<extra></extra>",
+                hovertemplate=f"<b>{artist}</b><br>%{{x|%b %d, %Y}}<br>{rolling_window}d avg: %{{y:,.0f}} views<extra></extra>",
                 legendgroup=artist,
             )
         )

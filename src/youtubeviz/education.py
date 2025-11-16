@@ -187,25 +187,16 @@ class EducationalContentGenerator:
         """Generate context for artist comparison analysis."""
         if len(artists) == 2:
             context_templates = [
-                f"We're comparing {
-                    artists[0]} and {
-                    artists[1]} to understand their relative performance and identify strategic opportunities. This head-to-head analysis reveals which artist has stronger momentum and engagement patterns.",  # noqa: E501
-                f"By analyzing {
-                    artists[0]} versus {
-                    artists[1]}, we can identify best practices and growth opportunities. Each artist brings unique strengths that we can learn from.",  # noqa: E501
-                f"This comparison between {
-                    artists[0]} and {
-                    artists[1]} helps us understand different approaches to building and engaging audiences in today's music landscape.",  # noqa: E501
+                f"We're comparing {artists[0]} and {artists[1]} to understand their relative performance and identify strategic opportunities. This head-to-head analysis reveals which artist has stronger momentum and engagement patterns.",  # noqa: E501
+                f"By analyzing {artists[0]} versus {artists[1]}, we can identify best practices and growth opportunities. Each artist brings unique strengths that we can learn from.",  # noqa: E501
+                f"This comparison between {artists[0]} and {artists[1]} helps us understand different approaches to building and engaging audiences in today's music landscape.",  # noqa: E501
             ]
         else:
             artist_list = ", ".join(artists[:-1]) + f" and {artists[-1]}" if len(artists) > 1 else str(artists[0])
             context_templates = [
-                f"We're analyzing {
-                    artist_list} to understand the competitive landscape and identify standout performers. This multi-artist comparison reveals industry trends and best practices.",  # noqa: E501
-                f"By examining {
-                    artist_list} together, we can identify patterns that separate successful strategies from less effective approaches.",  # noqa: E501
-                f"This analysis of {
-                    artist_list} provides insights into different paths to success in the modern music industry.",
+                f"We're analyzing {artist_list} to understand the competitive landscape and identify standout performers. This multi-artist comparison reveals industry trends and best practices.",  # noqa: E501
+                f"By examining {artist_list} together, we can identify patterns that separate successful strategies from less effective approaches.",  # noqa: E501
+                f"This analysis of {artist_list} provides insights into different paths to success in the modern music industry.",
             ]
 
         return random.choice(context_templates)

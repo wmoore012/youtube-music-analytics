@@ -429,8 +429,7 @@ class RobustNotebookTester:
                     f"- **Execution Time**: {results['execution_time']:.2f}s",
                     f"- **Cell Count**: {results['cell_count']} ({results['code_cell_count']} code cells)",
                     f"- **Validation Status**: {'✅ PASSED' if results['validation_results'].is_valid else '❌ FAILED'}",
-                    f"- **Readability Status**: {
-                        '✅ PASSED' if results['readability_results'].is_valid else '❌ FAILED'}",
+                    f"- **Readability Status**: {'✅ PASSED' if results['readability_results'].is_valid else '❌ FAILED'}",
                     f"- **Chart Status**: {'✅ PASSED' if results['chart_results'].is_valid else '❌ FAILED'}",
                     "",
                 ]

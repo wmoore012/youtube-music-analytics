@@ -121,12 +121,9 @@ def narrative_intro(
             artist_list = str(artists[0]) if artists else "our featured artists"
 
         intros = [
-            f"🎵 **The Music Data Detective Story** 🕵️‍♀️\n\nWelcome to the fascinating world where music meets data science! Today we're diving deep into the YouTube performance of {  # noqa: E501
-                artist_list}. Think of this as your backstage pass to understanding how artists build their digital empires, one view at a time.\n\n * What makes an artist's content resonate? How do engagement patterns reveal fan loyalty? Let's find out together!*",  # noqa: E501
-            f"🚀 **From Bedroom Studios to Billboard Charts** 📈\n\nEvery chart-topping artist started somewhere, and YouTube has become the modern equivalent of playing local venues. We're analyzing {  # noqa: E501
-                artist_list} to uncover the data-driven secrets behind their success.\n\n * Spoiler alert: It's not just about the music anymore. It's about understanding your audience, timing your releases, and building genuine connections through content.*",  # noqa: E501
-            f"💡 **The Algorithm Whisperers** 🤖\n\nIn today's music industry, understanding YouTube's algorithm is as important as understanding chord progressions. We're examining how {  # noqa: E501
-                artist_list} navigate this digital landscape, turning data insights into career momentum.\n\n * Ready to see how the sausage gets made? Let's decode the patterns that separate viral hits from hidden gems.*",  # noqa: E501
+            f"🎵 **The Music Data Detective Story** 🕵️‍♀️\n\nWelcome to the fascinating world where music meets data science! Today we're diving deep into the YouTube performance of {artist_list}. Think of this as your backstage pass to understanding how artists build their digital empires, one view at a time.\n\n * What makes an artist's content resonate? How do engagement patterns reveal fan loyalty? Let's find out together!*",  # noqa: E501
+            f"🚀 **From Bedroom Studios to Billboard Charts** 📈\n\nEvery chart-topping artist started somewhere, and YouTube has become the modern equivalent of playing local venues. We're analyzing {artist_list} to uncover the data-driven secrets behind their success.\n\n * Spoiler alert: It's not just about the music anymore. It's about understanding your audience, timing your releases, and building genuine connections through content.*",  # noqa: E501
+            f"💡 **The Algorithm Whisperers** 🤖\n\nIn today's music industry, understanding YouTube's algorithm is as important as understanding chord progressions. We're examining how {artist_list} navigate this digital landscape, turning data insights into career momentum.\n\n * Ready to see how the sausage gets made? Let's decode the patterns that separate viral hits from hidden gems.*",  # noqa: E501
         ]
 
         return random.choice(intros)
@@ -137,8 +134,7 @@ def narrative_intro(
         " insight. We're using sentiment analysis to understand how audiences really feel about content, beyond just likes and views.\n\n * Every comment tells a story. Let's listen to what the data is saying.*"  # noqa: E501
 
     else:
-        return f"📊 **Data-Driven Music Insights** 🎶\n\nWelcome to an exploration of {
-            analysis_type}! We're combining the art of music with the science of data to uncover insights that can shape careers and inform decisions.\n\n * Let's turn numbers into narratives and metrics into music industry magic.*"  # noqa: E501
+        return f"📊 **Data-Driven Music Insights** 🎶\n\nWelcome to an exploration of {analysis_type}! We're combining the art of music with the science of data to uncover insights that can shape careers and inform decisions.\n\n * Let's turn numbers into narratives and metrics into music industry magic.*"  # noqa: E501
 
 
 def educational_sidebar(

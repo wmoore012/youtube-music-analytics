@@ -372,8 +372,7 @@ def generate_compassionate_insights(
 
         if low_music_artists:
             insights.append(
-                f"🎵 **Music Focus Opportunity**: {', '.join(low_music_artists)
-                                                  } could benefit from more official music releases. "
+                f"🎵 **Music Focus Opportunity**: {', '.join(low_music_artists)} could benefit from more official music releases. "
                 "Fans are engaged with their content-now let's give them more music to stream and share."
             )
 

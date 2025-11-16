@@ -307,10 +307,7 @@ def generate_cleanup_report():
         }
 
         logger.info(f"📊 Final stats: {artists} artists, {videos} videos, {comments} comments")
-        logger.info(
-            f"📊 Sentiment coverage: {
-                sentiment_coverage}/{comments} ({report['final_stats']['sentiment_coverage_percent']:.1f}%)"
-        )
+        logger.info(f"📊 Sentiment coverage: {sentiment_coverage}/{comments} ({report['final_stats']['sentiment_coverage_percent']:.1f}%)")
 
         return report
 

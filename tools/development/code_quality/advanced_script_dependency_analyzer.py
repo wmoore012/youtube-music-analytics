@@ -148,8 +148,7 @@ class AdvancedScriptDependencyAnalyzer(DuplicateCodeAnalyzer):
                             source_file=str(file_path),
                             target_file=node.module,
                             import_type="from",
-                            import_statement=f"from {node.module} import {
-                                ', '.join(alias.name for alias in node.names)}",
+                            import_statement=f"from {node.module} import {', '.join(alias.name for alias in node.names)}",
                             line_number=node.lineno,
                             is_external=not self._is_local_module(node.module),
                         )

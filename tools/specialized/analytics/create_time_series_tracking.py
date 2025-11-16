@@ -339,8 +339,7 @@ def print_time_series_summary():
     print(f"\n🚀 TOP GROWING VIDEOS (by % growth):")
     for _, video in top_growth.iterrows():
         print(
-            f"   📈 {video['artist_name']}: {video['title'][:50]}... - {video['total_views_growth']
-                :.1f}% growth ({video['initial_views']:,} → {video['final_views']:,} views)"  # noqa: E128
+            f"   📈 {video['artist_name']}: {video['title'][:50]}... - {video['total_views_growth']:.1f}% growth ({video['initial_views']:,} → {video['final_views']:,} views)"  # noqa: E128
         )
 
     # Revenue growth leaders
@@ -348,8 +347,7 @@ def print_time_series_summary():
     print(f"\n💰 TOP REVENUE GROWTH:")
     for _, video in top_revenue_growth.iterrows():
         print(
-            f"   💵 {video['artist_name']}: ${video['initial_revenue']:.2f} → ${
-                video['final_revenue']:.2f} ({video['total_revenue_growth']:.1f}% growth)"
+            f"   💵 {video['artist_name']}: ${video['initial_revenue']:.2f} → ${video['final_revenue']:.2f} ({video['total_revenue_growth']:.1f}% growth)"
         )
 
     print(f"\n✅ Time series analysis complete! Tables saved to time_series_tracking/")

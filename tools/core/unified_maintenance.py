@@ -943,10 +943,7 @@ Examples:
                 else:
                     summary = result.get("summary", {})
                     print(f"✅ Full maintenance completed: {summary.get('overall_status', 'UNKNOWN')}")
-                    print(
-                        f"   Operations: {summary.get('successful_operations', 0)
-                                          }/{summary.get('total_operations', 0)} successful"
-                    )
+                    print(f"   Operations: {summary.get('successful_operations', 0)}/{summary.get('total_operations', 0)} successful")
                 return 0
             else:
                 # Interactive maintenance

@@ -109,10 +109,7 @@ class LOCValidator:
                 violation = {"function": func_name, "lines": line_count, "start_line": start_line}
                 result["function_violations"].append(violation)
                 result["valid"] = False
-                self.violations.append(
-                    f"Function {func_name} in {file_path}:{start_line}: {
-                        line_count} lines (max: {self.max_function_lines})"
-                )
+                self.violations.append(f"Function {func_name} in {file_path}:{start_line}: {line_count} lines (max: {self.max_function_lines})")
 
         return result
 

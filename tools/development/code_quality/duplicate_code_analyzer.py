@@ -358,8 +358,7 @@ class DuplicateCodeAnalyzer:
             for group in medium_priority[:5]:  # Show first 5
                 print(f"🟡 {group.suggested_helper}")
                 print(
-                    f"   Pattern: {group.pattern_type}, Occurrences: {
-                        len(group.blocks)}, Lines saved: {group.lines_saved}"
+                    f"   Pattern: {group.pattern_type}, Occurrences: {len(group.blocks)}, Lines saved: {group.lines_saved}"
                 )
             if len(medium_priority) > 5:
                 print(f"   ... and {len(medium_priority) - 5} more")

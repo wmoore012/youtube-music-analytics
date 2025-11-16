@@ -231,10 +231,7 @@ class ProductionMLSentiment:
             if result["sentiment"] != "neutral":
                 improvements += 1
 
-        print(
-            f"📈 ML classifier found {
-                improvements}/{len(ml_results)} comments are not neutral ({improvements / len(ml_results):.1%})"
-        )
+        print(f"📈 ML classifier found {improvements}/{len(ml_results)} comments are not neutral ({improvements / len(ml_results):.1%})")
 
         # Show examples of improvements
         print(f"\n🎯 Example improvements:")

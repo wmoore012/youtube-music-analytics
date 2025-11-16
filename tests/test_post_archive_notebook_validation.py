@@ -516,10 +516,7 @@ if __name__ == "__main__":
     print("\n2. Testing current notebook quality...")
     quality_results = validator.validate_notebook_quality_standards()
     pass_rate = quality_results["passing_notebooks"] / max(quality_results["total_notebooks"], 1)
-    print(
-        f"   Quality pass rate: {
-            pass_rate:.1%} ({quality_results['passing_notebooks']}/{quality_results['total_notebooks']})"
-    )
+    print(f"   Quality pass rate: {pass_rate:.1%} ({quality_results['passing_notebooks']}/{quality_results['total_notebooks']})")
 
     print("\n3. Comparing current vs archived...")
     comparison_results = validator.compare_current_vs_archived()

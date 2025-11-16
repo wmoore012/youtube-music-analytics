@@ -241,8 +241,7 @@ class ModelBenchmarkSystem:
                 else ("negative" if neg_count == min_class_size else "neutral")
             )
             recommendations.append(
-                f"Severe imbalance: {largest_class} class has {
-                    imbalance_ratio:.1f}x more samples than {smallest_class}."
+                f"Severe imbalance: {largest_class} class has {imbalance_ratio:.1f}x more samples than {smallest_class}."
             )
             recommendations.append(f"Add {max_class_size - min_class_size} more {smallest_class} examples to balance.")
 
