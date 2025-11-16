@@ -919,8 +919,15 @@ class TestUMAPClusteringImplementation:
         from src.youtubeviz.advanced_charts import UMAPClusteringAnalyzer
         from src.youtubeviz.clustering_analysis import UMAPNotAvailableError
 
-        # Should fail loudly with clear error message when dependencies missing
-        with pytest.raises(UMAPNotAvailableError, match="Required dependencies not available"):
+        # Behavior depends on whether optional deps are installed in the environment
+        try:
+            import umap  # noqa: F401
+            import sklearn  # noqa: F401
+        except Exception:
+            with pytest.raises(UMAPNotAvailableError, match="Required dependencies not available"):
+                UMAPClusteringAnalyzer()
+        else:
+            # With deps available, construction should succeed without raising
             UMAPClusteringAnalyzer()
 
     def test_similarity_matrix_calculation_implemented(self):

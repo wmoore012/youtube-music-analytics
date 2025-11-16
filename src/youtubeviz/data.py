@@ -931,13 +931,11 @@ def qa_artist_consistency_check(days: int = 30, engine=None) -> dict[str, int]:
         # Generate user-friendly explanation
         if consistent:
             if sentiment_count == 0:
-                _explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {  # noqa: E501
-                                                                                                              days} day period-this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501  # noqa: E126
+                _explanation = f"✅ Consistent: All core functions return {data_count} artists. Sentiment is 0 (no sentiment data for {days} day period-this is normal if ETL hasn't run recently or comments lack sentiment analysis)."  # noqa: E501
             else:
                 _explanation = f"✅ Consistent: All functions return {data_count} artists including sentiment data."
         else:
-            _explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {  # noqa: F841
-                core_counts}. This indicates a bug in the analytics functions."
+            _explanation = f"❌ Inconsistent: Core functions should all return the same count, but got {core_counts}. This indicates a bug in the analytics functions."  # noqa: F841
 
         # Temporal consistency check-sentiment data should exist for same time period
         temporal_issues = []

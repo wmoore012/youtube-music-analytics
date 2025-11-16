@@ -145,8 +145,8 @@ class NotebookValidator:
         results = {"total_notebooks": 0, "valid_notebooks": 0, "violations": [], "notebooks": {}}
 
         for notebook_path in directory.rglob("*.ipynb"):
-            # Skip checkpoint files and archived notebooks
-            if ".ipynb_checkpoints" in str(notebook_path) or "archive" in notebook_path.parts:
+            # Skip checkpoint files and notebooks that intentionally retain outputs
+            if ".ipynb_checkpoints" in str(notebook_path) or any(p in {"archive", "executed"} for p in notebook_path.parts):
                 continue
 
             results["total_notebooks"] += 1
