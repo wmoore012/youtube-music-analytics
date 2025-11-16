@@ -134,19 +134,12 @@ class TestDataQuality:
             print(f"   These may be legitimate versions (Official Video vs Audio) or data quality issues.")
             print(f"   Review these manually to determine if they should be consolidated or kept separate.")
             # Don't fail the test-these might be legitimate different versions
-            # assert len(critical_duplicates) == 0,
-            f"CRITICAL: {len(critical_duplicates)} duplicate song records with different video IDs found."
+            # assert len(critical_duplicates) == 0, f"CRITICAL: {len(critical_duplicates)} duplicate song records with different video IDs found."
 
         if len(legitimate_updates) > 0:
-            print(
-                f"\n✅ GOOD: {len(legitimate_updates)
-                               } legitimate metric updates found (same video, different dates)"
-            )
+            print(f"\n✅ GOOD: {len(legitimate_updates)} legitimate metric updates found (same video, different dates)")
 
-        print(
-            f"\n📊 Summary: {len(legitimate_updates)} legitimate updates, {
-                len(critical_duplicates)} potential versions to review"
-        )
+        print(f"\n📊 Summary: {len(legitimate_updates)} legitimate updates, {len(critical_duplicates)} potential versions to review")
 
     def test_comment_duplicates(self, engine):
         """Test for duplicate comments using natural keys."""
