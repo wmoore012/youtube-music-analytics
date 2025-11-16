@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """Track ETL / model progress, compute descriptive stats, and flag suspicious jumps."""
 
 from __future__ import annotations
@@ -742,7 +742,7 @@ def save_benchmark_to_database(data):
         engine = get_engine()
 
         # Generate benchmark ID
-        benchmark_id = f"bench_{datetime.now().strftime('%Y % m%d_ % H%M % S')}"
+        benchmark_id = f"bench_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         # Prepare data for database (convert availability flags)
         db_data = data.copy()
