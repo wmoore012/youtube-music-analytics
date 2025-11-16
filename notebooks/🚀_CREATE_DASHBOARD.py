@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 MusicScope™ Professional Dashboard Creator (Bulletproof Edition)
 
@@ -99,7 +99,7 @@ def create_professional_dashboard(sample_mode=False, execute_after=False):  # no
             print(f"   ✅ Archived to: {archived_path}")
         else:
             # Manual archive since it's not in executed/
-            timestamp = datetime.now().strftime("%Y % m%d_ % H%M % S")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             archive_dir = notebooks_dir / "archive" / timestamp
             archive_dir.mkdir(parents=True, exist_ok=True)
             archive_path = archive_dir / target_notebook
@@ -145,7 +145,7 @@ def create_professional_dashboard(sample_mode=False, execute_after=False):  # no
                 }
 
                 # Create timestamped executed notebook name
-                timestamp = datetime.now().strftime("%Y % m%d_ % H%M % S")
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_name = target_notebook.replace(".ipynb", "")
                 executed_filename = f"{base_name}-executed-{timestamp}.ipynb"
                 executed_path = executed_dir / executed_filename

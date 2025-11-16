@@ -1604,12 +1604,8 @@ def create_umap_clustering_chart(
         return go.Figure().add_annotation(text="No clustering data available", x=0.5, y=0.5)
 
     try:
-        # Initialize analyzer (allow fallback dimension reduction if UMAP unavailable)
-        analyzer = UMAPClusteringAnalyzer(
-            min_samples_per_artist=10,
-            min_total_samples=50,
-            allow_fallback=True,
-        )
+        # Initialize analyzer
+        analyzer = UMAPClusteringAnalyzer(min_samples_per_artist=10, min_total_samples=50)
 
         # Perform clustering analysis
         result = analyzer.analyze_clustering(df)
@@ -1732,12 +1728,7 @@ def create_umap_clustering_chart(
             )
 
         # Update layout
-        method_label = result.embedding_method.upper()
-        subtitle_parts = [f"Silhouette Score: {result.silhouette_score:.3f}", f"{result.n_clusters} clusters"]
-        if result.embedding_method != "umap" and result.fallback_reason:
-            subtitle_parts.append(f"Fallback: {method_label}")
-
-        title_text = f"Tour Compatibility Analysis ({method_label})<br><sub>{', '.join(subtitle_parts)}</sub>"
+        title_text = f"Tour Compatibility Analysis (UMAP)<br><sub>Silhouette Score: {result.silhouette_score:.3f}, {result.n_clusters} clusters</sub>"
 
         fig.update_layout(
             title=dict(text=title_text, x=0.5, font=dict(size=16)),
@@ -1757,21 +1748,6 @@ def create_umap_clustering_chart(
         else:
             fig.update_xaxes(title="UMAP Dimension 1", **umap_axis_kwargs)
             fig.update_yaxes(title="UMAP Dimension 2", **umap_axis_kwargs)
-
-        if result.embedding_method != "umap" and result.fallback_reason:
-            fig.add_annotation(
-                text=(
-                    "UMAP unavailable in this environment. "
-                    f"Using {method_label} fallback instead.<br><span style='font-size:12px'>{result.fallback_reason}</span>"
-                ),
-                x=0.5,
-                y=-0.15,
-                xref="paper",
-                yref="paper",
-                showarrow=False,
-                font=dict(size=12, color="#555"),
-                align="center",
-            )
 
         return fig
 

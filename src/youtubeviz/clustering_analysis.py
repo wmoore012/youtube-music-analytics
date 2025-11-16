@@ -4,7 +4,6 @@ Bulletproof implementation with proper error handling and validation.
 """
 
 from dataclasses import dataclass
-import logging
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -40,11 +39,6 @@ class ClusteringResult:
     artist_names: List[str]
     n_clusters: int
     silhouette_score: float
-    embedding_method: str = "umap"
-    fallback_reason: Optional[str] = None
-
-
-logger = logging.getLogger(__name__)
 
 
 class UMAPClusteringAnalyzer:
@@ -54,14 +48,7 @@ class UMAPClusteringAnalyzer:
     Fails loudly with clear error messages when requirements aren't met.
     """
 
-    def __init__(
-        self,
-        min_samples_per_artist: int = 10,
-        min_total_samples: int = 50,
-        random_state: int = 42,
-        allow_fallback: bool = False,
-        fallback_method: str = "tsne",
-    ):
+    def __init__(self, min_samples_per_artist: int = 10, min_total_samples: int = 50, random_state: int = 42):
         """
         Initialize UMAP clustering analyzer.
 
@@ -76,12 +63,6 @@ class UMAPClusteringAnalyzer:
         self.min_samples_per_artist = min_samples_per_artist
         self.min_total_samples = min_total_samples
         self.random_state = random_state
-        # Fail loudly: disable fallback regardless of input
-        self.allow_fallback = False
-        self.fallback_method = None
-        self.embedding_method = "umap"
-        self._umap_available = True
-        self._fallback_reason: Optional[str] = None
 
         # Check for required dependencies
         self._validate_dependencies()
@@ -92,17 +73,10 @@ class UMAPClusteringAnalyzer:
             from sklearn.cluster import KMeans
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.metrics import silhouette_score
+            import umap
         except ImportError as e:
             raise UMAPNotAvailableError(
                 f"Required dependencies not available: {e}. " "Install with: pip install umap-learn scikit-learn"
-            )
-
-        try:
-            import umap  # noqa: F401
-        except ImportError as e:
-            # Fail loudly: no fallback
-            raise UMAPNotAvailableError(
-                f"Required dependencies not available: {e}. Install with: pip install umap-learn scikit-learn"
             )
 
     def validate_input_data(self, df: pd.DataFrame) -> None:
@@ -224,55 +198,10 @@ class UMAPClusteringAnalyzer:
             if np.any(np.isnan(umap_embeddings)):
                 raise ValueError("UMAP produced NaN values-check input data quality")
 
-            self.embedding_method = "umap"
-            self._fallback_reason = None
             return umap_embeddings
 
-        except ImportError as e:
-            # Fail loudly: UMAP is required
-            raise UMAPNotAvailableError(
-                f"UMAP not available: {e}. Install with: pip install umap-learn scikit-learn"
-            ) from e
         except Exception as e:
-            # Fail loudly: no fallback path
             raise ValueError(f"UMAP reduction failed: {e}")
-
-    def _perform_fallback_reduction(self, embeddings: np.ndarray) -> np.ndarray:
-        """Apply a dimensionality reduction fallback when UMAP is unavailable."""
-        method = self.fallback_method.lower()
-
-        try:
-            if method == "tsne":
-                from sklearn.manifold import TSNE
-
-                reducer = TSNE(
-                    n_components=2,
-                    random_state=self.random_state,
-                    init="pca",
-                    learning_rate="auto",
-                    perplexity=max(5, min(30, embeddings.shape[0] // 4)),
-                )
-                coords = reducer.fit_transform(embeddings)
-                self.embedding_method = "tsne"
-            elif method == "pca":
-                from sklearn.decomposition import PCA
-
-                reducer = PCA(n_components=2, svd_solver="auto", random_state=self.random_state)
-                coords = reducer.fit_transform(embeddings)
-                self.embedding_method = "pca"
-            else:
-                raise ValueError(f"Unsupported fallback method '{self.fallback_method}'")
-
-            if np.any(np.isnan(coords)):
-                raise ValueError("Fallback reduction produced NaN values")
-
-            return coords
-
-        except Exception as e:
-            raise UMAPNotAvailableError(
-                "UMAP dependencies unavailable and fallback failed: "
-                f"{e}. Install with: pip install umap-learn scikit-learn"
-            ) from e
 
     def perform_clustering(self, embeddings: np.ndarray, n_clusters: Optional[int] = None) -> Tuple[np.ndarray, float]:
         """
@@ -339,7 +268,7 @@ class UMAPClusteringAnalyzer:
         texts = df["comment_text"].tolist()
         embeddings = self.create_text_embeddings(texts)
 
-        # Perform UMAP reduction (with optional fallback)
+        # Perform UMAP reduction
         umap_embeddings = self.perform_umap_reduction(embeddings)
 
         # Perform clustering
@@ -355,8 +284,6 @@ class UMAPClusteringAnalyzer:
             artist_names=df["artist_name"].unique().tolist(),
             n_clusters=len(np.unique(cluster_labels)),
             silhouette_score=silhouette_score,
-            embedding_method=self.embedding_method,
-            fallback_reason=self._fallback_reason,
         )
 
     def _calculate_artist_similarity_matrix(self, df: pd.DataFrame, embeddings: np.ndarray) -> np.ndarray:
@@ -399,7 +326,7 @@ def calculate_artist_similarity_matrix(df: pd.DataFrame, embeddings: np.ndarray)
     Returns:
         Artist similarity matrix
     """
-    analyzer = UMAPClusteringAnalyzer(allow_fallback=False)
+    analyzer = UMAPClusteringAnalyzer()
     return analyzer._calculate_artist_similarity_matrix(df, embeddings)
 
 

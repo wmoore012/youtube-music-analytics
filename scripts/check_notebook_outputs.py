@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Check that notebook outputs are properly stripped.
 
@@ -58,8 +58,11 @@ def main():
     all_violations = []
 
     for notebook_path in notebooks_dir.rglob("*.ipynb"):
-        # Skip checkpoint files
+        # Skip checkpoint files and known output directories
         if ".ipynb_checkpoints" in str(notebook_path):
+            continue
+        # Skip archive and executed notebooks that intentionally retain outputs
+        if "archive" in notebook_path.parts or "executed" in notebook_path.parts:
             continue
 
         total_notebooks += 1

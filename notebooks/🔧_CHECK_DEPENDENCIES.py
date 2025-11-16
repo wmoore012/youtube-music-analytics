@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 🔧 Dependency Checker-Check and auto-install required packages
 

@@ -84,17 +84,23 @@ jobs:
 
     - name: Create database schema
       run: |
-        export $(grep -v '^#' .env.test | xargs)
+        set -a
+        source .env.test
+        set +a
         python tools/core/create_tables.py
 
     - name: Run database tests
       run: |
-        export $(grep -v '^#' .env.test | xargs)
+        set -a
+        source .env.test
+        set +a
         python -m pytest tests/test_database_schema.py -v
 
     - name: Test schema validation
       run: |
-        export $(grep -v '^#' .env.test | xargs)
+        set -a
+        source .env.test
+        set +a
         python scripts/test_schema_alignment.py
 
   notebook-validation:
