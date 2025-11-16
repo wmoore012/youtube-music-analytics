@@ -543,12 +543,14 @@ def store_bot_analysis(engine, analysis_df: pd.DataFrame, table_name: str = "com
 
 # Lightweight wrappers to support simple function-based APIs used by benchmarks
 
+
 def analyze_comments(comments: list[str]) -> list[bool]:
     """
     Simplified interface: accept a list of raw comment texts and return boolean bot predictions.
     Internally constructs the required DataFrame and uses BotDetector.
     """
     from datetime import datetime, timezone
+
     import pandas as pd  # local import to avoid altering module import surface
 
     now = datetime.now(timezone.utc)
