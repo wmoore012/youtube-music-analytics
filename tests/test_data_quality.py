@@ -63,10 +63,8 @@ class TestDataQuality:
                     print(f"\n   ❌ Video ID: {video_id} - Unexpected duplicates on same date")
 
                 for _, row in group.iterrows():
-                    print(
-                        f"      {row['artist_name']} - {row['video_title']
-                                                          } ({row['views']:,} views) | {row['date']}"
-                    )
+                    msg = f"      {row['artist_name']} - {row['video_title']} ({row['views']:,} views) | {row['date']}"
+                    print(msg)
 
             if unexpected_duplicates > 0:
                 print(f"\n❌ CRITICAL: {unexpected_duplicates} unexpected duplicates found on same dates!")
@@ -75,8 +73,7 @@ class TestDataQuality:
                 ), f"Found {unexpected_duplicates} unexpected video duplicates on same dates"
             else:
                 print(
-                    f"\n✅ All {len(duplicate_video_ids)
-                               } video duplicates are expected metric updates across different dates"
+                    f"\n✅ All {len(duplicate_video_ids)} video duplicates are expected metric updates across different dates"
                 )
         else:
             print(f"\n✅ NO DUPLICATE VIDEO IDS-Clean video data!")

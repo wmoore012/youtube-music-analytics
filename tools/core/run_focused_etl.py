@@ -337,8 +337,7 @@ def preflight_setup() -> dict:  # noqa: C901
                 or 0
             )
         print(
-            f"   📈 DQ snapshot -> songs: {songs_cnt}, normalized: {
-                norm_cnt}, normalized.isrc NULL / blank: {isrc_nulls}"
+            f"   📈 DQ snapshot -> songs: {songs_cnt}, normalized: {norm_cnt}, normalized.isrc NULL / blank: {isrc_nulls}"
         )
     except Exception as e:
         songs_cnt = norm_cnt = isrc_nulls = 0
