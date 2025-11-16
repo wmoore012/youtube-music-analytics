@@ -219,7 +219,7 @@ def get_test_coverage() -> float:
             "pytest",
             "--cov=src",
             "--cov=web",
-            "--cov - report=json:coverage.json",
+            "--cov-report=json:coverage.json",
             "--quiet",
         ],
         timeout=90,
@@ -395,7 +395,7 @@ def run_existing_model_benchmarks() -> dict[str, float]:
     print("  • Running existing model comparison benchmarks...")
 
     rc, stdout, stderr = run_subprocess(
-        [sys.executable, "tools / sentiment / comprehensive_model_test.py"], timeout=120)
+        [sys.executable, "tools/specialized/analytics/comprehensive_model_test.py"], timeout=120)
 
     if rc != 0:
         log.warning("Model benchmark command failed (rc=%s): %s", rc, stderr[:200])
@@ -646,7 +646,7 @@ def count_lines_of_code():
     total_lines = 0
 
     for py_file in Path(".").rglob("*.py"):
-        if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools / archive"]):
+        if any(exclude in str(py_file) for exclude in [".venv", "__pycache__", "tools/archive"]):
             continue
 
         try:
@@ -917,8 +917,8 @@ def main():
             print(f"  {model_name:<20} {accuracy:.1f}% accuracy")
     else:
         print(f"\n🏆 Model Comparison Benchmarks:")
-        print(f"  Run: python tools / sentiment / comprehensive_model_test.py")
-        print(f"  Run: python tools / sentiment / model_comparison_test.py")
+        print(f"  Run: python tools/specialized/analytics/comprehensive_model_test.py")
+        print(f"  Run: python tools/specialized/analytics/model_comparison_test.py")
 
     # Show available columns for debugging
     if benchmark_data.get("available_columns"):

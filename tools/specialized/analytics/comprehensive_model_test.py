@@ -1,4 +1,4 @@
-#!/usr / bin / env python3
+#!/usr/bin/env python3
 """
 Comprehensive Music Sentiment Model Testing Framework
 
@@ -14,11 +14,10 @@ from typing import Dict, List, Tuple
 import pandas as pd
 
 # Add paths for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Ensure project root is on sys.path so 'tools' package imports work when run as a script
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-from tools.sentiment.music_slang_dictionary import (
-    get_music_slang_dictionary,
-)
+from tools.specialized.analytics.music_slang_dictionary import get_music_slang_dictionary
 
 
 @dataclass
