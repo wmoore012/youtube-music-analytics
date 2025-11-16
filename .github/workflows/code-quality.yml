@@ -101,7 +101,7 @@ jobs:
       run: |
         echo "🗑️ Checking for unused variables..."
         
-        UNUSED_VARS=$(flake8 --select=F841 --count 2>/dev/null || echo "0")
+        UNUSED_VARS=$(flake8 --exclude=.git,__pycache__,notebooks,venv,.venv,archive --select=F841 --count 2>/dev/null || echo "0")
         echo "📊 Unused variables (F841): $UNUSED_VARS"
         
         # Warning only-don't fail build for unused variables

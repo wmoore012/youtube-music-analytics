@@ -599,14 +599,8 @@ class NotebookScoringValidator:
                 1 for v in self.results["scoring_validations"].values() if v.get("status") == "passed"
             )
             print(f"   Scoring Validations Passed: {scoring_validations_passed}")
-            print(
-                f"   Real Data Confirmed: {'✅' if any(v.get('real_data_found')
-                                                      for v in self.results['scoring_validations'].values()) else '❌'}"
-            )
-            print(
-                f"   Charts Generated: {'✅' if any(v.get('charts_generated')
-                                                   for v in self.results['scoring_validations'].values()) else '❌'}"
-            )
+            print(f"   Real Data Confirmed: {'✅' if any(v.get('real_data_found') for v in self.results['scoring_validations'].values()) else '❌'}")
+            print(f"   Charts Generated: {'✅' if any(v.get('charts_generated') for v in self.results['scoring_validations'].values()) else '❌'}")
 
             return self.results
 

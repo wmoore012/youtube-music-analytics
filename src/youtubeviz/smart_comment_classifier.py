@@ -267,7 +267,9 @@ class SmartCommentClassifier:
             print(f"⚠️  Need at least 10 high-confidence classifications to train. Have {len(texts)}.")
             return False
 
-        print(f"🧠 Training {'transformer' if self.use_transformer else 'traditional'} model on {len(texts)} classifications...")
+        print(
+            f"🧠 Training {'transformer' if self.use_transformer else 'traditional'} model on {len(texts)} classifications..."
+        )
 
         if self.use_transformer and self.transformer_processor:
             return self._train_transformer_model(texts, labels)
