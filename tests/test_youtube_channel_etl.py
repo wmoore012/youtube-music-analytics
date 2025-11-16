@@ -191,8 +191,7 @@ def test_batch_upsert_raw_and_metrics_smoke(monkeypatch):
             # metrics should have today's date entries
             placeholders = ",".join(["%s"] * len(vids))
             cur.execute(
-                f"SELECT COUNT(*) AS n FROM youtube_metrics WHERE video_id IN ({
-                    placeholders}) AND metrics_date = CURDATE()",
+                f"SELECT COUNT(*) AS n FROM youtube_metrics WHERE video_id IN ({placeholders}) AND metrics_date = CURDATE()",
                 vids,
             )
             assert cur.fetchone()["n"] == 3
