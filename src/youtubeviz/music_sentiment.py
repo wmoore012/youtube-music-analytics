@@ -417,3 +417,15 @@ def update_comment_sentiment_table(engine, batch_size: int = 1000):
 
     print("🎉 Enhanced sentiment analysis complete!")
     return processed
+
+
+# Lightweight wrapper for benchmark harness compatibility
+# Provides a simple function import: from src.youtubeviz.music_sentiment import analyze_comment
+
+def analyze_comment(comment_text: str):
+    """
+    Delegates to MusicIndustrySentimentAnalyzer().analyze_comment so callers can
+    import a simple function for quick sentiment checks.
+    """
+    analyzer = MusicIndustrySentimentAnalyzer()
+    return analyzer.analyze_comment(comment_text)

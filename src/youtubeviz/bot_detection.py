@@ -539,3 +539,38 @@ def store_bot_analysis(engine, analysis_df: pd.DataFrame, table_name: str = "com
     storage_df.to_sql(table_name, engine, if_exists="replace", index=False, method="multi")
 
     print(f"✅ Stored {len(storage_df)} bot analysis records to {table_name}")
+
+
+# Lightweight wrappers to support simple function-based APIs used by benchmarks
+
+def analyze_comments(comments: list[str]) -> list[bool]:
+    """
+    Simplified interface: accept a list of raw comment texts and return boolean bot predictions.
+    Internally constructs the required DataFrame and uses BotDetector.
+    """
+    from datetime import datetime, timezone
+    import pandas as pd  # local import to avoid altering module import surface
+
+    now = datetime.now(timezone.utc)
+    rows = [
+        {
+            "comment_id": f"c{i}",
+            "video_id": f"v{i%3}",
+            "comment_text": text,
+            "author_name": f"user{i}",
+            "like_count": 0,
+            "published_at": now,
+        }
+        for i, text in enumerate(comments)
+    ]
+    df = pd.DataFrame(rows)
+
+    detector = BotDetector(config=BotDetectionConfig())
+    out = detector.analyze_comments(df)
+    # Convert bot_score (0-100) to boolean prediction with a conservative threshold
+    return [bool(score >= 60) for score in out["bot_score"].tolist()]
+
+
+def is_likely_bot(comment: str) -> bool:
+    """Single-comment convenience wrapper built on analyze_comments."""
+    return analyze_comments([comment])[0]
