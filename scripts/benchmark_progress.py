@@ -701,8 +701,7 @@ def generate_resume_bullets(data):
     if existing_benchmarks:
         best_model = max(existing_benchmarks.items(), key=lambda x: x[1])
         bullets.append(
-            f"• Custom sentiment model achieves {
-                best_model[1]:.1f}% accuracy on music slang dataset, outperforming baseline VADER"
+            f"• Custom sentiment model achieves {best_model[1]:.1f}% accuracy on music slang dataset, outperforming baseline VADER"
         )
 
     # Real - time processing capabilities
@@ -711,8 +710,7 @@ def generate_resume_bullets(data):
         p95_time = data.get("sentiment_p95_time", 0) * 1000
         if throughput > 0:
             bullets.append(
-                f"• Sentiment analysis processes {
-                    throughput:.0f} comments / sec with p95 latency {p95_time:.0f}ms for real - time fan engagement scoring"
+                f"• Sentiment analysis processes {throughput:.0f} comments / sec with p95 latency {p95_time:.0f}ms for real - time fan engagement scoring"
             )
 
     # Bot detection with precision metrics

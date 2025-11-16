@@ -798,6 +798,8 @@ def insert_youtube_videos(
     with engine.connect() as conn:
         # Get table handles
         artists_tbl = get_table("artists")
+        aliases_tbl = get_table("artist_aliases")
+        inspector = inspect(engine)
 
         # ---------- resolve & upsert artists ----------
         def ensure_artist(name: str) -> int:

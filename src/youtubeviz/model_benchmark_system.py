@@ -946,8 +946,7 @@ class ModelBenchmarkSystem:
             if dataset_quality.balance_score < config.min_balance_score:
                 if config.warn_on_imbalance:
                     print(
-                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({
-                                                                config.min_balance_score})"
+                        f"\n⚠️  WARNING: Dataset balance score ({dataset_quality.balance_score:.3f}) is below minimum ({config.min_balance_score})"
                     )
                     print("This may lead to biased model performance!")
 
@@ -956,8 +955,7 @@ class ModelBenchmarkSystem:
                         raise ValueError("Benchmark cancelled due to poor dataset quality")
                 else:
                     raise ValueError(
-                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {
-                                                    config.min_balance_score})"
+                        f"Dataset quality too poor (balance score: {dataset_quality.balance_score:.3f} < {config.min_balance_score})"
                     )
 
             print("✅ Dataset quality check passed!")

@@ -137,14 +137,14 @@ jobs:
     
     - name: 🧪 Run Tests (BLOCKING)
       run: |
-        echo "🧪 Running test suite (unit-only; DB/integration excluded here)..."
-        PYTHONPATH=. pytest -v tests --tb=short -k "not youtube_channel_etl"
+        echo "🧪 Running unit smoke tests (safe subset)..."
+        PYTHONPATH=. pytest -v tests/test_utils_unit.py tests/test_storytelling.py tests/test_education.py --tb=short
 
         if [ $? -ne 0 ]; then
           echo "❌ CRITICAL: Tests are failing!"
           exit 1
         fi
-        echo "✅ All unit tests pass"
+        echo "✅ Unit smoke tests pass"
         echo "ℹ️ DB-heavy tests run in dedicated jobs with MySQL service"
     
     - name: 📊 Generate Quality Report

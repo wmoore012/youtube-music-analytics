@@ -259,10 +259,8 @@ class TestNotebookFiles:
         """Test that all expected notebook files exist."""
 
         expected_notebooks = [
-            "notebooks / editable / 02_artist_comparison.ipynb",
-            "notebooks / editable / 03_appendix_data_quality_clean.ipynb",
-            "notebooks / editable / 04_sentiment_deep_dive_fun.ipynb",
-            "notebooks / 2025-09-16_MusicScope™_Complete_Analytics_Dashboard.ipynb",
+            "notebooks/MusicScope_YouTube_Dashboard.ipynb",
+            "notebooks/MusicScope™_Professional_Dashboard.ipynb",
         ]
 
         for notebook in expected_notebooks:
