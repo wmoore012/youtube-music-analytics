@@ -898,19 +898,13 @@ def main():
 
     print(f"\n🤖 Model Performance:")
     if benchmark_data.get("sentiment_available", 0):
-        print(
-            f"  Sentiment Analysis:  {benchmark_data.get(
-                'sentiment_avg_time', 0) *1000:.1f}ms avg, {benchmark_data.get('sentiment_throughput', 0):.0f} comments / sec"
-        )
+        print(f"  Sentiment Analysis:  {benchmark_data.get('sentiment_avg_time', 0) * 1000:.1f}ms avg, {benchmark_data.get('sentiment_throughput', 0):.0f} comments / sec")
         print(f"  P95 Latency:         {benchmark_data.get('sentiment_p95_time', 0) *1000:.0f}ms")
     else:
         print(f"  Sentiment Analysis:  ❌ Not available - needs setup")
 
     if benchmark_data.get("bot_detection_available", 0):
-        print(
-            f"  Bot Detection:       {benchmark_data.get(
-                'bot_detection_avg_time', 0) *1000:.1f}ms avg, {benchmark_data.get('bot_detection_precision', 0):.1%} precision"
-        )
+        print(f"  Bot Detection:       {benchmark_data.get('bot_detection_avg_time', 0) * 1000:.1f}ms avg, {benchmark_data.get('bot_detection_precision', 0):.1%} precision")
         print(f"  Bot Throughput:      {benchmark_data.get('bot_detection_throughput', 0):.0f} comments / sec")
     else:
         print(f"  Bot Detection:       ❌ Not available - needs setup")
