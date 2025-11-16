@@ -1,4 +1,4 @@
- """
+"""
 Tests for data-science grade chart implementations.
 """
 
