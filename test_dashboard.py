@@ -3,8 +3,8 @@
 Quick test script to check if MusicScope_YouTube_Dashboard.ipynb cells execute without errors.
 """
 import json
-import sys
 from pathlib import Path
+import sys
 
 
 def check_notebook_structure(nb_path):
