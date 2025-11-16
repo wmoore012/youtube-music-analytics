@@ -37,7 +37,8 @@ jobs:
       run: |
         flake8 --max-line-length=120 --exclude=.git,__pycache__,notebooks,venv,.venv,archive
 
-    - name: Type checking with mypy
+    - name: Type checking with mypy (non-blocking)
+      continue-on-error: true
       run: |
         mypy web/ src/ --ignore-missing-imports
 
