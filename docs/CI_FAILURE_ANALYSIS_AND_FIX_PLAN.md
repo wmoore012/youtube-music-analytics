@@ -24,7 +24,7 @@ The Enterprise CI/CD Pipeline is failing on scheduled runs (every 6 hours). Howe
 
 ### Local Test Results
 
-**Command:** `pytest -v`  
+**Command:** `pytest -v`
 **Result:** 2 failed, 1 passed
 
 ```
@@ -35,7 +35,7 @@ PASSED tests/test_youtube_channel_etl.py::test_youtube_parser_smoke
 
 **Error:** `pymysql.err.OperationalError: (1045, "Access denied for user 'test_user'@'localhost' (using password: YES)")`
 
-**Root Cause:** Local tests expect MySQL database with `test_user` credentials, but database is not configured locally.
+**Root Cause:** Local tests read `DB_USER` from environment variables via `os.getenv("DB_USER")`. The error shows `test_user` because that's what's in the local `.env` file. Tests will work with ANY valid credentials supplied via environment variables—there's no hard-coded user requirement.
 
 ### GitHub Actions Failures
 
@@ -66,11 +66,34 @@ PASSED tests/test_youtube_channel_etl.py::test_youtube_parser_smoke
 
 ### Root Cause
 
-Archive directories contain **intentional** syntax errors and formatting issues:
-- `archive/dangerous_scripts/*.py` - Historical cleanup scripts with syntax errors
-- `notebooks/archive/*.py` - Backup notebook exports with formatting issues
+The `.flake8` configuration file (lines 4-17) **already excludes** archive directories:
 
-These files are preserved for historical reference and should **NOT** be linted.
+```ini
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    notebooks,      # ← Excludes ALL notebooks including notebooks/archive/
+    datasets,
+    examples,
+    tools,
+    web,
+    scripts,
+    archive,        # ← Excludes archive/
+    .cleanup_backups,
+```
+
+**However**, the CI workflow uses a command-line `--exclude` parameter that **overrides** the `.flake8` config:
+
+```yaml
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
+```
+
+When flake8 receives command-line exclusions, it ignores the config file exclusions entirely.
 
 ### Evidence
 
@@ -82,31 +105,30 @@ These files are preserved for historical reference and should **NOT** be linted.
 ... (52 total errors)
 ```
 
-### Current Configuration
-
-**File:** `.github/workflows/enterprise_ci_cd.yml`  
-**Line:** ~69 (Code linting step)
-
-```yaml
-- name: Code linting (flake8)
-  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
-```
-
-**Problem:** Excludes `tools/archive` but NOT `archive/` or `notebooks/archive/`
-
 ### Solution
 
-**Update flake8 exclusions:**
+**Option A: Remove `--exclude` flag entirely (RECOMMENDED)**
 
 ```yaml
 - name: Code linting (flake8)
-  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive,archive,notebooks/archive
+  run: flake8 --max-line-length=120 .
 ```
+
+This lets flake8 use the `.flake8` config file, which already has comprehensive exclusions.
+
+**Option B: Keep command-line flag but make it complete**
+
+```yaml
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive,archive,notebooks
+```
+
+**Recommendation:** Use Option A to avoid maintaining exclusions in two places.
 
 **Rationale:**
 - Archive files are intentionally preserved with errors for historical reference
-- They are not part of the active codebase
-- Linting them provides no value and creates noise
+- The `.flake8` config already excludes them
+- Command-line flags should not override well-configured config files
 
 ---
 
@@ -114,77 +136,79 @@ These files are preserved for historical reference and should **NOT** be linted.
 
 ### Root Cause
 
-**CI Workflow creates MySQL with:**
-- User: `etl_user`
-- Password: `etl_password`
-- Database: `test_db`
-
-**Tests expect:**
-- User: `test_user`
-- Password: (from DATABASE_URL env var)
-- Database: `test.db`
-
-### Evidence
-
-**CI Workflow** (`.github/workflows/enterprise_ci_cd.yml` lines ~120-140):
+**CI Workflow creates MySQL service with these credentials** (lines 109-115):
 
 ```yaml
 services:
   mysql:
     image: mysql:8.0
     env:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: test_db
-      MYSQL_USER: etl_user
-      MYSQL_PASSWORD: etl_password
+      MYSQL_ROOT_PASSWORD: enterprise_secure_password_2024
+      MYSQL_DATABASE: yt_proj_enterprise_test
+      MYSQL_USER: etl_enterprise_user
+      MYSQL_PASSWORD: etl_enterprise_secure_password
 ```
 
-**Test Configuration** (`tests/test_youtube_channel_etl.py` lines ~100-110):
-
-```python
-def _from_database_url():
-    """Parse DATABASE_URL environment variable."""
-    url = os.getenv("DATABASE_URL")
-    if not url:
-        return None
-    # Parses URL like: mysql://test_user:test_password@localhost:3306/test.db
-```
-
-**CI Step** (`.github/workflows/enterprise_ci_cd.yml` lines ~160-165):
+**CI Workflow writes credentials to `.env.enterprise.test` file** (lines 167-186):
 
 ```yaml
 - name: Configure enterprise test environment
   run: |
-    echo "DATABASE_URL=mysql://etl_user:etl_password@127.0.0.1:3306/test_db" >> $GITHUB_ENV
+    cp .env.example .env.enterprise.test
+    cat >> .env.enterprise.test << EOF
+    # Enterprise Test Configuration v${{ env.ENTERPRISE_VERSION }}
+    ENVIRONMENT=enterprise_test
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_USER=etl_enterprise_user
+    DB_PASS=etl_enterprise_secure_password
+    DB_NAME=yt_proj_enterprise_test
+    YOUTUBE_API_KEY=enterprise_test_api_key
+    ...
+    EOF
 ```
 
-**Error in logs:**
+**BUT: Python scripts cannot access these credentials** because:
+
+1. `get_engine()` in `web/etl_helpers.py` (lines 111-113) loads `.env` from repo root:
+   ```python
+   load_dotenv(dotenv_path=_REPO_ROOT / ".env", override=False)
+   ```
+   It does NOT read `.env.enterprise.test`.
+
+2. `get_engine()` reads credentials from `os.getenv()` (lines 143-148):
+   ```python
+   user = os.getenv("DB_USER")
+   password = os.getenv("DB_PASS")
+   host = os.getenv("DB_HOST", "127.0.0.1")
+   port = int(os.getenv("DB_PORT", "3306"))
+   db_name = os.getenv("DB_NAME", "yt_proj")
+   ```
+
+3. The workflow sets `ENV_FILE=.env.enterprise.test` but **no Python code reads this variable**. A codebase search confirms `ENV_FILE` is only mentioned in documentation.
+
+4. Writing credentials to a file has **no effect** unless those values are exported to `$GITHUB_ENV` (the GitHub Actions environment).
+
+### Evidence
+
+**Error in CI logs:**
 
 ```
-sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) 
-(1045, "Access denied for user 'etl_user'@'172.18.0.1' (using password: YES)")
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError)
+(1045, "Access denied for user 'etl_enterprise_user'@'172.18.0.1' (using password: YES)")
 ```
 
-### Solution Options
+The error shows the correct username (`etl_enterprise_user`), proving the MySQL service is configured correctly. The failure happens because Python scripts can't access the credentials via `os.getenv()`.
 
-**Option A: Update CI to match test expectations** (RECOMMENDED)
-- Change MySQL service user from `etl_user` → `test_user`
-- Change DATABASE_URL to use `test_user`
-- Pros: Less invasive, tests remain unchanged
-- Cons: None
+**Test Configuration** (`tests/test_youtube_channel_etl.py` lines 16-40):
 
-**Option B: Update tests to match CI configuration**
-- Update test fixtures to use `etl_user`
-- Pros: None
-- Cons: More invasive, affects test code
+Tests load `.env` once at import time, then normalize any `DATABASE_URL` if present, then read standard `DB_*` environment variables. **There is no hard-coded user requirement**—any valid credentials supplied via environment variables will work.
 
-### Recommended Fix
+### Solution
 
-The CI workflow creates `.env.enterprise.test` file with correct DB credentials, but the Python test fixture script doesn't load it. The `get_engine()` function loads `.env` from repo root by default.
+Export `DB_*` variables to `$GITHUB_ENV` so they're available to Python scripts via `os.getenv()`.
 
-**Solution:** Export DB_* variables to GitHub environment so they're available to all subsequent steps.
-
-**Update `.github/workflows/enterprise_ci_cd.yml` step "Configure enterprise test environment":**
+**Add to the end of "Configure enterprise test environment" step (after line 186):**
 
 ```yaml
 - name: Configure enterprise test environment
@@ -215,6 +239,11 @@ The CI workflow creates `.env.enterprise.test` file with correct DB credentials,
     echo "DB_NAME=yt_proj_enterprise_test" >> $GITHUB_ENV
     echo "YOUTUBE_API_KEY=enterprise_test_api_key" >> $GITHUB_ENV
 ```
+
+**Why this works:**
+- `echo "VAR=value" >> $GITHUB_ENV` makes the variable available to all subsequent steps
+- Python scripts using `os.getenv("DB_USER")` will now find the value
+- No changes to test code or `get_engine()` required
 
 ---
 
@@ -249,27 +278,50 @@ This will be automatically resolved when Category 2 (database authentication) is
 
 #### Step 1: Fix Flake8 Exclusions
 
-**File:** `.github/workflows/enterprise_ci_cd.yml`  
-**Action:** Update line ~69
+**File:** `.github/workflows/enterprise_ci_cd.yml`
+**Action:** Update line 86
+
+**Option A: Remove `--exclude` flag (RECOMMENDED)**
 
 ```yaml
 # Before:
-run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
 
 # After:
-run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive,archive,notebooks/archive
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 .
 ```
 
-#### Step 2: Verify .flake8 Configuration
+**Option B: Keep flag but make it complete**
 
-**File:** `.flake8`  
-**Action:** Check if file exists and has consistent exclusions
+```yaml
+# Before:
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
 
-If `.flake8` exists, ensure it has:
+# After:
+- name: Code linting (flake8)
+  run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive,archive,notebooks
+```
+
+**Recommendation:** Use Option A. The `.flake8` config file already has comprehensive exclusions (verified in Step 2).
+
+#### Step 2: Verify .flake8 Configuration (ALREADY COMPLETE)
+
+**File:** `.flake8`
+**Status:** ✅ Already excludes `archive` and `notebooks`
+
+The `.flake8` config (lines 4-17) already has:
 ```ini
 [flake8]
-exclude = .venv,__pycache__,tools/archive,archive,notebooks/archive
+exclude =
+    archive,
+    notebooks,
+    # ... and many others
 ```
+
+No changes needed to `.flake8` file.
 
 #### Step 3: Export DB Credentials to GitHub Environment
 

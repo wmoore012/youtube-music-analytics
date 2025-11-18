@@ -66,12 +66,13 @@ flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive,archive,n
 ## 🗄️ Part 2: Set Up Local MySQL with CI Credentials
 
 ### Current Issue
-- Local tests use `test_user` credentials (not configured)
-- CI uses `etl_enterprise_user` credentials
-- Mismatch causes authentication failures
+- Local tests read `DB_USER` from environment variables via `os.getenv("DB_USER")`
+- CI creates MySQL with `etl_enterprise_user` credentials
+- CI writes credentials to `.env.enterprise.test` file but doesn't export to `$GITHUB_ENV`
+- Python scripts can't access credentials via `os.getenv()`, causing authentication failures
 
 ### Solution
-Create local MySQL user matching CI environment.
+Create local MySQL user matching CI environment so you can test with the same credentials CI uses.
 
 ### Step 1: Connect to MySQL as Root
 
@@ -195,17 +196,19 @@ pytest -v --cov=. --cov-report=term-missing
 
 ### Expected Results
 
-**Before fix:**
+**Before fix (without DB_* env vars exported):**
 ```
 FAILED tests/test_youtube_channel_etl.py::test_batch_upsert_raw_and_metrics_smoke
 FAILED tests/test_youtube_channel_etl.py::test_daily_max_semantics
 Error: Access denied for user 'test_user'@'localhost'
+# Note: Shows 'test_user' because that's what's in local .env file
 ```
 
-**After fix (with CI credentials):**
+**After fix (with CI credentials exported to environment):**
 ```
 PASSED tests/test_youtube_channel_etl.py::test_batch_upsert_raw_and_metrics_smoke
 PASSED tests/test_youtube_channel_etl.py::test_daily_max_semantics
+# Tests work with ANY valid credentials supplied via environment variables
 ```
 
 ---
