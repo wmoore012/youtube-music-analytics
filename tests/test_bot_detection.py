@@ -192,6 +192,7 @@ def test_whitelist_softens_legit_phrases(detector, df_realistic):
 
 
 class TestDBEntryPoints:
+    @patch("src.youtubeviz.bot_detection.ensure_unique_comments", lambda func_name, usage_type="analysis": lambda func: func)
     @patch("src.youtubeviz.bot_detection.pd.read_sql")
     def test_load_recent_comments_min_columns(self, mock_read_sql):
         mock_read_sql.return_value = pd.DataFrame(
