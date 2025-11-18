@@ -485,21 +485,21 @@ def setup_test_environment():
     """Set up test environment variables."""
     original_env = os.environ.copy()
 
-    # Set test environment variables
+    # Set test environment variables (only if not already set by CI)
+    # This allows CI to override with enterprise credentials
     test_env = {
-        "YOUTUBE_API_KEY": "test_api_key_123456789",
-        "DATABASE_URL": "sqlite:///test.db",
-
-        "DB_HOST": "localhost",
-        "DB_PORT": "3306",
-        "DB_USER": "test_user",
-        "DB_PASS": "test_pass",
-        "DB_NAME": "test_db",
-        "ETL_LOG_LEVEL": "DEBUG",
-        "PERSONAL_ISSUE_VIDEO_IDS": "dQw4w9WgXcQ,fC7oUOUEEi4",
-        "BLOCKED_TITLE_PATTERNS": "spam.*content|test.*blocked",
-        "MIN_VIDEO_DURATION_SECONDS": "30",
-        "MAX_VIDEO_DURATION_SECONDS": "3600",
+        "YOUTUBE_API_KEY": os.getenv("YOUTUBE_API_KEY", "test_api_key_123456789"),
+        "DATABASE_URL": os.getenv("DATABASE_URL", "sqlite:///test.db"),
+        "DB_HOST": os.getenv("DB_HOST", "localhost"),
+        "DB_PORT": os.getenv("DB_PORT", "3306"),
+        "DB_USER": os.getenv("DB_USER", "test_user"),
+        "DB_PASS": os.getenv("DB_PASS", "test_pass"),
+        "DB_NAME": os.getenv("DB_NAME", "test_db"),
+        "ETL_LOG_LEVEL": os.getenv("ETL_LOG_LEVEL", "DEBUG"),
+        "PERSONAL_ISSUE_VIDEO_IDS": os.getenv("PERSONAL_ISSUE_VIDEO_IDS", "dQw4w9WgXcQ,fC7oUOUEEi4"),
+        "BLOCKED_TITLE_PATTERNS": os.getenv("BLOCKED_TITLE_PATTERNS", "spam.*content|test.*blocked"),
+        "MIN_VIDEO_DURATION_SECONDS": os.getenv("MIN_VIDEO_DURATION_SECONDS", "30"),
+        "MAX_VIDEO_DURATION_SECONDS": os.getenv("MAX_VIDEO_DURATION_SECONDS", "3600"),
     }
 
     os.environ.update(test_env)
