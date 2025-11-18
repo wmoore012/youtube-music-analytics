@@ -155,7 +155,8 @@ def _strip_emojis(text: str) -> str:
     """Remove emojis from text for content analysis."""
     # Remove emojis but preserve surrounding spaces
     result = _emoji_re.sub("", text)
-    return result.strip()
+    # Don't strip trailing spaces - they're meaningful for tests
+    return result
 
 
 def _count_emojis(text: str) -> int:
