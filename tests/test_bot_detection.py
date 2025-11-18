@@ -192,9 +192,22 @@ def test_whitelist_softens_legit_phrases(detector, df_realistic):
 
 
 class TestDBEntryPoints:
-    @patch("src.youtubeviz.bot_detection.ensure_unique_comments", lambda func_name, usage_type="analysis": lambda func: func)
+    @patch("src.youtubeviz.unique_comment_integration.unique_enforcer")
     @patch("src.youtubeviz.bot_detection.pd.read_sql")
-    def test_load_recent_comments_min_columns(self, mock_read_sql):
+    def test_load_recent_comments_min_columns(self, mock_read_sql, mock_enforcer):
+        # Mock the enforcer to not filter any comments
+        mock_enforcer.validate_dataframe_uniqueness.return_value = pd.DataFrame(
+            {
+                "comment_id": ["x1"],
+                "video_id": ["v1"],
+                "comment_text": ["nice 🔥"],
+                "author_name": ["fan"],
+                "like_count": [0],
+                "published_at": [datetime.now(timezone.utc)],
+                "video_title": ["Song"],
+                "channel_title": ["Artist"],
+            }
+        )
         mock_read_sql.return_value = pd.DataFrame(
             {
                 "comment_id": ["x1"],
