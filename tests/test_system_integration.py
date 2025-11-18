@@ -15,7 +15,7 @@ import pytest
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+from tools.specialized.analytics.deploy_bot_detection import EnhancedBotDetector
 
 from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
 

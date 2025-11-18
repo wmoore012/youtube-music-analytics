@@ -18,7 +18,7 @@ from decimal import Decimal
 import numpy as np
 from sqlalchemy import text
 
-from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+from tools.specialized.analytics.deploy_bot_detection import EnhancedBotDetector
 from web.etl_helpers import get_engine
 from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
 

@@ -4,16 +4,10 @@ Comprehensive data quality tests for the YouTube analytics system.
 Tests for duplicates, data consistency, and notebook data integrity.
 """
 
-import sys
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pandas as pd
 import pytest
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
 from src.youtubeviz.data import load_recent_window_days
 from web.etl_helpers import get_engine
