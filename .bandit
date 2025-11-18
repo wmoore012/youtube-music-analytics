@@ -1,5 +1,0 @@
-[bandit]
-# Exclude test directories, archives, and root-level cleanup scripts
-exclude_dirs = /tests,/tools/archive,/archive,/__pycache__
-exclude = /*_linting*.py,/*_fix*.py,/*_cleanup*.py,/aggressive_linting_fix.py,/comprehensive_linting_fix.py,/corrected_safe_linting.py,/final_comprehensive_fix.py,/final_targeted_fix.py,/fix_all_linting_errors.py,/fix_linting_issues.py,/fix_notebook_syntax.py,/fix_remaining_linting.py,/fix_syntax_errors.py,/fix_syntax_first.py,/fix_youtube_parser.py,/linting_cleanup_summary.py,/safe_linting_fix.py,/safe_professional_linting.py,/cleanup_dangerous_scripts.py
-
