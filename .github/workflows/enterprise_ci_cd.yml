@@ -91,7 +91,7 @@ jobs:
       run: mypy --ignore-missing-imports --namespace-packages --explicit-package-bases --exclude tools/archive . || true
 
     - name: Security vulnerability scanning (bandit)
-      run: bandit -r . --exclude ./tests,./tools/archive,./archive
+      run: bandit -r . -c .bandit
 
     - name: Dependency security audit
       run: safety check --json > security_audit.json
