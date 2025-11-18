@@ -247,7 +247,7 @@ def test_notebook_data_cleaning():
         if "is_song" not in df.columns:
             df = identify_songs(df)
 
-        songs_data = df[df["is_song"] is True].copy()
+        songs_data = df[df["is_song"] == True].copy()
 
         if len(songs_data) == 0:
             return df
@@ -259,7 +259,7 @@ def test_notebook_data_cleaning():
         )
 
         # Combine with non-song data
-        other_data = df[df["is_song"] is False]
+        other_data = df[df["is_song"] == False]
         result = pd.concat([songs_deduplicated, other_data], ignore_index=True)
 
         return result
