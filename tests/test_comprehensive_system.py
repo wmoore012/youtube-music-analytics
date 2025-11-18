@@ -22,7 +22,7 @@ import pytest
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tools.maintenance.comprehensive_data_cleanup import validate_configured_artists
-from tools.sentiment.deploy_bot_detection import EnhancedBotDetector
+from tools.specialized.analytics.deploy_bot_detection import EnhancedBotDetector
 
 from web.etl_helpers import get_engine
 from youtubeviz.weak_supervision_sentiment import WeakSupervisionSentimentAnalyzer
