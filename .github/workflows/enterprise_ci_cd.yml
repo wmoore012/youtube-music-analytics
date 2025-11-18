@@ -83,7 +83,7 @@ jobs:
       run: isort --check-only --profile black .
 
     - name: Code linting (flake8)
-      run: flake8 --max-line-length=120 --exclude=.venv,__pycache__,tools/archive
+      run: flake8 --max-line-length=120 .
 
     - name: Static type checking (mypy)
       run: mypy --ignore-missing-imports --exclude tools/archive .
@@ -184,6 +184,15 @@ jobs:
         COMPLIANCE_MODE=strict
         AUDIT_TRAIL_ENABLED=true
         EOF
+        # Export DB credentials to GitHub environment for Python scripts
+        # Python code uses os.getenv("DB_USER"), os.getenv("DB_PASS"), etc.
+        # Writing to .env.enterprise.test has no effect unless exported to $GITHUB_ENV
+        echo "DB_HOST=127.0.0.1" >> $GITHUB_ENV
+        echo "DB_PORT=3306" >> $GITHUB_ENV
+        echo "DB_USER=etl_enterprise_user" >> $GITHUB_ENV
+        echo "DB_PASS=etl_enterprise_secure_password" >> $GITHUB_ENV
+        echo "DB_NAME=yt_proj_enterprise_test" >> $GITHUB_ENV
+        echo "YOUTUBE_API_KEY=enterprise_test_api_key" >> $GITHUB_ENV
 
     - name: Initialize enterprise database schema
       env:
