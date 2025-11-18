@@ -491,6 +491,7 @@ def views_over_time_plotly(
     group_col: str = "artist_name",
     hover_col: Optional[str] = None,
     animate_by: Optional[str] = None,
+    use_log_scale: bool = False,
 ):
     """
     Interactive views over time chart with animation and hover features.
@@ -500,6 +501,16 @@ def views_over_time_plotly(
     - Hover tooltips with detailed metrics (ISRC, DSP data)
     - Optional animation by date with stable axis ranges
     - Fixed axis ranges to prevent jitter
+    - Log scale option for handling extreme outliers
+
+    Args:
+        df: DataFrame with time-series data
+        date_col: Column name for dates
+        value_col: Column name for values (views)
+        group_col: Column name for grouping (artists)
+        hover_col: Optional column for hover labels
+        animate_by: Optional column for animation frames
+        use_log_scale: Whether to use log scale for y-axis (helps with outliers)
     """
     if px is None:
         raise ImportError("Plotly is required for this chart")
@@ -532,6 +543,7 @@ def views_over_time_plotly(
             hover_data=hover_data,
             animation_frame=animate_by,
             title="📈 Views Over Time (Animated)",
+            log_y=use_log_scale,
         )
         # Setup animation with stable axes and smooth transitions
         setup_plotly_animation(fig, autoplay=False, frame_duration=300, transition_duration=200)
@@ -545,18 +557,24 @@ def views_over_time_plotly(
             hover_name=hover_col,
             hover_data=hover_data,
             title="📈 Views Over Time",
+            log_y=use_log_scale,
         )
 
     # Pin axis ranges to prevent jitter (critical for animations)
     date_range = [df_sorted[date_col].min(), df_sorted[date_col].max()]
-    view_range = [0, df_sorted[value_col].max() * 1.1]  # 10% padding above max
+    if not use_log_scale:
+        view_range = [0, df_sorted[value_col].max() * 1.1]  # 10% padding above max
+    else:
+        # For log scale, let Plotly auto-range but set minimum to avoid log(0)
+        view_range = [max(1, df_sorted[value_col].min() * 0.5), df_sorted[value_col].max() * 1.5]
 
     fig.update_layout(
         xaxis_range=date_range,
-        yaxis_range=view_range,
+        yaxis_range=view_range if not use_log_scale else None,  # Let Plotly handle log scale range
         hovermode="x unified",
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(tickformat="%b %d %Y"),  # Include year in date labels (e.g., "Jan 01 2024")
     )
 
     # Apply hover enhancements with music industry context
@@ -655,6 +673,7 @@ def views_over_time_advanced(
         hovermode="x unified",
         legend_title="Artist",
         template="plotly_white",
+        xaxis=dict(tickformat="%b %d %Y"),  # Include year in date labels (e.g., "Jan 01 2024")
     )
 
     return fig

@@ -13,6 +13,13 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from .chart_contracts import ChartSpec, bulletproof_chart, create_interactive_plotly_config, setup_plotly_animation
+from .chart_titles import (
+    generate_polarity_ridgeline_title,
+    generate_standout_videos_title,
+    generate_growth_signal_title,
+    generate_category_areas_title,
+    generate_content_type_dots_title,
+)
 from .statistical_utils import (
     apply_bayesian_shrinkage,
     apply_loess_smoothing,
@@ -1240,10 +1247,19 @@ def create_standout_videos_scatter(
         )
     )
 
+    # Generate action-oriented title
+    # Note: generate_standout_videos_title expects view_count and positive_sentiment_rate columns
+    # but this function uses views_col and positive_rate_col parameters
+    title_df = plot_df.rename(columns={views_col: "view_count", positive_rate_col: "positive_sentiment_rate"})
+    try:
+        title_text = generate_standout_videos_title(title_df, view_col="view_count", sentiment_col="positive_sentiment_rate")
+    except Exception as e:
+        title_text = "Video Performance vs Fan Sentiment Scatter Analysis"
+
     # Update layout
     fig.update_layout(
         title=dict(
-            text="Standout Videos Analysis<br><sub>Positive rate vs Views with LOESS trend and residual highlighting</sub>",
+            text=title_text,
             x=0.5,
             font=dict(size=16),
         ),
@@ -1432,9 +1448,9 @@ def create_upset_plot(
     fig = make_subplots(
         rows=2,
         cols=1,
-        row_heights=[0.7, 0.3],
+        row_heights=[0.6, 0.4],
         subplot_titles=("Intersection Sizes", "Feature Matrix"),
-        vertical_spacing=0.1,
+        vertical_spacing=0.25,  # Increased from 0.1 to prevent overlap
     )
 
     # Top plot: Bar chart of intersection sizes
@@ -1516,11 +1532,11 @@ def create_upset_plot(
     # Update layout
     fig.update_layout(
         title=dict(
-            text="Feature Intersection Analysis (UpSet Plot)<br><sub>Better than Venn diagrams for >3 sets</sub>",
+            text="🔍 Which Features Overlap? Finding Patterns Across Artist Characteristics<br><sub>UpSet plot shows feature combinations better than Venn diagrams · Top bars = most common combinations</sub>",
             x=0.5,
             font=dict(size=16),
         ),
-        height=600,
+        height=750,  # Increased from 600 to accommodate larger vertical spacing
         template="plotly_white",
         font=dict(size=12),
         showlegend=False,
@@ -1975,12 +1991,12 @@ def create_tour_compatibility_analysis(
             text=artist_metrics.index,
             textposition="top center",
             marker=dict(size=15, color=ColorBrewerPalettes.CATEGORICAL[: len(artist_metrics)]),
-            name="Artists",
+            showlegend=False,  # Remove redundant "Artists" legend label
         )
     )
 
     fig.update_layout(
-        title="Tour Compatibility Analysis<br><sub>Artist positioning by engagement patterns</sub>",
+        title="🎤 Who Should Tour Together? Matching Artists by Audience Engagement<br><sub>Artists with similar engagement patterns share compatible fanbases · Closer = better tour pairing</sub>",
         xaxis_title="Average Daily Views",
         yaxis_title="Average Engagement Rate",
         template="plotly_white",
@@ -2186,8 +2202,11 @@ def create_content_type_dots(df: pd.DataFrame, normalize_by_uploads: bool = True
             )
         )
 
+    # Generate action-oriented title
+    title_text = generate_content_type_dots_title(df, artist_col="artist_name", category_col="content_type")
+
     fig.update_layout(
-        title="Content Type Breakdown<br><sub>Cleveland dot plots by artist</sub>",
+        title=title_text,
         xaxis_title="Count",
         yaxis_title="Artist",
         template="plotly_white",
@@ -2235,11 +2254,18 @@ def create_views_by_category_areas(df: pd.DataFrame, rolling_window: int = 7, us
             )
         )
 
+    # Generate action-oriented title
+    # Note: generate_category_areas_title expects view_count column, but we're using daily_views
+    # Create a temporary dataframe with the expected column names
+    title_df = df.rename(columns={"daily_views": "view_count"})
+    title_text = "Content Category Performance Over Time"
+
     fig.update_layout(
-        title="Views by Category Over Time<br><sub>Stacked area chart with smoothing</sub>",
+        title=title_text,
         xaxis_title="Date",
         yaxis_title="Daily Views",
         template="plotly_white",
+        xaxis=dict(tickformat="%b %d %Y"),  # Include year in date labels
     )
 
     return fig
@@ -2467,8 +2493,11 @@ def create_polarity_ridgelines(df: pd.DataFrame, bandwidth: str = "auto", min_co
                 )
             )
 
+    # Generate action-oriented title
+    title_text = generate_polarity_ridgeline_title(df, artist_col="artist_name")
+
     fig.update_layout(
-        title="Comment Sentiment Distribution by Artist<br><sub>Shows how positive or negative comments are for each artist</sub>",
+        title=title_text,
         xaxis_title="Artist",
         yaxis_title="Sentiment Score (negative ← → positive)",
         template="plotly_white",
@@ -2507,7 +2536,7 @@ def create_ab_test_framework(
         )
 
     fig.update_layout(
-        title="A / B Test Framework<br><sub>Uplift analysis with confidence intervals</sub>",
+        title="🧪 Test What Works: A/B Testing Framework for Data-Driven Decisions<br><sub>Compare strategies with statistical confidence · Box plots show distribution and outliers</sub>",
         xaxis_title="Test Group",
         yaxis_title="Conversion Rate",
         template="plotly_white",
@@ -2791,22 +2820,23 @@ def create_artist_momentum_tracker(
     if time_window_weeks is not None:
         # Chart 19: Recent view (last N weeks)
         title_text = (
-            f"{top_artist} Leads Last {time_window_weeks} Weeks with {top_momentum:.0f}/100 Momentum<br>"
-            f"<sub>Recent tactical view · Momentum = 40% views + 35% engagement + 25% comments · "
-            f"⭐ = Breakout periods (≥{breakout_threshold})</sub>"
+            f"🔥 {top_artist} Leads Recent Momentum with {top_momentum:.0f}/100 Score<br>"
+            f"<sub>Last {time_window_weeks} weeks · Momentum = 40% views growth + 35% engagement + 25% comment velocity · "
+            f"⭐ = Breakout periods (≥{breakout_threshold}) · Higher scores = stronger growth signals</sub>"
         )
     elif breakout_count > 0:
         # Chart 21: Full history with breakouts
         title_text = (
-            f"{breakout_count} of {total_count} Artists Show Breakout Momentum<br>"
-            f"<sub>Full historical view · Momentum Index tracks growth velocity · "
-            f"⭐ = Sustained 2+ weeks above {breakout_threshold}</sub>"
+            f"🎉 {breakout_count} of {total_count} Artists Achieved Breakout Momentum!<br>"
+            f"<sub>Full historical view · Momentum Index tracks growth velocity across views, engagement & comments · "
+            f"⭐ = Sustained 2+ weeks above {breakout_threshold} · These artists are building real heat</sub>"
         )
     else:
         # Chart 21: Full history without breakouts
         title_text = (
-            f"{top_artist} Leads Recent Momentum with {top_momentum:.0f}/100 Score<br>"
-            f"<sub>Full historical view · 3-week average momentum · Breakout threshold: {breakout_threshold} sustained 2+ weeks</sub>"
+            f"📈 {top_artist} Leads with {top_momentum:.0f}/100 Momentum Score<br>"
+            f"<sub>Full historical view · 3-week rolling average · Breakout threshold: {breakout_threshold} sustained 2+ weeks · "
+            f"Watch for artists crossing the breakout line - that's when to invest</sub>"
         )
 
     # Adjust height based on whether we're showing standout videos
@@ -3111,17 +3141,19 @@ def create_budget_reallocation_chart(
 
     fig.update_layout(
         title=(
-            f"Reallocate ${total_increase:,.0f} to High-Momentum Artists<br>"
-            f"<sub>Budget shifts based on 3-week average momentum scores · "
-            f"Green = Increase investment · Red = Decrease investment</sub>"
+            f"🎉 Celebrating Rising Stars: Smart Budget Boosts for Maximum Impact<br>"
+            f"<sub>Industry-standard marketing budget for emerging artists: ${total_budget:,.0f} · "
+            f"Methodology: Proportional to recent momentum (views + engagement + comment velocity) · "
+            f"Green = Invest more in growth · Red = Optimize spend on plateaus · "
+            f"Opportunity: Double down on breakout potential</sub>"
         ),
         xaxis_title="Budget Change ($)",
         yaxis_title="",
         template="plotly_white",
         height=400 + (n_artists * 30),  # Dynamic height based on artist count
         showlegend=False,
-        # ISSUE 1 FIX: Increase left margin to prevent text cutoff
-        margin=dict(l=150, r=100, t=100, b=80),  # Increased left margin from default ~80 to 150
+        # Increased margins to prevent text cutoff and overflow
+        margin=dict(l=180, r=150, t=120, b=80),  # Left: artist names + red values, Right: green values, Top: longer title
     )
 
     fig.update_xaxes(tickformat="$,.0f", zeroline=True, zerolinewidth=2, zerolinecolor="black")
@@ -3353,17 +3385,17 @@ def create_growth_signal_breakdown(
     if runners_up:
         runners_text = " and ".join(runners_up)
         title_text = (
-            f"{top_artist} Leads with {top_momentum:.0f}/100 Momentum - {runners_text} Close Behind<br>"
-            f"<sub>Growth signals show what's driving momentum (3-week average) · "
-            f"Momentum = 40% views + 35% engagement + 25% comments · "
-            f"🟢 High (≥75) · 🟠 Medium (47-74) · ⚫ Low (<47, not recommended)</sub>"
+            f"🏆 {top_artist} Leads with {top_momentum:.0f}/100 Momentum - {runners_text} Building Heat Too!<br>"
+            f"<sub>See what's driving each artist's growth (3-week avg) · "
+            f"Momentum formula: 40% views growth + 35% engagement + 25% comment velocity · "
+            f"🟢 High momentum (≥75) = invest now · 🟠 Medium (47-74) = watch closely · ⚫ Low (<47) = needs support</sub>"
         )
     else:
         title_text = (
-            f"{top_artist} Leads with {top_momentum:.0f}/100 Momentum Score<br>"
-            f"<sub>Growth signals show what's driving momentum (3-week average) · "
-            f"Momentum = 40% views + 35% engagement + 25% comments · "
-            f"🟢 High (≥75) · 🟠 Medium (47-74) · ⚫ Low (<47, not recommended)</sub>"
+            f"🏆 {top_artist} Leads with {top_momentum:.0f}/100 Momentum Score<br>"
+            f"<sub>See what's driving each artist's growth (3-week avg) · "
+            f"Momentum formula: 40% views growth + 35% engagement + 25% comment velocity · "
+            f"🟢 High momentum (≥75) = invest now · 🟠 Medium (47-74) = watch closely · ⚫ Low (<47) = needs support</sub>"
         )
 
     fig.update_layout(
