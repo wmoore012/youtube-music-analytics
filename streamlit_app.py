@@ -24,7 +24,7 @@ DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
 def _load_csv(path: Path, parse_dates: Iterable[str] | None = None) -> pd.DataFrame:
     """Load a CSV with basic error handling visible in the UI.
 
@@ -217,6 +217,25 @@ def format_percent(value: float | None) -> str:
     if value is None or pd.isna(value):
         return "–"
     return f"{value:.2f}%"
+
+
+def _mask_host(host: str) -> str:
+    """Mask database host for display purposes (basic privacy).
+
+    Examples::
+
+        "127.0.0.1" -> "127.*"
+        "db.example.com" -> "db.*"
+    """
+
+    if not host:
+        return "(unknown)"
+    if "." in host:
+        prefix = host.split(".")[0]
+        return f"{prefix}.*"
+    if len(host) > 3:
+        return host[:3] + "*"
+    return "*"
 
 
 def latest_snapshot(df: pd.DataFrame) -> pd.DataFrame:
@@ -544,6 +563,24 @@ def main() -> None:
     if normalized_videos.empty:
         st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
         st.stop()
+
+    # In production mode, enforce a freshness window against normalized_videos.
+    if mode == "production" and "metrics_date" in normalized_videos.columns:
+        freshness_days = _get_data_freshness_days()
+        latest_metrics_value = normalized_videos["metrics_date"].max()
+        if not pd.isna(latest_metrics_value):
+            latest_dt = pd.to_datetime(latest_metrics_value).to_pydatetime()
+            if latest_dt.tzinfo is None:
+                latest_dt = latest_dt.replace(tzinfo=timezone.utc)
+            age_days = (datetime.now(timezone.utc) - latest_dt).days
+            if age_days > freshness_days:
+                st.error(
+                    "Production (MySQL) data is older than the configured "
+                    f"freshness window ({freshness_days} days). Run the ETL "
+                    "pipeline before demoing this dashboard.",
+                )
+                st.stop()
+
     palette = get_artist_color_palette()
 
     available_artists = sorted(artist_summary["artist_name"].unique().tolist())
