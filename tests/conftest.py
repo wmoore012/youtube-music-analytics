@@ -374,6 +374,38 @@ class TestDataFactory:
         return ETLConfig(**config_data)
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:  # type: ignore[override]
+    """Register custom command-line options for the test suite.
+
+    Currently used for the ETL data freshness baseline management.
+    """
+
+    group = parser.getgroup("etl freshness")
+    group.addoption(
+        "--update-baseline",
+        action="store_true",
+        default=False,
+        help=(
+            "Update tests/fixtures/baseline_play_counts.json with current MySQL "
+            "stats for the curated artist cohort."
+        ),
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:  # type: ignore[override]
+    """Ensure custom markers are always registered.
+
+    This defends against environments where ``pyproject.toml`` is not
+    automatically picked up by pytest, which would otherwise treat the
+    ``@pytest.mark.database`` marker as unknown.
+    """
+
+    config.addinivalue_line(
+        "markers",
+        "database: marks tests that require database connection",
+    )
+
+
 # Pytest Fixtures
 
 

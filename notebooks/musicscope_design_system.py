@@ -19,8 +19,21 @@ Usage:
 
 from __future__ import annotations
 from typing import Any, Optional
-from IPython.display import display, HTML
 import pandas as pd
+
+# Optional IPython display support (for notebooks vs. terminal runs)
+try:  # pragma: no cover - environment detection
+    from IPython.display import display, HTML  # type: ignore
+    from IPython import get_ipython  # type: ignore
+    _MS_HAS_IPYTHON = get_ipython() is not None
+except Exception:
+    _MS_HAS_IPYTHON = False
+    display = None  # type: ignore[assignment]
+
+    class HTML(str):  # type: ignore[no-redef]
+        """Fallback HTML wrapper for non-notebook environments."""
+
+        pass
 
 # ============================================================================
 # DESIGN TOKENS
@@ -229,7 +242,10 @@ def ms_hero_card(
         </div>
     </div>
     """
-    display(HTML(html))
+    if _MS_HAS_IPYTHON and display is not None:
+        display(HTML(html))
+    else:
+        print(f"[MUSICSCOPE HERO] {title}")
 
 
 def ms_subsection_card(
@@ -260,7 +276,10 @@ def ms_subsection_card(
         </p>
     </div>
     """
-    display(HTML(html))
+    if _MS_HAS_IPYTHON and display is not None:
+        display(HTML(html))
+    else:
+        print(f"[MUSICSCOPE SUBSECTION] {title} - {subtitle}")
 
 
 def ms_insight_card(
@@ -309,7 +328,10 @@ def ms_insight_card(
         <strong>{config['icon']}</strong> {message}
     </div>
     """
-    display(HTML(html))
+    if _MS_HAS_IPYTHON and display is not None:
+        display(HTML(html))
+    else:
+        print(f"[MUSICSCOPE CARD] {message}")
 
 
 def ms_closing_card(
@@ -369,7 +391,10 @@ def ms_closing_card(
         {next_html}
     </div>
     """
-    display(HTML(html))
+    if _MS_HAS_IPYTHON and display is not None:
+        display(HTML(html))
+    else:
+        print(f"[MUSICSCOPE CLOSING] {section_title}")
 
 # ============================================================================
 # VISUAL HELPERS
