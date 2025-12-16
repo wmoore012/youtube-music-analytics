@@ -147,6 +147,9 @@ def get_engine(*, echo: bool = False) -> Engine:
     host = os.getenv("DB_HOST", "127.0.0.1")
     port = int(os.getenv("DB_PORT", "3306"))
 
+    # NOTE: we set a small connect_timeout so that interactive apps (Streamlit,
+    # notebooks, CLI tools) fail fast when the local DB is unreachable instead
+    # of hanging on "connecting to database" for minutes.
     url_obj = URL.create(
         drivername="mysql+pymysql",
         username=user,
@@ -154,9 +157,18 @@ def get_engine(*, echo: bool = False) -> Engine:
         host=host,
         port=port,
         database=db_name,
-        query={"charset": "utf8mb4"},
+        query={
+            "charset": "utf8mb4",
+            # SQLAlchemy expects query values as strings; PyMySQL interprets
+            # this as seconds for the TCP connect timeout.
+            "connect_timeout": "5",
+        },
     )
-    return create_engine(url_obj, echo=echo, pool_pre_ping=True)
+    return create_engine(
+        url_obj,
+        echo=echo,
+        pool_pre_ping=True,
+    )
 
 
 @contextmanager
