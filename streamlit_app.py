@@ -12,7 +12,10 @@ from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.let_it_rain import rain
 from streamlit_extras.metric_cards import style_metric_cards
-from streamlit_on_Hover_tabs import on_hover_tabs
+try:
+    from st_on_hover_tabs import on_hover_tabs
+except ModuleNotFoundError:  # pragma: no cover - external dependency guard
+    on_hover_tabs = None
 from streamlit_option_menu import option_menu
 import streamlit_shadcn_ui as ui
 
@@ -587,11 +590,21 @@ def main() -> None:
 
     # Hover-based sidebar navigation with filters to keep the main canvas clean
     with st.sidebar:
-        tabs = on_hover_tabs(
-            tabName=["Filters", "About"],
-            iconName=["filter", "info-circle"],
-            default_choice=0,
-        )
+        if on_hover_tabs is None:
+            st.warning("⚠️ Hover tabs unavailable; using fallback navigation.")
+            tabs = option_menu(
+                menu_title=None,
+                options=["Filters", "About"],
+                icons=["filter", "info-circle"],
+                default_index=0,
+                orientation="horizontal",
+            )
+        else:
+            tabs = on_hover_tabs(
+                tabName=["Filters", "About"],
+                iconName=["filter", "info-circle"],
+                default_choice=0,
+            )
 
         if tabs == "Filters":
             st.header("Filters")
