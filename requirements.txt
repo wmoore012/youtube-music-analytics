@@ -1,8 +1,13 @@
-# Minimal runtime dependencies for the MusicScope Streamlit app on
-# Streamlit Community Cloud. Heavy notebook/ML/dev dependencies live in
-# pyproject.toml optional extras and requirements-dev.txt.
+# Install local package (src layout)
+-e .
 
-# Core Streamlit stack
+# Core dependencies
+pandas>=2.0.0
+plotly>=5.0.0
+sqlalchemy>=2.0.0
+pymysql>=1.0.0
+cryptography>=41.0.0
+pydantic>=2.7.0
 streamlit>=1.36.0
 
 # Data and plotting stack (pinned to wheel-available versions)

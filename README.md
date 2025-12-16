@@ -92,49 +92,6 @@ When the database is reachable and `DB_HOST`, `DB_USER`, `DB_PASS`, and `DB_NAME
 
 > ✅ **DX note:** DB tests and ETL freshness checks are gated behind `RUN_DB_TESTS=1` so `pytest -q` stays green and noise-free on laptops without MySQL.
 
-### 🌐 Remote access on a VPS / cloud instance
-
-By default, the Streamlit server is configured via [`.streamlit/config.toml`](.streamlit/config.toml) to bind to all interfaces:
-
-```toml
-[server]
-headless = true
-address = "0.0.0.0"
-port = 8501
-```
-
-To reach the app from another machine (e.g., a browser on your laptop hitting a cloud VM):
-
-1. Start Streamlit on the server:
-
-   ```bash
-   streamlit run streamlit_app.py
-   ```
-
-2. Ensure the OS firewall allows inbound traffic on port **8501**. For Ubuntu with `ufw`:
-
-   ```bash
-   sudo ufw allow 8501/tcp
-   sudo ufw reload
-   sudo ufw status
-   ```
-
-3. In your cloud provider, open port **8501/tcp** in the instance’s security group / network rules.
-
-4. From another machine, visit:
-
-   ```text
-   http://<your-public-ip>:8501
-   ```
-
-If you still can’t connect, double‑check that Streamlit is listening on `0.0.0.0:8501`:
-
-```bash
-sudo ss -tuln | grep 8501  # or: netstat -tuln | grep 8501
-```
-
-This setup keeps local development simple while making it easy to expose the dashboard for live demos.
-
 ---
 
 ## 🧠 How It Works

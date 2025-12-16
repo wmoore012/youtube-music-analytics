@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from portfolio.io import get_export_root, load_insight_table, read_manifest, resolve_run_id
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.let_it_rain import rain
@@ -23,11 +22,6 @@ from web.etl_helpers import get_engine, read_sql_safe
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
-
-# Cache + freshness configuration
-CACHE_TTL_SECONDS = int(os.getenv("MUSICSCOPE_CACHE_TTL_SECONDS", "3600"))
-DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
-DEFAULT_DATA_FRESHNESS_DAYS = 30
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -48,7 +42,7 @@ def _load_csv(path: Path, parse_dates: Iterable[str] | None = None) -> pd.DataFr
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
+@st.cache_data(show_spinner=False)
 def _load_demo_cohort() -> dict:
     """Load curated demo cohort JSON.
 
@@ -140,63 +134,6 @@ def get_data_mode() -> Literal["demo", "production"]:
         st.stop()
 
 
-def _get_data_freshness_days() -> int:
-    """Return maximum allowed age (in days) for production metrics.
-
-    Controlled via DATA_FRESHNESS_DAYS; defaults to 30 days and coerced to at
-    least 1 day if misconfigured.
-    """
-
-    raw = os.getenv(DATA_FRESHNESS_DAYS_ENV)
-    if raw is None:
-        return DEFAULT_DATA_FRESHNESS_DAYS
-    try:
-        value = int(raw)
-        return max(1, value)
-    except ValueError:
-        return DEFAULT_DATA_FRESHNESS_DAYS
-
-
-# Portfolio export helpers
-def _get_exports_dir() -> Path:
-    """Return the base directory for notebook exports (env overrideable)."""
-
-    return get_export_root()
-
-
-def list_portfolio_cohorts() -> list[str]:
-    exports_dir = _get_exports_dir()
-    if not exports_dir.exists():
-        return []
-    return sorted([p.name for p in exports_dir.iterdir() if p.is_dir()])
-
-
-def _load_portfolio_manifest(cohort_slug: str) -> tuple[dict | None, str | None]:
-    base_dir = _get_exports_dir()
-    run_id = resolve_run_id(base_dir, cohort_slug)
-    if not run_id:
-        return None, None
-    try:
-        manifest = read_manifest(base_dir, cohort_slug, run_id)
-        return manifest, run_id
-    except FileNotFoundError:
-        return None, run_id
-    except Exception as exc:  # noqa: BLE001
-        st.warning(f"Could not read manifest for {cohort_slug} (run {run_id}): {exc}")
-        return None, run_id
-
-
-def load_portfolio_table(name: str, cohort_slug: str, run_id: str) -> pd.DataFrame:
-    base_dir = _get_exports_dir()
-    try:
-        return load_insight_table(base_dir, cohort_slug, run_id, name)
-    except FileNotFoundError:
-        st.warning(f"Missing {name}.csv for cohort {cohort_slug} (run {run_id}).")
-    except Exception as exc:  # noqa: BLE001
-        st.error(f"Failed to load {name}.csv for cohort {cohort_slug}: {exc}")
-    return pd.DataFrame()
-
-
 def load_artist_summary_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
     rows = []
@@ -237,7 +174,6 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
 def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
     """Load artist summary for either demo or production mode.
 
@@ -249,16 +185,10 @@ def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
     if mode is None:
         mode = get_data_mode()
     if mode == "demo":
-        df = load_artist_summary_from_demo()
-    else:
-        df = _load_csv(DATA_DIR / "artist_music_summary.csv")
-
-    # Stamp cache metadata for diagnostics
-    df.attrs["cache_refreshed_at"] = datetime.now(timezone.utc)
-    return df
+        return load_artist_summary_from_demo()
+    return _load_csv(DATA_DIR / "artist_music_summary.csv")
 
 
-@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
 def load_normalized_videos(mode: str | None = None) -> pd.DataFrame:
     """Load normalized video metrics for either demo or production mode.
 
@@ -268,79 +198,11 @@ def load_normalized_videos(mode: str | None = None) -> pd.DataFrame:
     if mode is None:
         mode = get_data_mode()
     if mode == "demo":
-        df = load_normalized_videos_from_demo()
-    else:
-        df = _load_csv(
-            DATA_DIR / "normalized_music_videos.csv",
-            parse_dates=["published_at", "metrics_date", "fetched_at"],
-        )
-
-    df.attrs["cache_refreshed_at"] = datetime.now(timezone.utc)
-    return df
-
-
-def get_production_health() -> dict:
-    """Compute production database + analytics health indicators.
-
-    This is intentionally side-effect free so it can be reused by tests and
-    the Diagnostics view without depending on Streamlit runtime.
-    """
-
-    from sqlalchemy import text
-
-    engine = get_engine()
-    summary: dict[str, object] = {
-        "db_reachable": False,
-        "db_error": None,
-        "db_name": os.getenv("DB_NAME", "yt_proj"),
-        "db_host": os.getenv("DB_HOST", "127.0.0.1"),
-        "checked_at": datetime.now(timezone.utc),
-        "music_videos_rows": 0,
-        "artist_summary_rows": 0,
-        "latest_metrics_date": None,
-        "latest_metrics_age_days": None,
-    }
-
-    try:
-        with engine.connect() as conn:
-            # Basic connectivity
-            conn.execute(text("SELECT 1"))
-            summary["db_reachable"] = True
-
-            # Table row counts
-            videos_count = conn.execute(
-                text("SELECT COUNT(*) FROM music_videos_normalized"),
-            ).scalar_one()
-            artists_count = conn.execute(
-                text("SELECT COUNT(*) FROM artist_performance_summary"),
-            ).scalar_one()
-
-            summary["music_videos_rows"] = int(videos_count or 0)
-            summary["artist_summary_rows"] = int(artists_count or 0)
-
-            # Data freshness from warehouse metrics_date
-            latest_metrics = conn.execute(
-                text("SELECT MAX(metrics_date) FROM music_videos_normalized"),
-            ).scalar_one()
-            if latest_metrics is not None:
-                # Normalise to timezone-aware datetime for consistent age
-                # calculations.
-                if not isinstance(latest_metrics, datetime):
-                    latest_metrics = datetime.combine(
-                        latest_metrics,
-                        datetime.min.time(),
-                    )
-                if latest_metrics.tzinfo is None:
-                    latest_metrics = latest_metrics.replace(tzinfo=timezone.utc)
-
-                summary["latest_metrics_date"] = latest_metrics
-
-                age_days = (datetime.now(timezone.utc) - latest_metrics).days
-                summary["latest_metrics_age_days"] = age_days
-    except Exception as exc:  # noqa: BLE001
-        summary["db_error"] = str(exc)
-
-    return summary
+        return load_normalized_videos_from_demo()
+    return _load_csv(
+        DATA_DIR / "normalized_music_videos.csv",
+        parse_dates=["published_at", "metrics_date", "fetched_at"],
+    )
 
 
 def format_number(value: float) -> str:
@@ -663,125 +525,6 @@ def render_top_videos(df: pd.DataFrame, limit: int) -> None:
     )
 
 
-def _render_cache_controls(artist_summary: pd.DataFrame, normalized_videos: pd.DataFrame) -> None:
-    """Show cache status and provide a force-refresh button.
-
-    This is intentionally lightweight so it can be called from any view.
-    """
-
-    cache_timestamp_artist = artist_summary.attrs.get("cache_refreshed_at")
-    cache_timestamp_videos = normalized_videos.attrs.get("cache_refreshed_at")
-
-    cache_state = "Warm" if len(artist_summary) > 0 and len(normalized_videos) > 0 else "Cold"
-
-    col1, col2, col3 = st.columns([2, 2, 1])
-    with col1:
-        if cache_timestamp_artist or cache_timestamp_videos:
-            ts = cache_timestamp_artist or cache_timestamp_videos
-            st.caption(f"Cache last refreshed: {ts}")
-        else:
-            st.caption("Cache state: cold (no timestamp recorded yet)")
-    with col2:
-        st.caption(
-            f"Cache state: {cache_state} — artists: {len(artist_summary):,} rows, "
-            f"videos: {len(normalized_videos):,} rows",
-        )
-    with col3:
-        if st.button("🔄 Force Refresh Data", use_container_width=True):
-            # Clear all cached data and reload the app.
-            st.cache_data.clear()
-            try:
-                st.rerun()
-            except AttributeError:  # Streamlit < 1.27 fallback
-                st.experimental_rerun()
-
-
-def _render_diagnostics_view(
-    mode: str,
-    artist_summary: pd.DataFrame,
-    normalized_videos: pd.DataFrame,
-) -> None:
-    """Diagnostics panel for DB, data freshness, cache, and mode info."""
-
-    st.header("Diagnostics")
-
-    freshness_days = _get_data_freshness_days()
-    prod_health = None
-    if mode == "production":
-        prod_health = get_production_health()
-
-    # Database status
-    st.subheader("Database status")
-    if mode == "demo":
-        st.info("Running in Demo Mode – database checks are skipped.")
-    else:
-        assert prod_health is not None  # for type checkers
-        db_ok = bool(prod_health["db_reachable"])
-        db_name = str(prod_health["db_name"])
-        db_host = _mask_host(str(prod_health["db_host"]))
-        checked_at = prod_health["checked_at"]
-
-        status_icon = "✅" if db_ok else "❌"
-        st.markdown(f"{status_icon} **Connection:** {'Connected' if db_ok else 'Unreachable'}")
-        st.markdown(f"- **Database:** `{db_name}` on `{db_host}`")
-        st.markdown(f"- **Last ping:** `{checked_at}`")
-        if not db_ok:
-            st.error(f"Database unreachable: {prod_health['db_error']}")
-
-    # Data freshness
-    st.subheader("Data freshness")
-    if "metrics_date" in normalized_videos.columns:
-        latest_metrics_value = normalized_videos["metrics_date"].max()
-        if pd.isna(latest_metrics_value):
-            st.error("Could not determine latest metrics_date from normalized videos.")
-        else:
-            latest_dt = pd.to_datetime(latest_metrics_value).to_pydatetime()
-            if latest_dt.tzinfo is None:
-                latest_dt = latest_dt.replace(tzinfo=timezone.utc)
-            age_days = (datetime.now(timezone.utc) - latest_dt).days
-            st.markdown(f"- **Latest metrics_date (from app data):** `{latest_dt}`")
-            st.markdown(f"- **Age of latest data:** `{age_days} days`")
-            st.markdown(f"- **Target freshness window:** `{freshness_days} days`")
-    else:
-        st.warning("normalized_videos is missing metrics_date column.")
-
-    if prod_health and prod_health.get("latest_metrics_date") is not None:
-        st.markdown("---")
-        st.markdown("**Warehouse metrics (from MySQL):**")
-        st.markdown(f"- Latest metrics_date: `{prod_health['latest_metrics_date']}`")
-        st.markdown(f"- Age of latest data: `{prod_health['latest_metrics_age_days']} days`")
-
-    # Cache status
-    st.subheader("Cache status")
-    cache_timestamp_artist = artist_summary.attrs.get("cache_refreshed_at")
-    cache_timestamp_videos = normalized_videos.attrs.get("cache_refreshed_at")
-    cache_state = "Warm" if len(artist_summary) > 0 and len(normalized_videos) > 0 else "Cold"
-
-    st.markdown(f"- **Cache state:** {cache_state}")
-    st.markdown(f"- **Artist summary rows:** {len(artist_summary):,}")
-    st.markdown(f"- **Normalized videos rows:** {len(normalized_videos):,}")
-    st.markdown(
-        f"- **Last cache refresh (artist summary):** `{cache_timestamp_artist}`",
-    )
-    st.markdown(
-        f"- **Last cache refresh (normalized videos):** `{cache_timestamp_videos}`",
-    )
-
-    # Mode + data source
-    st.subheader("Mode & data source")
-    if mode == "demo":
-        st.markdown("- **Mode:** Demo")
-        st.markdown(f"- **Data source:** `{DEMO_DATA_PATH}`")
-    else:
-        st.markdown("- **Mode:** Production (MySQL)")
-        st.markdown("- **Data source:** CSVs from ETL in `music_analysis_tables/`")
-
-    st.info(
-        "All diagnostics are read-only and safe to run during demos. Use this "
-        "panel as a quick health check before important walkthroughs.",
-    )
-
-
 def main() -> None:
     """Entry point for the MusicScope Streamlit dashboard.
 
@@ -887,14 +630,8 @@ def main() -> None:
     # Top-level navigation for different storytelling modes
     selected_view = option_menu(
         menu_title=None,
-        options=["Overview", "Artist Deep Dive", "Velocity Analysis", "Portfolio Exports", "Diagnostics"],
-        icons=[
-            "bar-chart-fill",
-            "person-lines-fill",
-            "lightning-fill",
-            "diagram-2",
-            "activity",
-        ],
+        options=["Overview", "Artist Deep Dive", "Velocity Analysis"],
+        icons=["bar-chart-fill", "person-lines-fill", "lightning-fill"],
         orientation="horizontal",
     )
 
@@ -928,7 +665,7 @@ def main() -> None:
         st.markdown("Dive into per-artist performance and content mix to understand " "why certain videos overperform.")
         render_content_mix(latest)
 
-    elif selected_view == "Velocity Analysis":
+    else:  # "Velocity Analysis"
         st.markdown("### Velocity & momentum")
         render_velocity_scatter(latest, color_map)
         ui.card(
@@ -938,50 +675,6 @@ def main() -> None:
                 "next release, sync, or tour push."
             ),
         )
-    elif selected_view == "Portfolio Exports":
-        st.markdown("### Notebook exports (momentum, sentiment, performance)")
-
-        cohorts = list_portfolio_cohorts()
-        if not cohorts:
-            st.warning(
-                "No portfolio exports found in exports/portfolio/. Run the portfolio notebooks to generate them."
-            )
-            st.stop()
-
-        cohort_choice = st.selectbox("Cohort", cohorts, index=0)
-        manifest, run_id = _load_portfolio_manifest(cohort_choice)
-
-        if not run_id:
-            st.warning("No runs available for this cohort yet. Generate a run to proceed.")
-            st.stop()
-
-        st.caption(f"Exports root: {_get_exports_dir().resolve()}")
-        st.caption(f"Active run: {run_id} (from latest.json if present)")
-
-        if manifest:
-            st.markdown("**Manifest snapshot**")
-            st.json(manifest)
-        else:
-            st.info("Manifest not found; attempting to load tables directly.")
-
-        table_plan = {
-            "momentum_insights": "Track breakout timing and warning windows",
-            "sentiment_insights": "Understand fan mood and comment volume",
-            "performance_insights": "Find hidden gems and efficiency spread",
-            "portfolio_highlights": "Curated highlights to explain the why",
-        }
-
-        for name, why in table_plan.items():
-            st.markdown(f"#### {name} — {why}")
-            df_export = load_portfolio_table(name, cohort_choice, run_id)
-            if df_export.empty:
-                st.info(f"{name} is empty or missing for this run.")
-                continue
-            st.caption(f"Rows: {len(df_export):,} • Columns: {len(df_export.columns)}")
-            st.dataframe(df_export, use_container_width=True, height=420)
-    else:  # "Diagnostics"
-        _render_diagnostics_view(mode, artist_summary, normalized_videos)
-        _render_cache_controls(artist_summary, normalized_videos)
 
 
 if __name__ == "__main__":
