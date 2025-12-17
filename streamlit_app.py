@@ -27,6 +27,29 @@ DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
 
 
+def _read_int_env(name: str, default: int) -> int:
+    """Read an integer from environment, with validation.
+
+    Used for cache TTLs and other simple numeric tuning knobs. Fails fast with
+    a clear error message if misconfigured so Cloud logs are actionable.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        value = int(raw)
+    except ValueError as exc:  # pragma: no cover - defensive config guard
+        raise RuntimeError(
+            f"{name} must be an integer number of seconds, got {raw!r}"
+        ) from exc
+    if value < 0:
+        raise RuntimeError(f"{name} must be >= 0, got {value}")
+    return value
+
+
+CACHE_TTL_SECONDS: int = _read_int_env("CACHE_TTL_SECONDS", 900)  # Default: 15 minutes
+
+
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
 def _load_csv(path: Path, parse_dates: Iterable[str] | None = None) -> pd.DataFrame:
     """Load a CSV with basic error handling visible in the UI.
