@@ -1,15 +1,56 @@
 #!/usr/bin/env python3
 """
-Lightweight CI stub for music analytics execution.
-This file exists to satisfy the Notebook Quality Check. For full pipeline
-runs, use tools/core/run_production_pipeline.py or scripts/generate_ci_report.py.
+Notebook-style summary for CI validation.
+This script prints a recruiter-friendly analytics snapshot using the
+ETL-generated CSV outputs so notebook tests can verify real signals.
 """
 
 from __future__ import annotations
 
+from tools.notebook_output_helpers import (
+    format_currency,
+    format_number,
+    format_percent,
+    list_artists,
+    load_artist_summary,
+)
+
 
 def main() -> int:
-    # Intentionally minimal; CI only compiles this file
+    summary = load_artist_summary()
+    artists = list_artists(summary["display_name"])
+
+    total_views = int(summary["total_views"].sum())
+    total_revenue = float(summary["total_est_revenue_usd"].sum())
+    weighted_engagement = (
+        (summary["avg_engagement_rate"] * summary["total_views"]).sum() / total_views
+        if total_views
+        else 0.0
+    )
+
+    print("MUSIC INDUSTRY PERFORMANCE DASHBOARD")
+    print("=" * 60)
+    print(f"Artists: {len(artists)}")
+    print("Roster:", ", ".join(artists))
+    print()
+
+    print("Market Share Analysis")
+    for _, row in summary.sort_values("total_views", ascending=False).iterrows():
+        share = (row["total_views"] / total_views * 100) if total_views else 0
+        print(
+            f"- {row['display_name']}: {format_number(row['total_views'])} views | "
+            f"Share {share:.1f}%"
+        )
+
+    print("\nRevenue Analysis")
+    print(f"Total Estimated Revenue (USD): {format_currency(total_revenue)}")
+    print(f"Weighted Engagement Rate: {format_percent(weighted_engagement)}")
+
+    print("\nINVESTMENT RECOMMENDATIONS")
+    print("- Prioritize artists with high momentum and resonance.")
+    print("- Balance reach leaders with community-driven engagement spikes.")
+    print("- Use catalog health signals before scaling promotion.")
+
     return 0
 
 

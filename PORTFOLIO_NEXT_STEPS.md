@@ -200,6 +200,15 @@ pip install jupyter-book
 
 ---
 
+## New TODOs (Data Quality + Schema)
+
+1. **ISRC coverage remediation** - `normalized_music_videos.isrc` is 100% null; investigate ingestion path, decide if we backfill or drop the column, then rerun ETL.
+2. **Null density audit** - Add a CI check to flag columns with high null ratios and require a decision (fix vs remove).
+3. **Schema guardrails** - Keep MySQL tables lowercase snake_case with natural keys; add a linting check in migrations.
+4. **ETL rerun protocol** - Document the rerun checklist (data freshness, null audits, notebook re-execution) and link it in onboarding docs.
+
+---
+
 ## 📬 Questions?
 
 If you need clarification on any part of this strategy:
@@ -212,4 +221,3 @@ If you need clarification on any part of this strategy:
 **Bottom Line:** You have everything you need to build a compelling portfolio piece. The data is real, the analysis is solid, and the story is clear. Now it's just execution.
 
 *Good luck! 🚀*
-
