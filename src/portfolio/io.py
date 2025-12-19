@@ -40,6 +40,7 @@ def _run_dir(root: Path, cohort_slug: str, run_id: str) -> Path:
 # Write helpers
 # ---------------------------------------------------------------------------
 
+
 def write_insight_table(
     df: pd.DataFrame,
     *,
@@ -157,6 +158,7 @@ def export_portfolio_run(
 # ---------------------------------------------------------------------------
 # Read helpers (used by Streamlit loaders)
 # ---------------------------------------------------------------------------
+
 
 def read_manifest(base_dir: Path, cohort_slug: str, run_id: str) -> dict:
     path = base_dir / cohort_slug / run_id / "manifest.json"

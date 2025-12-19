@@ -529,10 +529,7 @@ def views_over_time_plotly(
     if df is None or df.empty:
         fig = go.Figure()
         fig.add_annotation(
-            text=(
-                "No data available for views over time — "
-                "please run the pipeline to fetch YouTube metrics."
-            ),
+            text=("No data available for views over time — " "please run the pipeline to fetch YouTube metrics."),
             x=0.5,
             y=0.5,
             xref="paper",
@@ -943,8 +940,7 @@ def create_content_type_breakdown_chart(
     missing = [col for col in required_cols if col not in df.columns]
     if missing:
         raise KeyError(
-            f"[ContentTypeBreakdown] Missing required columns: {missing}. "
-            f"Available columns: {list(df.columns)}"
+            f"[ContentTypeBreakdown] Missing required columns: {missing}. " f"Available columns: {list(df.columns)}"
         )
 
     # Handle empty data gracefully: return a valid but informative figure
@@ -1107,9 +1103,8 @@ def create_isrc_balance_chart(
     # False = no ISRC / content clip. Any nulls are treated as False.
     work[isrc_col] = work[isrc_col].fillna(False).astype(bool)
 
-    grouped = (
-        work.groupby([artist_col, isrc_col], as_index=False)
-        .agg(video_count=(views_col, "size"), total_views=(views_col, "sum"))
+    grouped = work.groupby([artist_col, isrc_col], as_index=False).agg(
+        video_count=(views_col, "size"), total_views=(views_col, "sum")
     )
 
     if grouped.empty:
@@ -1453,8 +1448,7 @@ def create_genre_context_chart(
     missing = [col for col in required_cols if col not in df.columns]
     if missing:
         raise KeyError(
-            f"[GenreContext] Missing required columns: {missing}. "
-            f"Expected artist, genre, and views columns."
+            f"[GenreContext] Missing required columns: {missing}. " f"Expected artist, genre, and views columns."
         )
 
     if df.empty:

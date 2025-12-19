@@ -19,3 +19,8 @@ streamlit-echarts>=0.4.0
 streamlit-option-menu>=0.3.0
 streamlit-shadcn-ui>=0.1.0
 streamlit-on-Hover-tabs>=1.0.0
+
+# Data quality / sentiment dependencies used in pipelines
+vaderSentiment>=3.3.2
+joblib>=1.4.0
+pytest>=7.4.0

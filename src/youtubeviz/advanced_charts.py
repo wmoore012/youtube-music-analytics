@@ -1252,7 +1252,9 @@ def create_standout_videos_scatter(
     # but this function uses views_col and positive_rate_col parameters
     title_df = plot_df.rename(columns={views_col: "view_count", positive_rate_col: "positive_sentiment_rate"})
     try:
-        title_text = generate_standout_videos_title(title_df, view_col="view_count", sentiment_col="positive_sentiment_rate")
+        title_text = generate_standout_videos_title(
+            title_df, view_col="view_count", sentiment_col="positive_sentiment_rate"
+        )
     except Exception as e:
         title_text = "Video Performance vs Fan Sentiment Scatter Analysis"
 
@@ -3153,7 +3155,9 @@ def create_budget_reallocation_chart(
         height=400 + (n_artists * 30),  # Dynamic height based on artist count
         showlegend=False,
         # Increased margins to prevent text cutoff and overflow
-        margin=dict(l=180, r=150, t=120, b=80),  # Left: artist names + red values, Right: green values, Top: longer title
+        margin=dict(
+            l=180, r=150, t=120, b=80
+        ),  # Left: artist names + red values, Right: green values, Top: longer title
     )
 
     fig.update_xaxes(tickformat="$,.0f", zeroline=True, zerolinewidth=2, zerolinecolor="black")

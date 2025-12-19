@@ -66,8 +66,7 @@ SCHEMA_SPECS: Dict[str, Dict[str, object]] = {
 }
 
 TABLE_PARSE_DATES: Dict[str, List[str]] = {
-    name: spec.get("datetime_cols", [])  # type: ignore[arg-type]
-    for name, spec in SCHEMA_SPECS.items()
+    name: spec.get("datetime_cols", []) for name, spec in SCHEMA_SPECS.items()  # type: ignore[arg-type]
 }
 
 
@@ -108,6 +107,7 @@ class PortfolioManifest:
 # ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
+
 
 def schema_for(table_name: str) -> Dict[str, object]:
     if table_name not in SCHEMA_SPECS:

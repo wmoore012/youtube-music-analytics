@@ -12,6 +12,7 @@ from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.let_it_rain import rain
 from streamlit_extras.metric_cards import style_metric_cards
+
 try:
     from st_on_hover_tabs import on_hover_tabs
 except ModuleNotFoundError:  # pragma: no cover - external dependency guard
@@ -39,9 +40,7 @@ def _read_int_env(name: str, default: int) -> int:
     try:
         value = int(raw)
     except ValueError as exc:  # pragma: no cover - defensive config guard
-        raise RuntimeError(
-            f"{name} must be an integer number of seconds, got {raw!r}"
-        ) from exc
+        raise RuntimeError(f"{name} must be an integer, got {raw!r}") from exc
     if value < 0:
         raise RuntimeError(f"{name} must be >= 0, got {value}")
     return value
