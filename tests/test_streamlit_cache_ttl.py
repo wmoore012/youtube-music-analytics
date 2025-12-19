@@ -25,7 +25,11 @@ def test_read_int_env_raises_on_negative(monkeypatch):
         _read_int_env("TEST_INT", 0)
 
 
-def test_read_int_env_raises_on_empty_string(monkeypatch):
+def test_read_int_env_empty_string_returns_default(monkeypatch):
     monkeypatch.setenv("TEST_INT", "")
-    with pytest.raises(RuntimeError, match="must be an integer"):
-        _read_int_env("TEST_INT", 0)
+    assert _read_int_env("TEST_INT", 7) == 7
+
+
+def test_read_int_env_allows_zero(monkeypatch):
+    monkeypatch.setenv("TEST_INT", "0")
+    assert _read_int_env("TEST_INT", 10) == 0
