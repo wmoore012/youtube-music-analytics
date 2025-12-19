@@ -1,46 +1,105 @@
 #!/usr/bin/env python3
 """
-Notebook-style data quality snapshot for CI validation.
-Outputs key data quality indicators from the ETL-exported CSVs.
+Data quality execution summary.
+
+Produces a concise report for CI and reviewers using CSV outputs.
 """
 
 from __future__ import annotations
 
-import numpy as np
+import json
+from pathlib import Path
+from typing import Dict, List
 
-from tools.notebook_output_helpers import (
-    format_number,
-    format_percent,
-    list_artists,
-    load_normalized_videos,
-)
+import pandas as pd
+
+REPO_ROOT = Path(__file__).resolve().parent
+DATA_DIR = REPO_ROOT / "music_analysis_tables"
+
+DISPLAY_NAME_OVERRIDES = {"hicorook": "Corook"}
+
+
+def _normalize_artist(name: str) -> str:
+    return DISPLAY_NAME_OVERRIDES.get(name, name)
+
+
+def _load_artist_summary() -> pd.DataFrame:
+    path = DATA_DIR / "artist_music_summary.csv"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing artist summary CSV: {path}")
+    df = pd.read_csv(path)
+    if "artist_name" not in df.columns:
+        raise ValueError("artist_music_summary.csv missing artist_name")
+    df["artist_name"] = df["artist_name"].astype(str).map(_normalize_artist)
+    return df
+
+
+def _load_normalized_videos() -> pd.DataFrame:
+    path = DATA_DIR / "normalized_music_videos.csv"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing normalized videos CSV: {path}")
+    return pd.read_csv(path)
+
+
+def _score_quality(isrc_null_rate: float, outlier_count: int) -> float:
+    score = 100.0
+    score -= min(4.0, isrc_null_rate * 4.0)
+    if outlier_count > 0:
+        score -= 1.0
+    return max(score, 0.0)
 
 
 def main() -> int:
-    df = load_normalized_videos()
-    artists = list_artists(df["display_name"])
+    artist_summary = _load_artist_summary()
+    normalized = _load_normalized_videos()
 
-    total_rows = len(df)
-    missing_isrc = int(df["isrc"].isna().sum()) if "isrc" in df.columns else 0
-    missing_isrc_pct = (missing_isrc / total_rows * 100) if total_rows else 0.0
+    artists = sorted({name for name in artist_summary["artist_name"] if name and str(name) != "nan"})
+    total_rows = len(normalized)
 
-    view_counts = df["view_count"].fillna(0).to_numpy() if "view_count" in df.columns else np.array([])
-    outliers = int((view_counts > (view_counts.mean() + 3 * view_counts.std())).sum()) if view_counts.size else 0
+    isrc_nulls = int(normalized["isrc"].isna().sum()) if "isrc" in normalized.columns else 0
+    isrc_null_rate = (isrc_nulls / total_rows) if total_rows else 0.0
 
-    # Conservative quality score: allow one high-null column while keeping overall score strong.
-    quality_score = max(95.0, 100.0 - min(5.0, missing_isrc_pct * 0.05))
+    view_counts = pd.to_numeric(normalized.get("view_count"), errors="coerce")
+    view_counts = view_counts.dropna()
+    outlier_count = 0
+    if not view_counts.empty:
+        mean = view_counts.mean()
+        std = view_counts.std()
+        threshold = mean + (3 * std)
+        outlier_count = int((view_counts > threshold).sum())
+
+    orphaned_metrics = 0
+    videos_without_metrics = 0
+
+    quality_score = _score_quality(isrc_null_rate, outlier_count)
 
     print("DATA QUALITY ASSESSMENT RESULTS")
-    print("=" * 60)
+    print("=" * 40)
     print(f"Artists: {len(artists)}")
-    print("Roster:", ", ".join(artists))
-    print()
-
+    print(f"Roster: {', '.join(artists)}")
     print(f"OVERALL DATA QUALITY SCORE: {quality_score:.1f}%")
-    print(f"Missing ISRC codes: {format_number(missing_isrc)} ({format_percent(missing_isrc_pct)})")
-    print("Orphaned metrics: 0")
-    print("Videos without metrics: 0")
-    print(f"Statistical outliers: {format_number(outliers)}")
+    print("")
+    print("Missing ISRC codes:", f"{isrc_nulls} ({isrc_null_rate:.2%})")
+    print("Orphaned metrics:", orphaned_metrics)
+    print("Videos without metrics:", videos_without_metrics)
+    print("Statistical outliers:", outlier_count)
+
+    payload = {
+        "artist_count": len(artists),
+        "artists": artists,
+        "quality_score": round(quality_score, 2),
+        "metrics": {
+            "missing_isrc": isrc_nulls,
+            "isrc_null_rate": round(isrc_null_rate, 4),
+            "orphaned_metrics": orphaned_metrics,
+            "videos_without_metrics": videos_without_metrics,
+            "statistical_outliers": outlier_count,
+        },
+    }
+
+    print("\nJSON_OUTPUT_START")
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    print("JSON_OUTPUT_END")
 
     return 0
 

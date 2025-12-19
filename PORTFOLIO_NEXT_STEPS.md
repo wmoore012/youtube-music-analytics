@@ -3,7 +3,7 @@
 ## ✅ What Just Happened
 
 ### 1. README Transformation (COMPLETED)
-- ✅ Transformed technical manual into recruiter-focused narrative
+- ✅ Transformed technical manual into audience-focused narrative
 - ✅ Added impact metrics table (6 artists, 800+ videos, 260M+ views)
 - ✅ Included "Why This Matters" business problem framing
 - ✅ Added Skills Demonstrated table
@@ -40,7 +40,7 @@
 
 1. **Authenticity Over Flash**
    - Real YouTube analytics tell a compelling story
-   - Recruiters can spot fake data instantly
+   - Teams can spot fake data instantly
    - Honesty about limitations shows maturity
 
 2. **Demonstrates Real Skills**
@@ -55,7 +55,7 @@
 
 4. **Portfolio Gold**
    - Well-told data story shows communication skills
-   - Interactive elements engage recruiters
+   - Interactive elements engage teams
    - Business framing demonstrates product thinking
 
 ### Why NOT Option 1 (Flashy Web App)
@@ -80,7 +80,7 @@
 3. **Growth Patterns** - Time-series analysis and momentum indicators
 4. **Sentiment Analysis** - Fan engagement insights from NLP
 5. **Decision Framework** - 3 strategic options with data-driven trade-offs
-6. **Technical Appendix** - Show depth for curious recruiters
+6. **Technical Appendix** - Show depth for curious teams
 
 ### The Decision Framework (Chapter 5)
 
@@ -135,7 +135,7 @@ pip install jupyter-book
 
 **Week 3: Polish and Deploy**
 - Test interactive charts
-- Add ADHD-friendly design elements
+- Add high-clarity design elements
 - Deploy to GitHub Pages
 - Share link on LinkedIn/resume
 

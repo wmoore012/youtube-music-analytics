@@ -14,7 +14,7 @@ Date: 2025-10-10
 
 ## Impact
 - Creates legal ambiguity: those specific files are marked as GPL while the project declares MIT at the root.
-- This can confuse community users, recruiters, and collaborators, and complicate reuse or redistribution.
+- This can confuse community users, teams, and collaborators, and complicate reuse or redistribution.
 
 ## Recommendation
 - Standardize the entire repository on the MIT License by removing the GPL-3.0-or-later SPDX headers from the 4 web/ files listed above.

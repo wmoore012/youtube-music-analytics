@@ -252,7 +252,7 @@ ghp-import -n -p -f portfolio-presentation/_build/html
 
 ### Chapter 6: Technical Appendix
 
-**Goal:** Show technical depth for curious recruiters
+**Goal:** Show technical depth for curious teams
 
 **Content:**
 - Data pipeline architecture
@@ -264,7 +264,7 @@ ghp-import -n -p -f portfolio-presentation/_build/html
 
 ## Design Principles
 
-### ADHD-Friendly
+### High-Clarity
 - ✅ Emojis for visual anchors
 - ✅ Progress indicators
 - ✅ Short paragraphs (3-4 sentences max)
@@ -299,7 +299,7 @@ Every complex concept gets:
 
 **Week 3:** Polish and deploy
 - Test interactive charts
-- Add ADHD-friendly design elements
+- Add high-clarity design elements
 - Deploy to GitHub Pages
 - Share link on LinkedIn/resume
 
@@ -316,4 +316,3 @@ Every complex concept gets:
 ---
 
 *This guide provides a concrete path from existing notebooks to portfolio-ready presentation.*
-

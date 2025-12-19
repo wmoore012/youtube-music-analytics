@@ -4,7 +4,7 @@
 
 **Recommendation: Option 2 (Interactive Data Science Narrative) with Jupyter Book/Quarto**
 
-This document outlines the strategic direction for presenting MusicScope™ as a portfolio piece that demonstrates real data science skills to recruiters and hiring managers.
+This document outlines the strategic direction for presenting MusicScope™ as a portfolio piece that demonstrates real data science skills to teams and hiring managers.
 
 ---
 
@@ -34,7 +34,7 @@ This document outlines the strategic direction for presenting MusicScope™ as a
 ### Why This Wins
 
 1. **Authenticity Over Flash**
-   - Recruiters can spot fake data instantly
+   - Teams can spot fake data instantly
    - Real YouTube analytics tell a compelling story
    - Honesty about limitations shows maturity
 
@@ -50,7 +50,7 @@ This document outlines the strategic direction for presenting MusicScope™ as a
 
 4. **Portfolio Gold**
    - Well-told data story shows communication skills most data scientists lack
-   - Interactive elements engage recruiters
+   - Interactive elements engage teams
    - Business framing demonstrates product thinking
 
 ### Why NOT Option 1 (Flashy Web App)
@@ -191,7 +191,7 @@ Present 3 strategic options with trade-offs:
 
 ## 📈 Success Criteria
 
-- ✅ Recruiters can view it online (free hosting)
+- ✅ Teams can view it online (free hosting)
 - ✅ Demonstrates real analytical skills, not fabricated insights
 - ✅ Engaging and interactive, not just static tables
 - ✅ Tells a clear business story that professionals find credible
@@ -201,4 +201,3 @@ Present 3 strategic options with trade-offs:
 ---
 
 *This strategy prioritizes authenticity and real skills over flashy presentation. Your data is strong enough to tell a compelling story without embellishment.*
-

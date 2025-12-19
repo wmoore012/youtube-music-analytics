@@ -20,9 +20,7 @@ Usage:
 """
 
 from __future__ import annotations
-from typing import Optional, Dict, Any
-import warnings
-warnings.filterwarnings('ignore')
+from typing import Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -53,6 +51,17 @@ EXPECTED_CHARTS = {
 }
 
 
+def categorize_sentiment(scores: pd.Series) -> pd.Series:
+    """Bucket sentiment scores into negative/neutral/positive safely."""
+    numeric = pd.to_numeric(scores, errors="coerce").clip(-1.0, 1.0)
+    return pd.cut(
+        numeric,
+        bins=[-1.0, -0.1, 0.1, 1.0],
+        labels=["negative", "neutral", "positive"],
+        include_lowest=True,
+    )
+
+
 def _build_demo_comments_df() -> pd.DataFrame:
     """Build a deterministic demo comments DataFrame for storytelling.
 
@@ -64,11 +73,13 @@ def _build_demo_comments_df() -> pd.DataFrame:
     dates = pd.date_range(start="2024-01-01", periods=30, freq="D")
     rows = []
 
+    rng = np.random.default_rng(20251219)
+
     for idx, dt in enumerate(dates):
         # Rising Artist — consistently positive
         rows.append({
             "artist_name": "Rising Artist",
-            "sentiment_score": float(np.random.uniform(0.4, 0.9)),
+            "sentiment_score": float(rng.uniform(0.4, 0.9)),
             "published_at": dt + pd.Timedelta(hours=1),
             "comment_text": f"Rising Artist fan comment {idx}",
         })
@@ -78,14 +89,14 @@ def _build_demo_comments_df() -> pd.DataFrame:
             for extra in range(3):
                 rows.append({
                     "artist_name": "At-Risk Artist",
-                    "sentiment_score": float(np.random.uniform(-0.9, -0.4)),
+                    "sentiment_score": float(rng.uniform(-0.9, -0.4)),
                     "published_at": dt + pd.Timedelta(hours=2 + extra),
                     "comment_text": f"At-Risk Artist issue comment {idx}-{extra}",
                 })
         else:
             rows.append({
                 "artist_name": "At-Risk Artist",
-                "sentiment_score": float(np.random.uniform(-0.2, 0.1)),
+                "sentiment_score": float(rng.uniform(-0.2, 0.1)),
                 "published_at": dt + pd.Timedelta(hours=2),
                 "comment_text": f"At-Risk Artist neutral comment {idx}",
             })
@@ -93,17 +104,13 @@ def _build_demo_comments_df() -> pd.DataFrame:
         # Steady Artist — near-neutral baseline
         rows.append({
             "artist_name": "Steady Artist",
-            "sentiment_score": float(np.random.uniform(-0.1, 0.3)),
+            "sentiment_score": float(rng.uniform(-0.1, 0.3)),
             "published_at": dt + pd.Timedelta(hours=3),
             "comment_text": f"Steady Artist comment {idx}",
         })
 
     df = pd.DataFrame(rows)
-    df["sentiment_category"] = pd.cut(
-        df["sentiment_score"],
-        bins=[-1.0, -0.1, 0.1, 1.0],
-        labels=["negative", "neutral", "positive"],
-    )
+    df["sentiment_category"] = categorize_sentiment(df["sentiment_score"])
     return df
 
 
@@ -194,11 +201,7 @@ def render_sentiment_section(
 
     # Ensure sentiment_category exists
     if "sentiment_category" not in comments.columns:
-        comments["sentiment_category"] = pd.cut(
-            comments["sentiment_score"],
-            bins=[-1.0, -0.1, 0.1, 1.0],
-            labels=["negative", "neutral", "positive"]
-        )
+        comments["sentiment_category"] = categorize_sentiment(comments["sentiment_score"])
 
     sent_df = comments.copy()
     sent_df["date"] = pd.to_datetime(sent_df["published_at"]).dt.normalize()
@@ -478,4 +481,3 @@ def render_sentiment_section(
         )
 
     return metadata
-

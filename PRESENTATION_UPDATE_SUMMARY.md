@@ -78,7 +78,7 @@ You requested an analysis of your existing presentation to:
 
 ### Option 2: Comprehensive Rebuild (1-2 weeks) 🏆 **RECOMMENDED**
 
-**Best for:** Portfolio presentation to recruiters and hiring managers
+**Best for:** Portfolio presentation to teams and hiring managers
 
 **What to do:**
 1. Follow the strategy in `docs/PORTFOLIO_STRATEGY.md`
@@ -195,7 +195,7 @@ If you need clarification:
 
 ---
 
-**Bottom Line:** Your data is strong, your analysis is solid, and your narrative is clear. The opportunity is to package it in a way that demonstrates communication skills and stands out to recruiters. Option 2 gets you there.
+**Bottom Line:** Your data is strong, your analysis is solid, and your narrative is clear. The opportunity is to package it in a way that demonstrates communication skills and stands out to teams. Option 2 gets you there.
 
 *Generated on 2025-11-16 based on current database metrics and presentation audit.*
 

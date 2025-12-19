@@ -1,0 +1,188 @@
+{
+  "artists": [
+    {
+      "avg_engagement_rate": 6.57,
+      "avg_views_per_day": 717.55,
+      "display_name": "Flyana Boss",
+      "name": "Flyana Boss",
+      "revenue_per_video": 1413.74,
+      "total_est_revenue_usd": 404328.54,
+      "total_videos": 286,
+      "total_views": 161731417,
+      "view_share": 0.5831
+    },
+    {
+      "avg_engagement_rate": 3.08,
+      "avg_views_per_day": 833.12,
+      "display_name": "BiC Fizzle",
+      "name": "BiC Fizzle",
+      "revenue_per_video": 1411.7,
+      "total_est_revenue_usd": 134111.71,
+      "total_videos": 95,
+      "total_views": 53644682,
+      "view_share": 0.1934
+    },
+    {
+      "avg_engagement_rate": 4.06,
+      "avg_views_per_day": 601.13,
+      "display_name": "COBRAH",
+      "name": "COBRAH",
+      "revenue_per_video": 1008.98,
+      "total_est_revenue_usd": 66592.76,
+      "total_videos": 66,
+      "total_views": 26637106,
+      "view_share": 0.096
+    },
+    {
+      "avg_engagement_rate": 7.22,
+      "avg_views_per_day": 79.4,
+      "display_name": "Corook",
+      "name": "hicorook",
+      "revenue_per_video": 169.88,
+      "total_est_revenue_usd": 59796.13,
+      "total_videos": 352,
+      "total_views": 23918453,
+      "view_share": 0.0862
+    },
+    {
+      "avg_engagement_rate": 4.13,
+      "avg_views_per_day": 51.75,
+      "display_name": "Raiche",
+      "name": "Raiche",
+      "revenue_per_video": 174.67,
+      "total_est_revenue_usd": 19213.88,
+      "total_videos": 110,
+      "total_views": 7685551,
+      "view_share": 0.0277
+    },
+    {
+      "avg_engagement_rate": 3.1,
+      "avg_views_per_day": 171.31,
+      "display_name": "re6ce",
+      "name": "re6ce",
+      "revenue_per_video": 247.79,
+      "total_est_revenue_usd": 9415.88,
+      "total_videos": 38,
+      "total_views": 3766352,
+      "view_share": 0.0136
+    }
+  ],
+  "data_quality": {
+    "isrc_null_count": 947,
+    "isrc_null_rate": 1.0,
+    "normalized_rows": 947
+  },
+  "summary": {
+    "artist_count": 6,
+    "avg_engagement_rate": 5.6,
+    "total_est_revenue_usd": 693458.9,
+    "total_videos": 947,
+    "total_views": 277383561
+  },
+  "top_artists": [
+    {
+      "avg_engagement_rate": 6.57,
+      "avg_views_per_day": 717.55,
+      "display_name": "Flyana Boss",
+      "total_views": 161731417
+    },
+    {
+      "avg_engagement_rate": 3.08,
+      "avg_views_per_day": 833.12,
+      "display_name": "BiC Fizzle",
+      "total_views": 53644682
+    },
+    {
+      "avg_engagement_rate": 4.06,
+      "avg_views_per_day": 601.13,
+      "display_name": "COBRAH",
+      "total_views": 26637106
+    },
+    {
+      "avg_engagement_rate": 7.22,
+      "avg_views_per_day": 79.4,
+      "display_name": "Corook",
+      "total_views": 23918453
+    },
+    {
+      "avg_engagement_rate": 4.13,
+      "avg_views_per_day": 51.75,
+      "display_name": "Raiche",
+      "total_views": 7685551
+    }
+  ],
+  "video_types": [
+    {
+      "avg_engagement_rate": 7.0,
+      "avg_views_per_video": 247561.97,
+      "total_revenue_usd": 417141.92,
+      "total_views": 166856769,
+      "video_count": 674,
+      "video_type": "Music Content"
+    },
+    {
+      "avg_engagement_rate": 2.71,
+      "avg_views_per_video": 1033124.25,
+      "total_revenue_usd": 162717.07,
+      "total_views": 65086828,
+      "video_count": 63,
+      "video_type": "Official Music Video"
+    },
+    {
+      "avg_engagement_rate": 2.76,
+      "avg_views_per_video": 139126.18,
+      "total_revenue_usd": 31303.39,
+      "total_views": 12521356,
+      "video_count": 90,
+      "video_type": "Official Audio"
+    },
+    {
+      "avg_engagement_rate": 3.79,
+      "avg_views_per_video": 267505.24,
+      "total_revenue_usd": 30094.34,
+      "total_views": 12037736,
+      "video_count": 45,
+      "video_type": "Lyric Video"
+    },
+    {
+      "avg_engagement_rate": 1.59,
+      "avg_views_per_video": 634660.5,
+      "total_revenue_usd": 15866.51,
+      "total_views": 6346605,
+      "video_count": 10,
+      "video_type": "Music Video"
+    },
+    {
+      "avg_engagement_rate": 5.15,
+      "avg_views_per_video": 1061546.0,
+      "total_revenue_usd": 7961.59,
+      "total_views": 3184638,
+      "video_count": 3,
+      "video_type": "Remix"
+    },
+    {
+      "avg_engagement_rate": 3.56,
+      "avg_views_per_video": 196941.6,
+      "total_revenue_usd": 4923.54,
+      "total_views": 1969416,
+      "video_count": 10,
+      "video_type": "Visualizer"
+    },
+    {
+      "avg_engagement_rate": 4.39,
+      "avg_views_per_video": 61304.14,
+      "total_revenue_usd": 4291.29,
+      "total_views": 1716516,
+      "video_count": 28,
+      "video_type": "Live Performance"
+    },
+    {
+      "avg_engagement_rate": 5.15,
+      "avg_views_per_video": 12587.6,
+      "total_revenue_usd": 157.34,
+      "total_views": 62938,
+      "video_count": 5,
+      "video_type": "Behind The Scenes"
+    }
+  ]
+}

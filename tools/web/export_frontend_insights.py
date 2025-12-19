@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import argparse
-import json
 from dataclasses import asdict, dataclass
+import json
+import math
 from pathlib import Path
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Literal
 
 import pandas as pd
 
 DISPLAY_NAME_OVERRIDES = {
     "hicorook": "Corook",
 }
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True)
@@ -36,13 +39,21 @@ class VideoTypeInsight:
     avg_engagement_rate: float
 
 
+def _resolve_path(path: Path) -> Path:
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
+
+
 def _safe_float(value: Any) -> float:
+    """Convert to float while guarding against NaN/Infinity."""
     if value is None:
         return 0.0
     try:
-        return float(value)
+        parsed = float(value)
     except (TypeError, ValueError):
         return 0.0
+    return parsed if math.isfinite(parsed) else 0.0
 
 
 def _safe_int(value: Any) -> int:
@@ -58,19 +69,38 @@ def _round(value: float, digits: int = 2) -> float:
     return round(float(value), digits)
 
 
+def _require_columns(df: pd.DataFrame, columns: Iterable[str], label: str) -> None:
+    missing = [col for col in columns if col not in df.columns]
+    if missing:
+        missing_csv = ", ".join(missing)
+        raise ValueError(f"{label} missing required columns: {missing_csv}")
+
+
 def _read_csv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        raise FileNotFoundError(f"Missing insights source file: {path}")
-    return pd.read_csv(path)
+    resolved = _resolve_path(path)
+    if not resolved.exists():
+        raise FileNotFoundError(f"Missing insights source file: {resolved}")
+    return pd.read_csv(resolved)
 
 
 def _display_name(name: str) -> str:
     return DISPLAY_NAME_OVERRIDES.get(name, name)
 
 
+def _validate_rate_series(series: pd.Series, *, unit: Literal["percent", "fraction"]) -> pd.Series:
+    numeric = pd.to_numeric(series, errors="coerce")
+    non_null = numeric.dropna()
+    if unit == "fraction":
+        if (non_null < 0).any() or (non_null > 1.0).any():
+            raise ValueError("avg_engagement_rate must be in [0, 1] for fraction units")
+    else:
+        if (non_null < 0).any() or (non_null > 100.0).any():
+            raise ValueError("avg_engagement_rate must be in [0, 100] for percent units")
+    return numeric.fillna(0.0)
+
+
 def _compute_views_per_day(normalized_videos: pd.DataFrame) -> pd.DataFrame:
-    if "views_per_day" not in normalized_videos.columns or "artist_name" not in normalized_videos.columns:
-        raise ValueError("normalized_videos missing required columns: artist_name, views_per_day")
+    _require_columns(normalized_videos, ["artist_name", "views_per_day"], "normalized_videos")
 
     views_per_day = pd.to_numeric(normalized_videos["views_per_day"], errors="coerce").fillna(0)
     return (
@@ -91,8 +121,26 @@ def build_insights(
     normalized_videos = _read_csv(normalized_videos_path)
     video_type = _read_csv(video_type_path)
 
-    views_per_day = _compute_views_per_day(normalized_videos)
+    _require_columns(
+        artist_summary,
+        [
+            "artist_name",
+            "total_videos",
+            "total_views",
+            "total_est_revenue_usd",
+            "avg_engagement_rate",
+            "revenue_per_video",
+        ],
+        "artist_summary",
+    )
+    _require_columns(video_type, ["video_type", "video_count", "total_views"], "video_type")
 
+    artist_summary["avg_engagement_rate"] = _validate_rate_series(
+        artist_summary["avg_engagement_rate"],
+        unit="percent",
+    )
+
+    views_per_day = _compute_views_per_day(normalized_videos)
     merged = artist_summary.merge(views_per_day, on="artist_name", how="left")
 
     total_views = _safe_int(merged["total_views"].sum())
@@ -170,9 +218,11 @@ def build_insights(
 
 
 def _write_json(payload: Dict[str, Any], output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2)
+    resolved = _resolve_path(output_path)
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    with resolved.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True, allow_nan=False)
+        handle.write("\n")
 
 
 def main() -> int:
@@ -204,7 +254,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("web/insights/artist_insights.json"),
+        default=Path("front_end/yt_analytics/public/data/artist_insights.json"),
         help="Output path for the insights JSON file",
     )
 
@@ -217,7 +267,7 @@ def main() -> int:
         top_artist_count=args.top_artists,
     )
     _write_json(payload, args.output)
-    print(f"✅ Wrote frontend insights to {args.output}")
+    print(f"Wrote frontend insights to {args.output}")
     return 0
 
 
