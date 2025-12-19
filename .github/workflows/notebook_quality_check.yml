@@ -154,7 +154,7 @@ jobs:
 
   prevent-notebook-conflicts:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.repository != 'wmoore012/staging_yt_analytics'
 
     steps:
     - uses: actions/checkout@v3
