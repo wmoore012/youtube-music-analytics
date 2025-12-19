@@ -14,11 +14,11 @@ from plotly.subplots import make_subplots
 
 from .chart_contracts import ChartSpec, bulletproof_chart, create_interactive_plotly_config, setup_plotly_animation
 from .chart_titles import (
-    generate_polarity_ridgeline_title,
-    generate_standout_videos_title,
-    generate_growth_signal_title,
     generate_category_areas_title,
     generate_content_type_dots_title,
+    generate_growth_signal_title,
+    generate_polarity_ridgeline_title,
+    generate_standout_videos_title,
 )
 from .statistical_utils import (
     apply_bayesian_shrinkage,

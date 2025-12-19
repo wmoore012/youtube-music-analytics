@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import os
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, Optional
 
 import pandas as pd
 
 from portfolio.contracts import (
-    ManifestTableEntry,
-    PortfolioManifest,
     SCHEMA_SPECS,
     TABLE_PARSE_DATES,
+    ManifestTableEntry,
+    PortfolioManifest,
     manifest_from_meta,
     validate_dataframe,
 )

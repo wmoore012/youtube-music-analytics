@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
 import os
-from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
@@ -20,12 +20,15 @@ except ModuleNotFoundError:  # pragma: no cover - external dependency guard
 from streamlit_option_menu import option_menu
 import streamlit_shadcn_ui as ui
 
-from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 from web.etl_helpers import get_engine, read_sql_safe
+from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
+
+DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
+DEFAULT_DATA_FRESHNESS_DAYS = 30
 
 
 def _read_int_env(name: str, default: int) -> int:
@@ -202,6 +205,19 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
+def _get_data_freshness_days() -> int:
+    """Return maximum allowed age (in days) for production metrics.
+
+    Controlled via DATA_FRESHNESS_DAYS; defaults to 30 days and coerced to at
+    least 1 day if misconfigured.
+    """
+
+    # Reuse the same integer parsing semantics we use for CACHE_TTL_SECONDS so
+    # Cloud misconfigurations fail fast and loudly in logs.
+    value = _read_int_env(DATA_FRESHNESS_DAYS_ENV, DEFAULT_DATA_FRESHNESS_DAYS)
+    return max(1, value)
+
+
 def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
     """Load artist summary for either demo or production mode.
 
@@ -231,6 +247,70 @@ def load_normalized_videos(mode: str | None = None) -> pd.DataFrame:
         DATA_DIR / "normalized_music_videos.csv",
         parse_dates=["published_at", "metrics_date", "fetched_at"],
     )
+
+
+def get_production_health() -> dict:
+    """Compute production database + analytics health indicators.
+
+    This is intentionally side-effect free so it can be reused by tests and
+    any future Diagnostics view without depending on Streamlit runtime.
+    """
+
+    from sqlalchemy import text
+
+    engine = get_engine()
+    summary: dict[str, object] = {
+        "db_reachable": False,
+        "db_error": None,
+        "db_name": os.getenv("DB_NAME", "yt_proj"),
+        "db_host": os.getenv("DB_HOST", "127.0.0.1"),
+        "checked_at": datetime.now(timezone.utc),
+        "music_videos_rows": 0,
+        "artist_summary_rows": 0,
+        "latest_metrics_date": None,
+        "latest_metrics_age_days": None,
+    }
+
+    try:
+        with engine.connect() as conn:
+            # Basic connectivity
+            conn.execute(text("SELECT 1"))
+            summary["db_reachable"] = True
+
+            # Table row counts
+            videos_count = conn.execute(
+                text("SELECT COUNT(*) FROM music_videos_normalized"),
+            ).scalar_one()
+            artists_count = conn.execute(
+                text("SELECT COUNT(*) FROM artist_performance_summary"),
+            ).scalar_one()
+
+            summary["music_videos_rows"] = int(videos_count or 0)
+            summary["artist_summary_rows"] = int(artists_count or 0)
+
+            # Data freshness from warehouse metrics_date
+            latest_metrics = conn.execute(
+                text("SELECT MAX(metrics_date) FROM music_videos_normalized"),
+            ).scalar_one()
+            if latest_metrics is not None:
+                # Normalise to timezone-aware datetime for consistent age
+                # calculations.
+                if not isinstance(latest_metrics, datetime):
+                    latest_metrics = datetime.combine(
+                        latest_metrics,
+                        datetime.min.time(),
+                    )
+                if latest_metrics.tzinfo is None:
+                    latest_metrics = latest_metrics.replace(tzinfo=timezone.utc)
+
+                summary["latest_metrics_date"] = latest_metrics
+
+                age_days = (datetime.now(timezone.utc) - latest_metrics).days
+                summary["latest_metrics_age_days"] = age_days
+    except Exception as exc:  # noqa: BLE001
+        summary["db_error"] = str(exc)
+
+    return summary
 
 
 def format_number(value: float) -> str:
