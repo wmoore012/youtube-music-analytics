@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from streamlit_app import _read_int_env
@@ -24,4 +22,10 @@ def test_read_int_env_raises_on_non_int(monkeypatch):
 def test_read_int_env_raises_on_negative(monkeypatch):
     monkeypatch.setenv("TEST_INT", "-5")
     with pytest.raises(RuntimeError, match="must be >= 0"):
+        _read_int_env("TEST_INT", 0)
+
+
+def test_read_int_env_raises_on_empty_string(monkeypatch):
+    monkeypatch.setenv("TEST_INT", "")
+    with pytest.raises(RuntimeError, match="must be an integer"):
         _read_int_env("TEST_INT", 0)
