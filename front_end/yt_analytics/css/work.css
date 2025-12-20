@@ -83,7 +83,7 @@
   text-decoration: none;
   text-transform: uppercase;
   color: var(--base-100);
-  font-family: "IBM Plex Mono";
+  font-family: "DM Mono";
   font-size: 0.85rem;
   font-weight: 500;
   padding: 1rem 2rem;
@@ -119,18 +119,6 @@
 
 .slide-tags p:first-child {
   margin-bottom: 1rem;
-}
-
-.slide-tags p {
-  color: var(--base-100);
-}
-
-.slide-tags p.mono {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  width: max-content;
-  margin-bottom: 0.35rem;
 }
 
 .line,

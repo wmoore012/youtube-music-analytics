@@ -122,7 +122,7 @@
   text-transform: uppercase;
   text-decoration: none;
   color: var(--base-100);
-  font-family: "Bebas Neue";
+  font-family: "Barlow Condensed";
   font-size: 5rem;
   letter-spacing: -0.02rem;
   font-weight: 900;
@@ -156,7 +156,7 @@
   text-decoration: none;
   transition: all 0.3s ease;
   text-transform: uppercase;
-  font-family: "IBM Plex Mono";
+  font-family: "DM Mono";
   font-size: 0.85rem;
   font-weight: 500;
 }

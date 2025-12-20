@@ -24,15 +24,6 @@
   font-size: 16vw;
 }
 
-.hero .hero-content .hero-header .hero-subtitle {
-  margin-top: 1rem;
-  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
-  font-family: "Space Grotesk";
-  text-transform: none;
-  line-height: 1.2;
-  color: var(--base-secondary-dark);
-}
-
 .hero .hero-content .hero-footer {
   display: flex;
   justify-content: space-between;
@@ -44,17 +35,9 @@
   width: 35%;
 }
 
-.hero .hero-content .hero-footer-copy .hero-cta {
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
 .hero .hero-content .hero-footer-tags {
   display: flex;
   gap: 2rem;
-  flex-wrap: wrap;
 }
 
 .hero .hero-cards {
@@ -185,7 +168,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.5rem;
   height: 100%;
   border: 1px dashed var(--base-secondary-fade);
   border-radius: 16px;
@@ -194,11 +176,6 @@
 
 .home-about .home-about-card p.mono {
   color: var(--base-secondary-dark);
-}
-
-.home-about .home-about-card p.md {
-  font-size: 2rem;
-  font-weight: 600;
 }
 
 .home-services {
@@ -235,24 +212,6 @@
   text-align: center;
   transform: translateY(300%);
   will-change: transform;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.home-services .home-use-cases {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.home-services .use-case-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
 }
 
 .home-services .cards {
@@ -411,81 +370,6 @@
 
 .home-services .cards .cards-container .card {
   opacity: 0;
-}
-
-.home-insights {
-  position: relative;
-  width: 100vw;
-  padding: 8rem 0;
-  overflow: hidden;
-}
-
-.home-insights .insights-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 2rem;
-}
-
-.home-insights .insights-header p.md {
-  width: 40%;
-}
-
-.insight-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem;
-  margin-top: 2.5rem;
-}
-
-.insight-card {
-  position: relative;
-  padding: 1.75rem;
-  border-radius: 18px;
-  background: var(--base-300);
-  color: var(--base-100);
-  min-height: 180px;
-  overflow: hidden;
-}
-
-.insight-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 60%);
-  pointer-events: none;
-}
-
-.insight-number {
-  font-family: "Bebas Neue";
-  font-size: 3rem;
-  margin: 0.5rem 0;
-}
-
-.insight-charts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2rem;
-  margin-top: 3rem;
-}
-
-.chart-card {
-  border: 1px solid rgba(15, 15, 15, 0.08);
-  border-radius: 18px;
-  padding: 1.5rem;
-  background: #fff;
-  box-shadow: 0 24px 60px rgba(15, 15, 15, 0.08);
-}
-
-.chart-header h4 {
-  font-size: 2rem;
-  margin-top: 0.35rem;
-}
-
-.chart-card canvas {
-  width: 100% !important;
-  height: 320px !important;
-  margin-top: 1rem;
 }
 
 .home-spotlight {
@@ -755,27 +639,6 @@
     max-height: 400px;
   }
 
-  .home-insights {
-    padding: 5rem 0;
-  }
-
-  .home-insights .insights-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .home-insights .insights-header p.md {
-    width: 100%;
-  }
-
-  .insight-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .insight-charts {
-    grid-template-columns: 1fr;
-  }
-
   .home-services-bottom-bar .container {
     flex-direction: column;
     justify-content: center;
@@ -817,12 +680,6 @@
 
   .outro .os-3 {
     margin-top: 10rem;
-  }
-}
-
-@media (max-width: 700px) {
-  .insight-grid {
-    grid-template-columns: 1fr;
   }
 }
 

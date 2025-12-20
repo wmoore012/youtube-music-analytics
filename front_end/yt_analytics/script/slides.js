@@ -1,43 +1,35 @@
 const slides = [
   {
-    slideTitle: "Flyana Boss",
+    slideTitle: "Momentum Scan",
     slideDescription:
-      "Reach leader with breakout visibility. Signals show consistent resonance and a catalog built for momentum without losing the artist voice.",
+      "Weekly view velocity and average views per day across five artists, so growth is clear without losing context.",
     slideUrl: "/project",
-    slideTags: ["161M views", "6.57% engagement", "Reach leader", "High velocity"],
+    slideTags: ["Time Series", "Velocity", "Roster", "Signal"],
     slideImg: "/work/slider-img-1.jpg",
   },
   {
-    slideTitle: "BiC Fizzle",
+    slideTitle: "Resonance Read",
     slideDescription:
-      "Fastest momentum per day. The pace of discovery suggests a strong algorithmic lift and early fan loyalty worth nurturing.",
+      "Engagement rate, comment energy, and repeat attention signals that show what’s sticking right now.",
     slideUrl: "/project",
-    slideTags: ["53.6M views", "833 views/day", "Momentum lead", "Growth bet"],
+    slideTags: ["Engagement", "Comments", "A&R", "Signal"],
     slideImg: "/work/slider-img-2.jpg",
   },
   {
-    slideTitle: "COBRAH",
+    slideTitle: "Risk Watch",
     slideDescription:
-      "Distinct audience with steady engagement. The signal mix points to a focused niche that converts attention into repeat listens.",
+      "Volatility, drop-offs, and cadence shifts that hint when momentum is fragile or over-indexed.",
     slideUrl: "/project",
-    slideTags: ["26.6M views", "4.06% engagement", "Niche strength", "Retention"],
+    slideTags: ["Volatility", "Cadence", "Risk", "Signal"],
     slideImg: "/work/slider-img-3.jpg",
   },
   {
-    slideTitle: "Corook",
+    slideTitle: "Catalog Lift",
     slideDescription:
-      "Highest engagement rate in the cohort. Community-first momentum with a strong emotional footprint and room to scale reach.",
+      "Back-catalog strength, format winners, and long-tail views that point to sustainable upside.",
     slideUrl: "/project",
-    slideTags: ["7.22% engagement", "Community depth", "Loyal fans", "Human-first"],
+    slideTags: ["Catalog", "Formats", "Evergreen", "Signal"],
     slideImg: "/work/slider-img-4.jpg",
-  },
-  {
-    slideTitle: "Raiche",
-    slideDescription:
-      "Steady growth with reliable engagement. Signals suggest a thoughtful build and a catalog that rewards long-term investment.",
-    slideUrl: "/project",
-    slideTags: ["7.7M views", "4.13% engagement", "Steady climb", "Long-term"],
-    slideImg: "/work/slider-img-1.jpg",
   },
 ];
 
