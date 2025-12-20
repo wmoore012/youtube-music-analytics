@@ -2,6 +2,7 @@
 # Professional build automation and deployment management
 
 .PHONY: help install dev test lint format typecheck clean
+.PHONY: frontend-install frontend-build frontend-dev
 .PHONY: run-etl run-notebooks quality-check deploy monitor
 .PHONY: enterprise-deploy enterprise-test enterprise-monitor
 .PHONY: security-scan compliance-check performance-test
@@ -50,6 +51,29 @@ help: ## Show available commands
 	@echo "  health-check      System health assessment"
 	@echo "  sla-report        Generate SLA compliance report"
 	@echo "  executive-report  Generate executive dashboard"
+	@echo ""
+	@echo "🌐 Frontend:"
+	@echo "  frontend-install  Install frontend deps (use FRONTEND_APP=yt_analytics or musicscope_original)"
+	@echo "  frontend-build    Build frontend (use FRONTEND_APP=...)"
+	@echo "  frontend-dev      Run frontend dev server (use FRONTEND_APP=..., FRONTEND_PORT=5173)"
+
+FRONTEND_APP ?= yt_analytics
+FRONTEND_PORT ?= 5173
+
+frontend-install: ## Install frontend dependencies (npm ci)
+	@echo "📦 Installing frontend dependencies for $(FRONTEND_APP)..."
+	cd front_end/$(FRONTEND_APP) && npm ci
+	@echo "✅ Frontend dependencies installed"
+
+frontend-build: ## Build frontend (npm run build)
+	@echo "🏗️ Building frontend $(FRONTEND_APP)..."
+	cd front_end/$(FRONTEND_APP) && npm run build
+	@echo "✅ Frontend build complete"
+
+frontend-dev: ## Run frontend dev server
+	@echo "🚀 Starting frontend dev server for $(FRONTEND_APP) on port $(FRONTEND_PORT)..."
+	cd front_end/$(FRONTEND_APP) && npm run dev -- --host --strictPort --port $(FRONTEND_PORT)
+	@echo "✅ Frontend dev server running"
 
 # Development setup
 install: ## Install production dependencies
@@ -182,17 +206,17 @@ run-notebooks: ## Generate analytics notebooks
 
 create-dashboard: ## Create fresh dashboard with bulletproof toolchain
 	@echo "🚀 Creating Professional Dashboard (Bulletproof Edition)..."
-	python notebooks/🚀_CREATE_DASHBOARD.py
+	python notebooks/scripts/create_dashboard.py
 	@echo "✅ Dashboard created"
 
 create-dashboard-sample: ## Create dashboard with sample data for testing
 	@echo "🧪 Creating dashboard with sample data..."
-	python notebooks/🚀_CREATE_DASHBOARD.py --sample
+	python notebooks/scripts/create_dashboard.py --sample
 	@echo "✅ Sample dashboard created"
 
 create-dashboard-execute: ## Create and execute dashboard with papermill
 	@echo "⚡ Creating and executing dashboard..."
-	python notebooks/🚀_CREATE_DASHBOARD.py --execute
+	python notebooks/scripts/create_dashboard.py --execute
 	@echo "✅ Dashboard created and executed"
 
 nbclean: ## Clear notebook outputs using nbconvert
