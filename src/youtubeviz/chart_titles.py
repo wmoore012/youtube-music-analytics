@@ -102,7 +102,7 @@ def generate_heatmap_title(
 
     # Default metrics if not provided
     if metric_cols is None:
-        metric_cols = ["like_rate", "comment_rate", "engagement_rate"]
+        metric_cols = ["engagement_rate", "like_rate", "comment_rate"]
 
     # Filter to available metrics
     available_metrics = [col for col in metric_cols if col in df.columns]
@@ -110,14 +110,23 @@ def generate_heatmap_title(
     if not available_metrics:
         return "Artist Performance Comparison"
 
+    # Avoid double-counting engagement rate when component rates are present.
+    if "engagement_rate" in available_metrics:
+        effective_metrics = ["engagement_rate"]
+    else:
+        effective_metrics = available_metrics
+
     # Calculate average engagement per artist
-    artist_avg = df.groupby(artist_col)[available_metrics].mean()
+    artist_avg = df.groupby(artist_col)[effective_metrics].mean()
 
     if artist_avg.empty:
         return "Artist Engagement Analysis"
 
     # Calculate total engagement score
-    artist_avg["total_engagement"] = artist_avg[available_metrics].sum(axis=1)
+    if len(effective_metrics) == 1:
+        artist_avg["total_engagement"] = artist_avg[effective_metrics[0]]
+    else:
+        artist_avg["total_engagement"] = artist_avg[effective_metrics].sum(axis=1)
     sorted_artists = artist_avg.sort_values("total_engagement", ascending=False)
 
     if len(sorted_artists) < 1:
@@ -203,6 +212,8 @@ def generate_standout_videos_title(
     sentiment = df_clean[sentiment_col]
 
     correlation = np.corrcoef(log_views, sentiment)[0, 1]
+    if not np.isfinite(correlation):
+        return "Video virality shows no clear sentiment pattern — insufficient variance in data"
 
     if correlation < -0.3:
         return "Viral videos lose fan approval — sentiment drops as view counts rise (negative correlation)"
@@ -238,7 +249,9 @@ def generate_growth_signal_title(
         return "Artist Engagement Growth Over Time"
 
     # Calculate growth rates by artist
-    df_sorted = df.sort_values(date_col)
+    df_sorted = df.copy()
+    df_sorted[date_col] = pd.to_datetime(df_sorted[date_col], errors="coerce")
+    df_sorted = df_sorted.dropna(subset=[date_col]).sort_values(date_col)
 
     growth_rates = {}
     for artist in df_sorted[artist_col].unique():
@@ -361,17 +374,16 @@ def generate_content_type_dots_title(
 
 def format_date_axis_label(date_str: str, include_year: bool = True) -> str:
     """
-    Format date axis labels to always include year for clarity.
+    Format date axis labels with optional year inclusion.
 
     Args:
         date_str: Date string to format
         include_year: Whether to include year (default: True)
 
     Returns:
-        Formatted date string with year
+        Formatted date string (falls back to original if parsing fails)
     """
-    # This is a placeholder - actual implementation would parse and format dates
-    # For now, just ensure year is included
-    if include_year and len(date_str) <= 6:  # e.g., "Jan 01" without year
-        return f"{date_str} 2024"  # Add current year
-    return date_str
+    parsed = pd.to_datetime(date_str, errors="coerce")
+    if pd.isna(parsed):
+        return date_str
+    return parsed.strftime("%b %d %Y" if include_year else "%b %d")

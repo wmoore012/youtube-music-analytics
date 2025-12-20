@@ -5,7 +5,12 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from tools.web.export_frontend_insights import build_insights, _validate_rate_series, _write_json
+from tools.web.export_frontend_insights import (
+    build_insights,
+    _resolve_path,
+    _validate_percent_series,
+    _write_json,
+)
 
 
 def _assert_finite_numbers(payload):
@@ -67,8 +72,18 @@ def test_build_insights_structure(tmp_path):
 
 def test_validate_rate_series_percent_bounds():
     series = pd.Series([0.0, 12.5, 100.0])
-    validated = _validate_rate_series(series, unit="percent")
+    validated = _validate_percent_series(series, "avg_engagement_rate")
     assert validated.tolist() == [0.0, 12.5, 100.0]
 
     with pytest.raises(ValueError, match="avg_engagement_rate must be in \\[0, 100\\]"):
-        _validate_rate_series(pd.Series([-1.0, 50.0]), unit="percent")
+        _validate_percent_series(pd.Series([-1.0, 50.0]), "avg_engagement_rate")
+
+
+def test_resolve_path_handles_relative_and_absolute():
+    relative_path = Path("music_analysis_tables/artist_music_summary.csv")
+    resolved = _resolve_path(relative_path)
+    assert resolved.is_absolute()
+    assert resolved.exists()
+
+    absolute = _resolve_path(resolved)
+    assert absolute == resolved

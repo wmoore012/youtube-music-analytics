@@ -112,6 +112,23 @@ class TestSentimentAnalysisCharts:
         assert any("positive" in name.lower() for name in trace_names)
         assert any("negative" in name.lower() for name in trace_names)
 
+    def test_divergent_chart_handles_missing_engagement_columns(self):
+        """Ensure fallback engagement logic works when likes/comments are missing."""
+        from youtubeviz.charts import create_divergent_sentiment_chart
+
+        df = pd.DataFrame(
+            [
+                {"artist_name": "Flyana Boss", "view_count": 1000},
+                {"artist_name": "COBRAH", "view_count": 500},
+            ]
+        )
+
+        chart = create_divergent_sentiment_chart(df=df, artist_col="artist_name", sentiment_col="sentiment_category")
+
+        assert chart is not None
+        assert all(getattr(trace, "orientation", None) == "h" for trace in chart.data)
+        assert chart.data[0].customdata[0] >= 1
+
     def test_sentiment_cluster_analysis_chart(self):
         """Test sentiment cluster analysis chart showing sentiment model categories in action"""
         from youtubeviz.charts import create_sentiment_cluster_chart

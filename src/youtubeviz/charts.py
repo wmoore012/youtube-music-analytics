@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
@@ -28,6 +29,9 @@ try:
     import altair as alt
 except Exception:  # pragma: no cover-optional
     alt = None
+
+
+logger = logging.getLogger(__name__)
 
 
 _SCHEME_COLORS: dict[str, list[str]] = {
@@ -115,6 +119,9 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
     if hasattr(artists, "columns"):  # This catches pandas DataFrames
         raise TypeError("artists cannot be a DataFrame. Pass a list / array of artist names instead.")
 
+    if isinstance(artists, str):
+        raise TypeError("artists must be a sequence of artist names, not a single string")
+
     if not isinstance(artists, (list, tuple, pd.Index, pd.Series)) and not hasattr(artists, "__iter__"):
         raise TypeError(f"artists must be a sequence of strings, got {type(artists)}")
 
@@ -133,7 +140,8 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
     if raw:
         try:
             env_map = json.loads(raw)
-        except Exception:
+        except Exception as exc:
+            logger.warning("Invalid ARTIST_COLORS_JSON payload; falling back to defaults. Error: %s", exc)
             env_map = {}
     # (b) Or from a JSON file path via ARTIST_COLORS_FILE
     if not env_map:
@@ -142,7 +150,8 @@ def get_artist_color_map(artists: Sequence[str]) -> dict[str, str]:
             try:
                 with open(path, "r", encoding="utf-8") as fh:
                     env_map = json.load(fh)
-            except Exception:
+            except Exception as exc:
+                logger.warning("Invalid ARTIST_COLORS_FILE JSON at %s; falling back to defaults. Error: %s", path, exc)
                 env_map = {}
     known = {a: env_map.get(a) for a in artist_list if env_map.get(a)}
     remaining = [a for a in artist_list if a not in known]
@@ -521,8 +530,8 @@ def views_over_time_plotly(
         use_log_scale: Whether to use log scale for y-axis (helps with outliers)
         title: Optional custom chart title
     """
-    if px is None:
-        raise ImportError("Plotly is required for this chart")
+    if px is None or go is None:
+        raise ImportError("Plotly (express + graph_objects) is required for this chart")
 
     # Handle empty data gracefully with a placeholder figure so tests and
     # notebooks get a valid (but clearly marked) chart object.
@@ -539,8 +548,25 @@ def views_over_time_plotly(
         fig.update_layout(title=title or "Views Over Time (no data)")
         return fig
 
-    # Sort data for proper line connections
-    df_sorted = df.sort_values([date_col, group_col])
+    # Sort data for proper line connections (ensure date ordering is real, not lexical)
+    df_sorted = df.copy()
+    df_sorted[date_col] = pd.to_datetime(df_sorted[date_col], errors="coerce")
+    df_sorted = df_sorted.dropna(subset=[date_col])
+
+    if df_sorted.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            text=("No valid dates available for views over time — " "please check the date column formatting."),
+            x=0.5,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+        )
+        fig.update_layout(title=title or "Views Over Time (no valid dates)")
+        return fig
+
+    df_sorted = df_sorted.sort_values([date_col, group_col])
 
     # Prepare hover data (include ISRC / DSP if available)
     hover_data = []
@@ -780,7 +806,7 @@ def create_divergent_sentiment_chart(
         title: Optional chart title
 
     Features:
-    - Divergent bars (negative left, positive right)
+    - Divergent bars (negative left, positive right, horizontal layout)
     - Interactive hover with detailed metrics
     - Stable axis ranges and smooth interactions
     - Music industry color scheme
@@ -799,14 +825,22 @@ def create_divergent_sentiment_chart(
         comments_col = "comment_count" if "comment_count" in df.columns else "comments"
         views_col = "view_count" if "view_count" in df.columns else "views"
 
+        likes = df[likes_col] if likes_col in df.columns else pd.Series(0, index=df.index, dtype="float")
+        comments = df[comments_col] if comments_col in df.columns else pd.Series(0, index=df.index, dtype="float")
+        views = df[views_col] if views_col in df.columns else pd.Series(0, index=df.index, dtype="float")
+
         # Calculate engagement rate
-        df["engagement_rate"] = (df.get(likes_col, 0).fillna(0) + df.get(comments_col, 0).fillna(0)) / df.get(
-            views_col, 1
-        ).fillna(1).clip(lower=1)
+        likes = pd.to_numeric(likes, errors="coerce").fillna(0)
+        comments = pd.to_numeric(comments, errors="coerce").fillna(0)
+        views = pd.to_numeric(views, errors="coerce").fillna(0).clip(lower=1)
+        df["engagement_rate"] = (likes + comments) / views
 
         # Categorize into sentiment buckets
         df[sentiment_col] = pd.cut(
-            df["engagement_rate"], bins=[0, 0.02, 0.04, float("inf")], labels=["negative", "neutral", "positive"]
+            df["engagement_rate"],
+            bins=[0, 0.02, 0.04, float("inf")],
+            labels=["negative", "neutral", "positive"],
+            include_lowest=True,
         )
 
     # Calculate sentiment percentages by artist
@@ -828,16 +862,21 @@ def create_divergent_sentiment_chart(
     fig = go.Figure()
 
     # Add negative bars (left side)
+    negative_counts = sentiment_counts.get("negative", pd.Series(0, index=sentiment_counts.index))
+    neutral_counts = sentiment_counts.get("neutral", pd.Series(0, index=sentiment_counts.index))
+    positive_counts = sentiment_counts.get("positive", pd.Series(0, index=sentiment_counts.index))
+
     fig.add_trace(
         go.Bar(
             name="Negative",
-            x=sentiment_pct[artist_col],
-            y=sentiment_pct["negative_display"],
+            x=sentiment_pct["negative_display"],
+            y=sentiment_pct[artist_col],
+            orientation="h",
             marker_color="#DC143C",  # Crimson
             text=[f"{val:.1f}%" for val in sentiment_pct["negative"]],
             textposition="inside",
-            hovertemplate="<b>%{x}</b><br>Negative: %{text}<br>Count: %{customdata}<extra></extra>",
-            customdata=sentiment_counts.get("negative", [0] * len(sentiment_pct)),
+            hovertemplate="<b>%{y}</b><br>Negative: %{text}<br>Count: %{customdata}<extra></extra>",
+            customdata=negative_counts.reindex(sentiment_pct[artist_col]).to_list(),
         )
     )
 
@@ -846,13 +885,14 @@ def create_divergent_sentiment_chart(
         fig.add_trace(
             go.Bar(
                 name="Neutral",
-                x=sentiment_pct[artist_col],
-                y=sentiment_pct["neutral"],
+                x=sentiment_pct["neutral"],
+                y=sentiment_pct[artist_col],
+                orientation="h",
                 marker_color="#FFD700",  # Gold
                 text=[f"{val:.1f}%" for val in sentiment_pct["neutral"]],
                 textposition="inside",
-                hovertemplate="<b>%{x}</b><br>Neutral: %{text}<br>Count: %{customdata}<extra></extra>",
-                customdata=sentiment_counts.get("neutral", [0] * len(sentiment_pct)),
+                hovertemplate="<b>%{y}</b><br>Neutral: %{text}<br>Count: %{customdata}<extra></extra>",
+                customdata=neutral_counts.reindex(sentiment_pct[artist_col]).to_list(),
             )
         )
 
@@ -860,29 +900,30 @@ def create_divergent_sentiment_chart(
     fig.add_trace(
         go.Bar(
             name="Positive",
-            x=sentiment_pct[artist_col],
-            y=sentiment_pct["positive"],
+            x=sentiment_pct["positive"],
+            y=sentiment_pct[artist_col],
+            orientation="h",
             marker_color="#2E8B57",  # Sea green
             text=[f"{val:.1f}%" for val in sentiment_pct["positive"]],
             textposition="inside",
-            hovertemplate="<b>%{x}</b><br>Positive: %{text}<br>Count: %{customdata}<extra></extra>",
-            customdata=sentiment_counts.get("positive", [0] * len(sentiment_pct)),
+            hovertemplate="<b>%{y}</b><br>Positive: %{text}<br>Count: %{customdata}<extra></extra>",
+            customdata=positive_counts.reindex(sentiment_pct[artist_col]).to_list(),
         )
     )
 
     # Update layout with stable ranges
     fig.update_layout(
         title=title or "Sentiment Breakdown by Artist",
-        xaxis_title="Artist",
-        yaxis_title="Sentiment Percentage",
+        xaxis_title="Sentiment Percentage",
+        yaxis_title="Artist",
         barmode="relative",
-        hovermode="x unified",
-        yaxis=dict(range=[-100, 100], zeroline=True, zerolinecolor="black", zerolinewidth=2),
+        hovermode="y unified",
+        xaxis=dict(range=[-100, 100], zeroline=True, zerolinecolor="black", zerolinewidth=2),
         template="plotly_white",
     )
 
     # Add zero line annotation
-    fig.add_hline(y=0, line_dash="solid", line_color="black", line_width=2)
+    fig.add_vline(x=0, line_dash="solid", line_color="black", line_width=2)
 
     return fig
 
@@ -892,6 +933,8 @@ def create_sentiment_cluster_chart(
     artist_col: str = "artist_name",
     aspect_col: str = "sentiment_aspect",
     sentiment_col: str = "sentiment_category",
+    sentiment_score_col: Optional[str] = None,
+    category_col: Optional[str] = None,
 ) -> "go.Figure":
     """Compatibility wrapper for Chart #2: Sentiment Model Categories Heatmap.
 
@@ -908,12 +951,136 @@ def create_sentiment_cluster_chart(
     # Local import to avoid circular dependencies at module import time.
     from .advanced_charts import create_sentiment_cluster_heatmap
 
+    if category_col:
+        sentiment_col = category_col
+
     return create_sentiment_cluster_heatmap(
         df=df,
         artist_col=artist_col,
         aspect_col=aspect_col,
         sentiment_col=sentiment_col,
     )
+
+
+def create_sentiment_wordcloud(
+    comments: Sequence[str],
+    sentiment_type: str = "positive",
+    top_n: int = 30,
+) -> dict[str, Any]:
+    """Build a lightweight word frequency payload for sentiment word clouds."""
+    if comments is None:
+        raise ValueError("[SentimentWordcloud] comments cannot be None")
+
+    import re
+    from collections import Counter
+
+    tokens: list[str] = []
+    for comment in comments:
+        if not comment:
+            continue
+        tokens.extend(re.findall(r"[a-z0-9']+", str(comment).lower()))
+
+    stopwords = {
+        "the",
+        "and",
+        "a",
+        "an",
+        "to",
+        "of",
+        "in",
+        "is",
+        "it",
+        "this",
+        "that",
+        "for",
+        "on",
+        "with",
+        "at",
+        "by",
+        "be",
+        "are",
+        "was",
+        "were",
+        "so",
+        "but",
+        "or",
+        "as",
+        "i",
+        "you",
+        "we",
+        "they",
+        "he",
+        "she",
+        "them",
+        "us",
+    }
+    cleaned = [token for token in tokens if token not in stopwords]
+    counts = Counter(cleaned).most_common(top_n)
+
+    return {
+        "sentiment_type": sentiment_type,
+        "top_terms": [{"term": term, "count": count} for term, count in counts],
+        "total_terms": len(cleaned),
+    }
+
+
+def create_sentiment_timeline(
+    df: pd.DataFrame,
+    date_col: str = "date",
+    sentiment_col: str = "avg_sentiment",
+    artist_col: str = "artist",
+) -> "go.Figure":
+    """Plot average sentiment over time by artist."""
+    if px is None or go is None:
+        raise ImportError("Plotly is required for this chart")
+
+    if df is None:
+        raise ValueError("[SentimentTimeline] DataFrame 'df' is None")
+
+    required_cols = [date_col, sentiment_col, artist_col]
+    missing = [col for col in required_cols if col not in df.columns]
+    if missing:
+        raise KeyError(f"[SentimentTimeline] Missing required columns: {missing}")
+
+    if df.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No sentiment timeline data available yet",
+            x=0.5,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+        )
+        fig.update_layout(title="Sentiment Over Time (needs real data)", template="plotly_white")
+        return fig
+
+    work = df.copy()
+    work[date_col] = pd.to_datetime(work[date_col], errors="coerce")
+    work = work.dropna(subset=[date_col])
+
+    if work.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No valid dates available for sentiment timeline",
+            x=0.5,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+        )
+        fig.update_layout(title="Sentiment Over Time (no valid dates)", template="plotly_white")
+        return fig
+
+    fig = px.line(
+        work.sort_values(date_col),
+        x=date_col,
+        y=sentiment_col,
+        color=artist_col,
+        title="How does sentiment shift over time by artist?",
+    )
+    fig.update_layout(template="plotly_white", hovermode="x unified")
+    return fig
 
 
 def create_content_type_breakdown_chart(
@@ -1126,6 +1293,7 @@ def create_isrc_balance_chart(
     grouped["isrc_label"] = grouped[isrc_col].map({True: "Has ISRC", False: "No ISRC"})
 
     # Compute share of views per artist so each bar sums to 100%.
+    grouped["total_views"] = pd.to_numeric(grouped["total_views"], errors="coerce").fillna(0).clip(lower=0)
     totals = grouped.groupby(artist_col)["total_views"].transform(lambda s: s.sum() or 1.0)
     grouped["view_share"] = grouped["total_views"] / totals
 
@@ -1198,8 +1366,12 @@ def create_duration_breakdown_chart(
 
     work = df[[artist_col, duration_col, views_col]].dropna(subset=[artist_col, duration_col]).copy()
 
+    minutes = short_form_threshold / 60
+    short_label = f"Short-form (<= {minutes:g} min)"
+    long_label = f"Long-form (> {minutes:g} min)"
+
     work["length_bucket"] = work[duration_col].apply(
-        lambda v: "Short-form (\u2264 3 min)" if v <= short_form_threshold else "Long-form (> 3 min)"
+        lambda v: short_label if v <= short_form_threshold else long_label
     )
 
     summary = (

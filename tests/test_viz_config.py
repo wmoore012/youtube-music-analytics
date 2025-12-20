@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 
+import pytest
+
 
 def test_get_artist_color_map_stable_and_env_override(monkeypatch):
     from youtubeviz.charts import get_artist_color_map
@@ -17,6 +19,13 @@ def test_get_artist_color_map_stable_and_env_override(monkeypatch):
     monkeypatch.setenv("ARTIST_COLORS_JSON", json.dumps(override))
     cmap3 = get_artist_color_map(artists)
     assert cmap3["A"] == "#000000"
+
+
+def test_get_artist_color_map_rejects_string_input():
+    from youtubeviz.charts import get_artist_color_map
+
+    with pytest.raises(TypeError, match="sequence of artist names"):
+        get_artist_color_map("Drake")
 
 
 def test_read_rpm_from_env_and_compute(monkeypatch):

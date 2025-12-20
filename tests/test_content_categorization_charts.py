@@ -64,6 +64,29 @@ class TestContentCategorizationCharts:
         assert chart is not None
         assert hasattr(chart, "data")
 
+    def test_duration_breakdown_respects_threshold_label(self):
+        """Ensure duration labels reflect the configured threshold."""
+        from youtubeviz.charts import create_duration_breakdown_chart
+
+        df = pd.DataFrame(
+            [
+                {"artist_name": "Flyana Boss", "duration_seconds": 60, "views": 1000},
+                {"artist_name": "Flyana Boss", "duration_seconds": 240, "views": 2000},
+            ]
+        )
+
+        chart = create_duration_breakdown_chart(
+            df=df,
+            artist_col="artist_name",
+            duration_col="duration_seconds",
+            views_col="views",
+            short_form_threshold=120,
+        )
+
+        trace_names = {trace.name for trace in chart.data}
+        assert "Short-form (<= 2 min)" in trace_names
+        assert "Long-form (> 2 min)" in trace_names
+
     def test_create_content_type_analysis_chart(self, sample_video_data):
         """Test content type breakdown (music video vs lyric video vs other)."""
         from youtubeviz.charts import create_content_type_breakdown_chart
