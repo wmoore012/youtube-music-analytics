@@ -234,7 +234,7 @@ def regenerate_executed_notebooks():
 
     # Run the main analytics
     try:
-        result = subprocess.run(["python", "execute_music_analytics.py"], capture_output=True, text=True, timeout=300)
+        result = subprocess.run(["python", "scripts/execute_music_analytics.py"], capture_output=True, text=True, timeout=300)
 
         if result.returncode == 0:
             print("✅ Music analytics executed successfully")
@@ -245,7 +245,7 @@ def regenerate_executed_notebooks():
 
     # Run data quality
     try:
-        result = subprocess.run(["python", "execute_data_quality.py"], capture_output=True, text=True, timeout=300)
+        result = subprocess.run(["python", "scripts/execute_data_quality.py"], capture_output=True, text=True, timeout=300)
 
         if result.returncode == 0:
             print("✅ Data quality executed successfully")

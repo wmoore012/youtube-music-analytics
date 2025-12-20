@@ -116,7 +116,7 @@ class LocalCI:
         """Validate execute scripts."""
         print("\n📊 Validating execute scripts...")
 
-        scripts = ["execute_music_analytics.py", "execute_data_quality.py", "execute_artist_comparison.py"]
+        scripts = ["scripts/execute_music_analytics.py", "scripts/execute_data_quality.py", "scripts/execute_artist_comparison.py"]
 
         for script in scripts:
             if not os.path.exists(script):
@@ -137,7 +137,7 @@ class LocalCI:
         # Test data quality execution
         try:
             result = subprocess.run(
-                [sys.executable, "execute_data_quality.py"], capture_output=True, text=True, timeout=60
+                [sys.executable, "scripts/execute_data_quality.py"], capture_output=True, text=True, timeout=60
             )
 
             if result.returncode == 0:
@@ -152,7 +152,7 @@ class LocalCI:
         # Test music analytics execution
         try:
             result = subprocess.run(
-                [sys.executable, "execute_music_analytics.py"], capture_output=True, text=True, timeout=60
+                [sys.executable, "scripts/execute_music_analytics.py"], capture_output=True, text=True, timeout=60
             )
 
             if result.returncode == 0:

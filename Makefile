@@ -406,9 +406,9 @@ run-examples: ## Run example analyses with current data
 	@echo ""
 	@read -p "Which example? (comparison/sentiment/quality): " example; \
 	case $$example in \
-		comparison) python execute_artist_comparison.py ;; \
+		comparison) python scripts/execute_artist_comparison.py ;; \
 		sentiment) echo "Sentiment analysis example - run: python test_current_sentiment_model.py" ;; \
-		quality) python execute_data_quality.py ;; \
+		quality) python scripts/execute_data_quality.py ;; \
 		*) echo "Invalid option. Choose: comparison, sentiment, or quality" ;; \
 	esac
 

@@ -1,0 +1,343 @@
+.about-hero {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.about-hero .about-hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.about-hero .about-header {
+  position: absolute;
+  bottom: 2.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  text-align: center;
+  color: var(--base-100);
+}
+
+.anime-text-container {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.anime-text-container .copy-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.anime-text-container .anime-text {
+  width: 60%;
+}
+
+.anime-text-container .anime-text p {
+  color: var(--base-300);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.anime-text-container .anime-text .word {
+  display: inline-block;
+  position: relative;
+  margin-right: 0.2rem;
+  margin-bottom: 0.2rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 8px;
+  will-change: background-color, opacity;
+}
+
+.anime-text-container .anime-text .word.keyword-wrapper {
+  margin: 0 0.4rem 0.2rem 0.2rem;
+}
+
+.anime-text-container .anime-text .word span {
+  position: relative;
+}
+
+.anime-text-container .anime-text .word span.keyword {
+  border-radius: 2rem;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  padding: 0.1rem 0;
+  color: var(--base-300);
+}
+
+.anime-text-container .anime-text .word span.keyword::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% + 1rem);
+  height: calc(100% + 0.1rem);
+  background-color: var(--base-300);
+  border-radius: 8px;
+  z-index: -1;
+  border: 1px dashed var(--base-300);
+}
+
+.anime-text-container .anime-text .word span.keyword.corner::before,
+.anime-text-container .anime-text .word span.keyword.learnings::before,
+.anime-text-container .anime-text .word span.keyword.deploy::before {
+  background-color: var(--accent-1);
+}
+
+.anime-text-container .anime-text .word span.keyword.scroll::before,
+.anime-text-container .anime-text .word span.keyword.rhythm::before,
+.anime-text-container .anime-text .word span.keyword.caffeine::before {
+  background-color: var(--accent-2);
+}
+
+.anime-text-container .anime-text .word span.keyword.archive::before,
+.anime-text-container .anime-text .word span.keyword.detail::before,
+.anime-text-container .anime-text .word span.keyword.messing::before {
+  background-color: var(--accent-3);
+}
+
+.anime-text-container .anime-text .word,
+.anime-text-container .anime-text .word span {
+  opacity: 0;
+}
+
+.about-skills {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--base-300);
+  color: var(--base-100);
+}
+
+.about-skills .container {
+  display: flex;
+  gap: 2rem;
+}
+
+.about-skills .about-skills-col {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
+.about-skills .about-skills-col:nth-child(1) {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.about-skills .about-skills-col:nth-child(1) h3 {
+  width: 80%;
+}
+
+.about-skills .about-skills-col .object-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #101010;
+  border: 1px dashed var(--base-secondary-fade);
+  border-radius: 16px;
+}
+
+.about-skills .object-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.about-skills .object-container .object {
+  position: absolute;
+  width: max-content;
+  font-size: 2rem;
+  font-weight: 500;
+  background-color: var(--base-100);
+  color: var(--base-300);
+  padding: 2rem 4rem;
+  border-radius: 10px;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 2;
+  border: 2px solid #101010;
+}
+
+.about-skills .object-container .os-1 {
+  background-color: var(--accent-1);
+}
+
+.about-skills .object-container .os-2 {
+  background-color: var(--accent-2);
+}
+
+.about-skills .object-container .os-3 {
+  background-color: var(--accent-3);
+}
+
+.about-skills-copy-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.about-sticky-cards {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--base-100);
+  color: var(--base-300);
+}
+
+.about-sticky-cards .sticky-cards-header {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  text-align: center;
+}
+
+.about-sticky-cards .gallery-card {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  width: 25%;
+  height: 50%;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  border-radius: 12px;
+  background-color: var(--base-300);
+  color: var(--base-100);
+}
+
+.about-sticky-cards .gallery-card-img {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.about-sticky-cards .gallery-card-content {
+  flex: 0 0 12px;
+  display: flex;
+  align-items: center;
+}
+
+.about-sticky-cards .gallery-card-content p.mono {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1000px) {
+  .about-sticky-cards .gallery-card {
+    width: 75%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .anime-text-container .copy-container h1 {
+    width: 90%;
+    font-size: 2rem;
+  }
+
+  .anime-text-container .anime-text {
+    width: 100%;
+  }
+
+  .anime-text-container .anime-text p {
+    font-size: 1.3rem;
+  }
+
+  .anime-text-container .anime-text .word {
+    margin-right: 0.1rem;
+    margin-bottom: 0.15rem;
+    padding: 0.05rem 0.125rem;
+  }
+
+  .anime-text-container .anime-text .word.keyword-wrapper {
+    margin: 0 0.2rem 0.1rem 0.1rem;
+  }
+
+  .anime-text-container .anime-text .word span.keyword::before {
+    width: calc(100% + 0.35rem);
+    height: calc(100% + 0.075rem);
+  }
+
+  .about-hero .about-header {
+    width: 90%;
+    top: 50%;
+    bottom: unset;
+    transform: translate(-50%, -50%);
+  }
+
+  .about-skills {
+    height: 100svh;
+  }
+
+  .about-skills .about-skills-col:nth-child(1) h3 {
+    width: 100%;
+  }
+
+  .about-skills .container {
+    flex-direction: column;
+  }
+
+  .about-skills .about-skills-col:nth-child(1) {
+    justify-content: flex-start;
+    gap: 4rem;
+  }
+
+  .skills-playground {
+    flex: 2 !important;
+  }
+
+  .about-skills .object-container .object {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    user-select: none;
+    pointer-events: auto;
+    z-index: 2;
+    border: 2px solid #101010;
+  }
+
+  .about-sticky-cards .gallery-card {
+    top: 50%;
+  }
+
+  .about-sticky-cards .gallery-card {
+    width: 50%;
+    height: 25svh;
+  }
+
+  .about-sticky-cards .sticky-cards-header {
+    width: 90%;
+  }
+}

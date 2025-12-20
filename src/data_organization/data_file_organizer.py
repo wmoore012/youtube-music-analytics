@@ -200,6 +200,7 @@ class DataFileOrganizer:
             FileCategory.BENCHMARKS: [
                 "benchmark",
                 "benchmarks.json",
+                "benchmarks/",
                 "system_health",
                 "function_analysis_report",
                 "model_test_results",

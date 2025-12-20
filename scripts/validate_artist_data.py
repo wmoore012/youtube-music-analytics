@@ -174,8 +174,8 @@ def validate_notebook_outputs() -> bool:
 
     # Test execute scripts
     scripts_to_test = [
-        ("execute_music_analytics.py", "Music Analytics"),
-        ("execute_data_quality.py", "Data Quality"),
+        ("scripts/execute_music_analytics.py", "Music Analytics"),
+        ("scripts/execute_data_quality.py", "Data Quality"),
     ]
 
     for script, name in scripts_to_test:

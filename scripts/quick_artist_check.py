@@ -22,7 +22,7 @@ def check_artist_count():
     # Check music analytics
     try:
         result = subprocess.run(
-            [sys.executable, "execute_music_analytics.py"], capture_output=True, text=True, timeout=60
+            [sys.executable, "scripts/execute_music_analytics.py"], capture_output=True, text=True, timeout=60
         )
 
         if result.returncode == 0:
@@ -47,7 +47,7 @@ def check_artist_count():
 
     # Check data quality
     try:
-        result = subprocess.run([sys.executable, "execute_data_quality.py"], capture_output=True, text=True, timeout=60)
+        result = subprocess.run([sys.executable, "scripts/execute_data_quality.py"], capture_output=True, text=True, timeout=60)
 
         if result.returncode == 0:
             # Look for "Artists: X" in output

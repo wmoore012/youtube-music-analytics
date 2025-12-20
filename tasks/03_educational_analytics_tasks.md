@@ -99,8 +99,8 @@
 ## 🎯 Next Steps for Sentiment Analysis
 1. **Database Cleanup**: Run `python tools/maintenance/channel_cleanup_enhanced.py`
 2. **Schema Update**: Run `python tools/sentiment/update_sentiment_analysis.py`
-3. **Data Quality**: Run `python execute_data_quality.py`
-4. **Analytics**: Run `python execute_music_analytics.py`
+3. **Data Quality**: Run `python scripts/execute_data_quality.py`
+4. **Analytics**: Run `python scripts/execute_music_analytics.py`
 5. **Validation**: Ensure all tests pass with new sentiment data
 
 ## 📈 Success Metrics Achieved

@@ -2,7 +2,10 @@ import json
 import math
 from pathlib import Path
 
-from tools.web.export_frontend_insights import build_insights, _write_json
+import pandas as pd
+import pytest
+
+from tools.web.export_frontend_insights import build_insights, _validate_rate_series, _write_json
 
 
 def _assert_finite_numbers(payload):
@@ -60,3 +63,12 @@ def test_build_insights_structure(tmp_path):
     _write_json(insights, output_path)
     written = json.loads(output_path.read_text(encoding="utf-8"))
     assert written["summary"]["total_views"] == summary["total_views"]
+
+
+def test_validate_rate_series_percent_bounds():
+    series = pd.Series([0.0, 12.5, 100.0])
+    validated = _validate_rate_series(series, unit="percent")
+    assert validated.tolist() == [0.0, 12.5, 100.0]
+
+    with pytest.raises(ValueError, match="avg_engagement_rate must be in \\[0, 100\\]"):
+        _validate_rate_series(pd.Series([-1.0, 50.0]), unit="percent")

@@ -49,6 +49,11 @@ Developer utilities for code quality and testing:
 - **Testing** (`testing/`): Test execution and management utilities
 - **CI/CD** (`ci_enforcement/`): Continuous integration and deployment tools
 
+### Notebook Helpers (`notebook_helpers/`)
+Notebook-specific helpers and UI components:
+- **Design System**: Cards, palettes, and chart helpers
+- **Signal Modules**: Momentum, sentiment, and performance renderers
+
 ### Shared Utilities (`shared/`)
 Common base classes and utilities used by all tools:
 - **ToolBase**: Standardized base class with logging and error handling

@@ -1,0 +1,174 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --base-100: #f7f2ea;
+  --base-200: #ede4d6;
+  --base-300: #0f0f0f;
+  --base-secondary-dark: #6c655d;
+  --base-secondary-fade: rgba(247, 242, 234, 0.12);
+  --accent-1: #ff2d2d;
+  --accent-2: #ffb347;
+  --accent-3: #27c2e6;
+  --accent-dark: #141414;
+  --accent-fade: rgba(255, 45, 45, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Space Grotesk";
+  background-color: var(--base-100);
+  background-image: radial-gradient(
+      circle at 15% 20%,
+      rgba(255, 45, 45, 0.08),
+      transparent 55%
+    ),
+    radial-gradient(circle at 85% 15%, rgba(39, 194, 230, 0.12), transparent 55%),
+    linear-gradient(140deg, rgba(15, 15, 15, 0.02), rgba(255, 179, 71, 0.04));
+  color: var(--base-300);
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-transform: uppercase;
+  font-family: "Bebas Neue";
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: 0.02rem;
+}
+
+h1 {
+  font-size: 12rem;
+}
+
+h2 {
+  font-size: 8rem;
+}
+
+h3 {
+  font-size: 6rem;
+}
+
+h4 {
+  font-size: 2.5rem;
+}
+
+a {
+  text-decoration: none;
+}
+
+p {
+  font-family: "Space Grotesk";
+  font-size: 1.1rem;
+}
+
+p.md {
+  font-size: 1.3rem;
+}
+
+p.lg {
+  font-size: 1.5rem;
+}
+
+p.mono {
+  text-transform: uppercase;
+  font-family: "IBM Plex Mono";
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: var(--base-200);
+  font-family: "IBM Plex Mono";
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+}
+
+.kicker {
+  font-family: "IBM Plex Mono";
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+  font-size: 0.75rem;
+  color: var(--base-secondary-dark);
+}
+
+.muted {
+  color: var(--base-secondary-dark);
+}
+
+p.mono span,
+a span {
+  position: relative;
+  top: -0.1rem;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+  padding: 2.75rem;
+  max-width: 2000px;
+  margin: 0 auto;
+}
+
+.symbols-container {
+  display: flex;
+  gap: 0.5rem;
+  height: 1.125rem;
+  z-index: 1;
+}
+
+.symbols-container .symbol {
+  width: 1.125rem;
+}
+
+@media (max-width: 1000px) {
+  h1 {
+    font-size: 6rem;
+  }
+  h2 {
+    font-size: 5rem;
+  }
+
+  h3 {
+    font-size: 3rem;
+  }
+
+  p {
+    font-size: 1rem;
+  }
+
+  p.md {
+    font-size: 1.125rem;
+  }
+
+  p.lg {
+    font-size: 1.25rem;
+  }
+
+  p.mono {
+    font-size: 0.8rem;
+  }
+
+  .container {
+    padding: 2rem;
+  }
+}

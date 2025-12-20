@@ -41,7 +41,9 @@ class TestDataFileOrganizer:
             workspace = Path(temp_dir)
 
             # Create scattered files like in the real codebase
-            (workspace / "benchmarks.json").write_text('{"test": "data"}')
+            benchmarks_dir = workspace / "benchmarks"
+            benchmarks_dir.mkdir()
+            (benchmarks_dir / "benchmarks.json").write_text('{"test": "data"}')
             (workspace / "music_industry_sentiment_dataset_v2.csv").write_text("col1,col2\nval1,val2")
 
             # Create config directory with files
@@ -318,7 +320,7 @@ class TestFileCategory:
         # This would test the logic for determining category from file path
         config_path = Path("config / artist_aliases.json")
         analysis_path = Path("music_analysis_tables / summary.csv")
-        benchmark_path = Path("benchmarks.json")
+        benchmark_path = Path("benchmarks/benchmarks.json")
 
         # The actual categorization logic would be in the DataFileOrganizer
         # This test ensures we can determine categories from paths

@@ -66,8 +66,8 @@ Codex must evaluate changes against these standards.
   - Artists in both files must equal expected set; fail on missing or unexpected
     unless overrides are set
 - Notebook outputs (hard gate):
-  - Execute: `execute_music_analytics.py`, `execute_data_quality.py`,
-    `execute_artist_comparison.py`
+  - Execute: `scripts/execute_music_analytics.py`, `scripts/execute_data_quality.py`,
+    `scripts/execute_artist_comparison.py`
   - Each must emit: a line matching `Artists?:\s*(\d+)` and contain all expected
     artist names
   - Required sections in outputs:
@@ -252,9 +252,9 @@ Database tables (from `tools/setup/create_tables.py`)
 
 Notebooks / scripts to execute
 
-- `execute_music_analytics.py`
-- `execute_data_quality.py`
-- `execute_artist_comparison.py`
+- `scripts/execute_music_analytics.py`
+- `scripts/execute_data_quality.py`
+- `scripts/execute_artist_comparison.py`
 
 Health file
 

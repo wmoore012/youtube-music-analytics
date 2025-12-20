@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Literal
 
 import pandas as pd
 
@@ -38,7 +38,10 @@ def format_currency(value: float) -> str:
     return f"${value:,.0f}"
 
 
-def format_percent(value: float) -> str:
+def format_percent(value: float, *, unit: Literal["percent", "fraction"] = "percent") -> str:
+    """Format a percentage value with explicit unit handling."""
+    if unit == "fraction":
+        value *= 100.0
     return f"{value:.2f}%"
 
 

@@ -41,7 +41,7 @@ class RepositorySwitcher:
                         "reports/",
                         "*.csv",
                         "*.jsonl",
-                        "benchmarks.json",
+                        "benchmarks/",
                         "coverage.json",
                         "system_health_dashboard.json",
                         "*_validation_report.json",

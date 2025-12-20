@@ -146,9 +146,9 @@ def check_notebook_outputs():
     print("=" * 40)
 
     scripts_to_check = [
-        ("execute_music_analytics.py", "Music Analytics"),
-        ("execute_data_quality.py", "Data Quality"),
-        ("execute_artist_comparison.py", "Artist Comparison"),
+        ("scripts/execute_music_analytics.py", "Music Analytics"),
+        ("scripts/execute_data_quality.py", "Data Quality"),
+        ("scripts/execute_artist_comparison.py", "Artist Comparison"),
     ]
 
     all_passed = True

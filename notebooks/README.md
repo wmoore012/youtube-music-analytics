@@ -1,17 +1,32 @@
-# MusicScope Notebooks – Portfolio Exports
+# MusicScope Notebooks - Portfolio Exports
 
-This repo now standardizes notebook → dashboard handoff via CSV exports and manifests. Use this as a quick reference when running portfolio notebooks.
+This repo standardizes notebook-to-dashboard handoff via CSV exports and manifests. Use this as a quick reference when running portfolio notebooks.
+
+## Notebook layout
+- Source notebooks:
+  - `notebooks/MusicScope_YouTube_Dashboard.ipynb`
+  - `notebooks/MusicScope™_Professional_Dashboard.ipynb`
+- Executed outputs: `notebooks/executed/` (latest runs)
+- Archived snapshots: `notebooks/archive/` (historical runs)
+- Orphaned recovery: `notebooks/archive/orphaned_executed/` (legacy outputs)
+- Scripts: `notebooks/scripts/` (check dependencies, create dashboard, integration, smoke tests)
+- Notebook helpers: `tools/notebook_helpers/` (design system + section renderers)
+- Collected tables: `notebooks/outputs/` (store intermediate exports for frontend wiring)
+
+## Notebook titles (pre-attentive)
+- `MusicScope_YouTube_Dashboard.ipynb`: "MusicScope YouTube Signals - Momentum, Resonance, Risk"
+- `MusicScope™_Professional_Dashboard.ipynb`: "MusicScope Professional Signals - Momentum, Resonance, Risk, Performance"
 
 ## Export root
 - Default: `exports/portfolio/`
 - Override with env var `MUSICSCOPE_EXPORT_ROOT`
 - Structure: `exports/portfolio/<cohort_slug>/<run_id>/`
-	- `manifest.json` (run metadata + table inventory)
-	- `momentum_insights.csv`
-	- `sentiment_insights.csv`
-	- `performance_insights.csv`
-	- `portfolio_highlights.csv`
-	- `latest.json` lives at `exports/portfolio/<cohort_slug>/latest.json`
+  - `manifest.json` (run metadata + table inventory)
+  - `momentum_insights.csv`
+  - `sentiment_insights.csv`
+  - `performance_insights.csv`
+  - `portfolio_highlights.csv`
+  - `latest.json` lives at `exports/portfolio/<cohort_slug>/latest.json`
 
 ## Rules for tables
 - CSV is the canonical format for Streamlit; Parquet is optional for ad-hoc analysis only.

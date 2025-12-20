@@ -45,7 +45,7 @@ class TestNotebookExecution:
         """Test that music analytics notebook executes and shows all artists."""
 
         result = subprocess.run(
-            [sys.executable, str(REPO_ROOT / "execute_music_analytics.py")],
+            [sys.executable, str(REPO_ROOT / "scripts/execute_music_analytics.py")],
             capture_output=True,
             text=True,
             timeout=120,
@@ -91,7 +91,7 @@ class TestNotebookExecution:
         """Test that data quality notebook executes and shows all artists."""
 
         result = subprocess.run(
-            [sys.executable, str(REPO_ROOT / "execute_data_quality.py")],
+            [sys.executable, str(REPO_ROOT / "scripts/execute_data_quality.py")],
             capture_output=True,
             text=True,
             timeout=120,
@@ -138,7 +138,7 @@ class TestNotebookExecution:
         """Test that artist comparison notebook executes and shows all artists."""
 
         result = subprocess.run(
-            [sys.executable, str(REPO_ROOT / "execute_artist_comparison.py")],
+            [sys.executable, str(REPO_ROOT / "scripts/execute_artist_comparison.py")],
             capture_output=True,
             text=True,
             timeout=120,
@@ -185,9 +185,9 @@ class TestNotebookExecution:
         """Test that all notebooks show consistent artist data."""
 
         notebooks = [
-            ("execute_music_analytics.py", "Music Analytics"),
-            ("execute_data_quality.py", "Data Quality"),
-            ("execute_artist_comparison.py", "Artist Comparison"),
+            ("scripts/execute_music_analytics.py", "Music Analytics"),
+            ("scripts/execute_data_quality.py", "Data Quality"),
+            ("scripts/execute_artist_comparison.py", "Artist Comparison"),
         ]
 
         artist_counts = {}
@@ -228,9 +228,9 @@ class TestNotebookExecution:
         """Test that notebooks execute within reasonable time limits."""
 
         notebooks = [
-            ("execute_music_analytics.py", 60),  # 60 second limit
-            ("execute_data_quality.py", 60),  # 60 second limit
-            ("execute_artist_comparison.py", 60),  # 60 second limit
+            ("scripts/execute_music_analytics.py", 60),  # 60 second limit
+            ("scripts/execute_data_quality.py", 60),  # 60 second limit
+            ("scripts/execute_artist_comparison.py", 60),  # 60 second limit
         ]
 
         for script, timeout in notebooks:
@@ -254,7 +254,7 @@ class TestNotebookExecution:
 
         # Test music analytics output quality
         result = subprocess.run(
-            [sys.executable, str(REPO_ROOT / "execute_music_analytics.py")],
+            [sys.executable, str(REPO_ROOT / "scripts/execute_music_analytics.py")],
             capture_output=True,
             text=True,
             timeout=120,
@@ -277,7 +277,7 @@ class TestNotebookExecution:
 
         # Test data quality output
         result = subprocess.run(
-            [sys.executable, str(REPO_ROOT / "execute_data_quality.py")],
+            [sys.executable, str(REPO_ROOT / "scripts/execute_data_quality.py")],
             capture_output=True,
             text=True,
             timeout=120,
@@ -349,7 +349,7 @@ class TestNotebookFiles:
     def test_execute_scripts_exist(self):
         """Test that all execute scripts exist and are executable."""
 
-        execute_scripts = ["execute_music_analytics.py", "execute_data_quality.py", "execute_artist_comparison.py"]
+        execute_scripts = ["scripts/execute_music_analytics.py", "scripts/execute_data_quality.py", "scripts/execute_artist_comparison.py"]
 
         for script in execute_scripts:
             script_path = REPO_ROOT / script

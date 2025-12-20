@@ -23,6 +23,13 @@ IQR_K = 1.5  # Tukey's inner fences (whiskers on boxplots)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(asctime)s %(message)s")
 log = logging.getLogger("benchmarks")
 
+# Anchor relative paths to repo root for CLI + CI consistency.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+# Benchmarks live in benchmarks/benchmarks.json (legacy root path supported).
+BENCHMARKS_PATH = REPO_ROOT / "benchmarks" / "benchmarks.json"
+LEGACY_BENCHMARKS_PATH = REPO_ROOT / "benchmarks.json"
+
 # Metrics configuration - whether higher values are better
 METRIC_SPEC = {
     "throughput_rows_per_sec": {"higher_is_better": True},
@@ -39,6 +46,9 @@ METRIC_SPEC = {
     "total_records": {"higher_is_better": True},
     "unique_videos": {"higher_is_better": True},
     "unique_artists": {"higher_is_better": True},
+    "frontend_trackstats_build_seconds": {"higher_is_better": False},
+    "frontend_musicscope_build_seconds": {"higher_is_better": False},
+    "frontend_insights_export_seconds": {"higher_is_better": False},
 }
 
 
@@ -145,11 +155,15 @@ def flag_anomalies(metric: str, latest: float, stats: dict, spec: dict) -> list[
     return flags
 
 
-def analyze_history_and_print(benchmark_data, history_path: str | Path = "benchmarks.json") -> None:
+def analyze_history_and_print(benchmark_data, history_path: str | Path | None = None) -> None:
     """Print compact descriptives and anomaly flags for known metrics."""
 
+    history_path = Path(history_path) if history_path else BENCHMARKS_PATH
+    if not history_path.exists() and LEGACY_BENCHMARKS_PATH.exists():
+        history_path = LEGACY_BENCHMARKS_PATH
+
     try:
-        with open(history_path, "r", encoding="utf - 8") as fh:
+        with open(history_path, "r", encoding="utf-8") as fh:
             history_list = json.load(fh)
         hist = pd.DataFrame(history_list)
     except (OSError, ValueError) as exc:
@@ -209,8 +223,58 @@ def run_subprocess(cmd: list[str], timeout: int = 60) -> tuple[int, str, str]:
         return 1, "", f"{type(exc).__name__}: {exc}"
 
 
+def _time_command(cmd: list[str], cwd: Path | None = None, timeout: int = 180) -> float:
+    """Run a command and return wall-clock seconds (0.0 if it fails)."""
+    import time
+
+    start = time.perf_counter()
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd)
+        if proc.returncode != 0:
+            log.warning("Command failed (rc=%s): %s", proc.returncode, proc.stderr[:200])
+            return 0.0
+    except subprocess.TimeoutExpired:
+        log.warning("Command timed out: %s", " ".join(cmd))
+        return 0.0
+    except Exception as exc:
+        log.warning("Command error (%s): %s", type(exc).__name__, exc)
+        return 0.0
+    return time.perf_counter() - start
+
+
+def benchmark_frontend_builds() -> dict[str, float]:
+    """Measure build times for each frontend (0.0 if unavailable)."""
+    trackstats_dir = REPO_ROOT / "front_end" / "yt_analytics"
+    musicscope_dir = REPO_ROOT / "front_end" / "musicscope_original"
+
+    metrics = {
+        "frontend_trackstats_build_seconds": 0.0,
+        "frontend_musicscope_build_seconds": 0.0,
+    }
+
+    if (trackstats_dir / "package.json").exists():
+        metrics["frontend_trackstats_build_seconds"] = _time_command(
+            ["npm", "run", "build"], cwd=trackstats_dir
+        )
+    if (musicscope_dir / "package.json").exists():
+        metrics["frontend_musicscope_build_seconds"] = _time_command(
+            ["npm", "run", "build"], cwd=musicscope_dir
+        )
+
+    return metrics
+
+
+def benchmark_frontend_insights_export() -> float:
+    """Measure export time for frontend insights (0.0 if it fails)."""
+    export_script = REPO_ROOT / "tools" / "web" / "export_frontend_insights.py"
+    if not export_script.exists():
+        return 0.0
+    return _time_command([sys.executable, str(export_script)])
+
+
 def get_test_coverage() -> float:
     """Run pytest with coverage and return the percent covered."""
+    coverage_path = REPO_ROOT / "coverage.json"
 
     rc, _, err = run_subprocess(
         [
@@ -219,7 +283,7 @@ def get_test_coverage() -> float:
             "pytest",
             "--cov=src",
             "--cov=web",
-            "--cov-report=json:coverage.json",
+            f"--cov-report=json:{coverage_path}",
             "--quiet",
         ],
         timeout=90,
@@ -229,7 +293,7 @@ def get_test_coverage() -> float:
         log.warning("pytest / coverage failed (rc=%s): %s", rc, err[:200])
 
     try:
-        with open("coverage.json", "r", encoding="utf - 8") as fh:
+        with open(coverage_path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
         return float(data.get("totals", {}).get("percent_covered", 0.0))
     except (OSError, ValueError) as exc:
@@ -250,12 +314,12 @@ def count_duplicate_functions():
         "def create_chart_annotations",
     ]
 
-    for py_file in Path(".").rglob("*.py"):
+    for py_file in REPO_ROOT.rglob("*.py"):
         if any(exclude in str(py_file) for exclude in [".venv", "__pycache__"]):
             continue
 
         try:
-            with open(py_file, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
                 for pattern in duplicate_patterns:
                     count = content.count(pattern)
@@ -650,7 +714,7 @@ def count_lines_of_code():
             continue
 
         try:
-            with open(py_file, "r", encoding="utf - 8", errors="ignore") as f:
+            with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
                 # Count non - empty, non - comment lines
                 code_lines = [l for l in lines if l.strip() and not l.strip().startswith("#")]
@@ -765,6 +829,24 @@ def save_benchmark_to_database(data):
         # Remove fields that don't belong in main table
         existing_benchmarks = db_data.pop("existing_model_benchmarks", {})
 
+        # Trim to the columns that actually exist in the database schema.
+        available_columns = None
+        try:
+            from sqlalchemy import inspect
+
+            inspector = inspect(engine)
+            if inspector.has_table("project_benchmarks"):
+                available_columns = {col["name"] for col in inspector.get_columns("project_benchmarks")}
+        except Exception as exc:
+            log.debug("Unable to inspect benchmark table columns: %s", exc)
+
+        if available_columns:
+            db_data = {key: value for key, value in db_data.items() if key in available_columns}
+
+        if not db_data:
+            print("⚠️  Database schema missing expected columns; skipping DB save.")
+            return False
+
         # Insert main benchmark record
         columns = [k for k in db_data.keys() if k != "existing_model_benchmarks"]
         placeholders = ", ".join([f":{col}" for col in columns])
@@ -800,13 +882,14 @@ def save_benchmark_to_database(data):
 
 def save_benchmark(data):
     """Save benchmark data to file and database."""
-    benchmark_file = "benchmarks.json"
+    benchmark_file = BENCHMARKS_PATH
+    benchmark_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Load existing benchmarks
     benchmarks = []
-    if os.path.exists(benchmark_file):
+    if benchmark_file.exists():
         try:
-            with open(benchmark_file, "r", encoding="utf - 8") as f:
+            with open(benchmark_file, "r", encoding="utf-8") as f:
                 benchmarks = json.load(f)
         except (OSError, ValueError) as exc:
             log.warning("Unable to read %s: %s", benchmark_file, exc)
@@ -816,7 +899,7 @@ def save_benchmark(data):
     benchmarks.append(data)
 
     # Save updated benchmarks to JSON
-    with open(benchmark_file, "w", encoding="utf - 8") as f:
+    with open(benchmark_file, "w", encoding="utf-8") as f:
         json.dump(benchmarks, f, indent=2)
 
     # Try to save to database
@@ -851,6 +934,12 @@ def main():
     print("  • Counting lines of code...")
     lines_of_code = count_lines_of_code()
 
+    print("  • Benchmarking frontend builds...")
+    frontend_builds = benchmark_frontend_builds()
+
+    print("  • Benchmarking frontend insights export...")
+    frontend_export_seconds = benchmark_frontend_insights_export()
+
     # Combine all metrics
     benchmark_data = {
         "date": datetime.now().isoformat(),
@@ -861,6 +950,8 @@ def main():
         "existing_model_benchmarks": existing_benchmarks,
         **db_metrics,  # Unpack database metrics
         **model_metrics,  # Unpack model performance metrics
+        **frontend_builds,
+        "frontend_insights_export_seconds": frontend_export_seconds,
     }
 
     # Display results
@@ -924,6 +1015,17 @@ def main():
     if benchmark_data.get("available_columns"):
         print(f"\n🔍 Available Data Columns: {benchmark_data['available_columns']}")
 
+    print("\n🖥️ Frontend Benchmarks:")
+    print(
+        f"  TrackStats build: {benchmark_data.get('frontend_trackstats_build_seconds', 0):.2f}s"
+    )
+    print(
+        f"  MusicScope build: {benchmark_data.get('frontend_musicscope_build_seconds', 0):.2f}s"
+    )
+    print(
+        f"  Insights export:  {benchmark_data.get('frontend_insights_export_seconds', 0):.2f}s"
+    )
+
     # Generate and display resume bullets
     resume_bullets = generate_resume_bullets(benchmark_data)
     if resume_bullets:
@@ -949,7 +1051,8 @@ def main():
 
     # Show progress if we have previous benchmarks
     try:
-        with open("benchmarks.json", "r", encoding="utf - 8") as f:
+        history_path = BENCHMARKS_PATH if BENCHMARKS_PATH.exists() else LEGACY_BENCHMARKS_PATH
+        with open(history_path, "r", encoding="utf-8") as f:
             all_benchmarks = json.load(f)
 
         if len(all_benchmarks) > 1:
