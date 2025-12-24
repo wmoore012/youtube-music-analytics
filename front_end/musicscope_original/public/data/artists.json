@@ -1,0 +1,30 @@
+{
+  "as_of": "2025-12-24",
+  "artists": [
+    {
+      "display_name": "Flyana Boss",
+      "image_url": "/project-images/project-img-1.jpg",
+      "note": "Loaded in current dataset (demo)."
+    },
+    {
+      "display_name": "Corook",
+      "image_url": "/project-images/project-img-2.jpg",
+      "note": "Loaded in current dataset (demo)."
+    },
+    {
+      "display_name": "BiC Fizzle",
+      "image_url": "/project-images/project-img-3.jpg",
+      "note": "Loaded in current dataset (demo)."
+    },
+    {
+      "display_name": "Artist Four",
+      "image_url": "/project-images/project-img-4.jpg",
+      "note": "Loaded in current dataset (demo)."
+    },
+    {
+      "display_name": "Artist Five",
+      "image_url": "/project-images/project-img-1.jpg",
+      "note": "Loaded in current dataset (demo)."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Underused Winner",
+  "subtitle": "Where view share beats upload share (demo)",
+  "chart": {
+    "type": "bar",
+    "label": "Advantage ratio (view share / upload share)",
+    "labels": ["Official Music Video", "Live", "Lyric Video", "Shorts", "Behind The Scenes"],
+    "data": [3.8, 2.4, 1.9, 1.3, 0.8]
+  },
+  "bullets": [
+    "What happened: One format is delivering outsized views.",
+    "So what: This is a lever — not a ranking of artists.",
+    "Now what: Increase output in the top format for 2 weeks.",
+    "Confidence: Medium (demo until per-artist mix export is wired)."
+  ]
+}

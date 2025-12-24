@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/css/transition.css" />
     <link rel="stylesheet" href="/css/menu.css" />
     <link rel="stylesheet" href="/css/home.css" />
+    <link rel="stylesheet" href="/css/home-story-layer.css" />
     <link rel="stylesheet" href="/css/footer.css" />
   </head>
   <body>
@@ -41,7 +42,6 @@
             <li><a href="/">Overview</a></li>
             <li><a href="/about">About</a></li>
             <li><a href="/work">Artist Signals</a></li>
-            <li><a href="/project">Method</a></li>
             <li><a href="/contact">Contact</a></li>
           </ul>
         </nav>
@@ -162,6 +162,40 @@
             </div>
           </div>
           <div class="home-about-header">
+            <div class="story-layer" data-story-layer>
+              <div class="story-kicker">
+                <span class="story-badge mono">
+                  <strong>COMING SOON</strong> / DEMO MODE
+                </span>
+                <span class="story-badge mono">Up to 5 artists</span>
+              </div>
+              <p class="md story-subline">
+                Enter artists you want to evaluate. Demo mode shows how the workflow will feel before live channel scanning ships.
+              </p>
+
+              <div class="story-row">
+                <div class="story-input-row">
+                  <input
+                    id="storyArtistInput"
+                    type="text"
+                    placeholder="Type an artist name…"
+                    autocomplete="off"
+                  />
+                  <button id="storyAddArtist" type="button" class="story-btn mono">
+                    Add
+                  </button>
+                  <button id="storyScanBtn" type="button" class="story-btn mono">
+                    Scan artist catalog now
+                  </button>
+                </div>
+
+                <div id="storyChips" class="chips" aria-live="polite"></div>
+                <p id="storyStatus" class="muted">Demo mode: enter up to 5 artists.</p>
+
+                <p class="mono signals-subtitle">SIGNALS THAT MAKE A ROSTER DECISION FAST.</p>
+                <div id="storyArtistCards" class="artist-cards" hidden></div>
+              </div>
+            </div>
             <p
               class="mono"
               data-animate-type="scramble"
@@ -175,13 +209,13 @@
               data-animate-delay="0.2"
               data-animate-on-scroll="true"
             >
-              Five artists, four signals, one clear story.
+              Five artists, four signals.
             </h3>
           </div>
         </div>
         <div class="home-about-col">
           <div class="home-about-col-row">
-            <div class="home-about-card">
+            <div class="home-about-card story-signal" tabindex="0" data-signal="recent_lift_28d">
               <p
                 class="mono"
                 data-animate-type="scramble"
@@ -195,12 +229,17 @@
                 data-animate-delay="0.2"
                 data-animate-on-scroll="true"
               >
-                Reach
+                28-day lift
               </h4>
-              <p class="md" data-insight="total_views" data-format="short">277M</p>
-              <p class="muted">Total views across the roster.</p>
+              <p class="md">
+                <span data-story-format="signals_recent_lift_28d_value" data-format="short">161.7K</span>
+                <span data-story="signals_recent_lift_28d_unit">views/day</span>
+              </p>
+              <p class="muted">
+                Led by <span data-story="signals_recent_lift_28d_leader_name">Flyana Boss</span>.
+              </p>
             </div>
-            <div class="home-about-card">
+            <div class="home-about-card story-signal" tabindex="0" data-signal="resonance">
               <p
                 class="mono"
                 data-animate-type="scramble"
@@ -216,12 +255,14 @@
               >
                 Resonance
               </h4>
-              <p class="md" data-insight="avg_engagement_rate" data-format="percent">5.6%</p>
-              <p class="muted">Weighted engagement across releases.</p>
+              <p class="md">
+                <span data-story-format="signals_resonance_value" data-format="percent">7.22%</span>
+              </p>
+              <p class="muted">Led by <span data-story="signals_resonance_leader_name">Corook</span>.</p>
             </div>
           </div>
           <div class="home-about-col-row">
-            <div class="home-about-card">
+            <div class="home-about-card story-signal" tabindex="0" data-signal="underused_winner">
               <p
                 class="mono"
                 data-animate-type="scramble"
@@ -235,17 +276,16 @@
                 data-animate-delay="0.3"
                 data-animate-on-scroll="true"
               >
-                Momentum
+                Underused winner
               </h4>
               <p class="md">
-                <span data-insight="momentum_leader_value" data-format="short">833</span>
-                views/day
+                <span data-story="signals_underused_winner_value">3.8</span><span data-story="signals_underused_winner_unit">x</span>
               </p>
               <p class="muted">
-                Led by <span data-insight="momentum_leader_name">BiC Fizzle</span>.
+                Format advantage: <span data-story="signals_underused_winner_label">Official Music Video</span>.
               </p>
             </div>
-            <div class="home-about-card">
+            <div class="home-about-card story-signal" tabindex="0" data-signal="catalog_health">
               <p
                 class="mono"
                 data-animate-type="scramble"
@@ -259,12 +299,12 @@
                 data-animate-delay="0.35"
                 data-animate-on-scroll="true"
               >
-                Revenue proxy
+                Catalog health
               </h4>
-              <p class="md" data-insight="total_est_revenue_usd" data-format="currency">
-                $693K
+              <p class="md">
+                <span data-story-format="signals_health_value" data-format="percent">92.00%</span>
               </p>
-              <p class="muted">Estimated revenue from YouTube data.</p>
+              <p class="muted"><span data-story="signals_health_note">Coverage + completeness checks</span></p>
             </div>
           </div>
         </div>
@@ -731,10 +771,34 @@
       </div>
     </footer>
 
+    <dialog id="signalDialog" aria-labelledby="signalDialogTitle">
+      <div class="signal-dialog-inner">
+        <div class="signal-dialog-header">
+          <div>
+            <p class="mono signal-dialog-title" id="signalDialogTitle">Signal proof</p>
+            <p class="muted" id="signalDialogSubtitle">One chart + context</p>
+          </div>
+          <button id="signalDialogClose" type="button" class="signal-dialog-close" aria-label="Close">
+            ×
+          </button>
+        </div>
+
+        <div class="signal-dialog-grid">
+          <div class="signal-dialog-chart">
+            <canvas id="signalDialogCanvas"></canvas>
+          </div>
+          <div class="signal-dialog-notes">
+            <ul id="signalDialogNotes"></ul>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
     <script type="module" src="/script/lenis-scroll.js"></script>
     <script type="module" src="/script/transition.js"></script>
     <script type="module" src="/script/menu.js"></script>
     <script type="module" src="/script/home.js"></script>
     <script type="module" src="/script/insights.js"></script>
+    <script type="module" src="/script/home-story-layer.js"></script>
   </body>
 </html>

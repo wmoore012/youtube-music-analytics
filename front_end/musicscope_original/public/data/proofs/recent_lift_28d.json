@@ -1,0 +1,16 @@
+{
+  "title": "Recent Lift (28d)",
+  "subtitle": "Median views/day over the last 28 days (demo)",
+  "chart": {
+    "type": "bar",
+    "label": "Views/day (28d)",
+    "labels": ["Flyana Boss", "Corook", "BiC Fizzle", "Artist Four", "Artist Five"],
+    "data": [161700, 124900, 83300, 61200, 48700]
+  },
+  "bullets": [
+    "What happened: One artist is moving right now (28d lift).",
+    "So what: Prioritize faster follow-ups while attention is high.",
+    "Now what: Test 2 upload formats over the next 14 days.",
+    "Confidence: Medium (demo until nightly export is wired)."
+  ]
+}

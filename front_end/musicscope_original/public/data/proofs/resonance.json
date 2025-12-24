@@ -1,0 +1,16 @@
+{
+  "title": "Resonance",
+  "subtitle": "Weighted engagement rate (demo)",
+  "chart": {
+    "type": "bar",
+    "label": "Engagement rate (%)",
+    "labels": ["Corook", "Flyana Boss", "BiC Fizzle", "Artist Four", "Artist Five"],
+    "data": [7.22, 5.18, 4.93, 4.11, 3.62]
+  },
+  "bullets": [
+    "What happened: Fans aren’t just watching — they’re responding.",
+    "So what: Engagement strength supports sustained growth.",
+    "Now what: Replicate the last winning formats and topics.",
+    "Confidence: Medium (demo until nightly export is wired)."
+  ]
+}

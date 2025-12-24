@@ -1,0 +1,16 @@
+{
+  "title": "Catalog Health",
+  "subtitle": "Coverage + completeness checks (demo)",
+  "chart": {
+    "type": "bar",
+    "label": "Pass rate (%)",
+    "labels": ["Video metadata coverage", "Like/comment availability", "Type classification coverage", "Freshness"],
+    "data": [96, 88, 92, 91]
+  },
+  "bullets": [
+    "What happened: Most checks pass — a few gaps remain.",
+    "So what: Health determines how much to trust comparisons.",
+    "Now what: Fix the failing inputs before adding new signals.",
+    "Confidence: Medium (demo until nightly export is wired)."
+  ]
+}
