@@ -312,14 +312,10 @@ const initSignalPopouts = async () => {
 
   closeBtn.addEventListener("click", close);
   dialog.addEventListener("click", (event) => {
-    const rect = dialog.getBoundingClientRect();
-    const inDialog =
-      rect.top <= event.clientY &&
-      event.clientY <= rect.top + rect.height &&
-      rect.left <= event.clientX &&
-      event.clientX <= rect.left + rect.width;
-
-    if (!inDialog) close();
+    const clickedChart = event.target?.closest?.(".signal-dialog-chart");
+    const clickedClose = event.target === closeBtn || event.target?.closest?.("#signalDialogClose");
+    if (clickedClose) return;
+    if (!clickedChart) close();
   });
 
   document.querySelectorAll(".home-about-card.story-signal").forEach((card) => {
