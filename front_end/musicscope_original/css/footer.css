@@ -71,7 +71,22 @@ footer .footer-bottom .footer-col:nth-child(2) {
 }
 
 footer .footer-logo {
-  width: 60px;
+  width: auto;
+}
+
+footer .footer-logo .brand-wordmark {
+  color: var(--base-100);
+  font-size: 1rem;
+}
+
+footer .footer-logo .tv-icon {
+  background: var(--accent-1);
+  box-shadow: 0 10px 26px rgba(255, 45, 45, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+footer .footer-logo .tv-icon::after {
+  background: var(--base-100);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 footer .footer-bottom .footer-col:nth-child(2) p.mono {

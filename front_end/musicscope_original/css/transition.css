@@ -28,16 +28,32 @@
   top: 120%;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 15, 15, 0.9);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
   opacity: 0;
   will-change: transform, opacity;
 }
 
-.transition-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.transition-logo .brand-wordmark {
+  color: var(--base-100);
+  font-size: 0.95rem;
+}
+
+.transition-logo .tv-icon {
+  width: 2rem;
+  height: 1.5rem;
+  background: var(--accent-1);
+  box-shadow: 0 12px 28px rgba(255, 45, 45, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.transition-logo .tv-icon::after {
+  background: var(--base-100);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .mask-transition {
