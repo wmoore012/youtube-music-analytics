@@ -196,6 +196,25 @@
                 <div id="storyArtistCards" class="artist-cards" hidden></div>
               </div>
             </div>
+
+            <div class="signal-charts" aria-label="Signal proof charts">
+              <div class="signal-chart" data-signal="recent_lift_28d">
+                <p class="mono">28-day lift</p>
+                <div class="signal-plot" id="plot-recent_lift_28d"></div>
+              </div>
+              <div class="signal-chart" data-signal="resonance">
+                <p class="mono">Resonance</p>
+                <div class="signal-plot" id="plot-resonance"></div>
+              </div>
+              <div class="signal-chart" data-signal="underused_winner">
+                <p class="mono">Underused winner</p>
+                <div class="signal-plot" id="plot-underused_winner"></div>
+              </div>
+              <div class="signal-chart" data-signal="catalog_health">
+                <p class="mono">Catalog health</p>
+                <div class="signal-plot" id="plot-catalog_health"></div>
+              </div>
+            </div>
             <p
               class="mono"
               data-animate-type="scramble"
@@ -770,29 +789,6 @@
         </div>
       </div>
     </footer>
-
-    <dialog id="signalDialog" aria-labelledby="signalDialogTitle">
-      <div class="signal-dialog-inner">
-        <div class="signal-dialog-header">
-          <div>
-            <p class="mono signal-dialog-title" id="signalDialogTitle">Signal proof</p>
-            <p class="muted" id="signalDialogSubtitle">One chart + context</p>
-          </div>
-          <button id="signalDialogClose" type="button" class="signal-dialog-close" aria-label="Close">
-            ×
-          </button>
-        </div>
-
-        <div class="signal-dialog-grid">
-          <div class="signal-dialog-chart">
-            <canvas id="signalDialogCanvas"></canvas>
-          </div>
-          <div class="signal-dialog-notes">
-            <ul id="signalDialogNotes"></ul>
-          </div>
-        </div>
-      </div>
-    </dialog>
 
     <script type="module" src="/script/lenis-scroll.js"></script>
     <script type="module" src="/script/transition.js"></script>

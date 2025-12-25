@@ -1,4 +1,4 @@
-import Chart from "chart.js/auto";
+import Plotly from "plotly.js-dist-min";
 
 const STORY_OVERVIEW_URL = "/data/overview.json";
 const STORY_ARTISTS_URL = "/data/artists.json";
@@ -184,13 +184,13 @@ const initChipsDemo = async () => {
   renderChips();
 };
 
-let activeChart = null;
-
-const destroyActiveChart = () => {
-  if (activeChart && typeof activeChart.destroy === "function") {
-    activeChart.destroy();
+const getCssVar = (name, fallback) => {
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  } catch {
+    return fallback;
   }
-  activeChart = null;
 };
 
 const setStoryText = (overview) => {
@@ -214,119 +214,151 @@ const setStoryText = (overview) => {
   });
 };
 
-const renderProof = (signalKey, proof, canvas, notesList) => {
-  destroyActiveChart();
-
-  const type = safeText(proof?.chart?.type || "bar");
+const buildPlotlyConfig = (signalKey, proof) => {
   const labels = Array.isArray(proof?.chart?.labels) ? proof.chart.labels : [];
   const data = Array.isArray(proof?.chart?.data) ? proof.chart.data : [];
-  const dataLabel = safeText(proof?.chart?.label || "");
+  const barColor = getCssVar("--accent-3", "#27c2e6") || "#27c2e6";
 
-  const config = {
-    type,
-    data: {
-      labels,
-      datasets: [
-        {
-          label: dataLabel,
-          data,
-          backgroundColor: "#27c2e6",
-          borderColor: "#27c2e6",
-          borderWidth: 1,
-        },
-      ],
+  const x = labels;
+  const y = data;
+
+  const tickPrefix = signalKey === "resonance" ? "" : "";
+  const tickSuffix = signalKey === "resonance" ? "%" : "";
+
+  const trace = {
+    type: "bar",
+    x,
+    y,
+    marker: {
+      color: barColor,
+      opacity: 0.9,
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: !!dataLabel, position: "bottom" },
-      },
-      scales: {
-        x: {
-          ticks: {
-            callback: (v) => (signalKey === "resonance" ? `${v}%` : formatShort(v)),
-          },
-        },
-        y: {
-          ticks: {
-            callback: (v) => formatShort(v),
-          },
-        },
-      },
+    hovertemplate: "%{x}<br>%{y}<extra></extra>",
+  };
+
+  const layout = {
+    autosize: true,
+    margin: { l: 32, r: 10, t: 6, b: 34 },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    font: {
+      family: "IBM Plex Mono, monospace",
+      color: "rgba(247, 242, 234, 0.85)",
+      size: 11,
+    },
+    xaxis: {
+      tickfont: { size: 10 },
+      gridcolor: "rgba(247, 242, 234, 0.06)",
+      tickprefix: tickPrefix,
+      ticksuffix: tickSuffix,
+    },
+    yaxis: {
+      gridcolor: "rgba(247, 242, 234, 0.06)",
+      zerolinecolor: "rgba(247, 242, 234, 0.10)",
     },
   };
 
-  activeChart = new Chart(canvas, config);
+  const config = {
+    displayModeBar: false,
+    responsive: true,
+  };
 
-  notesList.innerHTML = "";
-  const bullets = Array.isArray(proof?.bullets) ? proof.bullets : [];
-  bullets.slice(0, 4).forEach((b) => {
-    const li = document.createElement("li");
-    li.textContent = safeText(b);
-    notesList.appendChild(li);
-  });
+  return { trace, layout, config };
 };
 
-const initSignalPopouts = async () => {
-  const dialog = document.getElementById("signalDialog");
-  const titleEl = document.getElementById("signalDialogTitle");
-  const subtitleEl = document.getElementById("signalDialogSubtitle");
-  const closeBtn = document.getElementById("signalDialogClose");
-  const canvas = document.getElementById("signalDialogCanvas");
-  const notesList = document.getElementById("signalDialogNotes");
+const initSignalCharts = async () => {
+  const chartRoots = Array.from(document.querySelectorAll(".signal-chart[data-signal]"));
+  if (!chartRoots.length) return;
 
-  if (!dialog || !titleEl || !subtitleEl || !closeBtn || !canvas || !notesList) return;
+  const proofs = {};
+  await Promise.all(
+    Object.entries(PROOF_URLS).map(async ([key, url]) => {
+      try {
+        proofs[key] = await fetchJson(url);
+      } catch {
+        proofs[key] = null;
+      }
+    })
+  );
 
-  const open = async (signalKey) => {
-    const url = PROOF_URLS[signalKey];
-    if (!url) return;
+  await Promise.all(
+    chartRoots.map(async (root) => {
+      const signalKey = root.dataset.signal;
+      const plotId = `plot-${signalKey}`;
+      const plotEl = document.getElementById(plotId);
+      const proof = proofs[signalKey];
+      if (!plotEl || !proof) return;
 
-    let proof;
-    try {
-      proof = await fetchJson(url);
-    } catch {
-      proof = null;
-    }
+      const { trace, layout, config } = buildPlotlyConfig(signalKey, proof);
+      await Plotly.newPlot(plotEl, [trace], layout, config);
+    })
+  );
 
-    titleEl.textContent = safeText(proof?.title || "Signal proof");
-    subtitleEl.textContent = safeText(proof?.subtitle || "One chart + context");
+  if (window.ScrollTrigger?.refresh) {
+    window.ScrollTrigger.refresh();
+  }
+};
 
-    if (proof) {
-      renderProof(signalKey, proof, canvas, notesList);
-    }
+const initSignalHighlighting = async () => {
+  const cards = Array.from(document.querySelectorAll(".home-about-card.story-signal[data-signal]"));
+  const charts = Array.from(document.querySelectorAll(".signal-chart[data-signal]"));
+  if (!cards.length || !charts.length) return;
 
-    if (!dialog.open) {
-      dialog.showModal();
-    }
+  let lockedKey = null;
+
+  const applyHighlight = (activeKey) => {
+    charts.forEach((el) => {
+      const key = el.dataset.signal;
+      const isHot = key === activeKey;
+      el.classList.toggle("is-hot", !!activeKey && isHot);
+      el.classList.toggle("is-dim", !!activeKey && !isHot);
+    });
 
     if (window.ScrollTrigger?.refresh) {
       window.ScrollTrigger.refresh();
     }
   };
 
-  const close = () => {
-    destroyActiveChart();
-    if (dialog.open) dialog.close();
+  const clearHighlight = () => {
+    charts.forEach((el) => {
+      el.classList.remove("is-hot");
+      el.classList.remove("is-dim");
+    });
   };
 
-  closeBtn.addEventListener("click", close);
-  dialog.addEventListener("click", (event) => {
-    const clickedChart = event.target?.closest?.(".signal-dialog-chart");
-    const clickedClose = event.target === closeBtn || event.target?.closest?.("#signalDialogClose");
-    if (clickedClose) return;
-    if (!clickedChart) close();
-  });
-
-  document.querySelectorAll(".home-about-card.story-signal").forEach((card) => {
+  cards.forEach((card) => {
     const key = card.dataset.signal;
     if (!key) return;
 
-    card.addEventListener("click", () => open(key));
+    card.addEventListener("mouseenter", () => {
+      if (lockedKey) return;
+      applyHighlight(key);
+    });
+
+    card.addEventListener("mouseleave", () => {
+      if (lockedKey) return;
+      clearHighlight();
+    });
+
+    card.addEventListener("click", () => {
+      if (lockedKey === key) {
+        lockedKey = null;
+        clearHighlight();
+        return;
+      }
+
+      lockedKey = key;
+      applyHighlight(key);
+    });
+
     card.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        open(key);
+        card.click();
+      }
+      if (event.key === "Escape") {
+        lockedKey = null;
+        clearHighlight();
       }
     });
   });
@@ -341,7 +373,8 @@ const initStory = async () => {
   }
 
   await initChipsDemo();
-  await initSignalPopouts();
+  await initSignalCharts();
+  await initSignalHighlighting();
 };
 
 document.addEventListener("DOMContentLoaded", () => {
