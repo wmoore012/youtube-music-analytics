@@ -1,11 +1,26 @@
-# 🎵 MusicScope™ – YouTube Analytics for A&R Intelligence
-### Data-driven insights for music industry decision-making
+# 🎵 TrackStats YT – YouTube Analytics for A&R Intelligence
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.io/)
+<img src="docs/assets/dashboard-preview.png" alt="TrackStats YT Dashboard Preview" width="100%">
 
-<img src="docs/assets/dashboard-preview.png" alt="MusicScope Dashboard Preview" width="100%">
+> **Strategic Intelligence for A&Rs, Managers & Labels**: A specialized analytics platform to track a specific cohort of artists. It helps answer critical questions: **Who is ready to tour together?** and **Where should we allocate marketing spend next?**
+>
+> **Now featuring an interactive [Streamlit](https://streamlit.io) dashboard for real-time data exploration.**
 
-> **TL;DR:** Production-grade YouTube analytics platform that helps music labels decide **which artist to promote next**. Automates ETL into MySQL, runs QA tests, and surfaces momentum + engagement insights in a Streamlit app that is easy for non-technical stakeholders to use.
+---
+
+## 📊 Visual Insights Gallery
+
+The platform generates professional-grade visuals to tell the story of your roster's performance.
+
+| **Engagement vs Daily Views** | **Diverging Sentiment** |
+|:---:|:---:|
+| ![Avg Engagement vs Avg Daily Views](<docs/images/Avg%20Engagement%20vs%20Avg%20Daily%20Views.png>) | ![Diverging Sentiment Bars](<docs/images/diverging%20sentiment%20bars.png>) |
+| *Spot high-impact artists vs. high-volume passive listening* | *Track emotional response over time* |
+
+| **Content Strategy Mix** | **Frontend Vision (Concept)** |
+|:---:|:---:|
+| ![Content Mix Dots](<docs/images/Content%20mix%20dots.png>) | ![Frontend Hero Example](<docs/images/Front%20end%20example%20idea/Frontend%20Hero%20example%201.png>) |
+| *Analyze what content types drive performance* | *Future roadmap: Premium artist-facing portal* |
 
 ---
 
@@ -21,29 +36,21 @@
 
 ---
 
-## 🎯 Why This Matters
+## 🚀 Looking for Complete Catalog Intelligence?
 
-Labels can’t promote every artist at once. With limited budget, **choosing who to push next is a million-dollar decision** that’s often made from gut feel and fragmented dashboards.
+**[Perday CatalagLAB](https://perdaycatalog.com)** is for personalized intelligence across a songwriter/producer's entire catalog of songs.
 
-**MusicScope™** centralizes YouTube metrics into a normalized MySQL warehouse, runs daily ETL with QA checks, and exposes a Streamlit app that:
+![Perday CatalogLAB Promo](<docs/images/Perday%20catalogLAB%20%20promo/perday%20CatalogLAB%20promo.png>)
 
-- Compares artists side-by-side on velocity and engagement
-- Highlights which content strategies are working
-- Makes the “who next?” conversation data-informed instead of opinion-only
+**TrackStats YT** (this repo) is for **deep-dive analytics on a specific artist roster**, whereas **Perday CatalogLAB** is for **broad intelligence across a songwriter/producer's entire history**.
+
+---
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1 — See the demo in your browser (no setup)
-
-Click the **“Open in Streamlit”** badge at the top of this README.
-
-- Runs in **Demo Mode** using a curated cohort of 5 artists
-- Uses only local JSON/CSV files – **no database or API keys required**
-- Designed so evaluators can understand the story in ~30 seconds
-
-### Option 2 — Run the demo locally in ~60 seconds
+### Run the demo locally in ~60 seconds
 
 **Prerequisites:** Python 3.10+
 
@@ -58,45 +65,14 @@ pip install -e ".[demo]"
 streamlit run streamlit_app.py
 ```
 
-You should see **“MusicScope™ live roster snapshot”** with:
-
-- KPI tiles (views, revenue, engagement) **with deltas and arrows**
-- A velocity/engagement **Plotly scatter** chart
-- Roster/content views built from curated CSVs in `music_analysis_tables/`
-- A **Top Videos** table with graceful placeholders and **Download current view (CSV)** button
-
-All of this runs from `demo_data/curated_cohort.json` and local CSVs – no external services.
-
-### Option 3 — Full pipeline with MySQL + YouTube API
-
-If you want to see the **real ETL + warehouse** behind the demo:
-
-```bash
-# Install full stack (including ETL/DB tooling)
-pip install -e ".[etl,dev]"
-
-cp .env.example .env
-# Add your YouTube API key and MySQL credentials
-
-python tools/setup/create_tables.py       # One-time schema setup
-python tools/etl/run_comprehensive_etl.py # Full analytics run
-```
-
-Then start the app as before:
-
-```bash
-streamlit run streamlit_app.py
-```
-
-When the database is reachable and `DB_HOST`, `DB_USER`, `DB_PASS`, and `DB_NAME` are set, the app switches to **Production (MySQL)** mode and clearly labels this at the top. If any required variable is missing or the DB is unreachable, the app **fails loudly with a clear error** instead of silently falling back to demo data.
-
-> ✅ **DX note:** DB tests and ETL freshness checks are gated behind `RUN_DB_TESTS=1` so `pytest -q` stays green and noise-free on laptops without MySQL.
+### Full pipeline with MySQL + YouTube API
+(See [`docs/`](docs/README.md) for full production setup)
 
 ---
 
 ## 🧠 How It Works
 
-At a high level, MusicScope watches YouTube channels daily, collects per-video metrics and comments, scores sentiment, and stores everything in a normalized MySQL schema. Analytics jobs build roster-level tables that feed both notebooks and the Streamlit app.
+At a high level, TrackStats YT watches YouTube channels daily, collects per-video metrics and comments, scores sentiment, and stores everything in a normalized MySQL schema. Analytics jobs build roster-level tables that feed both notebooks and the Streamlit app.
 
 ```mermaid
 graph LR
@@ -108,43 +84,21 @@ graph LR
 
     B --> G[Sentiment Analysis]
     G --> C
-
-    C --> H[Quality Gates]
-    H --> I[Automated Tests]
 ```
 
 **Stack highlights:** Python 3.10+, SQLAlchemy, MySQL 8, Pydantic v2, Pandas/NumPy, Plotly, Streamlit 1.52+, pytest, mypy, pre-commit, GitHub Actions.
 
-Key Streamlit 1.52+ touches in the app:
-
-- `st.metric` with `delta` + `delta_arrow="auto"` for directional KPIs
-- `st.plotly_chart(..., use_container_width=True, height=...)` for stable layouts
-- `st.dataframe(..., placeholder="—", column_config=...)` for readable tables
-- `st.download_button(data=<callable>, ...)` for on-demand CSV export
-
 ---
 
-## 🧩 Skills Demonstrated
+## 📚 Contact & Hiring
 
-- Production ETL and data modeling in MySQL
-- Typed Python with tests and CI (including ETL freshness tests)
-- Modern Streamlit dashboard design with Plotly
-- Data storytelling for non-technical decision-makers
+**I am actively looking for internships for Summer 2026.**
 
----
+If you are interested in discussing music analytics, data engineering, or potential roles:
 
-## 📚 More Docs + Contact
-
-More detailed docs live in [`docs/`](docs/README.md):
-
-- Getting started + environment setup
-- Architecture and ETL pipeline internals
-- Docker setup and artist color configuration
-
-**Want to talk about music analytics, data engineering, or how this could apply to your label or company?**
-
-- Email: [wmoore012@gmail.com](mailto:wmoore012@gmail.com)
-- LinkedIn: [linkedin.com/in/wiltonmoore](https://linkedin.com/in/wiltonmoore/)
-- GitHub: [github.com/wmoore012](https://github.com/wmoore012)
+- **LinkedIn**: [linkedin.com/in/wiltonmoore](https://www.linkedin.com/in/wiltonmoore/)
+- **Email**: [wmoore012@gmail.com](mailto:wmoore012@gmail.com)
+- **GitHub**: [github.com/wmoore012](https://github.com/wmoore012)
+- **Portfolio / SaaS**: [Perdaycatalog.com](https://perdaycatalog.com)
 
 *Built with ❤️ and 🎵 by Wilton Moore • University of North Carolina at Charlotte • M.S. Data Science and Business Analytics '27*

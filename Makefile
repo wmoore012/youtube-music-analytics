@@ -191,7 +191,7 @@ compliance-check: ## Validate YouTube ToS and privacy compliance
 # Pipeline operations
 run-etl: ## Execute core ETL pipeline
 	@echo "🚀 Running ETL pipeline..."
-	python tools/etl/run_focused_etl.py
+	python tools/core/run_focused_etl.py
 	@echo "✅ ETL pipeline complete"
 
 normalize-videos: ## Populate music_videos_normalized from existing youtube tables (fast)

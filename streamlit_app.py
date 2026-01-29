@@ -1,34 +1,38 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import os
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
-from streamlit_extras.let_it_rain import rain
 from streamlit_extras.metric_cards import style_metric_cards
+from streamlit_option_menu import option_menu
+
+from web.etl_helpers import get_engine
+from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
 try:
-    from st_on_hover_tabs import on_hover_tabs
+    # Disable on_hover_tabs due to local loading issues (assets not found)
+    # from st_on_hover_tabs import on_hover_tabs
+    on_hover_tabs = None
 except ModuleNotFoundError:  # pragma: no cover - external dependency guard
     on_hover_tabs = None
-from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
-
-from web.etl_helpers import get_engine, read_sql_safe
-from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
 
+CACHE_TTL_SECONDS = 900  # 15 minutes
+
+
 DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
-DEFAULT_DATA_FRESHNESS_DAYS = 30
+DEFAULT_DATA_FRESHNESS_DAYS = 90
 
 
 def _read_int_env(name: str, default: int) -> int:
@@ -50,9 +54,6 @@ def _read_int_env(name: str, default: int) -> int:
     if value < 0:
         raise RuntimeError(f"{name} must be >= 0, got {value}")
     return value
-
-
-CACHE_TTL_SECONDS: int = _read_int_env("CACHE_TTL_SECONDS", 900)  # Default: 15 minutes
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -104,10 +105,14 @@ def _get_db_setting(name: str) -> str | None:
     and avoids subtle differences between demo and production modes.
     """
 
-    if name in st.secrets:
-        value = st.secrets[name]
-        if value:
-            return str(value)
+    try:
+        if name in st.secrets:
+            value = st.secrets[name]
+            if value:
+                return str(value)
+    except Exception:  # noqa: BLE001 - gracefully handle missing secrets.toml
+        pass
+
     if name in st.session_state:
         value = st.session_state[name]
         if value:
@@ -175,6 +180,8 @@ def load_artist_summary_from_demo() -> pd.DataFrame:
                 "artist_name": artist.get("name"),
                 "total_views": metrics.get("total_views", 0),
                 "total_videos": metrics.get("total_videos", 0),
+                "total_likes": 0,
+                "total_comments": 0,
                 "total_est_revenue_usd": metrics.get("total_views", 0) * 0.0015,
                 "avg_engagement_rate": metrics.get("engagement_rate", 0.0),
             }
@@ -390,32 +397,42 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
 
     total_views = int(filtered["total_views"].sum())
     total_videos = int(filtered["total_videos"].sum())
+    total_likes = int(filtered["total_likes"].sum())
+    total_comments = int(filtered["total_comments"].sum())
     total_revenue = float(filtered["total_est_revenue_usd"].sum())
     avg_engagement = float(filtered["avg_engagement_rate"].mean())
 
     # Roster-wide baselines for directional context
     roster_views_per_artist = summary["total_views"].sum() / max(len(summary), 1)
     roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
+    roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
+    roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
     roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
     roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
 
     selected_artist_count = max(len(filtered), 1)
     views_per_artist = total_views / selected_artist_count
     videos_per_artist = total_videos / selected_artist_count
+    likes_per_artist = total_likes / selected_artist_count
+    comments_per_artist = total_comments / selected_artist_count
     revenue_per_artist = total_revenue / selected_artist_count
 
-    def _pct_delta(current: float, baseline: float) -> str:
+    def _pct_delta(current: float, baseline: float) -> str | None:
         if baseline == 0:
-            return "+0.0%"
+            return None
         change = (current / baseline - 1.0) * 100.0
+        if abs(change) < 0.1:
+            return None
         return f"{change:+.1f}%"
 
     views_delta = _pct_delta(views_per_artist, roster_views_per_artist)
     videos_delta = _pct_delta(videos_per_artist, roster_videos_per_artist)
+    likes_delta = _pct_delta(likes_per_artist, roster_likes_per_artist)
+    comments_delta = _pct_delta(comments_per_artist, roster_comments_per_artist)
     revenue_delta = _pct_delta(revenue_per_artist, roster_revenue_per_artist)
     engagement_delta = _pct_delta(avg_engagement, roster_avg_engagement)
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
         "Total views",
         format_number(total_views),
@@ -433,6 +450,22 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
         help="Per-artist video count vs roster-wide average",
     )
     c3.metric(
+        "Total likes",
+        format_number(total_likes),
+        delta=likes_delta,
+        delta_color="normal",
+        delta_arrow="auto",
+        help="Per-artist likes vs roster-wide average",
+    )
+    c4.metric(
+        "Total comments",
+        format_number(total_comments),
+        delta=comments_delta,
+        delta_color="normal",
+        delta_arrow="auto",
+        help="Per-artist comments vs roster-wide average",
+    )
+    c5.metric(
         "Avg engagement rate",
         format_percent(avg_engagement),
         delta=engagement_delta,
@@ -440,7 +473,7 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
         delta_arrow="auto",
         help="Engagement rate vs roster-wide average",
     )
-    c4.metric(
+    c6.metric(
         "Est. revenue (USD)",
         format_currency(total_revenue),
         delta=revenue_delta,
@@ -458,13 +491,13 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
     )
 
     # Celebrate big wins in a fun, notebook-consistent way
-    if total_views >= 10_000_000:
-        rain(
-            emoji="🎉",
-            font_size=40,
-            falling_speed=5,
-            animation_length=2,
-        )
+    # if total_views >= 10_000_000:
+    #     rain(
+    #         emoji="🎉",
+    #         font_size=40,
+    #         falling_speed=5,
+    #         animation_length=2,
+    #     )
 
 
 def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
@@ -644,11 +677,11 @@ def main() -> None:
       vars / ``.env`` and web.etl_helpers.get_engine().
     """
 
-    st.set_page_config(page_title="MusicScope Streamlit", layout="wide")
+    st.set_page_config(page_title="TrackStats YT™", layout="wide")
 
     col_title, col_mode = st.columns([4, 1])
     with col_title:
-        st.title("MusicScope™ live roster snapshot")
+        st.title("TrackStats YT™ live roster snapshot")
 
     mode = get_data_mode()
     with col_mode:
@@ -661,7 +694,7 @@ def main() -> None:
             "realistic metrics. No database setup required."
         )
     else:
-        st.success("🔗 **Data Source: Production (MySQL)** — live data from the " "YouTube analytics warehouse.")
+        st.success("🔗 **Data Source: Production (MySQL)** — live data from the YouTube analytics warehouse.")
 
     artist_summary = load_artist_summary(mode)
     normalized_videos = load_normalized_videos(mode)
@@ -696,7 +729,7 @@ def main() -> None:
     # Hover-based sidebar navigation with filters to keep the main canvas clean
     with st.sidebar:
         if on_hover_tabs is None:
-            st.warning("⚠️ Hover tabs unavailable; using fallback navigation.")
+            # st.warning("⚠️ Hover tabs unavailable; using fallback navigation.")
             tabs = option_menu(
                 menu_title=None,
                 options=["Filters", "About"],
@@ -727,18 +760,21 @@ def main() -> None:
         st.stop()
 
     metrics_dates = normalized_videos["metrics_date"].dt.date
-    default_range = (metrics_dates.min(), metrics_dates.max())
-    date_selection = st.sidebar.date_input("Metrics window", value=default_range)
-    if isinstance(date_selection, (list, tuple)):
-        start_date, end_date = date_selection
-    else:
-        start_date = end_date = date_selection
+    min_date = metrics_dates.min()
+    max_date = metrics_dates.max()
+
+    # Use a slider for date range selection, defaulting to the full history
+    date_selection = st.sidebar.slider(
+        "Metrics window", min_value=min_date, max_value=max_date, value=(min_date, max_date), format="YYYY-MM-DD"
+    )
+
+    # st.slider with a tuple value always returns a tuple of 2
+    start_date, end_date = date_selection
 
     top_n = st.sidebar.slider("Show top videos", min_value=5, max_value=25, value=10, step=1)
-    st.sidebar.metric("Latest metrics date", default_range[1].isoformat())
+    st.sidebar.metric("Latest metrics date", max_date.isoformat())
     st.sidebar.metric("Rows loaded", f"{len(normalized_videos):,}")
 
-    summary_filtered = filter_by_artists(artist_summary, selected_artists)
     normalized_filtered = filter_by_date_window(
         filter_by_artists(normalized_videos, selected_artists), (start_date, end_date)
     )
@@ -780,7 +816,7 @@ def main() -> None:
 
     elif selected_view == "Artist Deep Dive":
         render_kpis(artist_summary, selected_artists)
-        st.markdown("Dive into per-artist performance and content mix to understand " "why certain videos overperform.")
+        st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
         render_content_mix(latest)
 
     else:  # "Velocity Analysis"
@@ -796,4 +832,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    from streamlit.web import cli as stcli
+
+    if st.runtime.exists():
+        main()
+    else:
+        sys.argv = ["streamlit", "run", sys.argv[0]]
+        sys.exit(stcli.main())
