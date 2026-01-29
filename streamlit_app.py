@@ -17,6 +17,10 @@ from streamlit_option_menu import option_menu
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
+CACHE_TTL_SECONDS = 900  # 15 minutes
+DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
+DEFAULT_DATA_FRESHNESS_DAYS = 90
+
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
     # from st_on_hover_tabs import on_hover_tabs
@@ -27,12 +31,6 @@ except ModuleNotFoundError:  # pragma: no cover - external dependency guard
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
-
-CACHE_TTL_SECONDS = 900  # 15 minutes
-
-
-DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
-DEFAULT_DATA_FRESHNESS_DAYS = 90
 
 
 def _read_int_env(name: str, default: int) -> int:
