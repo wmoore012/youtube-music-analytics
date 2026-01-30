@@ -26,7 +26,7 @@ This project helps surface what matters fast — growth, sentiment, velocity —
 ![Doppler](https://img.shields.io/badge/Security-Doppler-4C37BE?style=flat&logo=doppler&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/frontend-streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
-![Streamlit Header](docs/images/Streamlit/streamlit_header.png)
+![Streamlit Header](docs/images/streamlit/streamlit_header.png)
 
 ## 🧩 What This Project Shows
 
