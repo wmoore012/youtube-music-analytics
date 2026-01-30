@@ -210,3 +210,6 @@ notebooks/*_results.md
 
 # Local unique comment tracking database (do not commit local state)
 unique_comment_tracking.db
+
+# Allow documentation images
+!docs/images/**

@@ -26,7 +26,7 @@ This project helps surface what matters fast — growth, sentiment, velocity —
 ![Doppler](https://img.shields.io/badge/Security-Doppler-4C37BE?style=flat&logo=doppler&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/frontend-streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
-![Streamlit Header](<docs/images/Streamlit/streamlit header.png>)
+![Streamlit Header](docs/images/Streamlit/streamlit_header.png)
 
 ## 🧩 What This Project Shows
 
@@ -35,13 +35,13 @@ The platform generates professional-grade visuals to tell the story of your rost
 
 | **Engagement vs Daily Views** | **Diverging Sentiment** |
 |:---:|:---:|
-| ![Avg Engagement vs Avg Daily Views](<docs/images/Avg Engagement vs Avg Daily Views.png>) | ![Diverging Sentiment Bars](<docs/images/diverging sentiment bars.png>) |
+| ![Avg Engagement vs Avg Daily Views](docs/images/avg_engagement_vs_avg_daily_views.png) | ![Diverging Sentiment Bars](docs/images/diverging_sentiment_bars.png) |
 | *Spot high-impact artists vs. high-volume passive listening* | *Track emotional response over time* |
 
 ### 2. Built by the Creator of Perday CatalogLAB
 While **TrackStats YT** (this repo) focuses on *roster* analytics, my SaaS platform **Perday CatalogLAB** handles personalized intelligence for a songwriter/producer's entire catalog.
 
-[![Perday CatalogLAB Promo](<docs/images/Perday catalogLAB  promo/perday CatalogLAB promo.png>)](https://perdaycatalog.com)
+[![Perday CatalogLAB Promo](docs/images/perday_cataloglab_promo/perday_cataloglab_promo.png)](https://perdaycatalog.com)
 *[Visit Perdaycatalog.com](https://perdaycatalog.com)*
 
 ---
@@ -97,9 +97,9 @@ streamlit run streamlit_app.py
 - **Email**: [wmoore012@gmail.com](mailto:wmoore012@gmail.com)
 - **Portfolio / SaaS**: [Perdaycatalog.com](https://perdaycatalog.com)
 
-*Built with ❤️ and 🎵 by Wilton Moore • University of North Carolina at Charlotte • M.S. Data Science and Business Analytics '27*
+*Built with ❤️ and 🎵 by Wilton Moore • University of North Carolina at Charlotte • M.S. Data Science and Business Analytics Dec '26*
 
 <!-- Footer and Schema at the bottom -->
-![Streamlit Footer](<docs/images/Streamlit/streamlit footer.png>)
+![Streamlit Footer](docs/images/Streamlit/streamlit_footer.png)
 
 ![MySQL Schema](docs/images/mysql.png)
