@@ -100,6 +100,6 @@ streamlit run streamlit_app.py
 *Built with ❤️ and 🎵 by Wilton Moore • University of North Carolina at Charlotte • M.S. Data Science and Business Analytics Dec '26*
 
 <!-- Footer and Schema at the bottom -->
-![Streamlit Footer](docs/images/Streamlit/streamlit_footer.png)
+![Streamlit Footer](docs/images/streamlit/streamlit_footer.png)
 
 ![MySQL Schema](docs/images/mysql.png)
