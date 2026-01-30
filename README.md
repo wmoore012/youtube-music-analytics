@@ -26,7 +26,7 @@ This project helps surface what matters fast — growth, sentiment, velocity —
 ![Doppler](https://img.shields.io/badge/Security-Doppler-4C37BE?style=flat&logo=doppler&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/frontend-streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
-![Streamlit Header](docs/images/Streamlit/streamlit_header.png)
+![Streamlit Header](docs/images/streamlit/streamlit_header.png)
 
 ## 🧩 What This Project Shows
 
@@ -100,6 +100,6 @@ streamlit run streamlit_app.py
 *Built with ❤️ and 🎵 by Wilton Moore • University of North Carolina at Charlotte • M.S. Data Science and Business Analytics Dec '26*
 
 <!-- Footer and Schema at the bottom -->
-![Streamlit Footer](docs/images/Streamlit/streamlit_footer.png)
+![Streamlit Footer](docs/images/streamlit/streamlit_footer.png)
 
 ![MySQL Schema](docs/images/mysql.png)
