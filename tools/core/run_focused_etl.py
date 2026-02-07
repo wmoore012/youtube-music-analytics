@@ -13,9 +13,9 @@ Designed to be robust, fast, and fail-safe.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import TypedDict, cast
 
 from dotenv import load_dotenv
@@ -307,8 +307,8 @@ def run_bot_detection(engine: Engine) -> BotDetectionResults:
     try:
         from src.youtubeviz.bot_detection import (
             BotDetectionConfig,
-            analyze_bot_patterns,  # pyright: ignore[reportUnknownVariableType]
         )
+        from src.youtubeviz.bot_detection import analyze_bot_patterns  # pyright: ignore[reportUnknownVariableType]
 
         # Check if bot detection is enabled
         bot_detection_enabled = os.getenv("BOT_DETECTION_ENABLED", "false").lower() == "true"
