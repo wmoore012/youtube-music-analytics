@@ -1,0 +1,25 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "strict",
+  "reportMissingTypeStubs": "none",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "src"
+      ]
+    }
+  ],
+  "exclude": [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "archive",
+    ".cleanup_backups",
+    "datasets",
+    "notebooks"
+  ]
+}

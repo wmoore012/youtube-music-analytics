@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -76,6 +76,12 @@ def _read_int_env(name: str, default: int) -> int:
     return value
 
 
+def read_int_env(name: str, default: int) -> int:
+    """Public typed wrapper for integer env parsing."""
+
+    return _read_int_env(name, default)
+
+
 def _read_float_env(name: str, default: float) -> float:
     """Read a float from environment, with validation."""
 
@@ -94,6 +100,12 @@ def _read_float_env(name: str, default: float) -> float:
     if value < 0:
         raise RuntimeError(f"{name} must be >= 0, got {value}")
     return value
+
+
+def read_float_env(name: str, default: float) -> float:
+    """Public typed wrapper for float env parsing."""
+
+    return _read_float_env(name, default)
 
 
 def _parse_iso8601_duration_seconds(duration: object) -> int | None:

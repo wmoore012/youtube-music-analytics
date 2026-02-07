@@ -10,6 +10,22 @@ This script runs essential data processing tasks:
 Designed to be robust, fast, and fail-safe.
 """
 
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import TypedDict, cast
+
+from dotenv import load_dotenv
+from pandas import DataFrame
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+
+from tools.core.sentiment_analysis import process_sentiment_analysis
+from web.etl_helpers import get_engine
+
 # ============================================================================
 # IMPORTANT / DO NOT REGRESS (USER REQUEST)
 # ----------------------------------------------------------------------------
@@ -19,21 +35,50 @@ Designed to be robust, fast, and fail-safe.
 # via FOCUSED_ETL_NOTEBOOKS_REQUIRED=true.
 # ============================================================================
 
-from pathlib import Path
-import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Preflight utilities
-import os
-import subprocess
-from typing import Any, Mapping
 
-from dotenv import load_dotenv
-from sqlalchemy import text
+class BotDetectionResults(TypedDict, total=False):
+    processed: int
+    status: str
+    high_risk_bots: int
+    medium_risk_bots: int
+    bot_percentage: float
+    error: str
 
-from tools.core.sentiment_analysis import process_sentiment_analysis
-from web.etl_helpers import get_engine
+
+class SentimentRunResults(TypedDict):
+    processed: int
+    status: str
+
+
+class DataQualityStats(TypedDict):
+    videos: int
+    comments: int
+    sentiment_records: int
+    artists: int
+    sentiment_coverage: float
+
+
+class DataQualityResults(TypedDict):
+    quality_score: float
+    issues: list[str]
+    stats: DataQualityStats
+
+
+class NotebookRunResults(TypedDict):
+    executed: list[str]
+    failed: list[str]
+
+
+class PreflightResults(TypedDict):
+    songs_inserted: int
+    songs_rejected: int
+    normalized_upserts: int
+    songs_count: int
+    normalized_count: int
+    normalized_isrc_nulls: int
 
 
 def _read_bool_env(name: str, default: bool = False) -> bool:
@@ -46,10 +91,10 @@ def _read_bool_env(name: str, default: bool = False) -> bool:
 
 
 def determine_pipeline_status(
-    bot_results: Mapping[str, Any],
-    sentiment_results: Mapping[str, Any],
-    quality_results: Mapping[str, Any],
-    notebook_results: Mapping[str, Any],
+    bot_results: BotDetectionResults,
+    sentiment_results: SentimentRunResults,
+    quality_results: DataQualityResults,
+    notebook_results: NotebookRunResults,
 ) -> tuple[str, int]:
     """Classify focused ETL run status and exit code.
 
@@ -80,22 +125,21 @@ def determine_pipeline_status(
     return "SUCCESS", 0
 
 
-def run_sentiment_analysis(engine) -> dict:
+def run_sentiment_analysis(engine: Engine) -> SentimentRunResults:
     """Run sentiment analysis on new comments."""
     print("🧠 Running sentiment analysis...")
 
     # Check for unprocessed comments
     with engine.connect() as conn:
-        result = conn.execute(text("""
-            SELECT COUNT(*) as unprocessed_count
-            FROM youtube_comments yc
-            LEFT JOIN comment_sentiment cs ON yc.comment_id = cs.comment_id
-            WHERE cs.comment_id IS NULL
-            AND yc.comment_text IS NOT NULL
-            AND yc.comment_text != ''
-        """))
-
-        unprocessed_count = result.fetchone()[0]
+        unprocessed_count_raw = conn.execute(text("""
+                SELECT COUNT(*) as unprocessed_count
+                FROM youtube_comments yc
+                LEFT JOIN comment_sentiment cs ON yc.comment_id = cs.comment_id
+                WHERE cs.comment_id IS NULL
+                AND yc.comment_text IS NOT NULL
+                AND yc.comment_text != ''
+            """)).scalar()
+        unprocessed_count = int(unprocessed_count_raw or 0)
         print(f"📊 Found {unprocessed_count:,} unprocessed comments")
 
         if unprocessed_count == 0:
@@ -108,7 +152,7 @@ def run_sentiment_analysis(engine) -> dict:
     max_batches = 10  # Reasonable limit
 
     for batch_num in range(max_batches):
-        processed = process_sentiment_analysis(engine, limit=batch_size)
+        processed = int(process_sentiment_analysis(engine, limit=batch_size) or 0)
         total_processed += processed
 
         if processed == 0:
@@ -123,15 +167,22 @@ def run_sentiment_analysis(engine) -> dict:
     return {"processed": total_processed, "status": "success"}
 
 
-def validate_data_quality(engine) -> dict:
+def validate_data_quality(engine: Engine) -> DataQualityResults:
     """Run focused data quality checks."""
     print("🔍 Running data quality validation...")
 
-    quality_issues = []
+    quality_issues: list[str] = []
+    overview_stats: dict[str, int] = {
+        "total_videos": 0,
+        "total_comments": 0,
+        "total_sentiment": 0,
+        "total_artists": 0,
+    }
+    sentiment_coverage = 0.0
 
     with engine.connect() as conn:
         # Essential data quality checks
-        checks = [
+        checks: list[tuple[str, str]] = [
             ("Missing video titles", "SELECT COUNT(*) FROM youtube_videos WHERE title IS NULL OR title = ''"),
             (
                 "Missing artist names",
@@ -155,43 +206,49 @@ def validate_data_quality(engine) -> dict:
 
         for check_name, query in checks:
             try:
-                result = conn.execute(text(query))
-                count = result.fetchone()[0]
+                count_raw = conn.execute(text(query)).scalar()
+                count = int(count_raw or 0)
 
                 if count > 0:
                     quality_issues.append(f"{check_name}: {count:,} records")
                     print(f"⚠️ {check_name}: {count:,} records")
                 else:
                     print(f"✅ {check_name}: OK")
-            except Exception as e:
-                print(f"❌ {check_name}: Check failed - {e}")
+            except Exception as exc:
+                print(f"❌ {check_name}: Check failed - {exc}")
                 quality_issues.append(f"{check_name}: Check failed")
 
         # Overall data statistics
         try:
-            result = conn.execute(text("""
-                SELECT
-                    (SELECT COUNT(*) FROM youtube_videos) as total_videos,
-                    (SELECT COUNT(*) FROM youtube_comments) as total_comments,
-                    (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
-                    (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
-            """))
-
-            stats = result.fetchone()
+            stats_row = conn.execute(text("""
+                    SELECT
+                        (SELECT COUNT(*) FROM youtube_videos) as total_videos,
+                        (SELECT COUNT(*) FROM youtube_comments) as total_comments,
+                        (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
+                        (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
+                """)).mappings().one()
+            overview_stats = {
+                "total_videos": int(stats_row["total_videos"] or 0),
+                "total_comments": int(stats_row["total_comments"] or 0),
+                "total_sentiment": int(stats_row["total_sentiment"] or 0),
+                "total_artists": int(stats_row["total_artists"] or 0),
+            }
 
             print("\n📊 Data Overview:")
-            print(f"   Videos: {stats.total_videos:,}")
-            print(f"   Comments: {stats.total_comments:,}")
-            print(f"   Sentiment records: {stats.total_sentiment:,}")
-            print(f"   Artists: {stats.total_artists:,}")
+            print(f"   Videos: {overview_stats['total_videos']:,}")
+            print(f"   Comments: {overview_stats['total_comments']:,}")
+            print(f"   Sentiment records: {overview_stats['total_sentiment']:,}")
+            print(f"   Artists: {overview_stats['total_artists']:,}")
 
             # Calculate sentiment coverage
-            sentiment_coverage = (stats.total_sentiment / stats.total_comments * 100) if stats.total_comments > 0 else 0
+            if overview_stats["total_comments"] > 0:
+                sentiment_coverage = (overview_stats["total_sentiment"] / overview_stats["total_comments"]) * 100.0
+            else:
+                sentiment_coverage = 0.0
             print(f"   Sentiment coverage: {sentiment_coverage:.1f}%")
 
-        except Exception as e:
-            print(f"❌ Error getting data overview: {e}")
-            stats = None
+        except Exception as exc:
+            print(f"❌ Error getting data overview: {exc}")
             sentiment_coverage = 0
 
     quality_score = max(0, 100 - len(quality_issues) * 5)  # Deduct 5% per issue
@@ -199,62 +256,58 @@ def validate_data_quality(engine) -> dict:
     print(f"\n🏆 Overall Data Quality Score: {quality_score:.1f}%")
 
     return {
-        "quality_score": quality_score,
+        "quality_score": float(quality_score),
         "issues": quality_issues,
         "stats": {
-            "videos": stats.total_videos if stats else 0,
-            "comments": stats.total_comments if stats else 0,
-            "sentiment_records": stats.total_sentiment if stats else 0,
-            "artists": stats.total_artists if stats else 0,
-            "sentiment_coverage": sentiment_coverage,
+            "videos": overview_stats["total_videos"],
+            "comments": overview_stats["total_comments"],
+            "sentiment_records": overview_stats["total_sentiment"],
+            "artists": overview_stats["total_artists"],
+            "sentiment_coverage": float(sentiment_coverage),
         },
     }
 
 
-def run_notebooks(notebook_list: list) -> dict:
+def run_notebooks(notebook_list: list[str]) -> NotebookRunResults:
     """Execute analysis notebooks."""
     print(f"\n📓 Running {len(notebook_list)} notebooks...")
 
-    import subprocess
-    import sys
-
-    results = {"executed": [], "failed": []}
+    results: NotebookRunResults = {"executed": [], "failed": []}
 
     for notebook in notebook_list:
+        notebook_path = str(notebook)
         try:
-            print(f"  Executing {notebook}...")
+            print(f"  Executing {notebook_path}...")
 
             result = subprocess.run(
-                [sys.executable, "tools/development/run_notebooks.py", notebook],
+                [sys.executable, "tools/development/run_notebooks.py", notebook_path],
                 capture_output=True,
                 text=True,
                 cwd=".",
             )
 
             if result.returncode == 0:
-                results["executed"].append(notebook)
-                print(f"  ✅ {notebook} completed")
+                results["executed"].append(notebook_path)
+                print(f"  ✅ {notebook_path} completed")
             else:
-                results["failed"].append(notebook)
-                print(f"  ❌ {notebook} failed")
+                results["failed"].append(notebook_path)
+                print(f"  ❌ {notebook_path} failed")
 
-        except Exception as e:
-            results["failed"].append(notebook)
-            print(f"  ❌ {notebook} error: {e}")
+        except Exception as exc:
+            results["failed"].append(notebook_path)
+            print(f"  ❌ {notebook_path} error: {exc}")
 
     return results
 
 
-def run_bot_detection(engine) -> dict:
+def run_bot_detection(engine: Engine) -> BotDetectionResults:
     """Run bot detection on recent comments."""
     print("🤖 Running bot detection analysis...")
 
     try:
-        import os
-
         from src.youtubeviz.bot_detection import (
             BotDetectionConfig,
-            analyze_bot_patterns,
+            analyze_bot_patterns,  # pyright: ignore[reportUnknownVariableType]
         )
 
         # Check if bot detection is enabled
@@ -270,41 +323,44 @@ def run_bot_detection(engine) -> dict:
         # Run bot detection on recent comments
         lookback_days = int(os.getenv("BOT_DETECTION_DAYS_LOOKBACK", "30"))
         bot_results = analyze_bot_patterns(engine, config=config, days=lookback_days)
+        total_analyzed = len(bot_results.index)
 
-        if len(bot_results) > 0:
-            high_risk_count = len(bot_results[bot_results["bot_risk_level"] == "High"])
-            medium_risk_count = len(bot_results[bot_results["bot_risk_level"] == "Medium"])
+        if total_analyzed > 0:
+            high_risk_rows = cast(DataFrame, bot_results[bot_results["bot_risk_level"] == "High"])
+            medium_risk_rows = cast(DataFrame, bot_results[bot_results["bot_risk_level"] == "Medium"])
+            high_risk_count = high_risk_rows.shape[0]
+            medium_risk_count = medium_risk_rows.shape[0]
 
             print("📊 Bot Detection Results:")
-            print(f"   Total comments analyzed: {len(bot_results):,}")
+            print(f"   Total comments analyzed: {total_analyzed:,}")
             print(f"   High risk bots detected: {high_risk_count:,}")
             print(f"   Medium risk bots detected: {medium_risk_count:,}")
 
             # Store bot detection results (would save to database in real implementation)
-            bot_percentage = (high_risk_count / len(bot_results) * 100) if len(bot_results) > 0 else 0
+            bot_percentage = (high_risk_count / total_analyzed * 100.0) if total_analyzed > 0 else 0.0
             print(f"   Bot percentage: {bot_percentage:.1f}%")
 
             return {
-                "processed": len(bot_results),
+                "processed": total_analyzed,
                 "high_risk_bots": high_risk_count,
                 "medium_risk_bots": medium_risk_count,
-                "bot_percentage": bot_percentage,
+                "bot_percentage": float(bot_percentage),
                 "status": "success",
             }
         else:
             print("✅ No comments found for bot detection")
             return {"processed": 0, "status": "no_data"}
 
-    except ImportError as e:
-        print(f"⚠️ Bot detection module not available: {str(e)}")
+    except ImportError as exc:
+        print(f"⚠️ Bot detection module not available: {str(exc)}")
         print("   Bot detection will be skipped-install youtubeviz package to enable")
         return {"processed": 0, "status": "module_unavailable"}
-    except Exception as e:
-        print(f"❌ Bot detection failed: {str(e)}")
-        return {"processed": 0, "status": "failed", "error": str(e)}
+    except Exception as exc:
+        print(f"❌ Bot detection failed: {str(exc)}")
+        return {"processed": 0, "status": "failed", "error": str(exc)}
 
 
-def preflight_setup() -> dict:  # noqa: C901
+def preflight_setup() -> PreflightResults:  # noqa: C901
     """Ensure environment, tables, optional seed load, normalization, and quick DQ summary.
 
     Returns a dict with simple metrics to include in the final summary.
@@ -331,8 +387,8 @@ def preflight_setup() -> dict:  # noqa: C901
             if result.stderr:
                 print("      ├─ stderr:")
                 print("\n".join(["      │ " + line for line in result.stderr.strip().splitlines()[-10:]]))
-    except Exception as e:
-        print(f"   ❌ Failed ensuring tables: {e}")
+    except Exception as exc:
+        print(f"   ❌ Failed ensuring tables: {exc}")
 
     # 3) Optional: seed songs from CSV via env var AUTO_LOAD_SONGS_CSV
     songs_inserted = 0
@@ -356,8 +412,8 @@ def preflight_setup() -> dict:  # noqa: C901
                 if result.stderr:
                     print("      ├─ stderr:")
                     print("\n".join(["      │ " + l for l in result.stderr.strip().splitlines()[-10:]]))  # noqa: E741
-        except Exception as e:
-            print(f"   ❌ Failed loading songs CSV '{csv_path}': {e}")
+        except Exception as exc:
+            print(f"   ❌ Failed loading songs CSV '{csv_path}': {exc}")
 
     # 4) Run normalization to populate music_videos_normalized
     normalized = 0
@@ -365,10 +421,10 @@ def preflight_setup() -> dict:  # noqa: C901
         # Lazy import to reduce top-level import fragility
         from src.youtubeviz.normalization import run_normalization
 
-        normalized = run_normalization()
+        normalized = int(run_normalization() or 0)
         print(f"   ✅ Normalized rows upserted: {normalized}")
-    except Exception as e:
-        print(f"   ❌ Normalization failed: {e}")
+    except Exception as exc:
+        print(f"   ❌ Normalization failed: {exc}")
 
     # 5) Quick DQ: count null ISRCs in normalized + songs count
     try:
@@ -385,9 +441,9 @@ def preflight_setup() -> dict:  # noqa: C901
         print(
             f"   📈 DQ snapshot -> songs: {songs_cnt}, normalized: {norm_cnt}, normalized.isrc NULL / blank: {isrc_nulls}"
         )
-    except Exception as e:
+    except Exception as exc:
         songs_cnt = norm_cnt = isrc_nulls = 0
-        print(f"   ⚠️ DQ snapshot failed: {e}")
+        print(f"   ⚠️ DQ snapshot failed: {exc}")
 
     return {
         "songs_inserted": songs_inserted,
@@ -399,14 +455,14 @@ def preflight_setup() -> dict:  # noqa: C901
     }
 
 
-def main():
+def main() -> int:
     """Run the focused ETL pipeline."""
     print("🚀 Starting Focused ETL Pipeline")
     print("=" * 50)
 
     try:
         # Run preflight once to make onboarding / first-run smooth
-        _pre = preflight_setup()  # noqa: F841
+        preflight_setup()
 
         engine = get_engine()
 
@@ -464,8 +520,8 @@ def main():
         print(f"\n{badge} Overall Status: {status}")
         return exit_code
 
-    except Exception as e:
-        print(f"\n❌ Pipeline failed: {e}")
+    except Exception as exc:
+        print(f"\n❌ Pipeline failed: {exc}")
         return 1
 
 
