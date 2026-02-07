@@ -151,8 +151,7 @@ def _normalize_data_mode(raw_value: str | None) -> Literal["demo", "production"]
         return "production"
 
     st.error(
-        "Invalid data mode value. Use 'demo' or 'production' for "
-        "MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
+        "Invalid data mode value. Use 'demo' or 'production' for " "MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
     )
     st.stop()
     return None
