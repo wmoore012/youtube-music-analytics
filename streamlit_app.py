@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import os
 import re
@@ -32,6 +33,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 #    otherwise hide the delta.
 # 6) In Streamlit Cloud, do not auto-enter Production mode from repo/env
 #    DB_* values alone; require explicit secrets/session intent.
+# 7) Demo cohort JSON must be loaded with json.load (not pandas read_json->to_dict),
+#    because pandas reshapes nested JSON and can crash artist/video loops.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -209,7 +212,7 @@ def _load_csv(path: Path, parse_dates: Iterable[str] | None = None) -> pd.DataFr
 
 
 @st.cache_data(show_spinner=False)
-def _load_demo_cohort() -> dict:
+def _load_demo_cohort() -> dict[str, object]:
     """Load curated demo cohort JSON.
 
     Fails loudly with a friendly message if the file is missing or invalid
@@ -223,13 +226,38 @@ def _load_demo_cohort() -> dict:
         )
         st.stop()
     try:
-        return pd.read_json(DEMO_DATA_PATH).to_dict()  # type: ignore[no-any-return]
-    except ValueError:
-        # Fall back to manual JSON load if structure is not tabular
-        import json
-
         with DEMO_DATA_PATH.open("r", encoding="utf-8") as fh:
-            return json.load(fh)
+            payload = json.load(fh)
+    except json.JSONDecodeError as exc:
+        st.error(f"Demo data is not valid JSON: {exc}")
+        st.stop()
+
+    if not isinstance(payload, dict):
+        st.error("Demo data must be a JSON object with an 'artists' field.")
+        st.stop()
+    return payload
+
+
+def _coerce_record_list(value: object) -> list[dict[str, object]]:
+    """Normalize JSON arrays/maps into a list of record dicts.
+
+    Accepts list[dict] and dict[index->dict] layouts to stay backward-compatible
+    with older transformed demo payloads while skipping malformed elements.
+    """
+
+    source_items: list[object]
+    if isinstance(value, list):
+        source_items = value
+    elif isinstance(value, dict):
+        source_items = list(value.values())
+    else:
+        return []
+
+    records: list[dict[str, object]] = []
+    for item in source_items:
+        if isinstance(item, dict):
+            records.append(item)
+    return records
 
 
 def _get_db_setting(name: str, *, allow_env: bool = True) -> str | None:
@@ -353,9 +381,10 @@ def get_data_mode() -> Literal["demo", "production"]:
 
 def load_artist_summary_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
-    rows = []
-    for artist in payload.get("artists", []):
-        metrics = artist.get("metrics", {})
+    rows: list[dict[str, object]] = []
+    for artist in _coerce_record_list(payload.get("artists")):
+        metrics_raw = artist.get("metrics", {})
+        metrics = metrics_raw if isinstance(metrics_raw, dict) else {}
         rows.append(
             {
                 "artist_name": artist.get("name"),
@@ -425,10 +454,10 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
 def load_normalized_videos_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
-    records = []
-    for artist in payload.get("artists", []):
+    records: list[dict[str, object]] = []
+    for artist in _coerce_record_list(payload.get("artists")):
         name = artist.get("name")
-        for video in artist.get("videos", []):
+        for video in _coerce_record_list(artist.get("videos")):
             records.append(
                 {
                     "video_id": video.get("video_id"),
