@@ -36,7 +36,7 @@ from web.etl_helpers import get_engine
 # ============================================================================
 
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
 class BotDetectionResults(TypedDict, total=False):
@@ -131,14 +131,16 @@ def run_sentiment_analysis(engine: Engine) -> SentimentRunResults:
 
     # Check for unprocessed comments
     with engine.connect() as conn:
-        unprocessed_count_raw = conn.execute(text("""
+        unprocessed_count_raw = conn.execute(
+            text("""
                 SELECT COUNT(*) as unprocessed_count
                 FROM youtube_comments yc
                 LEFT JOIN comment_sentiment cs ON yc.comment_id = cs.comment_id
                 WHERE cs.comment_id IS NULL
                 AND yc.comment_text IS NOT NULL
                 AND yc.comment_text != ''
-            """)).scalar()
+            """)
+        ).scalar()
         unprocessed_count = int(unprocessed_count_raw or 0)
         print(f"📊 Found {unprocessed_count:,} unprocessed comments")
 
@@ -220,13 +222,19 @@ def validate_data_quality(engine: Engine) -> DataQualityResults:
 
         # Overall data statistics
         try:
-            stats_row = conn.execute(text("""
+            stats_row = (
+                conn.execute(
+                    text("""
                     SELECT
                         (SELECT COUNT(*) FROM youtube_videos) as total_videos,
                         (SELECT COUNT(*) FROM youtube_comments) as total_comments,
                         (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
                         (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
-                """)).mappings().one()
+                """)
+                )
+                .mappings()
+                .one()
+            )
             overview_stats = {
                 "total_videos": int(stats_row["total_videos"] or 0),
                 "total_comments": int(stats_row["total_comments"] or 0),
