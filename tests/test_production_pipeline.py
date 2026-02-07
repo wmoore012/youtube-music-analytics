@@ -20,6 +20,12 @@ def test_run_stage_uses_configured_timeout(monkeypatch) -> None:
     assert captured["timeout"] == 123
 
 
+def test_invalid_stage_timeout_env_falls_back_to_default(monkeypatch) -> None:
+    monkeypatch.setenv("ETL_STAGE_TIMEOUT_SECONDS", "600s")
+    pipeline = EnterpriseETLPipeline(config={"stage_timeout_seconds": 321})
+    assert pipeline.stage_timeout_seconds == 321
+
+
 def test_run_stage_injects_project_root_pythonpath(monkeypatch) -> None:
     pipeline = EnterpriseETLPipeline(config={})
     captured: dict[str, object] = {}

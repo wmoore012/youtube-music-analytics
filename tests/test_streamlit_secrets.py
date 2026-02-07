@@ -9,7 +9,7 @@ import streamlit as st
 # Add project root to path so we can import streamlit_app
 sys.path.append(str(Path(__file__).parent.parent))
 
-from streamlit_app import _get_db_setting, _sync_db_settings_to_env, get_data_mode
+from streamlit_app import _get_db_setting, _is_streamlit_cloud_runtime, _sync_db_settings_to_env, get_data_mode
 
 
 def test_get_db_setting_handles_missing_secrets():
@@ -115,6 +115,21 @@ def test_sync_db_settings_to_env_uses_streamlit_secrets():
         assert os.environ["DB_USER"] == "etl_user"
         assert os.environ["DB_PASS"] == "secret"
         assert os.environ["DB_NAME"] == "yt_proj"
+
+
+def test_sync_db_settings_to_env_respects_allow_env_false():
+    """When allow_env=False, env-only DB settings should not be read."""
+
+    with patch("streamlit.secrets", {}), patch("streamlit.session_state", {}), patch.dict(os.environ, {}, clear=True):
+        _sync_db_settings_to_env(allow_env=False)
+        for key in ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASS", "DB_NAME"):
+            assert key not in os.environ
+
+
+def test_is_streamlit_cloud_runtime_uses_cloud_env_flag(monkeypatch):
+    monkeypatch.setenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD", "true")
+    with patch("streamlit_app.Path.cwd", return_value=Path("/tmp/local")):
+        assert _is_streamlit_cloud_runtime()
 
 
 def test_get_data_mode_syncs_secrets_before_connect():

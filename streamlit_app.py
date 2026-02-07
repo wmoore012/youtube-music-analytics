@@ -121,7 +121,16 @@ def _is_truthy(value: str | None) -> bool:
 
 
 def _is_streamlit_cloud_runtime() -> bool:
-    """Best-effort detection of Streamlit Community Cloud runtime."""
+    """Best-effort detection of Streamlit Community Cloud runtime.
+
+    Uses known cloud env flags first, then falls back to the historical
+    `/mount/src/` working-directory pattern as a compatibility safeguard.
+    """
+
+    if _is_truthy(os.getenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD")):
+        return True
+    if _is_truthy(os.getenv("STREAMLIT_CLOUD")):
+        return True
 
     cwd = str(Path.cwd())
     return cwd.startswith("/mount/src/")
@@ -206,7 +215,7 @@ def _get_db_setting(name: str, *, allow_env: bool = True) -> str | None:
     return None
 
 
-def _sync_db_settings_to_env() -> None:
+def _sync_db_settings_to_env(*, allow_env: bool = True) -> None:
     """Mirror DB settings from Streamlit secrets/session into process env.
 
     web.etl_helpers.get_engine() reads only os.environ. In Streamlit Cloud,
@@ -216,7 +225,7 @@ def _sync_db_settings_to_env() -> None:
 
     keys = ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASS", "DB_NAME")
     for key in keys:
-        value = _get_db_setting(key)
+        value = _get_db_setting(key, allow_env=allow_env)
         if value is None:
             continue
         os.environ[key] = value
@@ -259,7 +268,7 @@ def get_data_mode() -> Literal["demo", "production"]:
         st.stop()
 
     try:
-        _sync_db_settings_to_env()
+        _sync_db_settings_to_env(allow_env=allow_env_db)
         engine = get_engine()
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
