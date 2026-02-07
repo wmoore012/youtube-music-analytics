@@ -31,8 +31,8 @@ from typing import Any, Dict, Optional
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.youtubeviz.data import load_recent_window_days
-from web.etl_helpers import get_engine
+from src.youtubeviz.data import load_recent_window_days  # noqa: E402
+from web.etl_helpers import get_engine  # noqa: E402
 
 # Configure enterprise logging
 log_dir = project_root / "logs"
@@ -71,6 +71,10 @@ class EnterpriseETLPipeline:
         self.config = config or {}
         self.pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.start_time = datetime.now()
+        timeout_default = self.config.get("stage_timeout_seconds", 3600)
+        self.stage_timeout_seconds = int(
+            os.getenv("ETL_STAGE_TIMEOUT_SECONDS", str(timeout_default)),
+        )
 
         # Initialize comprehensive results tracking
         self.results = {
@@ -108,7 +112,12 @@ class EnterpriseETLPipeline:
         logger.info(f"🚀 Starting stage: {stage_name}")
 
         try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=3600)  # 1 hour timeout
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=self.stage_timeout_seconds,
+            )
 
             self.results["stages"][stage_name] = {
                 "status": "SUCCESS" if result.returncode == 0 else "FAILED",
@@ -134,7 +143,7 @@ class EnterpriseETLPipeline:
                     return True
 
         except subprocess.TimeoutExpired:
-            error_msg = f"{stage_name} timed out after 1 hour"
+            error_msg = f"{stage_name} timed out after {self.stage_timeout_seconds} seconds"
             logger.error(f"⏰ {error_msg}")
             self.results["stages"][stage_name] = {
                 "status": "TIMEOUT",
@@ -209,7 +218,7 @@ class EnterpriseETLPipeline:
             clean_data = data.drop_duplicates(["video_id"], keep="first")
             duplicates_removed = original_count-len(clean_data)
 
-            logger.info(f"📊 Data cleanup results:")
+            logger.info("📊 Data cleanup results:")
             logger.info(f"   Original records: {original_count:,}")
             logger.info(f"   Clean records: {len(clean_data):,}")
             logger.info(f"   Duplicates removed: {duplicates_removed:,}")
@@ -259,11 +268,19 @@ class EnterpriseETLPipeline:
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
+            if not self.run_stage("channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True):
+                logger.error("💥 Channel ingestion failed-aborting pipeline")
+                return self.results
             if not self.run_stage("main_etl", ["python", "tools/core/run_focused_etl.py"], critical=True):
                 logger.error("💥 Main ETL failed-aborting pipeline")
                 return self.results
         else:
             logger.info("⏭️  Skipping ETL-already run today")
+            self.results["stages"]["channel_ingestion"] = {
+                "status": "SKIPPED",
+                "reason": "Already run today",
+                "timestamp": datetime.now().isoformat(),
+            }
             self.results["stages"]["main_etl"] = {
                 "status": "SKIPPED",
                 "reason": "Already run today",
@@ -297,8 +314,10 @@ class EnterpriseETLPipeline:
 
         if self.results["status"] != "FAILED":
             self.results["status"] = "SUCCESS"
+            self.log_etl_run("SUCCESS")
             logger.info("🎉 PRODUCTION PIPELINE COMPLETED SUCCESSFULLY!")
         else:
+            self.log_etl_run("FAILED")
             logger.error("💥 PRODUCTION PIPELINE FAILED!")
             for error in self.results["errors"]:
                 logger.error(f"   • {error}")
