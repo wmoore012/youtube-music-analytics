@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -30,6 +30,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 # 4) Never override artist stylistic casing choices automatically.
 # 5) KPI deltas shown in green/red must have matching arithmetic + actions;
 #    otherwise hide the delta.
+# 6) In Streamlit Cloud, do not auto-enter Production mode from repo/env
+#    DB_* values alone; require explicit secrets/session intent.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -39,6 +41,7 @@ RPM_VARIATION_TOLERANCE = 0.05
 REVENUE_RPM_DEFAULT_ENV = "REVENUE_RPM_DEFAULT"
 DEFAULT_REVENUE_RPM_USD = 2.5
 SHORTS_MAX_SECONDS = 60
+DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -73,6 +76,12 @@ def _read_int_env(name: str, default: int) -> int:
     return value
 
 
+def read_int_env(name: str, default: int) -> int:
+    """Public typed wrapper for integer env parsing."""
+
+    return _read_int_env(name, default)
+
+
 def _read_float_env(name: str, default: float) -> float:
     """Read a float from environment, with validation."""
 
@@ -93,6 +102,12 @@ def _read_float_env(name: str, default: float) -> float:
     return value
 
 
+def read_float_env(name: str, default: float) -> float:
+    """Public typed wrapper for float env parsing."""
+
+    return _read_float_env(name, default)
+
+
 def _parse_iso8601_duration_seconds(duration: object) -> int | None:
     """Parse YouTube ISO-8601 duration string (e.g. PT3M12S) into seconds."""
 
@@ -110,6 +125,58 @@ def _parse_iso8601_duration_seconds(duration: object) -> int | None:
     minutes = int(match.group(2) or 0)
     seconds = int(match.group(3) or 0)
     return hours * 3600 + minutes * 60 + seconds
+
+
+def _is_truthy(value: str | None) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _is_streamlit_cloud_runtime() -> bool:
+    """Best-effort detection of Streamlit Community Cloud runtime.
+
+    Uses known cloud env flags first (robust), then falls back to the historical
+    `/mount/src/` working-directory pattern as a compatibility safeguard (brittle).
+    """
+
+    if _is_truthy(os.getenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD")):
+        return True
+    if _is_truthy(os.getenv("STREAMLIT_CLOUD")):
+        return True
+
+    cwd = str(Path.cwd())
+    return cwd.startswith("/mount/src/")
+
+
+def _normalize_data_mode(raw_value: str | None) -> Literal["demo", "production"] | None:
+    """Normalize optional run-mode text to a supported literal value."""
+
+    if raw_value is None:
+        return None
+    mode = raw_value.strip().lower()
+    if not mode:
+        return None
+    if mode == "demo":
+        return "demo"
+    if mode == "production":
+        return "production"
+
+    st.error(
+        "Invalid data mode value. Use 'demo' or 'production' for MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
+    )
+    st.stop()
+    return None
+
+
+def _get_requested_data_mode(*, allow_env: bool) -> Literal["demo", "production"] | None:
+    """Read an explicitly requested data mode from settings."""
+
+    for key in DATA_MODE_SETTING_KEYS:
+        mode = _normalize_data_mode(_get_db_setting(key, allow_env=allow_env))
+        if mode is not None:
+            return mode
+    return None
 
 
 def _classify_video_type_from_duration(duration: object) -> str:
@@ -165,7 +232,7 @@ def _load_demo_cohort() -> dict:
             return json.load(fh)
 
 
-def _get_db_setting(name: str) -> str | None:
+def _get_db_setting(name: str, *, allow_env: bool = True) -> str | None:
     """Lookup a DB_* setting from Streamlit secrets, session_state, or env.
 
     This keeps resolution consistent anywhere we need database credentials
@@ -184,13 +251,14 @@ def _get_db_setting(name: str) -> str | None:
         value = st.session_state[name]
         if value:
             return str(value)
-    env_value = os.getenv(name)
-    if env_value:
-        return env_value
+    if allow_env:
+        env_value = os.getenv(name)
+        if env_value:
+            return env_value
     return None
 
 
-def _sync_db_settings_to_env() -> None:
+def _sync_db_settings_to_env(*, allow_env: bool = False) -> None:
     """Mirror DB settings from Streamlit secrets/session into process env.
 
     web.etl_helpers.get_engine() reads only os.environ. In Streamlit Cloud,
@@ -200,7 +268,7 @@ def _sync_db_settings_to_env() -> None:
 
     keys = ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASS", "DB_NAME")
     for key in keys:
-        value = _get_db_setting(key)
+        value = _get_db_setting(key, allow_env=allow_env)
         if value is None:
             continue
         os.environ[key] = value
@@ -220,13 +288,35 @@ def get_data_mode() -> Literal["demo", "production"]:
     from sqlalchemy import text  # Imported lazily to keep imports light
 
     required_keys = ["DB_HOST", "DB_USER", "DB_PASS", "DB_NAME"]
-
-    any_present = any(_get_db_setting(key) is not None for key in required_keys)
-    if not any_present:
-        # No DB intent configured → stay in demo mode using curated cohort.
+    # In Streamlit Cloud we ignore raw env DB_* by default because a checked-in
+    # .env (or inherited env) can accidentally force broken localhost Production
+    # mode. Override with MUSICSCOPE_ALLOW_ENV_DB=1 if needed.
+    cloud_runtime = _is_streamlit_cloud_runtime()
+    allow_env_db = not cloud_runtime or _is_truthy(os.getenv("MUSICSCOPE_ALLOW_ENV_DB"))
+    requested_mode = _get_requested_data_mode(allow_env=allow_env_db)
+    if requested_mode == "demo":
         return "demo"
 
-    missing = [key for key in required_keys if _get_db_setting(key) is None]
+    # Cloud-safe default: unless production is explicitly requested, stay in demo
+    # mode even if DB_* is present in inherited environment variables.
+    if cloud_runtime and requested_mode is None:
+        return "demo"
+
+    any_present = any(_get_db_setting(key, allow_env=allow_env_db) is not None for key in required_keys)
+    if not any_present:
+        if requested_mode == "production":
+            st.error(
+                "Production (MySQL) mode was explicitly requested, but DB settings are missing.",
+            )
+            st.info(
+                "Set DB_HOST, DB_USER, DB_PASS, and DB_NAME (via Streamlit secrets "
+                "or session state). Then keep MUSICSCOPE_DATA_MODE=production.",
+            )
+            st.stop()
+        # No DB intent configured -> stay in demo mode using curated cohort.
+        return "demo"
+
+    missing = [key for key in required_keys if _get_db_setting(key, allow_env=allow_env_db) is None]
     if missing:
         st.error(
             "Production (MySQL) mode was requested, but these settings are missing: " + ", ".join(missing),
@@ -239,7 +329,7 @@ def get_data_mode() -> Literal["demo", "production"]:
         st.stop()
 
     try:
-        _sync_db_settings_to_env()
+        _sync_db_settings_to_env(allow_env=allow_env_db)
         engine = get_engine()
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -770,8 +860,7 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
             )
         else:
             action = (
-                f"Use 70/30 split: 70% {reach_format} for reach and 30% "
-                f"{engagement_format} for deeper fan response."
+                f"Use 70/30 split: 70% {reach_format} for reach and 30% {engagement_format} for deeper fan response."
             )
         rows.append(
             {
@@ -1262,8 +1351,10 @@ def main() -> None:
 
     - **Demo Mode** (default for new users): loads a small curated cohort from
       ``demo_data/curated_cohort.json`` with no database or API setup.
-    - **Production (MySQL)**: uses the local analytics warehouse via DB_* env
-      vars / ``.env`` and web.etl_helpers.get_engine().
+    - **Production (MySQL)**: uses the analytics warehouse via DB_* settings.
+      In Streamlit Cloud, this mode requires explicit intent via
+      ``MUSICSCOPE_DATA_MODE=production`` (or ``TRACKSTATS_DATA_MODE=production``)
+      to avoid accidental localhost DB failures.
     """
 
     st.set_page_config(page_title="TrackStats YT™", layout="wide")

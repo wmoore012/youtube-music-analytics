@@ -34,12 +34,6 @@ def story_block(
         width_left: CSS width for chart column
         theme: "light" or "dark" (affects text colors)
     """
-    try:
-        from IPython.display import HTML, display  # type: ignore
-    except Exception:
-        # Outside IPython: just return the content so callers can handle
-        return {"figure": fig, "title": title, "bullets": list(bullets), "caption": caption}
-
     # Render figure HTML if supported, else rely on notebook renderer
     fig_html: str
     try:
@@ -68,6 +62,11 @@ def story_block(
     """
     if return_html:
         return html
+    try:
+        from IPython.display import HTML, display  # type: ignore
+    except Exception:
+        # Outside IPython: return structured content so callers can handle it.
+        return {"figure": fig, "title": title, "bullets": list(bullets), "caption": caption}
     display(HTML(html))
     return None
 

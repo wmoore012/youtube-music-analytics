@@ -16,6 +16,8 @@ from typing import Any, Dict, List
 class BenchmarkDatabase:
     """Database storage for benchmark results."""
 
+    _ALLOWED_MODEL_METRICS = {"accuracy", "precision_score", "recall", "f1_score", "processing_time"}
+
     def __init__(self, db_path: str = "benchmark_results / benchmarks.db"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
@@ -199,12 +201,17 @@ class BenchmarkDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        where_clause = "WHERE timestamp >= datetime('now', '-{} days')".format(days)
+        safe_days = max(int(days), 1)
+        day_interval = f"-{safe_days} days"
+        where_clause = "WHERE timestamp >= datetime('now', ?)"
+        params: list[Any] = [day_interval]
         if experiment_name:
-            where_clause += f" AND experiment_name = '{experiment_name}'"
+            where_clause += " AND experiment_name = ?"
+            params.append(experiment_name)
 
         # Get trend data
-        cursor.execute(f"""
+        cursor.execute(
+            f"""
             SELECT
                 DATE(timestamp) as date,
                 AVG(balance_score) as avg_balance_score,
@@ -214,12 +221,15 @@ class BenchmarkDatabase:
             {where_clause}
             GROUP BY DATE(timestamp)
             ORDER BY date
-        """)
+        """,
+            tuple(params),
+        )
 
         trend_data = cursor.fetchall()
 
         # Get model performance trends
-        cursor.execute(f"""
+        cursor.execute(
+            f"""
             SELECT
                 mr.model_name,
                 AVG(mr.f1_score) as avg_f1,
@@ -230,7 +240,9 @@ class BenchmarkDatabase:
             {where_clause.replace('timestamp', 'br.timestamp')}
             GROUP BY mr.model_name
             ORDER BY avg_f1 DESC
-        """)
+        """,
+            tuple(params),
+        )
 
         model_trends = cursor.fetchall()
 
@@ -289,12 +301,14 @@ class BenchmarkDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
+        safe_metric = metric if metric in self._ALLOWED_MODEL_METRICS else "f1_score"
+
         cursor.execute(
             f"""
             SELECT
                 mr.model_name,
                 mr.model_type,
-                mr.{metric},
+                mr.{safe_metric},
                 mr.accuracy,
                 mr.f1_score,
                 br.experiment_name,
@@ -303,7 +317,7 @@ class BenchmarkDatabase:
                 br.balance_score
             FROM model_results mr
             JOIN benchmark_runs br ON mr.benchmark_run_id = br.id
-            ORDER BY mr.{metric} DESC
+            ORDER BY mr.{safe_metric} DESC
             LIMIT ?
         """,
             (limit,),
@@ -315,7 +329,7 @@ class BenchmarkDatabase:
         columns = [
             "model_name",
             "model_type",
-            metric,
+            safe_metric,
             "accuracy",
             "f1_score",
             "experiment_name",
@@ -370,25 +384,25 @@ def demo_database_storage():
 
     # Show stats
     stats = db.get_database_stats()
-    print(f"Database Stats:")
+    print("Database Stats:")
     print(f"  Total runs: {stats['total_benchmark_runs']}")
     print(f"  Total model results: {stats['total_model_results']}")
     print(f"  Unique models: {stats['unique_models']}")
 
     if stats["total_benchmark_runs"] > 0:
         # Show trends
-        print(f"\n📈 Recent Trends:")
+        print("\n📈 Recent Trends:")
         trends = db.get_benchmark_trends(days=30)
         for model_name, avg_f1, avg_acc, count in trends["model_trends"][:5]:
             print(f"  {model_name}: F1={avg_f1:.3f}, Acc={avg_acc:.3f} ({count} runs)")
 
         # Show quality analysis
-        print(f"\n📊 Quality Analysis:")
+        print("\n📊 Quality Analysis:")
         quality = db.get_quality_analysis()
         print(f"  Quality distribution: {quality['quality_distribution']}")
 
         if quality["common_recommendations"]:
-            print(f"  Most common issues:")
+            print("  Most common issues:")
             for rec, freq in quality["common_recommendations"][:3]:
                 print(f"    - {rec} ({freq} times)")
 

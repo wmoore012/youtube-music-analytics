@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
 # ======================================================================
@@ -13,6 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOG_FILE="${PROJECT_ROOT}/logs/nightly_channel_ingestion.log"
 TIMEOUT_SECONDS="${ETL_INGEST_TIMEOUT_SECONDS:-600}"
+PYTHON_EXEC="${PYTHON_EXEC:-.venv/bin/python}"
 
 if [[ -x "/opt/homebrew/bin/gtimeout" ]]; then
   TIMEOUT_CMD="/opt/homebrew/bin/gtimeout"
@@ -30,6 +31,6 @@ cd "${PROJECT_ROOT}"
 
 {
   echo "==== $(date '+%Y-%m-%d %H:%M:%S') nightly channel ingestion start ===="
-  PYTHONPATH=. "${TIMEOUT_CMD}" "${TIMEOUT_SECONDS}" .venv/bin/python tools/core/run_channels_from_env.py
+  PYTHONPATH=. "${TIMEOUT_CMD}" "${TIMEOUT_SECONDS}" "${PYTHON_EXEC}" tools/core/run_channels_from_env.py
   echo "==== $(date '+%Y-%m-%d %H:%M:%S') nightly channel ingestion success ===="
 } >> "${LOG_FILE}" 2>&1

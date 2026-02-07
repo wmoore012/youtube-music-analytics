@@ -76,14 +76,37 @@ class EnterpriseETLPipeline:
     - Resource utilization monitoring
     """
 
+    @staticmethod
+    def _read_stage_timeout_seconds(default: int) -> int:
+        """Read stage timeout from env/config defensively."""
+
+        raw = os.getenv("ETL_STAGE_TIMEOUT_SECONDS")
+        if raw is None:
+            return default
+        raw = raw.strip()
+        if not raw:
+            logger.warning("ETL_STAGE_TIMEOUT_SECONDS is empty; using default timeout (%s).", default)
+            return default
+        try:
+            value = int(raw)
+        except ValueError:
+            logger.warning(
+                "ETL_STAGE_TIMEOUT_SECONDS=%r is not an integer; using default timeout (%s).",
+                raw,
+                default,
+            )
+            return default
+        if value <= 0:
+            logger.warning("ETL_STAGE_TIMEOUT_SECONDS=%s must be > 0; using default timeout (%s).", value, default)
+            return default
+        return value
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
         self.pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.start_time = datetime.now()
         timeout_default = self.config.get("stage_timeout_seconds", 3600)
-        self.stage_timeout_seconds = int(
-            os.getenv("ETL_STAGE_TIMEOUT_SECONDS", str(timeout_default)),
-        )
+        self.stage_timeout_seconds = self._read_stage_timeout_seconds(int(timeout_default))
 
         # Initialize comprehensive results tracking
         self.results = {
