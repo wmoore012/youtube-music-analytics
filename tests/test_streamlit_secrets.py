@@ -189,3 +189,22 @@ def test_get_data_mode_syncs_secrets_before_connect():
     ), patch("streamlit_app.get_engine", return_value=fake_engine):
         assert get_data_mode() == "production"
         assert os.environ["DB_HOST"] == "db.example.internal"
+
+
+def test_is_streamlit_cloud_runtime_uses_mount_src_fallback(monkeypatch):
+    """Verify fallback to /mount/src/ cwd check when env var is missing."""
+    # Ensure env var is NOT set
+    monkeypatch.delenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD", raising=False)
+    monkeypatch.delenv("STREAMLIT_CLOUD", raising=False)
+
+    with patch("streamlit_app.Path.cwd", return_value=Path("/mount/src/app")):
+        assert _is_streamlit_cloud_runtime()
+
+
+def test_is_streamlit_cloud_runtime_returns_false_locally(monkeypatch):
+    """Verify returns False when neither env var nor cwd match."""
+    monkeypatch.delenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD", raising=False)
+    monkeypatch.delenv("STREAMLIT_CLOUD", raising=False)
+
+    with patch("streamlit_app.Path.cwd", return_value=Path("/Users/dev/app")):
+        assert not _is_streamlit_cloud_runtime()
