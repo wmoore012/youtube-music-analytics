@@ -187,6 +187,22 @@ def _get_db_setting(name: str) -> str | None:
     return None
 
 
+def _sync_db_settings_to_env() -> None:
+    """Mirror DB settings from Streamlit secrets/session into process env.
+
+    web.etl_helpers.get_engine() reads only os.environ. In Streamlit Cloud,
+    secrets may exist in st.secrets without being exported to environment
+    variables. This sync keeps engine behavior consistent across local + cloud.
+    """
+
+    keys = ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASS", "DB_NAME")
+    for key in keys:
+        value = _get_db_setting(key)
+        if value is None:
+            continue
+        os.environ[key] = value
+
+
 def get_data_mode() -> Literal["demo", "production"]:
     """Detect whether to use demo data or production MySQL.
 
@@ -220,6 +236,7 @@ def get_data_mode() -> Literal["demo", "production"]:
         st.stop()
 
     try:
+        _sync_db_settings_to_env()
         engine = get_engine()
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -230,6 +247,13 @@ def get_data_mode() -> Literal["demo", "production"]:
             "connection failed. Double-check DB_HOST/DB_USER/DB_NAME and that "
             "the database is reachable from this app.",
         )
+        host = _get_db_setting("DB_HOST") or "(unset)"
+        if host in {"localhost", "127.0.0.1", "0.0.0.0"}:
+            st.info(
+                "DB_HOST is set to localhost/127.0.0.1. In containerized/cloud "
+                "runtime this points to the app container itself, not your MySQL "
+                "server. Use a reachable DB host or tunnel address.",
+            )
         st.caption(f"Connection details: {exc}")
         st.stop()
 
