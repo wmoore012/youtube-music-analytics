@@ -590,6 +590,95 @@ def build_delta_signal_rows(
     return pd.DataFrame(rows)
 
 
+def build_kpi_context(
+    summary: pd.DataFrame,
+    artists: list[str],
+    videos: pd.DataFrame | None = None,
+    roster_videos: pd.DataFrame | None = None,
+) -> dict[str, float | int]:
+    """Build KPI totals and roster baselines from filtered videos when available."""
+
+    filtered_summary = filter_by_artists(summary, artists)
+    if filtered_summary.empty:
+        return {}
+
+    use_video_math = videos is not None and not videos.empty
+    if use_video_math:
+        selected_rows = filter_by_artists(videos, artists)
+        if selected_rows.empty:
+            use_video_math = False
+        else:
+            total_views = int(selected_rows["view_count"].sum())
+            total_videos = int(selected_rows["video_id"].nunique())
+            total_likes = int(selected_rows["like_count"].sum()) if "like_count" in selected_rows.columns else 0
+            total_comments = int(selected_rows["comment_count"].sum()) if "comment_count" in selected_rows.columns else 0
+            if "est_revenue_usd" in selected_rows.columns:
+                total_revenue = float(selected_rows["est_revenue_usd"].sum())
+            else:
+                rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
+                total_revenue = float(total_views / 1000.0 * rpm)
+            avg_engagement = (
+                float(selected_rows["engagement_rate"].mean()) if "engagement_rate" in selected_rows.columns else 0.0
+            )
+            selected_artist_count = max(int(selected_rows["artist_name"].nunique()), 1)
+
+    if not use_video_math:
+        total_views = int(filtered_summary["total_views"].sum())
+        total_videos = int(filtered_summary["total_videos"].sum())
+        total_likes = int(filtered_summary["total_likes"].sum())
+        total_comments = int(filtered_summary["total_comments"].sum())
+        total_revenue = float(filtered_summary["total_est_revenue_usd"].sum())
+        avg_engagement = float(filtered_summary["avg_engagement_rate"].mean())
+        selected_artist_count = max(len(filtered_summary), 1)
+
+    if roster_videos is not None and not roster_videos.empty:
+        roster_rows = roster_videos
+        roster_artist_count = max(int(roster_rows["artist_name"].nunique()), 1)
+        roster_views_per_artist = float(roster_rows["view_count"].sum()) / roster_artist_count
+        roster_videos_per_artist = float(roster_rows["video_id"].nunique()) / roster_artist_count
+        roster_likes_per_artist = (
+            float(roster_rows["like_count"].sum()) / roster_artist_count if "like_count" in roster_rows.columns else 0.0
+        )
+        roster_comments_per_artist = (
+            float(roster_rows["comment_count"].sum()) / roster_artist_count
+            if "comment_count" in roster_rows.columns
+            else 0.0
+        )
+        if "est_revenue_usd" in roster_rows.columns:
+            roster_revenue_per_artist = float(roster_rows["est_revenue_usd"].sum()) / roster_artist_count
+        else:
+            rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
+            roster_revenue_per_artist = float(roster_rows["view_count"].sum()) / 1000.0 * rpm / roster_artist_count
+        if "engagement_rate" in roster_rows.columns:
+            per_artist_engagement = roster_rows.groupby("artist_name")["engagement_rate"].mean()
+            roster_avg_engagement = float(per_artist_engagement.mean()) if not per_artist_engagement.empty else 0.0
+        else:
+            roster_avg_engagement = 0.0
+    else:
+        roster_views_per_artist = summary["total_views"].sum() / max(len(summary), 1)
+        roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
+        roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
+        roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
+        roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
+        roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
+
+    return {
+        "total_views": total_views,
+        "total_videos": total_videos,
+        "total_likes": total_likes,
+        "total_comments": total_comments,
+        "total_revenue": total_revenue,
+        "avg_engagement": avg_engagement,
+        "selected_artist_count": selected_artist_count,
+        "roster_views_per_artist": roster_views_per_artist,
+        "roster_videos_per_artist": roster_videos_per_artist,
+        "roster_likes_per_artist": roster_likes_per_artist,
+        "roster_comments_per_artist": roster_comments_per_artist,
+        "roster_revenue_per_artist": roster_revenue_per_artist,
+        "roster_avg_engagement": roster_avg_engagement,
+    }
+
+
 def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Return artist-level action rows from content-type KPIs."""
 
@@ -728,7 +817,12 @@ def build_revenue_formula_context(
     }
 
 
-def render_kpis(summary: pd.DataFrame, artists: list[str], videos: pd.DataFrame | None = None) -> None:
+def render_kpis(
+    summary: pd.DataFrame,
+    artists: list[str],
+    videos: pd.DataFrame | None = None,
+    roster_videos: pd.DataFrame | None = None,
+) -> None:
     """Render KPI cards with directional deltas vs roster averages.
 
     This keeps the demo honest: deltas are always computed from the same
@@ -741,22 +835,26 @@ def render_kpis(summary: pd.DataFrame, artists: list[str], videos: pd.DataFrame 
         st.warning("No data found for the selected artists.")
         return
 
-    total_views = int(filtered["total_views"].sum())
-    total_videos = int(filtered["total_videos"].sum())
-    total_likes = int(filtered["total_likes"].sum())
-    total_comments = int(filtered["total_comments"].sum())
-    total_revenue = float(filtered["total_est_revenue_usd"].sum())
-    avg_engagement = float(filtered["avg_engagement_rate"].mean())
+    context = build_kpi_context(summary, artists, videos=videos, roster_videos=roster_videos)
+    if not context:
+        st.warning("No KPI context is available for the selected filters.")
+        return
+
+    total_views = int(context["total_views"])
+    total_videos = int(context["total_videos"])
+    total_likes = int(context["total_likes"])
+    total_comments = int(context["total_comments"])
+    total_revenue = float(context["total_revenue"])
+    avg_engagement = float(context["avg_engagement"])
+    selected_artist_count = int(context["selected_artist_count"])
 
     # Roster-wide baselines for directional context
-    roster_views_per_artist = summary["total_views"].sum() / max(len(summary), 1)
-    roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
-    roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
-    roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
-    roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
-    roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
-
-    selected_artist_count = max(len(filtered), 1)
+    roster_views_per_artist = float(context["roster_views_per_artist"])
+    roster_videos_per_artist = float(context["roster_videos_per_artist"])
+    roster_likes_per_artist = float(context["roster_likes_per_artist"])
+    roster_comments_per_artist = float(context["roster_comments_per_artist"])
+    roster_revenue_per_artist = float(context["roster_revenue_per_artist"])
+    roster_avg_engagement = float(context["roster_avg_engagement"])
     views_per_artist = total_views / selected_artist_count
     videos_per_artist = total_videos / selected_artist_count
     likes_per_artist = total_likes / selected_artist_count
@@ -840,7 +938,10 @@ def render_kpis(summary: pd.DataFrame, artists: list[str], videos: pd.DataFrame 
     #         animation_length=2,
     #     )
 
-    formula_context = build_revenue_formula_context(filtered, videos)
+    formula_summary = pd.DataFrame(
+        [{"total_views": total_views, "total_est_revenue_usd": total_revenue}],
+    )
+    formula_context = build_revenue_formula_context(formula_summary, videos)
     st.markdown("##### Estimated revenue arithmetic (TOS-safe proxy)")
     st.code(formula_context["equation"], language="text")
     st.caption(formula_context["worked_example"])
@@ -1208,10 +1309,10 @@ def main() -> None:
     st.sidebar.metric("Latest metrics date", max_date.isoformat())
     st.sidebar.metric("Rows loaded", f"{len(normalized_videos):,}")
 
-    normalized_filtered = filter_by_date_window(
-        filter_by_artists(normalized_videos, selected_artists), (start_date, end_date)
-    )
-    latest = latest_snapshot(normalized_filtered)
+    window_filtered_all = filter_by_date_window(normalized_videos, (start_date, end_date))
+    normalized_filtered = filter_by_artists(window_filtered_all, selected_artists)
+    latest_roster = latest_snapshot(window_filtered_all)
+    latest = filter_by_artists(latest_roster, selected_artists)
     color_map = build_color_discrete_map(selected_artists, palette)
 
     # Top-level navigation for different storytelling modes
@@ -1225,7 +1326,7 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(artist_summary, selected_artists, latest)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -1249,7 +1350,7 @@ def main() -> None:
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
-        render_kpis(artist_summary, selected_artists, latest)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster)
         st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
         render_content_mix(latest)
         render_artist_content_mix(latest)
