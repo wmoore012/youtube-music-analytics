@@ -1,9 +1,12 @@
 import pandas as pd
+import pytest
 
 from streamlit_app import (
     _classify_video_type_from_duration,
     _parse_iso8601_duration_seconds,
     build_artist_summary_from_metrics,
+    load_artist_summary_from_demo,
+    load_normalized_videos_from_demo,
 )
 
 
@@ -67,3 +70,45 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
     assert int(row["total_comments"]) == 4
     assert float(row["total_est_revenue_usd"]) == 2.0
 
+
+def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = {
+        "artists": {
+            0: {
+                "name": "BiC Fizzle",
+                "metrics": {
+                    "total_views": 1_500,
+                    "total_videos": 2,
+                    "engagement_rate": 1.5,
+                },
+                "videos": {
+                    0: {
+                        "video_id": "vid_1",
+                        "title": "Test Video",
+                        "published_at": "2026-02-07T00:00:00",
+                        "view_count": 1_500,
+                        "views_per_day": 250.0,
+                        "engagement_rate": 1.5,
+                        "like_rate": 1.2,
+                        "comment_rate": 0.3,
+                        "video_type": "Official Music Video",
+                    },
+                    1: 999,  # malformed row should be skipped, not crash
+                },
+            },
+            1: 123,  # malformed artist should be skipped, not crash
+        }
+    }
+
+    monkeypatch.setattr("streamlit_app._load_demo_cohort", lambda: payload)
+
+    artist_summary = load_artist_summary_from_demo()
+    normalized_videos = load_normalized_videos_from_demo()
+
+    assert artist_summary["artist_name"].tolist() == ["BiC Fizzle"]
+    assert int(artist_summary.loc[0, "total_views"]) == 1_500
+    assert int(artist_summary.loc[0, "total_videos"]) == 2
+
+    assert normalized_videos["artist_name"].tolist() == ["BiC Fizzle"]
+    assert normalized_videos["video_id"].tolist() == ["vid_1"]
+    assert normalized_videos["title"].tolist() == ["Test Video"]
