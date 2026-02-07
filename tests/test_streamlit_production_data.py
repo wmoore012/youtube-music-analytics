@@ -2,7 +2,6 @@ import pandas as pd
 
 from streamlit_app import (
     _classify_video_type_from_duration,
-    _normalize_artist_names_case_insensitive,
     _parse_iso8601_duration_seconds,
     build_artist_summary_from_metrics,
 )
@@ -68,17 +67,3 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
     assert int(row["total_comments"]) == 4
     assert float(row["total_est_revenue_usd"]) == 2.0
 
-
-def test_normalize_artist_names_case_insensitive() -> None:
-    df = pd.DataFrame(
-        [
-            {"artist_name": "COBRAH", "view_count": 1},
-            {"artist_name": "Cobrah", "view_count": 2},
-            {"artist_name": "COBRAH", "view_count": 3},
-        ]
-    )
-
-    out = _normalize_artist_names_case_insensitive(df)
-
-    assert out["artist_name"].nunique() == 1
-    assert out["artist_name"].iloc[0] == "COBRAH"

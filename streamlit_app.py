@@ -18,6 +18,19 @@ from streamlit_option_menu import option_menu
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
+# ======================================================================
+# IMPORTANT - DO NOT REGRESS (USER-REQUIRED BEHAVIOR)
+# ----------------------------------------------------------------------
+# 1) In "Production (MySQL)" mode, Streamlit MUST read live MySQL data,
+#    not stale CSV snapshots.
+# 2) Revenue KPI must show explicit TOS-safe arithmetic in plain language:
+#    Estimated revenue (USD) = (Total views / 1,000) x RPM proxy.
+# 3) If Shorts/video length affects estimates, explain this very simply.
+# 4) Never override artist stylistic casing choices automatically.
+# 5) KPI deltas shown in green/red must have matching arithmetic + actions;
+#    otherwise hide the delta.
+# ======================================================================
+
 CACHE_TTL_SECONDS = 900  # 15 minutes
 DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
 DEFAULT_DATA_FRESHNESS_DAYS = 30
@@ -105,28 +118,6 @@ def _classify_video_type_from_duration(duration: object) -> str:
     if seconds <= SHORTS_MAX_SECONDS:
         return "Short"
     return "Official Music Video"
-
-
-def _normalize_artist_names_case_insensitive(df: pd.DataFrame, column: str = "artist_name") -> pd.DataFrame:
-    """Collapse case-only artist variants to a single display label."""
-
-    if df.empty or column not in df.columns:
-        return df
-
-    out = df.copy()
-    artist_names = out[column].fillna("Unknown").astype(str).str.strip()
-    keys = artist_names.str.casefold()
-
-    ranked = (
-        pd.DataFrame({"key": keys, "name": artist_names})
-        .groupby(["key", "name"])
-        .size()
-        .reset_index(name="count")
-        .sort_values(["key", "count", "name"], ascending=[True, False, True])
-    )
-    preferred_by_key = ranked.drop_duplicates(subset="key").set_index("key")["name"].to_dict()
-    out[column] = keys.map(preferred_by_key).fillna("Unknown")
-    return out
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -314,7 +305,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
     df["engagement_rate"] = df["like_rate"] + df["comment_rate"]
     df["video_type"] = df["duration"].map(_classify_video_type_from_duration)
 
-    return _normalize_artist_names_case_insensitive(df)
+    return df
 
 
 def load_normalized_videos_from_demo() -> pd.DataFrame:
@@ -540,6 +531,112 @@ def ensure_columns(df: pd.DataFrame, columns: Iterable[str], context: str) -> bo
     return True
 
 
+def compute_pct_delta(current: float, baseline: float, threshold: float = 0.1) -> float | None:
+    """Return percentage delta, or None when baseline is invalid / change is tiny."""
+
+    if baseline <= 0:
+        return None
+    change = (current / baseline - 1.0) * 100.0
+    if abs(change) < threshold:
+        return None
+    return change
+
+
+def format_delta_value(change: float | None) -> str | None:
+    if change is None:
+        return None
+    return f"{change:+.1f}%"
+
+
+def build_delta_signal_rows(
+    *,
+    views_per_artist: float,
+    roster_views_per_artist: float,
+    videos_per_artist: float,
+    roster_videos_per_artist: float,
+    likes_per_artist: float,
+    roster_likes_per_artist: float,
+    comments_per_artist: float,
+    roster_comments_per_artist: float,
+    avg_engagement: float,
+    roster_avg_engagement: float,
+    revenue_per_artist: float,
+    roster_revenue_per_artist: float,
+) -> pd.DataFrame:
+    """Build arithmetic-backed rows for every displayed KPI delta."""
+
+    specs = [
+        ("Total views", views_per_artist, roster_views_per_artist, "Scale the format mix that is already pulling reach."),
+        ("Videos analyzed", videos_per_artist, roster_videos_per_artist, "Tune release cadence to match capacity."),
+        ("Total likes", likes_per_artist, roster_likes_per_artist, "Double down on hooks/creative that drives positive reactions."),
+        ("Total comments", comments_per_artist, roster_comments_per_artist, "Prioritize call-to-action formats that trigger conversation."),
+        ("Avg engagement rate", avg_engagement, roster_avg_engagement, "Replicate the top engagement format with tighter iteration loops."),
+        ("Est. revenue (USD)", revenue_per_artist, roster_revenue_per_artist, "Allocate budget toward the highest-yield format first."),
+    ]
+    rows: list[dict[str, str]] = []
+    for name, current, baseline, action in specs:
+        change = compute_pct_delta(current, baseline)
+        delta_text = format_delta_value(change)
+        if delta_text is None:
+            continue
+        rows.append(
+            {
+                "KPI": name,
+                "Delta": delta_text,
+                "Arithmetic": f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100",
+                "Action": action,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Return artist-level action rows from content-type KPIs."""
+
+    if df.empty:
+        return pd.DataFrame(columns=["Artist", "Best Reach Format", "Best Engagement Format", "Action Plan"])
+
+    mix = (
+        df.groupby(["artist_name", "video_type"], dropna=False)
+        .agg(
+            videos=("video_id", "nunique"),
+            total_views=("view_count", "sum"),
+            avg_views_per_day=("views_per_day", "mean"),
+            avg_engagement=("engagement_rate", "mean"),
+        )
+        .reset_index()
+    )
+    rows: list[dict[str, str]] = []
+    for artist_name, artist_mix in mix.groupby("artist_name"):
+        best_reach = artist_mix.sort_values(["avg_views_per_day", "total_views"], ascending=False).iloc[0]
+        best_engagement = artist_mix.sort_values(["avg_engagement", "videos"], ascending=False).iloc[0]
+
+        reach_format = "Short / Reel" if str(best_reach["video_type"]) == "Short" else str(best_reach["video_type"])
+        engagement_format = (
+            "Short / Reel" if str(best_engagement["video_type"]) == "Short" else str(best_engagement["video_type"])
+        )
+
+        if reach_format == engagement_format:
+            action = (
+                f"Primary bet: {reach_format}. Keep >=70% of next releases in this format; "
+                "A/B test titles and openings."
+            )
+        else:
+            action = (
+                f"Use 70/30 split: 70% {reach_format} for reach and 30% "
+                f"{engagement_format} for deeper fan response."
+            )
+        rows.append(
+            {
+                "Artist": str(artist_name),
+                "Best Reach Format": f"{reach_format} ({best_reach['avg_views_per_day']:,.1f} views/day)",
+                "Best Engagement Format": f"{engagement_format} ({best_engagement['avg_engagement']:.2f}%)",
+                "Action Plan": action,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
     """Compute implied RPM (USD per 1,000 views) by video type from video rows."""
 
@@ -666,20 +763,12 @@ def render_kpis(summary: pd.DataFrame, artists: list[str], videos: pd.DataFrame 
     comments_per_artist = total_comments / selected_artist_count
     revenue_per_artist = total_revenue / selected_artist_count
 
-    def _pct_delta(current: float, baseline: float) -> str | None:
-        if baseline == 0:
-            return None
-        change = (current / baseline - 1.0) * 100.0
-        if abs(change) < 0.1:
-            return None
-        return f"{change:+.1f}%"
-
-    views_delta = _pct_delta(views_per_artist, roster_views_per_artist)
-    videos_delta = _pct_delta(videos_per_artist, roster_videos_per_artist)
-    likes_delta = _pct_delta(likes_per_artist, roster_likes_per_artist)
-    comments_delta = _pct_delta(comments_per_artist, roster_comments_per_artist)
-    revenue_delta = _pct_delta(revenue_per_artist, roster_revenue_per_artist)
-    engagement_delta = _pct_delta(avg_engagement, roster_avg_engagement)
+    views_delta = format_delta_value(compute_pct_delta(views_per_artist, roster_views_per_artist))
+    videos_delta = format_delta_value(compute_pct_delta(videos_per_artist, roster_videos_per_artist))
+    likes_delta = format_delta_value(compute_pct_delta(likes_per_artist, roster_likes_per_artist))
+    comments_delta = format_delta_value(compute_pct_delta(comments_per_artist, roster_comments_per_artist))
+    revenue_delta = format_delta_value(compute_pct_delta(revenue_per_artist, roster_revenue_per_artist))
+    engagement_delta = format_delta_value(compute_pct_delta(avg_engagement, roster_avg_engagement))
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
@@ -759,6 +848,34 @@ def render_kpis(summary: pd.DataFrame, artists: list[str], videos: pd.DataFrame 
         "This is a directional estimate from public metrics, not a YouTube payout statement."
     )
     st.caption(formula_context["type_note"])
+
+    delta_rows = build_delta_signal_rows(
+        views_per_artist=views_per_artist,
+        roster_views_per_artist=roster_views_per_artist,
+        videos_per_artist=videos_per_artist,
+        roster_videos_per_artist=roster_videos_per_artist,
+        likes_per_artist=likes_per_artist,
+        roster_likes_per_artist=roster_likes_per_artist,
+        comments_per_artist=comments_per_artist,
+        roster_comments_per_artist=roster_comments_per_artist,
+        avg_engagement=avg_engagement,
+        roster_avg_engagement=roster_avg_engagement,
+        revenue_per_artist=revenue_per_artist,
+        roster_revenue_per_artist=roster_revenue_per_artist,
+    )
+    if not delta_rows.empty:
+        st.markdown("##### KPI delta arithmetic (shown percentages only)")
+        st.dataframe(
+            delta_rows,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "KPI": st.column_config.TextColumn("KPI"),
+                "Delta": st.column_config.TextColumn("Delta"),
+                "Arithmetic": st.column_config.TextColumn("Arithmetic"),
+                "Action": st.column_config.TextColumn("Action"),
+            },
+        )
 
 
 def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
@@ -851,6 +968,61 @@ def render_content_mix(df: pd.DataFrame) -> None:
         ],
     }
     st_echarts(options=options, height="400px")
+
+
+def render_artist_content_mix(df: pd.DataFrame) -> None:
+    """Render artist-by-format mix and a concrete action board."""
+
+    if df.empty:
+        st.info("Per-artist content mix unavailable for the selected filters.")
+        return
+    required = ["artist_name", "video_type", "video_id", "view_count", "views_per_day", "engagement_rate"]
+    if not ensure_columns(df, required, "Artist content mix chart"):
+        return
+
+    mix = (
+        df.groupby(["artist_name", "video_type"], dropna=False)
+        .agg(
+            video_count=("video_id", "nunique"),
+            total_views=("view_count", "sum"),
+            avg_views_per_day=("views_per_day", "mean"),
+            avg_engagement=("engagement_rate", "mean"),
+        )
+        .reset_index()
+    )
+    mix["video_type_label"] = mix["video_type"].replace({"Short": "Short / Reel"})
+
+    fig = px.bar(
+        mix,
+        x="artist_name",
+        y="video_count",
+        color="video_type_label",
+        title="Video content mix by artist (counts by format)",
+        barmode="stack",
+        hover_data={
+            "total_views": ":,.0f",
+            "avg_views_per_day": ":,.1f",
+            "avg_engagement": ":.2f",
+            "video_type": False,
+        },
+    )
+    fig.update_layout(xaxis_title="Artist", yaxis_title="Videos", legend_title_text="Format")
+    st.plotly_chart(fig, use_container_width=True, height=420)
+
+    action_rows = build_artist_content_action_rows(df)
+    if not action_rows.empty:
+        st.markdown("##### Label Action Board (KPI-driven)")
+        st.dataframe(
+            action_rows,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Artist": st.column_config.TextColumn("Artist"),
+                "Best Reach Format": st.column_config.TextColumn("Best Reach Format"),
+                "Best Engagement Format": st.column_config.TextColumn("Best Engagement Format"),
+                "Action Plan": st.column_config.TextColumn("Action Plan", width="large"),
+            },
+        )
 
 
 def render_top_videos(df: pd.DataFrame, limit: int) -> None:
@@ -1063,6 +1235,7 @@ def main() -> None:
 
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
+        render_artist_content_mix(latest)
 
         ui.card(
             content=(
@@ -1079,6 +1252,7 @@ def main() -> None:
         render_kpis(artist_summary, selected_artists, latest)
         st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
         render_content_mix(latest)
+        render_artist_content_mix(latest)
 
     else:  # "Velocity Analysis"
         st.markdown("### Velocity & momentum")

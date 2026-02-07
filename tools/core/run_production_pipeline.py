@@ -18,6 +18,15 @@ Version: 2.0.0
 License: Enterprise
 """
 
+# ======================================================================
+# IMPORTANT - DO NOT REGRESS (USER-REQUIRED BEHAVIOR)
+# ----------------------------------------------------------------------
+# 1) Pipeline must include actual channel ingestion before downstream ETL,
+#    so new youtube_metrics rows are created daily.
+# 2) Stage execution must use explicit timeouts to avoid hangs.
+# 3) "Success" status should only be logged when ingestion+pipeline complete.
+# ======================================================================
+
 import json
 import logging
 import os
