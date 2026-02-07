@@ -1,0 +1,24 @@
+# YouTube Music Analytics - Standard Schedule
+# Generated on 2026-02-07T17:25:05.191403
+# Schedule: Balanced automation for regular music industry use
+
+# Environment configuration for cron jobs
+SHELL=/bin/bash
+PATH=/Users/jsmash/.antigravity/antigravity/bin:/Users/jsmash/.antigravity/antigravity/bin:/Users/jsmash/.nvm/versions/node/v22.18.0/bin:/opt/homebrew/opt/mysql-client/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/usr/local/bin:/usr/local/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin
+MAILTO=admin@yourdomain.com
+
+# Daily data collection from YouTube API
+# User Control: Respects API rate limits, can be paused anytime
+0 2 * * * cd /Users/jsmash/PycharmProjects/YoutubeETL And Analyis && make run-etl >> logs/automation.log 2>&1
+
+# Data quality validation after ETL
+# User Control: Read-only operation, generates reports only
+0 3 * * * cd /Users/jsmash/PycharmProjects/YoutubeETL And Analyis && make quality-check >> logs/automation.log 2>&1
+
+# Generate weekly analytics notebooks
+# User Control: Creates files in notebooks/executed/, no external calls
+0 6 * * 1 cd /Users/jsmash/PycharmProjects/YoutubeETL And Analyis && make run-notebooks >> logs/automation.log 2>&1
+
+# Generate executive dashboard and insights
+# User Control: Email delivery optional, files saved locally
+0 9 * * 1 cd /Users/jsmash/PycharmProjects/YoutubeETL And Analyis && make executive-report >> logs/automation.log 2>&1

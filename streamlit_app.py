@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -136,8 +136,8 @@ def _is_truthy(value: str | None) -> bool:
 def _is_streamlit_cloud_runtime() -> bool:
     """Best-effort detection of Streamlit Community Cloud runtime.
 
-    Uses known cloud env flags first, then falls back to the historical
-    `/mount/src/` working-directory pattern as a compatibility safeguard.
+    Uses known cloud env flags first (robust), then falls back to the historical
+    `/mount/src/` working-directory pattern as a compatibility safeguard (brittle).
     """
 
     if _is_truthy(os.getenv("STREAMLIT_SERVER_RUNNING_IN_CLOUD")):
@@ -163,7 +163,7 @@ def _normalize_data_mode(raw_value: str | None) -> Literal["demo", "production"]
         return "production"
 
     st.error(
-        "Invalid data mode value. Use 'demo' or 'production' for " "MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
+        "Invalid data mode value. Use 'demo' or 'production' for MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
     )
     st.stop()
     return None
@@ -860,8 +860,7 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
             )
         else:
             action = (
-                f"Use 70/30 split: 70% {reach_format} for reach and 30% "
-                f"{engagement_format} for deeper fan response."
+                f"Use 70/30 split: 70% {reach_format} for reach and 30% {engagement_format} for deeper fan response."
             )
         rows.append(
             {
