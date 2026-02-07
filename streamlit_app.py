@@ -107,6 +107,28 @@ def _classify_video_type_from_duration(duration: object) -> str:
     return "Official Music Video"
 
 
+def _normalize_artist_names_case_insensitive(df: pd.DataFrame, column: str = "artist_name") -> pd.DataFrame:
+    """Collapse case-only artist variants to a single display label."""
+
+    if df.empty or column not in df.columns:
+        return df
+
+    out = df.copy()
+    artist_names = out[column].fillna("Unknown").astype(str).str.strip()
+    keys = artist_names.str.casefold()
+
+    ranked = (
+        pd.DataFrame({"key": keys, "name": artist_names})
+        .groupby(["key", "name"])
+        .size()
+        .reset_index(name="count")
+        .sort_values(["key", "count", "name"], ascending=[True, False, True])
+    )
+    preferred_by_key = ranked.drop_duplicates(subset="key").set_index("key")["name"].to_dict()
+    out[column] = keys.map(preferred_by_key).fillna("Unknown")
+    return out
+
+
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
 def _load_csv(path: Path, parse_dates: Iterable[str] | None = None) -> pd.DataFrame:
     """Load a CSV with basic error handling visible in the UI.
@@ -292,7 +314,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
     df["engagement_rate"] = df["like_rate"] + df["comment_rate"]
     df["video_type"] = df["duration"].map(_classify_video_type_from_duration)
 
-    return df
+    return _normalize_artist_names_case_insensitive(df)
 
 
 def load_normalized_videos_from_demo() -> pd.DataFrame:
