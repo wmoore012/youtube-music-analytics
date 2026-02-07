@@ -1,6 +1,6 @@
 import os
-import sys
 from pathlib import Path
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -52,6 +52,47 @@ def test_get_data_mode_defaults_to_demo_without_secrets():
     ), patch("streamlit.session_state", {}):
         # Should default to demo, not crash
         assert get_data_mode() == "demo"
+
+
+def test_get_data_mode_ignores_env_db_on_streamlit_cloud_by_default():
+    """In Streamlit Cloud, env-only DB_* should not force Production mode."""
+
+    env = {
+        "DB_HOST": "localhost",
+        "DB_PORT": "3306",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+    }
+
+    with patch("streamlit.secrets", {}), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, env, clear=True
+    ), patch("streamlit_app._is_streamlit_cloud_runtime", return_value=True):
+        assert get_data_mode() == "demo"
+
+
+def test_get_data_mode_uses_env_db_on_streamlit_cloud_when_explicitly_allowed():
+    """Cloud env DB_* can be enabled explicitly with MUSICSCOPE_ALLOW_ENV_DB."""
+
+    env = {
+        "DB_HOST": "db.example.internal",
+        "DB_PORT": "3306",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+        "MUSICSCOPE_ALLOW_ENV_DB": "1",
+    }
+
+    fake_conn = MagicMock()
+    fake_engine = MagicMock()
+    fake_engine.connect.return_value.__enter__.return_value = fake_conn
+
+    with patch("streamlit.secrets", {}), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, env, clear=True
+    ), patch("streamlit_app._is_streamlit_cloud_runtime", return_value=True), patch(
+        "streamlit_app.get_engine", return_value=fake_engine
+    ):
+        assert get_data_mode() == "production"
 
 
 def test_sync_db_settings_to_env_uses_streamlit_secrets():

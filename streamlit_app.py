@@ -30,6 +30,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 # 4) Never override artist stylistic casing choices automatically.
 # 5) KPI deltas shown in green/red must have matching arithmetic + actions;
 #    otherwise hide the delta.
+# 6) In Streamlit Cloud, do not auto-enter Production mode from repo/env
+#    DB_* values alone; require explicit secrets/session intent.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -112,6 +114,19 @@ def _parse_iso8601_duration_seconds(duration: object) -> int | None:
     return hours * 3600 + minutes * 60 + seconds
 
 
+def _is_truthy(value: str | None) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _is_streamlit_cloud_runtime() -> bool:
+    """Best-effort detection of Streamlit Community Cloud runtime."""
+
+    cwd = str(Path.cwd())
+    return cwd.startswith("/mount/src/")
+
+
 def _classify_video_type_from_duration(duration: object) -> str:
     """Classify video type from duration with a simple Shorts cutoff."""
 
@@ -165,7 +180,7 @@ def _load_demo_cohort() -> dict:
             return json.load(fh)
 
 
-def _get_db_setting(name: str) -> str | None:
+def _get_db_setting(name: str, *, allow_env: bool = True) -> str | None:
     """Lookup a DB_* setting from Streamlit secrets, session_state, or env.
 
     This keeps resolution consistent anywhere we need database credentials
@@ -184,9 +199,10 @@ def _get_db_setting(name: str) -> str | None:
         value = st.session_state[name]
         if value:
             return str(value)
-    env_value = os.getenv(name)
-    if env_value:
-        return env_value
+    if allow_env:
+        env_value = os.getenv(name)
+        if env_value:
+            return env_value
     return None
 
 
@@ -220,13 +236,17 @@ def get_data_mode() -> Literal["demo", "production"]:
     from sqlalchemy import text  # Imported lazily to keep imports light
 
     required_keys = ["DB_HOST", "DB_USER", "DB_PASS", "DB_NAME"]
+    # In Streamlit Cloud we ignore raw env DB_* by default because a checked-in
+    # .env (or inherited env) can accidentally force broken localhost Production
+    # mode. Override with MUSICSCOPE_ALLOW_ENV_DB=1 if needed.
+    allow_env_db = not _is_streamlit_cloud_runtime() or _is_truthy(os.getenv("MUSICSCOPE_ALLOW_ENV_DB"))
 
-    any_present = any(_get_db_setting(key) is not None for key in required_keys)
+    any_present = any(_get_db_setting(key, allow_env=allow_env_db) is not None for key in required_keys)
     if not any_present:
         # No DB intent configured → stay in demo mode using curated cohort.
         return "demo"
 
-    missing = [key for key in required_keys if _get_db_setting(key) is None]
+    missing = [key for key in required_keys if _get_db_setting(key, allow_env=allow_env_db) is None]
     if missing:
         st.error(
             "Production (MySQL) mode was requested, but these settings are missing: " + ", ".join(missing),
