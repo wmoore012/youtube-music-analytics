@@ -24,7 +24,7 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 # 1) In "Production (MySQL)" mode, Streamlit MUST read live MySQL data,
 #    not stale CSV snapshots.
 # 2) Revenue KPI must show explicit TOS-safe arithmetic in plain language:
-#    Estimated revenue (USD) = (Total views / 1,000) x RPM proxy.
+#    Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views).
 # 3) If Shorts/video length affects estimates, explain this very simply.
 # 4) Never override artist stylistic casing choices automatically.
 # 5) KPI deltas shown in green/red must have matching arithmetic + actions;
@@ -566,12 +566,37 @@ def build_delta_signal_rows(
     """Build arithmetic-backed rows for every displayed KPI delta."""
 
     specs = [
-        ("Total views", views_per_artist, roster_views_per_artist, "Scale the format mix that is already pulling reach."),
+        (
+            "Total views",
+            views_per_artist,
+            roster_views_per_artist,
+            "Scale the format mix that is already pulling reach.",
+        ),
         ("Videos analyzed", videos_per_artist, roster_videos_per_artist, "Tune release cadence to match capacity."),
-        ("Total likes", likes_per_artist, roster_likes_per_artist, "Double down on hooks/creative that drives positive reactions."),
-        ("Total comments", comments_per_artist, roster_comments_per_artist, "Prioritize call-to-action formats that trigger conversation."),
-        ("Avg engagement rate", avg_engagement, roster_avg_engagement, "Replicate the top engagement format with tighter iteration loops."),
-        ("Est. revenue (USD)", revenue_per_artist, roster_revenue_per_artist, "Allocate budget toward the highest-yield format first."),
+        (
+            "Total likes",
+            likes_per_artist,
+            roster_likes_per_artist,
+            "Double down on hooks/creative that drives positive reactions.",
+        ),
+        (
+            "Total comments",
+            comments_per_artist,
+            roster_comments_per_artist,
+            "Prioritize call-to-action formats that trigger conversation.",
+        ),
+        (
+            "Avg engagement rate",
+            avg_engagement,
+            roster_avg_engagement,
+            "Replicate the top engagement format with tighter iteration loops.",
+        ),
+        (
+            "Est. revenue (USD)",
+            revenue_per_artist,
+            roster_revenue_per_artist,
+            "Allocate budget toward the highest-yield format first.",
+        ),
     ]
     rows: list[dict[str, str]] = []
     for name, current, baseline, action in specs:
@@ -611,7 +636,9 @@ def build_kpi_context(
             total_views = int(selected_rows["view_count"].sum())
             total_videos = int(selected_rows["video_id"].nunique())
             total_likes = int(selected_rows["like_count"].sum()) if "like_count" in selected_rows.columns else 0
-            total_comments = int(selected_rows["comment_count"].sum()) if "comment_count" in selected_rows.columns else 0
+            total_comments = (
+                int(selected_rows["comment_count"].sum()) if "comment_count" in selected_rows.columns else 0
+            )
             if "est_revenue_usd" in selected_rows.columns:
                 total_revenue = float(selected_rows["est_revenue_usd"].sum())
             else:
@@ -727,7 +754,7 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
-    """Compute implied RPM (USD per 1,000 views) by video type from video rows."""
+    """Compute RPM (USD per 1,000 views) by video type from video rows."""
 
     if videos is None or videos.empty:
         return {}
@@ -765,9 +792,7 @@ def build_revenue_formula_context(
 ) -> dict[str, str]:
     """Build explicit formula text for the estimated revenue KPI."""
 
-    total_views = (
-        float(summary_filtered["total_views"].sum()) if "total_views" in summary_filtered.columns else 0.0
-    )
+    total_views = float(summary_filtered["total_views"].sum()) if "total_views" in summary_filtered.columns else 0.0
     total_revenue = (
         float(summary_filtered["total_est_revenue_usd"].sum())
         if "total_est_revenue_usd" in summary_filtered.columns
@@ -775,7 +800,7 @@ def build_revenue_formula_context(
     )
     blended_rpm = (total_revenue / total_views) * 1000.0 if total_views > 0 else 0.0
 
-    equation = "Estimated revenue (USD) = (Total views / 1,000) x RPM proxy"
+    equation = "Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views)"
     worked_example = (
         f"Current selection: ({format_number(total_views)} / 1,000) x "
         f"${blended_rpm:.2f} = {format_currency(total_revenue)}"
@@ -790,7 +815,7 @@ def build_revenue_formula_context(
         )
     elif len(rpm_by_type) < 2:
         type_note = (
-            "Shorts vs music videos: this model uses one RPM proxy for all video "
+            "Shorts vs music videos: this model uses one RPM value for all video "
             "types. Video length is not in this formula."
         )
     else:
@@ -805,9 +830,9 @@ def build_revenue_formula_context(
             top_types = sorted(rpm_by_type.items(), key=lambda item: item[1], reverse=True)
             sample = "; ".join(f"{name}: ${rpm:.2f}" for name, rpm in top_types[:4])
             type_note = (
-                "Shorts vs music videos: this view applies different implied RPM by video type. "
+                "Shorts vs music videos: this view uses different RPM values by video type. "
                 "Per-video arithmetic is still: (video views / 1,000) x type RPM. "
-                f"Current type RPMs: {sample}."
+                f"Current type RPMs (USD per 1,000 views): {sample}."
             )
 
     return {
@@ -917,7 +942,7 @@ def render_kpis(
         delta_arrow="auto",
         help=(
             "Per-artist estimated revenue vs roster-wide average. "
-            "Formula: (Total views / 1,000) x RPM proxy."
+            "Formula: (Total views / 1,000) x RPM (USD per 1,000 views)."
         ),
     )
 
@@ -942,12 +967,11 @@ def render_kpis(
         [{"total_views": total_views, "total_est_revenue_usd": total_revenue}],
     )
     formula_context = build_revenue_formula_context(formula_summary, videos)
-    st.markdown("##### Estimated revenue arithmetic (TOS-safe proxy)")
+    st.markdown("##### Estimated revenue arithmetic (TOS-safe explicit formula)")
     st.code(formula_context["equation"], language="text")
     st.caption(formula_context["worked_example"])
-    st.caption(
-        "This is a directional estimate from public metrics, not a YouTube payout statement."
-    )
+    st.caption("No hidden score is used. RPM means explicit USD per 1,000 views arithmetic.")
+    st.caption("This is a directional estimate from public metrics, not a YouTube payout statement.")
     st.caption(formula_context["type_note"])
 
     delta_rows = build_delta_signal_rows(

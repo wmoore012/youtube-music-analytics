@@ -116,6 +116,17 @@ class EnterpriseETLPipeline:
             extra={"pipeline_id": self.pipeline_id, "config": self.config, "environment": self.results["environment"]},
         )
 
+    def _build_stage_env(self) -> dict[str, str]:
+        """Return subprocess env with project root injected into PYTHONPATH."""
+
+        stage_env = os.environ.copy()
+        root = str(project_root)
+        existing = stage_env.get("PYTHONPATH", "")
+        existing_parts = [part for part in existing.split(os.pathsep) if part]
+        if root not in existing_parts:
+            stage_env["PYTHONPATH"] = os.pathsep.join([root, *existing_parts]) if existing_parts else root
+        return stage_env
+
     def run_stage(self, stage_name: str, command: list, critical: bool = True) -> bool:
         """Run a pipeline stage with error handling."""
         logger.info(f"🚀 Starting stage: {stage_name}")
@@ -126,6 +137,8 @@ class EnterpriseETLPipeline:
                 capture_output=True,
                 text=True,
                 timeout=self.stage_timeout_seconds,
+                cwd=str(project_root),
+                env=self._build_stage_env(),
             )
 
             self.results["stages"][stage_name] = {
@@ -225,7 +238,7 @@ class EnterpriseETLPipeline:
 
             # Deduplicate by video_id (natural key)
             clean_data = data.drop_duplicates(["video_id"], keep="first")
-            duplicates_removed = original_count-len(clean_data)
+            duplicates_removed = original_count - len(clean_data)
 
             logger.info("📊 Data cleanup results:")
             logger.info(f"   Original records: {original_count:,}")
@@ -277,7 +290,9 @@ class EnterpriseETLPipeline:
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
-            if not self.run_stage("channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True):
+            if not self.run_stage(
+                "channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True
+            ):
                 logger.error("💥 Channel ingestion failed-aborting pipeline")
                 return self.results
             if not self.run_stage("main_etl", ["python", "tools/core/run_focused_etl.py"], critical=True):

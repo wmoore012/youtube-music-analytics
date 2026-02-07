@@ -1370,9 +1370,7 @@ def create_duration_breakdown_chart(
     short_label = f"Short-form (<= {minutes:g} min)"
     long_label = f"Long-form (> {minutes:g} min)"
 
-    work["length_bucket"] = work[duration_col].apply(
-        lambda v: short_label if v <= short_form_threshold else long_label
-    )
+    work["length_bucket"] = work[duration_col].apply(lambda v: short_label if v <= short_form_threshold else long_label)
 
     summary = (
         work.groupby([artist_col, "length_bucket"], as_index=False)[views_col]

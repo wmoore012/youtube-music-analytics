@@ -1,6 +1,8 @@
+import os
 from types import SimpleNamespace
 from unittest.mock import mock_open
 
+from tools.core import run_production_pipeline
 from tools.core.run_production_pipeline import EnterpriseETLPipeline
 
 
@@ -8,7 +10,7 @@ def test_run_stage_uses_configured_timeout(monkeypatch) -> None:
     pipeline = EnterpriseETLPipeline(config={"stage_timeout_seconds": 123})
     captured: dict[str, int] = {}
 
-    def fake_run(command, capture_output, text, timeout):  # noqa: ANN001
+    def fake_run(command, capture_output, text, timeout, cwd, env):  # noqa: ANN001
         captured["timeout"] = timeout
         return SimpleNamespace(returncode=0, stdout="ok", stderr="")
 
@@ -16,6 +18,24 @@ def test_run_stage_uses_configured_timeout(monkeypatch) -> None:
 
     assert pipeline.run_stage("unit_stage", ["echo", "hi"], critical=True)
     assert captured["timeout"] == 123
+
+
+def test_run_stage_injects_project_root_pythonpath(monkeypatch) -> None:
+    pipeline = EnterpriseETLPipeline(config={})
+    captured: dict[str, object] = {}
+
+    def fake_run(command, capture_output, text, timeout, cwd, env):  # noqa: ANN001
+        captured["cwd"] = cwd
+        captured["env"] = env
+        return SimpleNamespace(returncode=0, stdout="ok", stderr="")
+
+    monkeypatch.setattr("tools.core.run_production_pipeline.subprocess.run", fake_run)
+
+    assert pipeline.run_stage("unit_stage", ["echo", "hi"], critical=True)
+
+    assert captured["cwd"] == str(run_production_pipeline.project_root)
+    pythonpath = str(captured["env"]["PYTHONPATH"])
+    assert str(run_production_pipeline.project_root) in pythonpath.split(os.pathsep)
 
 
 def test_run_pipeline_skips_ingestion_if_already_run(monkeypatch) -> None:

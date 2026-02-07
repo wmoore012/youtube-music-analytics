@@ -13,12 +13,18 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
 
-from web.etl_entrypoints import run_channel_etl
+# Ensure project-root imports (e.g., web.etl_entrypoints) work in CI and cron.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from web.etl_entrypoints import run_channel_etl  # noqa: E402
 
 YOUTUBE_URL_RE = re.compile(r"https?://(www\.)?(youtube\.com|youtu\.be)/", re.IGNORECASE)
 
