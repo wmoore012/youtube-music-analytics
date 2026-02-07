@@ -10,14 +10,24 @@ This script runs essential data processing tasks:
 Designed to be robust, fast, and fail-safe.
 """
 
-import sys
+# ============================================================================
+# IMPORTANT / DO NOT REGRESS (USER REQUEST)
+# ----------------------------------------------------------------------------
+# The focused ETL gate is for mission-critical freshness + data quality.
+# Notebook execution is useful but non-critical by default; notebook failures
+# should be surfaced as warnings, not hard failures, unless explicitly enabled
+# via FOCUSED_ETL_NOTEBOOKS_REQUIRED=true.
+# ============================================================================
+
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Preflight utilities
 import os
 import subprocess
+from typing import Any, Mapping
 
 from dotenv import load_dotenv
 from sqlalchemy import text
@@ -26,24 +36,64 @@ from tools.core.sentiment_analysis import process_sentiment_analysis
 from web.etl_helpers import get_engine
 
 
+def _read_bool_env(name: str, default: bool = False) -> bool:
+    """Read a boolean environment flag with explicit accepted truthy values."""
+
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def determine_pipeline_status(
+    bot_results: Mapping[str, Any],
+    sentiment_results: Mapping[str, Any],
+    quality_results: Mapping[str, Any],
+    notebook_results: Mapping[str, Any],
+) -> tuple[str, int]:
+    """Classify focused ETL run status and exit code.
+
+    LOUD NOTE (user-requested guardrail):
+    Notebook execution is an auxiliary reporting step. Core ETL freshness,
+    sentiment processing, and data quality checks are mission-critical. By
+    default, notebook failures are warnings and do not block the pipeline.
+    Set FOCUSED_ETL_NOTEBOOKS_REQUIRED=true to make notebook failures blocking.
+    """
+
+    notebook_failures = len(notebook_results.get("failed", [])) > 0
+    notebook_gate_enabled = _read_bool_env("FOCUSED_ETL_NOTEBOOKS_REQUIRED", default=False)
+
+    core_failure = any(
+        [
+            bot_results.get("status") == "failed",
+            sentiment_results.get("status") == "failed",
+            float(quality_results.get("quality_score", 0.0)) < 80.0,
+        ]
+    )
+    if notebook_gate_enabled and notebook_failures:
+        core_failure = True
+
+    if core_failure:
+        return "COMPLETED_WITH_ISSUES", 1
+    if notebook_failures:
+        return "SUCCESS_WITH_WARNINGS", 0
+    return "SUCCESS", 0
+
+
 def run_sentiment_analysis(engine) -> dict:
     """Run sentiment analysis on new comments."""
     print("🧠 Running sentiment analysis...")
 
     # Check for unprocessed comments
     with engine.connect() as conn:
-        result = conn.execute(
-            text(
-                """
+        result = conn.execute(text("""
             SELECT COUNT(*) as unprocessed_count
             FROM youtube_comments yc
             LEFT JOIN comment_sentiment cs ON yc.comment_id = cs.comment_id
             WHERE cs.comment_id IS NULL
             AND yc.comment_text IS NOT NULL
             AND yc.comment_text != ''
-        """
-            )
-        )
+        """))
 
         unprocessed_count = result.fetchone()[0]
         print(f"📊 Found {unprocessed_count:,} unprocessed comments")
@@ -119,21 +169,17 @@ def validate_data_quality(engine) -> dict:
 
         # Overall data statistics
         try:
-            result = conn.execute(
-                text(
-                    """
+            result = conn.execute(text("""
                 SELECT
                     (SELECT COUNT(*) FROM youtube_videos) as total_videos,
                     (SELECT COUNT(*) FROM youtube_comments) as total_comments,
                     (SELECT COUNT(*) FROM comment_sentiment) as total_sentiment,
                     (SELECT COUNT(DISTINCT channel_title) FROM youtube_videos WHERE channel_title IS NOT NULL) as total_artists  # noqa: E501
-            """
-                )
-            )
+            """))
 
             stats = result.fetchone()
 
-            print(f"\n📊 Data Overview:")
+            print("\n📊 Data Overview:")
             print(f"   Videos: {stats.total_videos:,}")
             print(f"   Comments: {stats.total_comments:,}")
             print(f"   Sentiment records: {stats.total_sentiment:,}")
@@ -148,7 +194,7 @@ def validate_data_quality(engine) -> dict:
             stats = None
             sentiment_coverage = 0
 
-    quality_score = max(0, 100-len(quality_issues) * 5)  # Deduct 5% per issue
+    quality_score = max(0, 100 - len(quality_issues) * 5)  # Deduct 5% per issue
 
     print(f"\n🏆 Overall Data Quality Score: {quality_score:.1f}%")
 
@@ -229,7 +275,7 @@ def run_bot_detection(engine) -> dict:
             high_risk_count = len(bot_results[bot_results["bot_risk_level"] == "High"])
             medium_risk_count = len(bot_results[bot_results["bot_risk_level"] == "Medium"])
 
-            print(f"📊 Bot Detection Results:")
+            print("📊 Bot Detection Results:")
             print(f"   Total comments analyzed: {len(bot_results):,}")
             print(f"   High risk bots detected: {high_risk_count:,}")
             print(f"   Medium risk bots detected: {medium_risk_count:,}")
@@ -384,38 +430,39 @@ def main():
         print("🎉 FOCUSED ETL PIPELINE COMPLETE")
         print("=" * 50)
 
-        print(f"🤖 Bot Detection:")
+        print("🤖 Bot Detection:")
         print(f"   Comments analyzed: {bot_results.get('processed', 0):,}")
         print(f"   High risk bots: {bot_results.get('high_risk_bots', 0):,}")
         print(f"   Bot percentage: {bot_results.get('bot_percentage', 0):.1f}%")
 
-        print(f"📊 Sentiment Analysis:")
+        print("📊 Sentiment Analysis:")
         print(f"   Processed: {sentiment_results.get('processed', 0):,} comments")
 
-        print(f"🔍 Data Quality:")
+        print("🔍 Data Quality:")
         print(f"   Quality Score: {quality_results['quality_score']:.1f}%")
         print(f"   Issues Found: {len(quality_results['issues'])}")
 
-        print(f"📓 Notebooks:")
+        print("📓 Notebooks:")
         print(f"   Executed: {len(notebook_results['executed'])}")
         print(f"   Failed: {len(notebook_results['failed'])}")
 
-        # Determine overall status
-        critical_failures = [
-            bot_results.get("status") == "failed",
-            sentiment_results.get("status") == "failed",
-            quality_results["quality_score"] < 80,
-            len(notebook_results["failed"]) > 0,
-        ]
+        status, exit_code = determine_pipeline_status(
+            bot_results=bot_results,
+            sentiment_results=sentiment_results,
+            quality_results=quality_results,
+            notebook_results=notebook_results,
+        )
+        if status == "SUCCESS_WITH_WARNINGS":
+            print(
+                "\n⚠️ Notebook execution had failures but core ETL freshness/quality passed. "
+                "Set FOCUSED_ETL_NOTEBOOKS_REQUIRED=true to make notebook failures blocking."
+            )
+        elif status == "COMPLETED_WITH_ISSUES":
+            print("\n⚠️ One or more mission-critical checks failed.")
 
-        if any(critical_failures):
-            status = "COMPLETED_WITH_ISSUES"
-            print(f"\n⚠️ Overall Status: {status}")
-            return 1
-        else:
-            status = "SUCCESS"
-            print(f"\n🏆 Overall Status: {status}")
-            return 0
+        badge = "🏆" if exit_code == 0 else "⚠️"
+        print(f"\n{badge} Overall Status: {status}")
+        return exit_code
 
     except Exception as e:
         print(f"\n❌ Pipeline failed: {e}")

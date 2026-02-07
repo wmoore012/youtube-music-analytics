@@ -761,16 +761,12 @@ class ModelBenchmarkSystem:
         print("3️⃣  Testing data quality...")
         try:
             with engine.connect() as conn:
-                sample_result = conn.execute(
-                    text(
-                        """
+                sample_result = conn.execute(text("""
                     SELECT comment_id, comment_text, like_count
                     FROM youtube_comments
                     WHERE comment_text IS NOT NULL
                     LIMIT 10
-                """
-                    )
-                ).fetchall()
+                """)).fetchall()
 
                 if len(sample_result) == 0:
                     raise ValueError("No valid comment data found")
@@ -803,9 +799,7 @@ class ModelBenchmarkSystem:
         print("4️⃣  Testing ground truth generation...")
         try:
             with engine.connect() as conn:
-                gt_result = conn.execute(
-                    text(
-                        """
+                gt_result = conn.execute(text("""
                     SELECT COUNT(*) FROM youtube_comments c
                     JOIN youtube_videos v ON c.video_id = v.video_id
                     WHERE c.comment_text IS NOT NULL
@@ -822,9 +816,7 @@ class ModelBenchmarkSystem:
                             )) OR
                             (c.like_count >= 5 AND c.like_count <= 15)
                         )
-                """
-                    )
-                ).fetchone()
+                """)).fetchone()
 
                 labelable_count = gt_result[0]
                 if labelable_count < 100:
@@ -1354,8 +1346,7 @@ class ModelBenchmarkSystem:
             engine = get_engine()
             with engine.connect() as conn:
                 sample_neutrals = pd.read_sql(
-                    text(
-                        """
+                    text("""
                     SELECT c.comment_text, c.like_count
                     FROM youtube_comments c
                     JOIN youtube_videos v ON c.video_id = v.video_id
@@ -1364,8 +1355,7 @@ class ModelBenchmarkSystem:
                         AND c.like_count >= 5 AND c.like_count <= 15
                     ORDER BY RAND(42)
                     LIMIT 10
-                """
-                    ),
+                """),
                     conn,
                 )
 

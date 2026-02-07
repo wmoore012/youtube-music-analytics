@@ -343,14 +343,10 @@ def update_comment_sentiment_table(engine, batch_size: int = 1000):
     with engine.connect() as conn:
         # Create backup table
         print("💾 Creating backup of existing sentiment data...")
-        conn.execute(
-            text(
-                """
+        conn.execute(text("""
             CREATE TABLE IF NOT EXISTS comment_sentiment_backup AS
             SELECT * FROM comment_sentiment
-        """
-            )
-        )
+        """))
 
         # Clear existing sentiment data
         print("🗑️ Clearing existing sentiment data...")
@@ -361,15 +357,13 @@ def update_comment_sentiment_table(engine, batch_size: int = 1000):
         while offset < total_comments:
             # Get batch of comments
             comments_batch = pd.read_sql(
-                text(
-                    """
+                text("""
                 SELECT comment_id, comment_text, video_id
                 FROM youtube_comments
                 WHERE comment_text IS NOT NULL
                 ORDER BY comment_id
                 LIMIT :batch_size OFFSET :offset
-            """
-                ),
+            """),
                 conn,
                 params={"batch_size": batch_size, "offset": offset},
             )
@@ -398,13 +392,11 @@ def update_comment_sentiment_table(engine, batch_size: int = 1000):
             # Update youtube_comments table with beat_appreciation
             for result in sentiment_results:
                 conn.execute(
-                    text(
-                        """
+                    text("""
                     UPDATE youtube_comments
                     SET beat_appreciation = :beat_appreciation
                     WHERE comment_id = :comment_id
-                """
-                    ),
+                """),
                     {"beat_appreciation": result["beat_appreciation"], "comment_id": result["comment_id"]},
                 )
 

@@ -157,8 +157,7 @@ def record_operational_health_snapshot(
 
     with engine.begin() as conn:
         conn.execute(
-            text(
-                """
+            text("""
                 INSERT INTO operational_health_log (
                     recorded_at,
                     source,
@@ -183,8 +182,7 @@ def record_operational_health_snapshot(
                     :stale_channels,
                     :notes
                 )
-                """
-            ),
+                """),
             {
                 "recorded_at": recorded_ts,
                 "source": source.strip(),

@@ -1,14 +1,15 @@
-import pytest
-from unittest.mock import patch, MagicMock
-import streamlit as st
 import os
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+import streamlit as st
 
 # Add project root to path so we can import streamlit_app
 sys.path.append(str(Path(__file__).parent.parent))
 
-from streamlit_app import _get_db_setting, get_data_mode
+from streamlit_app import _get_db_setting, _sync_db_settings_to_env, get_data_mode
 
 
 def test_get_db_setting_handles_missing_secrets():
@@ -51,3 +52,47 @@ def test_get_data_mode_defaults_to_demo_without_secrets():
     ), patch("streamlit.session_state", {}):
         # Should default to demo, not crash
         assert get_data_mode() == "demo"
+
+
+def test_sync_db_settings_to_env_uses_streamlit_secrets():
+    """Verify DB settings from st.secrets are exported for get_engine()."""
+
+    mock_secrets = {
+        "DB_HOST": "db.example.internal",
+        "DB_PORT": "3306",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+    }
+
+    with patch("streamlit.secrets", mock_secrets), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, {}, clear=True
+    ):
+        _sync_db_settings_to_env()
+        assert os.environ["DB_HOST"] == "db.example.internal"
+        assert os.environ["DB_PORT"] == "3306"
+        assert os.environ["DB_USER"] == "etl_user"
+        assert os.environ["DB_PASS"] == "secret"
+        assert os.environ["DB_NAME"] == "yt_proj"
+
+
+def test_get_data_mode_syncs_secrets_before_connect():
+    """Verify production mode syncs st.secrets values before opening engine."""
+
+    mock_secrets = {
+        "DB_HOST": "db.example.internal",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+        "DB_PORT": "3306",
+    }
+
+    fake_conn = MagicMock()
+    fake_engine = MagicMock()
+    fake_engine.connect.return_value.__enter__.return_value = fake_conn
+
+    with patch("streamlit.secrets", mock_secrets), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, {}, clear=True
+    ), patch("streamlit_app.get_engine", return_value=fake_engine):
+        assert get_data_mode() == "production"
+        assert os.environ["DB_HOST"] == "db.example.internal"

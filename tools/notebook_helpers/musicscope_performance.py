@@ -32,21 +32,27 @@ from IPython.display import display, HTML
 
 # Design System imports
 from .musicscope_design_system import (
-    ms_hero_card, ms_subsection_card, ms_insight_card, ms_closing_card,
-    ms_apply_plotly_layout, ms_matplotlib_title, ms_clean_spines,
-    ms_require_data, MUSICSCOPE_COLORS, CHART_PURPOSE
+    ms_hero_card,
+    ms_subsection_card,
+    ms_insight_card,
+    ms_closing_card,
+    ms_apply_plotly_layout,
+    ms_matplotlib_title,
+    ms_clean_spines,
+    ms_require_data,
+    MUSICSCOPE_COLORS,
+    CHART_PURPOSE,
 )
 
 # Existing helper imports (REUSE, don't reimplement!)
 from tools.advanced_charts import ensure_year_on_dates, label_bars, base100
 from tools.data_utils import resolve_artist_column, pick_content_column
 
-
 # Expected chart counts for this section
 EXPECTED_CHARTS = {
     "min": 4,
     "max": 4,
-    "description": "4 core charts (matrix + leaderboard + artist summary + efficiency)"
+    "description": "4 core charts (matrix + leaderboard + artist summary + efficiency)",
 }
 
 
@@ -57,22 +63,22 @@ def _build_demo_videos_df() -> pd.DataFrame:
     Returns:
         DataFrame with minimal required columns for performance analysis
     """
-    dates = pd.date_range(start='2024-01-01', periods=30, freq='D')
-    return pd.DataFrame({
-        'artist_name': ['Artist A'] * 15 + ['Artist B'] * 15,
-        'view_count': np.random.randint(1000, 10000, 30),
-        'published_at': dates,
-        'video_id': [f'video_{i}' for i in range(30)],
-        'likes': np.random.randint(50, 500, 30),
-        'comments': np.random.randint(5, 50, 30),
-        'title': [f'Video Title {i}' for i in range(30)]
-    })
+    dates = pd.date_range(start="2024-01-01", periods=30, freq="D")
+    return pd.DataFrame(
+        {
+            "artist_name": ["Artist A"] * 15 + ["Artist B"] * 15,
+            "view_count": np.random.randint(1000, 10000, 30),
+            "published_at": dates,
+            "video_id": [f"video_{i}" for i in range(30)],
+            "likes": np.random.randint(50, 500, 30),
+            "comments": np.random.randint(5, 50, 30),
+            "title": [f"Video Title {i}" for i in range(30)],
+        }
+    )
 
 
 def render_performance_section(
-    videos_df: pd.DataFrame,
-    comments_df: Optional[pd.DataFrame] = None,
-    demo: bool = False
+    videos_df: pd.DataFrame, comments_df: Optional[pd.DataFrame] = None, demo: bool = False
 ) -> Dict[str, Any]:
     """
     Render the complete Performance Intelligence section with signal framing.
@@ -107,7 +113,7 @@ def render_performance_section(
             "• 👥 <strong>Artist Performance</strong> — who drives the most engagement<br>"
             "• 📉 <strong>Efficiency Spread</strong> — engagement rate distribution"
         ),
-        gradient="purple"
+        gradient="purple",
     )
 
     # ============================================================================
@@ -119,10 +125,7 @@ def render_performance_section(
     else:
         # Strict validation for production mode
         ms_require_data(
-            name="videos_df",
-            value=videos_df,
-            required_cols=["view_count"],
-            context="Performance Intelligence"
+            name="videos_df", value=videos_df, required_cols=["view_count"], context="Performance Intelligence"
         )
         videos = videos_df
 
@@ -130,7 +133,7 @@ def render_performance_section(
     if comments_df is None or (not demo and comments_df.empty):
         ms_insight_card(
             message="Comments not available → running performance analysis without sentiment overlays.",
-            card_type="info"
+            card_type="info",
         )
 
     # ============================================================================
@@ -148,47 +151,41 @@ def render_performance_section(
         perf_df["likes"] = 0
     if "comments" not in perf_df.columns:
         perf_df["comments"] = 0
-    
+
     # Calculate engagement metrics
     perf_df["engagement_score"] = perf_df["likes"] + (2 * perf_df["comments"])  # Weighted: comments worth 2x likes
     perf_df["engagement_rate"] = (
-        (perf_df["engagement_score"] / perf_df["view_count"] * 100)
-        .fillna(0)
-        .replace([np.inf, -np.inf], 0)
+        (perf_df["engagement_score"] / perf_df["view_count"] * 100).fillna(0).replace([np.inf, -np.inf], 0)
     )
-    
+
     print(f"✅ Performance data ready: {len(perf_df):,} videos")
-    
+
     # Track metadata
     metadata = {
-        'section': 'performance',
-        'charts_rendered': 0,
-        'hidden_gems_count': 0,
-        'total_engagement': int(perf_df["engagement_score"].sum())
+        "section": "performance",
+        "charts_rendered": 0,
+        "hidden_gems_count": 0,
+        "total_engagement": int(perf_df["engagement_score"].sum()),
     }
-    
+
     # ============================================================================
     # 4.2 — ENGAGEMENT MATRIX (HIDDEN GEMS QUADRANT)
     # ============================================================================
     ms_subsection_card(
         title="💎 Engagement Matrix: Hidden Gems",
         subtitle=CHART_PURPOSE.get("performance_engagement_matrix", {}).get(
-            "question",
-            "Which videos have high engagement but low views?"
-        )
+            "question", "Which videos have high engagement but low views?"
+        ),
     )
-    
+
     # Define quadrants
     median_views = perf_df["view_count"].median()
     median_engagement = perf_df["engagement_rate"].median()
-    
+
     # Identify hidden gems (high engagement rate, low views)
-    gems = perf_df[
-        (perf_df["engagement_rate"] > median_engagement) &
-        (perf_df["view_count"] < median_views)
-    ]
-    metadata['hidden_gems_count'] = len(gems)
-    
+    gems = perf_df[(perf_df["engagement_rate"] > median_engagement) & (perf_df["view_count"] < median_views)]
+    metadata["hidden_gems_count"] = len(gems)
+
     # Create scatter plot
     fig = px.scatter(
         perf_df,
@@ -199,43 +196,38 @@ def render_performance_section(
         log_x=True,
         color_discrete_map={
             "High Engagement": MUSICSCOPE_COLORS["success_green"],
-            "Low Engagement": MUSICSCOPE_COLORS["baseline_gray"]
-        }
+            "Low Engagement": MUSICSCOPE_COLORS["baseline_gray"],
+        },
     )
-    
+
     # Add quadrant lines
     fig.add_hline(y=median_engagement, line_dash="dash", line_color=MUSICSCOPE_COLORS["text_primary"], opacity=0.3)
     fig.add_vline(x=median_views, line_dash="dash", line_color=MUSICSCOPE_COLORS["text_primary"], opacity=0.3)
-    
+
     ms_apply_plotly_layout(
-        fig,
-        title="Hidden Gems Quadrant",
-        subtitle=f"{len(gems)} videos with high engagement but low views",
-        height=500
+        fig, title="Hidden Gems Quadrant", subtitle=f"{len(gems)} videos with high engagement but low views", height=500
     )
     fig.update_xaxes(title="Views (log scale)")
     fig.update_yaxes(title="Engagement Rate (%)")
     fig.show(config={"displayModeBar": False})
-    metadata['charts_rendered'] += 1
+    metadata["charts_rendered"] += 1
 
     # Insight card
     if len(gems) > 0:
         ms_insight_card(
             message=f"{len(gems)} hidden gems found → Promote these high-engagement videos to increase reach.",
-            card_type="success"
+            card_type="success",
         )
     else:
         ms_insight_card(
-            message="No hidden gems detected. All high-engagement content already has good reach.",
-            card_type="info"
+            message="No hidden gems detected. All high-engagement content already has good reach.", card_type="info"
         )
 
     # ============================================================================
     # 4.3 — CONTENT LEADERBOARD (WEIGHTED ENGAGEMENT)
     # ============================================================================
     ms_subsection_card(
-        title="🏆 Content Leaderboard",
-        subtitle="Top videos by weighted engagement (likes + 2× comments)"
+        title="🏆 Content Leaderboard", subtitle="Top videos by weighted engagement (likes + 2× comments)"
     )
 
     # Top 10 by engagement score
@@ -244,43 +236,38 @@ def render_performance_section(
     if not top_content.empty:
         # Create horizontal bar chart
         fig = go.Figure()
-        fig.add_trace(go.Bar(
-            y=top_content[title_col] if title_col in top_content.columns else top_content.index,
-            x=top_content["engagement_score"],
-            orientation="h",
-            marker=dict(color=MUSICSCOPE_COLORS["brand_purple_start"]),
-            text=top_content["engagement_score"].apply(lambda x: f"{x:,.0f}"),
-            textposition="outside"
-        ))
+        fig.add_trace(
+            go.Bar(
+                y=top_content[title_col] if title_col in top_content.columns else top_content.index,
+                x=top_content["engagement_score"],
+                orientation="h",
+                marker=dict(color=MUSICSCOPE_COLORS["brand_purple_start"]),
+                text=top_content["engagement_score"].apply(lambda x: f"{x:,.0f}"),
+                textposition="outside",
+            )
+        )
 
         ms_apply_plotly_layout(
-            fig,
-            title="Top 10 Videos by Engagement",
-            subtitle="Weighted: likes + 2× comments",
-            height=400
+            fig, title="Top 10 Videos by Engagement", subtitle="Weighted: likes + 2× comments", height=400
         )
         fig.update_xaxes(title="Engagement Score")
         fig.update_yaxes(showticklabels=True)
         fig.show(config={"displayModeBar": False})
-        metadata['charts_rendered'] += 1
+        metadata["charts_rendered"] += 1
 
     # ============================================================================
     # 4.4 — ARTIST-LEVEL PERFORMANCE
     # ============================================================================
     if artist_col in perf_df.columns:
-        ms_subsection_card(
-            title="👥 Artist Performance Summary",
-            subtitle="Total engagement by artist"
-        )
+        ms_subsection_card(title="👥 Artist Performance Summary", subtitle="Total engagement by artist")
 
         # Aggregate by artist
         artist_perf = (
-            perf_df
-            .groupby(artist_col)
+            perf_df.groupby(artist_col)
             .agg(
                 total_engagement=("engagement_score", "sum"),
                 avg_engagement_rate=("engagement_rate", "mean"),
-                video_count=("view_count", "count")
+                video_count=("view_count", "count"),
             )
             .reset_index()
             .sort_values("total_engagement", ascending=False)
@@ -289,52 +276,49 @@ def render_performance_section(
         if not artist_perf.empty:
             # Create bar chart
             fig = go.Figure()
-            fig.add_trace(go.Bar(
-                x=artist_perf[artist_col],
-                y=artist_perf["total_engagement"],
-                marker=dict(color=MUSICSCOPE_COLORS["brand_blue_start"]),
-                text=artist_perf["total_engagement"].apply(lambda x: f"{x:,.0f}"),
-                textposition="outside"
-            ))
+            fig.add_trace(
+                go.Bar(
+                    x=artist_perf[artist_col],
+                    y=artist_perf["total_engagement"],
+                    marker=dict(color=MUSICSCOPE_COLORS["brand_blue_start"]),
+                    text=artist_perf["total_engagement"].apply(lambda x: f"{x:,.0f}"),
+                    textposition="outside",
+                )
+            )
 
             ms_apply_plotly_layout(
-                fig,
-                title="Artist Engagement Contribution",
-                subtitle="Who drives the most engagement?",
-                height=400
+                fig, title="Artist Engagement Contribution", subtitle="Who drives the most engagement?", height=400
             )
             fig.update_xaxes(title="Artist")
             fig.update_yaxes(title="Total Engagement Score")
             fig.show(config={"displayModeBar": False})
-            metadata['charts_rendered'] += 1
+            metadata["charts_rendered"] += 1
 
     # ============================================================================
     # 4.5 — ENGAGEMENT EFFICIENCY DISTRIBUTION
     # ============================================================================
     ms_subsection_card(
-        title="📉 Engagement Efficiency Distribution",
-        subtitle="How engagement rates vary across your catalog"
+        title="📉 Engagement Efficiency Distribution", subtitle="How engagement rates vary across your catalog"
     )
 
     # Box plot of engagement rates
     fig = go.Figure()
-    fig.add_trace(go.Box(
-        y=perf_df["engagement_rate"],
-        name="Engagement Rate",
-        marker=dict(color=MUSICSCOPE_COLORS["brand_pink_start"]),
-        boxmean='sd'  # Show mean and standard deviation
-    ))
+    fig.add_trace(
+        go.Box(
+            y=perf_df["engagement_rate"],
+            name="Engagement Rate",
+            marker=dict(color=MUSICSCOPE_COLORS["brand_pink_start"]),
+            boxmean="sd",  # Show mean and standard deviation
+        )
+    )
 
     ms_apply_plotly_layout(
-        fig,
-        title="Engagement Rate Distribution",
-        subtitle="Identify outliers and efficiency spread",
-        height=400
+        fig, title="Engagement Rate Distribution", subtitle="Identify outliers and efficiency spread", height=400
     )
     fig.update_yaxes(title="Engagement Rate (%)")
     fig.update_xaxes(showticklabels=False)
     fig.show(config={"displayModeBar": False})
-    metadata['charts_rendered'] += 1
+    metadata["charts_rendered"] += 1
 
     # Insight on efficiency spread
     low_eff = perf_df["engagement_rate"].quantile(0.25)
@@ -345,7 +329,7 @@ def render_performance_section(
             f"vs 75th percentile at {high_eff:.1f}% → "
             "Clear upside by reallocating promo away from low-quartile assets."
         ),
-        card_type="warning"
+        card_type="warning",
     )
 
     # ============================================================================
@@ -359,9 +343,11 @@ def render_performance_section(
             ("👥", "Artist contribution mapped"),
             ("📉", "Efficiency spread quantified"),
         ],
-        next_section="Content Strategy — connect sentiment + performance into release decisions"
+        next_section="Content Strategy — connect sentiment + performance into release decisions",
     )
 
     print(f"\n✅ Performance Intelligence section complete: {metadata['charts_rendered']} charts rendered")
-    print(f"[DEBUG] Performance charts rendered: {metadata['charts_rendered']} (expected {EXPECTED_CHARTS['description']})")
+    print(
+        f"[DEBUG] Performance charts rendered: {metadata['charts_rendered']} (expected {EXPECTED_CHARTS['description']})"
+    )
     return metadata

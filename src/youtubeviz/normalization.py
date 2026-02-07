@@ -9,6 +9,7 @@ Normalization helpers to populate music_videos_normalized and reduce nulls witho
 
 This module is intentionally light-weight to support quick iterative TDD cycles.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -179,8 +180,7 @@ def build_normalized_rows(engine: Engine) -> Iterable[NormalizedVideo]:
 
 
 def upsert_normalized(engine: Engine, rows: Iterable[NormalizedVideo]) -> int:
-    sql = text(
-        """
+    sql = text("""
         INSERT INTO music_videos_normalized
             (video_id,
                 artist_name,
@@ -210,8 +210,7 @@ def upsert_normalized(engine: Engine, rows: Iterable[NormalizedVideo]) -> int:
             total_likes=VALUES(total_likes),
             total_comments=VALUES(total_comments),
             est_revenue_usd=VALUES(est_revenue_usd)
-        """
-    )
+        """)
     count = 0
     with engine.begin() as conn:
         for r in rows:

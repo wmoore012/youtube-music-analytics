@@ -1,25 +1,44 @@
 from __future__ import annotations
 
-import os
 from datetime import date, datetime, timezone
+import math
+import os
 from pathlib import Path
+import re
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
+import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
 
+# ======================================================================
+# IMPORTANT - DO NOT REGRESS (USER-REQUIRED BEHAVIOR)
+# ----------------------------------------------------------------------
+# 1) In "Production (MySQL)" mode, Streamlit MUST read live MySQL data,
+#    not stale CSV snapshots.
+# 2) Revenue KPI must show explicit TOS-safe arithmetic in plain language:
+#    Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views).
+# 3) If Shorts/video length affects estimates, explain this very simply.
+# 4) Never override artist stylistic casing choices automatically.
+# 5) KPI deltas shown in green/red must have matching arithmetic + actions;
+#    otherwise hide the delta.
+# ======================================================================
+
 CACHE_TTL_SECONDS = 900  # 15 minutes
 DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
-DEFAULT_DATA_FRESHNESS_DAYS = 90
+DEFAULT_DATA_FRESHNESS_DAYS = 30
+RPM_VARIATION_TOLERANCE = 0.05
+REVENUE_RPM_DEFAULT_ENV = "REVENUE_RPM_DEFAULT"
+DEFAULT_REVENUE_RPM_USD = 2.5
+SHORTS_MAX_SECONDS = 60
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -52,6 +71,56 @@ def _read_int_env(name: str, default: int) -> int:
     if value < 0:
         raise RuntimeError(f"{name} must be >= 0, got {value}")
     return value
+
+
+def _read_float_env(name: str, default: float) -> float:
+    """Read a float from environment, with validation."""
+
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    raw = raw.strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError as exc:  # pragma: no cover - defensive config guard
+        raise RuntimeError(f"{name} must be a float, got {raw!r}") from exc
+    if not math.isfinite(value):
+        raise RuntimeError(f"{name} must be a finite float, got {raw!r}")
+    if value < 0:
+        raise RuntimeError(f"{name} must be >= 0, got {value}")
+    return value
+
+
+def _parse_iso8601_duration_seconds(duration: object) -> int | None:
+    """Parse YouTube ISO-8601 duration string (e.g. PT3M12S) into seconds."""
+
+    if duration is None or pd.isna(duration):
+        return None
+    text = str(duration).strip().upper()
+    if not text:
+        return None
+
+    match = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", text)
+    if match is None:
+        return None
+
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    return hours * 3600 + minutes * 60 + seconds
+
+
+def _classify_video_type_from_duration(duration: object) -> str:
+    """Classify video type from duration with a simple Shorts cutoff."""
+
+    seconds = _parse_iso8601_duration_seconds(duration)
+    if seconds is None:
+        return "Video"
+    if seconds <= SHORTS_MAX_SECONDS:
+        return "Short"
+    return "Official Music Video"
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -121,6 +190,22 @@ def _get_db_setting(name: str) -> str | None:
     return None
 
 
+def _sync_db_settings_to_env() -> None:
+    """Mirror DB settings from Streamlit secrets/session into process env.
+
+    web.etl_helpers.get_engine() reads only os.environ. In Streamlit Cloud,
+    secrets may exist in st.secrets without being exported to environment
+    variables. This sync keeps engine behavior consistent across local + cloud.
+    """
+
+    keys = ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASS", "DB_NAME")
+    for key in keys:
+        value = _get_db_setting(key)
+        if value is None:
+            continue
+        os.environ[key] = value
+
+
 def get_data_mode() -> Literal["demo", "production"]:
     """Detect whether to use demo data or production MySQL.
 
@@ -154,6 +239,7 @@ def get_data_mode() -> Literal["demo", "production"]:
         st.stop()
 
     try:
+        _sync_db_settings_to_env()
         engine = get_engine()
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -164,6 +250,13 @@ def get_data_mode() -> Literal["demo", "production"]:
             "connection failed. Double-check DB_HOST/DB_USER/DB_NAME and that "
             "the database is reachable from this app.",
         )
+        host = _get_db_setting("DB_HOST") or "(unset)"
+        if host in {"localhost", "127.0.0.1", "0.0.0.0"}:
+            st.info(
+                "DB_HOST is set to localhost/127.0.0.1. In containerized/cloud "
+                "runtime this points to the app container itself, not your MySQL "
+                "server. Use a reachable DB host or tunnel address.",
+            )
         st.caption(f"Connection details: {exc}")
         st.stop()
 
@@ -187,6 +280,59 @@ def load_artist_summary_from_demo() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
+def load_production_metrics_from_db() -> pd.DataFrame:
+    """Load production video metrics directly from MySQL and derive UI-ready fields."""
+
+    from sqlalchemy import text
+
+    sql = text("""
+        SELECT
+            m.video_id,
+            COALESCE(v.channel_title, 'Unknown') AS artist_name,
+            COALESCE(v.title, '(untitled)') AS title,
+            m.metrics_date,
+            m.fetched_at,
+            COALESCE(m.view_count, 0) AS view_count,
+            COALESCE(m.like_count, 0) AS like_count,
+            COALESCE(m.comment_count, 0) AS comment_count,
+            v.published_at,
+            v.duration
+        FROM youtube_metrics AS m
+        INNER JOIN youtube_videos AS v
+            ON v.video_id = m.video_id
+        """)
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        df = pd.read_sql(sql, conn)
+
+    if df.empty:
+        return df
+
+    df["metrics_date"] = pd.to_datetime(df["metrics_date"], errors="coerce")
+    df["fetched_at"] = pd.to_datetime(df["fetched_at"], errors="coerce")
+    df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce")
+
+    for column in ["view_count", "like_count", "comment_count"]:
+        df[column] = pd.to_numeric(df[column], errors="coerce").fillna(0)
+
+    rpm_usd = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
+    df["est_revenue_usd"] = (df["view_count"] / 1000.0) * rpm_usd
+
+    age_days = (df["metrics_date"] - df["published_at"]).dt.days
+    df["days_since_publish"] = age_days.fillna(1).clip(lower=1)
+    df["views_per_day"] = df["view_count"] / df["days_since_publish"]
+
+    views_nonzero = df["view_count"].astype(float).where(df["view_count"] > 0)
+    df["like_rate"] = ((df["like_count"] / views_nonzero) * 100).astype(float).fillna(0.0)
+    df["comment_rate"] = ((df["comment_count"] / views_nonzero) * 100).astype(float).fillna(0.0)
+    df["engagement_rate"] = df["like_rate"] + df["comment_rate"]
+    df["video_type"] = df["duration"].map(_classify_video_type_from_duration)
+
+    return df
+
+
 def load_normalized_videos_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
     records = []
@@ -208,6 +354,39 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(records)
+
+
+def build_artist_summary_from_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Build artist summary from per-video metrics using latest snapshot per video."""
+
+    if df.empty:
+        return pd.DataFrame(
+            columns=[
+                "artist_name",
+                "total_videos",
+                "total_views",
+                "total_likes",
+                "total_comments",
+                "total_est_revenue_usd",
+                "avg_engagement_rate",
+            ]
+        )
+
+    latest = latest_snapshot(df)
+    summary = (
+        latest.groupby("artist_name", dropna=False)
+        .agg(
+            total_videos=("video_id", "nunique"),
+            total_views=("view_count", "sum"),
+            total_likes=("like_count", "sum"),
+            total_comments=("comment_count", "sum"),
+            total_est_revenue_usd=("est_revenue_usd", "sum"),
+            avg_engagement_rate=("engagement_rate", "mean"),
+        )
+        .reset_index()
+        .sort_values("total_views", ascending=False)
+    )
+    return summary
 
 
 def _get_data_freshness_days() -> int:
@@ -235,7 +414,7 @@ def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
         mode = get_data_mode()
     if mode == "demo":
         return load_artist_summary_from_demo()
-    return _load_csv(DATA_DIR / "artist_music_summary.csv")
+    return build_artist_summary_from_metrics(load_production_metrics_from_db())
 
 
 def load_normalized_videos(mode: str | None = None) -> pd.DataFrame:
@@ -248,10 +427,7 @@ def load_normalized_videos(mode: str | None = None) -> pd.DataFrame:
         mode = get_data_mode()
     if mode == "demo":
         return load_normalized_videos_from_demo()
-    return _load_csv(
-        DATA_DIR / "normalized_music_videos.csv",
-        parse_dates=["published_at", "metrics_date", "fetched_at"],
-    )
+    return load_production_metrics_from_db()
 
 
 def get_production_health() -> dict:
@@ -380,7 +556,329 @@ def ensure_columns(df: pd.DataFrame, columns: Iterable[str], context: str) -> bo
     return True
 
 
-def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
+def compute_pct_delta(current: float, baseline: float, threshold: float = 0.1) -> float | None:
+    """Return percentage delta, or None when baseline is invalid / change is tiny."""
+
+    if not all(math.isfinite(v) for v in (current, baseline, threshold)):
+        return None
+    if threshold < 0:
+        return None
+    if baseline <= 0:
+        return None
+    change = (current / baseline - 1.0) * 100.0
+    if not math.isfinite(change):
+        return None
+    if abs(change) < threshold:
+        return None
+    return change
+
+
+def format_delta_value(change: float | None) -> str | None:
+    if change is None:
+        return None
+    return f"{change:+.1f}%"
+
+
+def build_delta_signal_rows(
+    *,
+    views_per_artist: float,
+    roster_views_per_artist: float,
+    videos_per_artist: float,
+    roster_videos_per_artist: float,
+    likes_per_artist: float,
+    roster_likes_per_artist: float,
+    comments_per_artist: float,
+    roster_comments_per_artist: float,
+    avg_engagement: float,
+    roster_avg_engagement: float,
+    revenue_per_artist: float,
+    roster_revenue_per_artist: float,
+) -> pd.DataFrame:
+    """Build arithmetic-backed rows for every displayed KPI delta."""
+
+    specs = [
+        (
+            "Total views",
+            views_per_artist,
+            roster_views_per_artist,
+            "Scale the format mix that is already pulling reach.",
+        ),
+        ("Videos analyzed", videos_per_artist, roster_videos_per_artist, "Tune release cadence to match capacity."),
+        (
+            "Total likes",
+            likes_per_artist,
+            roster_likes_per_artist,
+            "Double down on hooks/creative that drives positive reactions.",
+        ),
+        (
+            "Total comments",
+            comments_per_artist,
+            roster_comments_per_artist,
+            "Prioritize call-to-action formats that trigger conversation.",
+        ),
+        (
+            "Avg engagement rate",
+            avg_engagement,
+            roster_avg_engagement,
+            "Replicate the top engagement format with tighter iteration loops.",
+        ),
+        (
+            "Est. revenue (USD)",
+            revenue_per_artist,
+            roster_revenue_per_artist,
+            "Allocate budget toward the highest-yield format first.",
+        ),
+    ]
+    rows: list[dict[str, str]] = []
+    for name, current, baseline, action in specs:
+        change = compute_pct_delta(current, baseline)
+        delta_text = format_delta_value(change)
+        if delta_text is None:
+            continue
+        rows.append(
+            {
+                "KPI": name,
+                "Delta": delta_text,
+                "Arithmetic": f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100",
+                "Action": action,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_kpi_context(
+    summary: pd.DataFrame,
+    artists: list[str],
+    videos: pd.DataFrame | None = None,
+    roster_videos: pd.DataFrame | None = None,
+) -> dict[str, float | int]:
+    """Build KPI totals and roster baselines from filtered videos when available."""
+
+    filtered_summary = filter_by_artists(summary, artists)
+    if filtered_summary.empty:
+        return {}
+
+    use_video_math = videos is not None and not videos.empty
+    if use_video_math:
+        selected_rows = filter_by_artists(videos, artists)
+        if selected_rows.empty:
+            use_video_math = False
+        else:
+            total_views = int(selected_rows["view_count"].sum())
+            total_videos = int(selected_rows["video_id"].nunique())
+            total_likes = int(selected_rows["like_count"].sum()) if "like_count" in selected_rows.columns else 0
+            total_comments = (
+                int(selected_rows["comment_count"].sum()) if "comment_count" in selected_rows.columns else 0
+            )
+            if "est_revenue_usd" in selected_rows.columns:
+                total_revenue = float(selected_rows["est_revenue_usd"].sum())
+            else:
+                rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
+                total_revenue = float(total_views / 1000.0 * rpm)
+            avg_engagement = (
+                float(selected_rows["engagement_rate"].mean()) if "engagement_rate" in selected_rows.columns else 0.0
+            )
+            selected_artist_count = max(int(selected_rows["artist_name"].nunique()), 1)
+
+    if not use_video_math:
+        total_views = int(filtered_summary["total_views"].sum())
+        total_videos = int(filtered_summary["total_videos"].sum())
+        total_likes = int(filtered_summary["total_likes"].sum())
+        total_comments = int(filtered_summary["total_comments"].sum())
+        total_revenue = float(filtered_summary["total_est_revenue_usd"].sum())
+        avg_engagement = float(filtered_summary["avg_engagement_rate"].mean())
+        selected_artist_count = max(len(filtered_summary), 1)
+
+    if roster_videos is not None and not roster_videos.empty:
+        roster_rows = roster_videos
+        roster_artist_count = max(int(roster_rows["artist_name"].nunique()), 1)
+        roster_views_per_artist = float(roster_rows["view_count"].sum()) / roster_artist_count
+        roster_videos_per_artist = float(roster_rows["video_id"].nunique()) / roster_artist_count
+        roster_likes_per_artist = (
+            float(roster_rows["like_count"].sum()) / roster_artist_count if "like_count" in roster_rows.columns else 0.0
+        )
+        roster_comments_per_artist = (
+            float(roster_rows["comment_count"].sum()) / roster_artist_count
+            if "comment_count" in roster_rows.columns
+            else 0.0
+        )
+        if "est_revenue_usd" in roster_rows.columns:
+            roster_revenue_per_artist = float(roster_rows["est_revenue_usd"].sum()) / roster_artist_count
+        else:
+            rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
+            roster_revenue_per_artist = float(roster_rows["view_count"].sum()) / 1000.0 * rpm / roster_artist_count
+        if "engagement_rate" in roster_rows.columns:
+            per_artist_engagement = roster_rows.groupby("artist_name")["engagement_rate"].mean()
+            roster_avg_engagement = float(per_artist_engagement.mean()) if not per_artist_engagement.empty else 0.0
+        else:
+            roster_avg_engagement = 0.0
+    else:
+        roster_views_per_artist = summary["total_views"].sum() / max(len(summary), 1)
+        roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
+        roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
+        roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
+        roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
+        roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
+
+    return {
+        "total_views": total_views,
+        "total_videos": total_videos,
+        "total_likes": total_likes,
+        "total_comments": total_comments,
+        "total_revenue": total_revenue,
+        "avg_engagement": avg_engagement,
+        "selected_artist_count": selected_artist_count,
+        "roster_views_per_artist": roster_views_per_artist,
+        "roster_videos_per_artist": roster_videos_per_artist,
+        "roster_likes_per_artist": roster_likes_per_artist,
+        "roster_comments_per_artist": roster_comments_per_artist,
+        "roster_revenue_per_artist": roster_revenue_per_artist,
+        "roster_avg_engagement": roster_avg_engagement,
+    }
+
+
+def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Return artist-level action rows from content-type KPIs."""
+
+    if df.empty:
+        return pd.DataFrame(columns=["Artist", "Best Reach Format", "Best Engagement Format", "Action Plan"])
+
+    mix = (
+        df.groupby(["artist_name", "video_type"], dropna=False)
+        .agg(
+            videos=("video_id", "nunique"),
+            total_views=("view_count", "sum"),
+            avg_views_per_day=("views_per_day", "mean"),
+            avg_engagement=("engagement_rate", "mean"),
+        )
+        .reset_index()
+    )
+    rows: list[dict[str, str]] = []
+    for artist_name, artist_mix in mix.groupby("artist_name"):
+        best_reach = artist_mix.sort_values(["avg_views_per_day", "total_views"], ascending=False).iloc[0]
+        best_engagement = artist_mix.sort_values(["avg_engagement", "videos"], ascending=False).iloc[0]
+
+        reach_format = "Short / Reel" if str(best_reach["video_type"]) == "Short" else str(best_reach["video_type"])
+        engagement_format = (
+            "Short / Reel" if str(best_engagement["video_type"]) == "Short" else str(best_engagement["video_type"])
+        )
+
+        if reach_format == engagement_format:
+            action = (
+                f"Primary bet: {reach_format}. Keep >=70% of next releases in this format; "
+                "A/B test titles and openings."
+            )
+        else:
+            action = (
+                f"Use 70/30 split: 70% {reach_format} for reach and 30% "
+                f"{engagement_format} for deeper fan response."
+            )
+        rows.append(
+            {
+                "Artist": str(artist_name),
+                "Best Reach Format": f"{reach_format} ({best_reach['avg_views_per_day']:,.1f} views/day)",
+                "Best Engagement Format": f"{engagement_format} ({best_engagement['avg_engagement']:.2f}%)",
+                "Action Plan": action,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
+    """Compute RPM (USD per 1,000 views) by video type from video rows."""
+
+    if videos is None or videos.empty:
+        return {}
+    required = {"video_type", "view_count", "est_revenue_usd"}
+    if not required.issubset(videos.columns):
+        return {}
+
+    typed = videos[list(required)].copy()
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed["est_revenue_usd"] = pd.to_numeric(typed["est_revenue_usd"], errors="coerce")
+    typed = typed[(typed["view_count"] > 0) & typed["est_revenue_usd"].notna()]
+    if typed.empty:
+        return {}
+
+    grouped = typed.groupby("video_type", dropna=False).agg(
+        total_views=("view_count", "sum"),
+        total_revenue=("est_revenue_usd", "sum"),
+    )
+    grouped = grouped[grouped["total_views"] > 0]
+    if grouped.empty:
+        return {}
+
+    grouped["rpm"] = (grouped["total_revenue"] / grouped["total_views"]) * 1000.0
+    rpm_by_type: dict[str, float] = {}
+    for idx, row in grouped.iterrows():
+        label = str(idx).strip()
+        label = label if label and label.lower() != "nan" else "Unknown"
+        rpm_by_type[label] = float(row["rpm"])
+    return rpm_by_type
+
+
+def build_revenue_formula_context(
+    summary_filtered: pd.DataFrame,
+    videos_filtered: pd.DataFrame | None = None,
+) -> dict[str, str]:
+    """Build explicit formula text for the estimated revenue KPI."""
+
+    total_views = float(summary_filtered["total_views"].sum()) if "total_views" in summary_filtered.columns else 0.0
+    total_revenue = (
+        float(summary_filtered["total_est_revenue_usd"].sum())
+        if "total_est_revenue_usd" in summary_filtered.columns
+        else 0.0
+    )
+    blended_rpm = (total_revenue / total_views) * 1000.0 if total_views > 0 else 0.0
+
+    equation = "Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views)"
+    worked_example = (
+        f"Current selection: ({format_number(total_views)} / 1,000) x "
+        f"${blended_rpm:.2f} = {format_currency(total_revenue)}"
+    )
+
+    has_video_rows = videos_filtered is not None and not videos_filtered.empty
+    rpm_by_type = _compute_rpm_by_video_type(videos_filtered)
+    if not has_video_rows or not rpm_by_type:
+        type_note = (
+            "Shorts vs music videos: no type-level revenue rows are available for "
+            "the current filters. Video length is not in this formula."
+        )
+    elif len(rpm_by_type) < 2:
+        type_note = (
+            "Shorts vs music videos: this model uses one RPM value for all video "
+            "types. Video length is not in this formula."
+        )
+    else:
+        rpm_values = list(rpm_by_type.values())
+        spread = max(rpm_values) - min(rpm_values)
+        if spread <= RPM_VARIATION_TOLERANCE:
+            type_note = (
+                "Shorts vs music videos: this model is effectively using the same RPM "
+                "across video types in this view. Video length is not in this formula."
+            )
+        else:
+            top_types = sorted(rpm_by_type.items(), key=lambda item: item[1], reverse=True)
+            sample = "; ".join(f"{name}: ${rpm:.2f}" for name, rpm in top_types[:4])
+            type_note = (
+                "Shorts vs music videos: this view uses different RPM values by video type. "
+                "Per-video arithmetic is still: (video views / 1,000) x type RPM. "
+                f"Current type RPMs (USD per 1,000 views): {sample}."
+            )
+
+    return {
+        "equation": equation,
+        "worked_example": worked_example,
+        "type_note": type_note,
+    }
+
+
+def render_kpis(
+    summary: pd.DataFrame,
+    artists: list[str],
+    videos: pd.DataFrame | None = None,
+    roster_videos: pd.DataFrame | None = None,
+) -> None:
     """Render KPI cards with directional deltas vs roster averages.
 
     This keeps the demo honest: deltas are always computed from the same
@@ -393,42 +891,38 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
         st.warning("No data found for the selected artists.")
         return
 
-    total_views = int(filtered["total_views"].sum())
-    total_videos = int(filtered["total_videos"].sum())
-    total_likes = int(filtered["total_likes"].sum())
-    total_comments = int(filtered["total_comments"].sum())
-    total_revenue = float(filtered["total_est_revenue_usd"].sum())
-    avg_engagement = float(filtered["avg_engagement_rate"].mean())
+    context = build_kpi_context(summary, artists, videos=videos, roster_videos=roster_videos)
+    if not context:
+        st.warning("No KPI context is available for the selected filters.")
+        return
+
+    total_views = int(context["total_views"])
+    total_videos = int(context["total_videos"])
+    total_likes = int(context["total_likes"])
+    total_comments = int(context["total_comments"])
+    total_revenue = float(context["total_revenue"])
+    avg_engagement = float(context["avg_engagement"])
+    selected_artist_count = int(context["selected_artist_count"])
 
     # Roster-wide baselines for directional context
-    roster_views_per_artist = summary["total_views"].sum() / max(len(summary), 1)
-    roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
-    roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
-    roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
-    roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
-    roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
-
-    selected_artist_count = max(len(filtered), 1)
+    roster_views_per_artist = float(context["roster_views_per_artist"])
+    roster_videos_per_artist = float(context["roster_videos_per_artist"])
+    roster_likes_per_artist = float(context["roster_likes_per_artist"])
+    roster_comments_per_artist = float(context["roster_comments_per_artist"])
+    roster_revenue_per_artist = float(context["roster_revenue_per_artist"])
+    roster_avg_engagement = float(context["roster_avg_engagement"])
     views_per_artist = total_views / selected_artist_count
     videos_per_artist = total_videos / selected_artist_count
     likes_per_artist = total_likes / selected_artist_count
     comments_per_artist = total_comments / selected_artist_count
     revenue_per_artist = total_revenue / selected_artist_count
 
-    def _pct_delta(current: float, baseline: float) -> str | None:
-        if baseline == 0:
-            return None
-        change = (current / baseline - 1.0) * 100.0
-        if abs(change) < 0.1:
-            return None
-        return f"{change:+.1f}%"
-
-    views_delta = _pct_delta(views_per_artist, roster_views_per_artist)
-    videos_delta = _pct_delta(videos_per_artist, roster_videos_per_artist)
-    likes_delta = _pct_delta(likes_per_artist, roster_likes_per_artist)
-    comments_delta = _pct_delta(comments_per_artist, roster_comments_per_artist)
-    revenue_delta = _pct_delta(revenue_per_artist, roster_revenue_per_artist)
-    engagement_delta = _pct_delta(avg_engagement, roster_avg_engagement)
+    views_delta = format_delta_value(compute_pct_delta(views_per_artist, roster_views_per_artist))
+    videos_delta = format_delta_value(compute_pct_delta(videos_per_artist, roster_videos_per_artist))
+    likes_delta = format_delta_value(compute_pct_delta(likes_per_artist, roster_likes_per_artist))
+    comments_delta = format_delta_value(compute_pct_delta(comments_per_artist, roster_comments_per_artist))
+    revenue_delta = format_delta_value(compute_pct_delta(revenue_per_artist, roster_revenue_per_artist))
+    engagement_delta = format_delta_value(compute_pct_delta(avg_engagement, roster_avg_engagement))
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
@@ -477,7 +971,10 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
         delta=revenue_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help="Per-artist estimated revenue vs roster-wide average",
+        help=(
+            "Per-artist estimated revenue vs roster-wide average. "
+            "Formula: (Total views / 1,000) x RPM (USD per 1,000 views)."
+        ),
     )
 
     # Apply modern, card-like styling to the KPI strip
@@ -496,6 +993,45 @@ def render_kpis(summary: pd.DataFrame, artists: list[str]) -> None:
     #         falling_speed=5,
     #         animation_length=2,
     #     )
+
+    formula_summary = pd.DataFrame(
+        [{"total_views": total_views, "total_est_revenue_usd": total_revenue}],
+    )
+    formula_context = build_revenue_formula_context(formula_summary, videos)
+    st.markdown("##### Estimated revenue arithmetic (TOS-safe explicit formula)")
+    st.code(formula_context["equation"], language="text")
+    st.caption(formula_context["worked_example"])
+    st.caption("No hidden score is used. RPM means explicit USD per 1,000 views arithmetic.")
+    st.caption("This is a directional estimate from public metrics, not a YouTube payout statement.")
+    st.caption(formula_context["type_note"])
+
+    delta_rows = build_delta_signal_rows(
+        views_per_artist=views_per_artist,
+        roster_views_per_artist=roster_views_per_artist,
+        videos_per_artist=videos_per_artist,
+        roster_videos_per_artist=roster_videos_per_artist,
+        likes_per_artist=likes_per_artist,
+        roster_likes_per_artist=roster_likes_per_artist,
+        comments_per_artist=comments_per_artist,
+        roster_comments_per_artist=roster_comments_per_artist,
+        avg_engagement=avg_engagement,
+        roster_avg_engagement=roster_avg_engagement,
+        revenue_per_artist=revenue_per_artist,
+        roster_revenue_per_artist=roster_revenue_per_artist,
+    )
+    if not delta_rows.empty:
+        st.markdown("##### KPI delta arithmetic (shown percentages only)")
+        st.dataframe(
+            delta_rows,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "KPI": st.column_config.TextColumn("KPI"),
+                "Delta": st.column_config.TextColumn("Delta"),
+                "Arithmetic": st.column_config.TextColumn("Arithmetic"),
+                "Action": st.column_config.TextColumn("Action"),
+            },
+        )
 
 
 def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
@@ -588,6 +1124,61 @@ def render_content_mix(df: pd.DataFrame) -> None:
         ],
     }
     st_echarts(options=options, height="400px")
+
+
+def render_artist_content_mix(df: pd.DataFrame) -> None:
+    """Render artist-by-format mix and a concrete action board."""
+
+    if df.empty:
+        st.info("Per-artist content mix unavailable for the selected filters.")
+        return
+    required = ["artist_name", "video_type", "video_id", "view_count", "views_per_day", "engagement_rate"]
+    if not ensure_columns(df, required, "Artist content mix chart"):
+        return
+
+    mix = (
+        df.groupby(["artist_name", "video_type"], dropna=False)
+        .agg(
+            video_count=("video_id", "nunique"),
+            total_views=("view_count", "sum"),
+            avg_views_per_day=("views_per_day", "mean"),
+            avg_engagement=("engagement_rate", "mean"),
+        )
+        .reset_index()
+    )
+    mix["video_type_label"] = mix["video_type"].replace({"Short": "Short / Reel"})
+
+    fig = px.bar(
+        mix,
+        x="artist_name",
+        y="video_count",
+        color="video_type_label",
+        title="Video content mix by artist (counts by format)",
+        barmode="stack",
+        hover_data={
+            "total_views": ":,.0f",
+            "avg_views_per_day": ":,.1f",
+            "avg_engagement": ":.2f",
+            "video_type": False,
+        },
+    )
+    fig.update_layout(xaxis_title="Artist", yaxis_title="Videos", legend_title_text="Format")
+    st.plotly_chart(fig, use_container_width=True, height=420)
+
+    action_rows = build_artist_content_action_rows(df)
+    if not action_rows.empty:
+        st.markdown("##### Label Action Board (KPI-driven)")
+        st.dataframe(
+            action_rows,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Artist": st.column_config.TextColumn("Artist"),
+                "Best Reach Format": st.column_config.TextColumn("Best Reach Format"),
+                "Best Engagement Format": st.column_config.TextColumn("Best Engagement Format"),
+                "Action Plan": st.column_config.TextColumn("Action Plan", width="large"),
+            },
+        )
 
 
 def render_top_videos(df: pd.DataFrame, limit: int) -> None:
@@ -773,10 +1364,10 @@ def main() -> None:
     st.sidebar.metric("Latest metrics date", max_date.isoformat())
     st.sidebar.metric("Rows loaded", f"{len(normalized_videos):,}")
 
-    normalized_filtered = filter_by_date_window(
-        filter_by_artists(normalized_videos, selected_artists), (start_date, end_date)
-    )
-    latest = latest_snapshot(normalized_filtered)
+    window_filtered_all = filter_by_date_window(normalized_videos, (start_date, end_date))
+    normalized_filtered = filter_by_artists(window_filtered_all, selected_artists)
+    latest_roster = latest_snapshot(window_filtered_all)
+    latest = filter_by_artists(latest_roster, selected_artists)
     color_map = build_color_discrete_map(selected_artists, palette)
 
     # Top-level navigation for different storytelling modes
@@ -790,7 +1381,7 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(artist_summary, selected_artists)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -800,6 +1391,7 @@ def main() -> None:
 
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
+        render_artist_content_mix(latest)
 
         ui.card(
             content=(
@@ -813,9 +1405,10 @@ def main() -> None:
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
-        render_kpis(artist_summary, selected_artists)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster)
         st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
         render_content_mix(latest)
+        render_artist_content_mix(latest)
 
     else:  # "Velocity Analysis"
         st.markdown("### Velocity & momentum")

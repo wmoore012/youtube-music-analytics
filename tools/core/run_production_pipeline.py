@@ -18,21 +18,30 @@ Version: 2.0.0
 License: Enterprise
 """
 
+# ======================================================================
+# IMPORTANT - DO NOT REGRESS (USER-REQUIRED BEHAVIOR)
+# ----------------------------------------------------------------------
+# 1) Pipeline must include actual channel ingestion before downstream ETL,
+#    so new youtube_metrics rows are created daily.
+# 2) Stage execution must use explicit timeouts to avoid hangs.
+# 3) "Success" status should only be logged when ingestion+pipeline complete.
+# ======================================================================
+
+from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.youtubeviz.data import load_recent_window_days
-from web.etl_helpers import get_engine
+from src.youtubeviz.data import load_recent_window_days  # noqa: E402
+from web.etl_helpers import get_engine  # noqa: E402
 
 # Configure enterprise logging
 log_dir = project_root / "logs"
@@ -71,6 +80,10 @@ class EnterpriseETLPipeline:
         self.config = config or {}
         self.pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.start_time = datetime.now()
+        timeout_default = self.config.get("stage_timeout_seconds", 3600)
+        self.stage_timeout_seconds = int(
+            os.getenv("ETL_STAGE_TIMEOUT_SECONDS", str(timeout_default)),
+        )
 
         # Initialize comprehensive results tracking
         self.results = {
@@ -103,12 +116,30 @@ class EnterpriseETLPipeline:
             extra={"pipeline_id": self.pipeline_id, "config": self.config, "environment": self.results["environment"]},
         )
 
+    def _build_stage_env(self) -> dict[str, str]:
+        """Return subprocess env with project root injected into PYTHONPATH."""
+
+        stage_env = os.environ.copy()
+        root = str(project_root)
+        existing = stage_env.get("PYTHONPATH", "")
+        existing_parts = [part for part in existing.split(os.pathsep) if part]
+        if root not in existing_parts:
+            stage_env["PYTHONPATH"] = os.pathsep.join([root, *existing_parts]) if existing_parts else root
+        return stage_env
+
     def run_stage(self, stage_name: str, command: list, critical: bool = True) -> bool:
         """Run a pipeline stage with error handling."""
         logger.info(f"🚀 Starting stage: {stage_name}")
 
         try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=3600)  # 1 hour timeout
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=self.stage_timeout_seconds,
+                cwd=str(project_root),
+                env=self._build_stage_env(),
+            )
 
             self.results["stages"][stage_name] = {
                 "status": "SUCCESS" if result.returncode == 0 else "FAILED",
@@ -134,7 +165,7 @@ class EnterpriseETLPipeline:
                     return True
 
         except subprocess.TimeoutExpired:
-            error_msg = f"{stage_name} timed out after 1 hour"
+            error_msg = f"{stage_name} timed out after {self.stage_timeout_seconds} seconds"
             logger.error(f"⏰ {error_msg}")
             self.results["stages"][stage_name] = {
                 "status": "TIMEOUT",
@@ -207,9 +238,9 @@ class EnterpriseETLPipeline:
 
             # Deduplicate by video_id (natural key)
             clean_data = data.drop_duplicates(["video_id"], keep="first")
-            duplicates_removed = original_count-len(clean_data)
+            duplicates_removed = original_count - len(clean_data)
 
-            logger.info(f"📊 Data cleanup results:")
+            logger.info("📊 Data cleanup results:")
             logger.info(f"   Original records: {original_count:,}")
             logger.info(f"   Clean records: {len(clean_data):,}")
             logger.info(f"   Duplicates removed: {duplicates_removed:,}")
@@ -239,6 +270,26 @@ class EnterpriseETLPipeline:
             }
             return False
 
+    def _finalize_pipeline(self) -> Dict[str, Any]:
+        """Finalize pipeline bookkeeping exactly once before returning."""
+
+        self.results["pipeline_end"] = datetime.now().isoformat()
+
+        if self.results["status"] != "FAILED":
+            self.results["status"] = "SUCCESS"
+            self.log_etl_run("SUCCESS")
+            logger.info("🎉 PRODUCTION PIPELINE COMPLETED SUCCESSFULLY!")
+        else:
+            self.log_etl_run("FAILED")
+            logger.error("💥 PRODUCTION PIPELINE FAILED!")
+            for error in self.results["errors"]:
+                logger.error(f"   • {error}")
+
+        with open("production_pipeline_results.json", "w") as f:
+            json.dump(self.results, f, indent=2)
+
+        return self.results
+
     def run_pipeline(self) -> Dict[str, Any]:
         """Run the complete production pipeline."""
         logger.info("🚀 STARTING PRODUCTION ETL PIPELINE")
@@ -255,15 +306,27 @@ class EnterpriseETLPipeline:
         # Stage 2: Data cleanup and deduplication
         if not self.run_data_cleanup():
             logger.error("💥 Data cleanup failed-aborting pipeline")
-            return self.results
+            self.results["status"] = "FAILED"
+            self.results["errors"].append("data_cleanup failed")
+            return self._finalize_pipeline()
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
+            if not self.run_stage(
+                "channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True
+            ):
+                logger.error("💥 Channel ingestion failed-aborting pipeline")
+                return self._finalize_pipeline()
             if not self.run_stage("main_etl", ["python", "tools/core/run_focused_etl.py"], critical=True):
                 logger.error("💥 Main ETL failed-aborting pipeline")
-                return self.results
+                return self._finalize_pipeline()
         else:
             logger.info("⏭️  Skipping ETL-already run today")
+            self.results["stages"]["channel_ingestion"] = {
+                "status": "SKIPPED",
+                "reason": "Already run today",
+                "timestamp": datetime.now().isoformat(),
+            }
             self.results["stages"]["main_etl"] = {
                 "status": "SKIPPED",
                 "reason": "Already run today",
@@ -292,22 +355,7 @@ class EnterpriseETLPipeline:
         ):
             logger.warning("⚠️  Final quality check had issues")
 
-        # Pipeline completion
-        self.results["pipeline_end"] = datetime.now().isoformat()
-
-        if self.results["status"] != "FAILED":
-            self.results["status"] = "SUCCESS"
-            logger.info("🎉 PRODUCTION PIPELINE COMPLETED SUCCESSFULLY!")
-        else:
-            logger.error("💥 PRODUCTION PIPELINE FAILED!")
-            for error in self.results["errors"]:
-                logger.error(f"   • {error}")
-
-        # Save results
-        with open("production_pipeline_results.json", "w") as f:
-            json.dump(self.results, f, indent=2)
-
-        return self.results
+        return self._finalize_pipeline()
 
 
 def main():

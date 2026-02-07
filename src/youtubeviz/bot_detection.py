@@ -558,7 +558,7 @@ def analyze_comments(comments: list[str]) -> list[bool]:
     rows = [
         {
             "comment_id": f"c{i}",
-            "video_id": f"v{i%3}",
+            "video_id": f"v{i % 3}",
             "comment_text": text,
             "author_name": f"user{i}",
             "like_count": 0,

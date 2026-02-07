@@ -63,8 +63,7 @@ class UniqueCommentManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS comment_usage (
                 comment_hash TEXT PRIMARY KEY,
                 comment_text TEXT NOT NULL,
@@ -76,20 +75,15 @@ class UniqueCommentManager:
                 like_count INTEGER,
                 notes TEXT
             )
-        """
-        )
+        """)
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_usage_type ON comment_usage(usage_type)
-        """
-        )
+        """)
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_system_name ON comment_usage(system_name)
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()
@@ -198,8 +192,7 @@ class UniqueCommentManager:
             conn.close()
 
             # Fetch comments from database
-            query = text(
-                """
+            query = text("""
                 SELECT c.comment_text, c.video_id, v.channel_title, c.like_count, c.published_at
                 FROM youtube_comments c
                 JOIN youtube_videos v ON c.video_id = v.video_id
@@ -209,8 +202,7 @@ class UniqueCommentManager:
                     AND c.like_count >= :min_like_count
                 ORDER BY c.like_count DESC, RAND()
                 LIMIT :fetch_limit
-            """
-            )
+            """)
 
             # Fetch more than needed to account for duplicates
             fetch_limit = min(count * 5, 50000)  # Increased multiplier for better success rate
@@ -278,34 +270,28 @@ class UniqueCommentManager:
         total = cursor.fetchone()[0]
 
         # By usage type
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT usage_type, COUNT(*)
             FROM comment_usage
             GROUP BY usage_type
-        """
-        )
+        """)
         by_usage_type = dict(cursor.fetchall())
 
         # By system
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT system_name, COUNT(*)
             FROM comment_usage
             GROUP BY system_name
-        """
-        )
+        """)
         by_system = dict(cursor.fetchall())
 
         # Recent allocations
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT system_name, usage_type, COUNT(*)
             FROM comment_usage
             WHERE allocated_at >= datetime('now', '-24 hours')
             GROUP BY system_name, usage_type
-        """
-        )
+        """)
         recent = cursor.fetchall()
 
         conn.close()
