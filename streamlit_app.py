@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal, Tuple
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -41,6 +41,7 @@ RPM_VARIATION_TOLERANCE = 0.05
 REVENUE_RPM_DEFAULT_ENV = "REVENUE_RPM_DEFAULT"
 DEFAULT_REVENUE_RPM_USD = 2.5
 SHORTS_MAX_SECONDS = 60
+DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -136,6 +137,37 @@ def _is_streamlit_cloud_runtime() -> bool:
     return cwd.startswith("/mount/src/")
 
 
+def _normalize_data_mode(raw_value: str | None) -> Literal["demo", "production"] | None:
+    """Normalize optional run-mode text to a supported literal value."""
+
+    if raw_value is None:
+        return None
+    mode = raw_value.strip().lower()
+    if not mode:
+        return None
+    if mode == "demo":
+        return "demo"
+    if mode == "production":
+        return "production"
+
+    st.error(
+        "Invalid data mode value. Use 'demo' or 'production' for "
+        "MUSICSCOPE_DATA_MODE / TRACKSTATS_DATA_MODE.",
+    )
+    st.stop()
+    return None
+
+
+def _get_requested_data_mode(*, allow_env: bool) -> Literal["demo", "production"] | None:
+    """Read an explicitly requested data mode from settings."""
+
+    for key in DATA_MODE_SETTING_KEYS:
+        mode = _normalize_data_mode(_get_db_setting(key, allow_env=allow_env))
+        if mode is not None:
+            return mode
+    return None
+
+
 def _classify_video_type_from_duration(duration: object) -> str:
     """Classify video type from duration with a simple Shorts cutoff."""
 
@@ -215,7 +247,7 @@ def _get_db_setting(name: str, *, allow_env: bool = True) -> str | None:
     return None
 
 
-def _sync_db_settings_to_env(*, allow_env: bool = True) -> None:
+def _sync_db_settings_to_env(*, allow_env: bool = False) -> None:
     """Mirror DB settings from Streamlit secrets/session into process env.
 
     web.etl_helpers.get_engine() reads only os.environ. In Streamlit Cloud,
@@ -248,11 +280,29 @@ def get_data_mode() -> Literal["demo", "production"]:
     # In Streamlit Cloud we ignore raw env DB_* by default because a checked-in
     # .env (or inherited env) can accidentally force broken localhost Production
     # mode. Override with MUSICSCOPE_ALLOW_ENV_DB=1 if needed.
-    allow_env_db = not _is_streamlit_cloud_runtime() or _is_truthy(os.getenv("MUSICSCOPE_ALLOW_ENV_DB"))
+    cloud_runtime = _is_streamlit_cloud_runtime()
+    allow_env_db = not cloud_runtime or _is_truthy(os.getenv("MUSICSCOPE_ALLOW_ENV_DB"))
+    requested_mode = _get_requested_data_mode(allow_env=allow_env_db)
+    if requested_mode == "demo":
+        return "demo"
+
+    # Cloud-safe default: unless production is explicitly requested, stay in demo
+    # mode even if DB_* is present in inherited environment variables.
+    if cloud_runtime and requested_mode is None:
+        return "demo"
 
     any_present = any(_get_db_setting(key, allow_env=allow_env_db) is not None for key in required_keys)
     if not any_present:
-        # No DB intent configured → stay in demo mode using curated cohort.
+        if requested_mode == "production":
+            st.error(
+                "Production (MySQL) mode was explicitly requested, but DB settings are missing.",
+            )
+            st.info(
+                "Set DB_HOST, DB_USER, DB_PASS, and DB_NAME (via Streamlit secrets "
+                "or session state). Then keep MUSICSCOPE_DATA_MODE=production.",
+            )
+            st.stop()
+        # No DB intent configured -> stay in demo mode using curated cohort.
         return "demo"
 
     missing = [key for key in required_keys if _get_db_setting(key, allow_env=allow_env_db) is None]
@@ -1291,8 +1341,10 @@ def main() -> None:
 
     - **Demo Mode** (default for new users): loads a small curated cohort from
       ``demo_data/curated_cohort.json`` with no database or API setup.
-    - **Production (MySQL)**: uses the local analytics warehouse via DB_* env
-      vars / ``.env`` and web.etl_helpers.get_engine().
+    - **Production (MySQL)**: uses the analytics warehouse via DB_* settings.
+      In Streamlit Cloud, this mode requires explicit intent via
+      ``MUSICSCOPE_DATA_MODE=production`` (or ``TRACKSTATS_DATA_MODE=production``)
+      to avoid accidental localhost DB failures.
     """
 
     st.set_page_config(page_title="TrackStats YT™", layout="wide")

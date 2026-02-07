@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -75,6 +75,7 @@ def test_get_data_mode_uses_env_db_on_streamlit_cloud_when_explicitly_allowed():
     """Cloud env DB_* can be enabled explicitly with MUSICSCOPE_ALLOW_ENV_DB."""
 
     env = {
+        "MUSICSCOPE_DATA_MODE": "production",
         "DB_HOST": "db.example.internal",
         "DB_PORT": "3306",
         "DB_USER": "etl_user",
@@ -89,6 +90,42 @@ def test_get_data_mode_uses_env_db_on_streamlit_cloud_when_explicitly_allowed():
 
     with patch("streamlit.secrets", {}), patch("streamlit.session_state", {}), patch.dict(
         os.environ, env, clear=True
+    ), patch("streamlit_app._is_streamlit_cloud_runtime", return_value=True), patch(
+        "streamlit_app.get_engine", return_value=fake_engine
+    ):
+        assert get_data_mode() == "production"
+
+
+def test_get_data_mode_cloud_defaults_demo_even_with_secrets_db_keys():
+    """Cloud runtime must stay in demo unless production mode is explicitly requested."""
+
+    mock_secrets = {
+        "DB_HOST": "db.example.internal",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+    }
+    with patch("streamlit.secrets", mock_secrets), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, {}, clear=True
+    ), patch("streamlit_app._is_streamlit_cloud_runtime", return_value=True):
+        assert get_data_mode() == "demo"
+
+
+def test_get_data_mode_cloud_allows_production_when_explicitly_requested():
+    """Cloud runtime can enter production when mode is explicitly requested."""
+
+    mock_secrets = {
+        "MUSICSCOPE_DATA_MODE": "production",
+        "DB_HOST": "db.example.internal",
+        "DB_USER": "etl_user",
+        "DB_PASS": "secret",
+        "DB_NAME": "yt_proj",
+    }
+    fake_conn = MagicMock()
+    fake_engine = MagicMock()
+    fake_engine.connect.return_value.__enter__.return_value = fake_conn
+    with patch("streamlit.secrets", mock_secrets), patch("streamlit.session_state", {}), patch.dict(
+        os.environ, {}, clear=True
     ), patch("streamlit_app._is_streamlit_cloud_runtime", return_value=True), patch(
         "streamlit_app.get_engine", return_value=fake_engine
     ):
