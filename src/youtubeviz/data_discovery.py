@@ -52,16 +52,14 @@ class DatabaseDiscovery:
 
             # Count artists using least expensive available source
             try:
-                artist_count_query = text(
-                    """
+                artist_count_query = text("""
                     SELECT COUNT(*) AS c FROM (
                         SELECT channel_title AS artist_name
                         FROM youtube_videos
                         WHERE channel_title IS NOT NULL
                         GROUP BY channel_title
                     ) t
-                    """
-                )
+                    """)
                 df = pd.read_sql(artist_count_query, self.engine)
                 summary["total_artists"] = int(df["c"].iloc[0]) if not df.empty else 0
             except Exception:

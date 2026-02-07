@@ -65,8 +65,7 @@ class CommentClassificationDB:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS comment_classifications (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 comment_text TEXT NOT NULL,
@@ -76,20 +75,15 @@ class CommentClassificationDB:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 notes TEXT
             )
-        """
-        )
+        """)
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_classification ON comment_classifications(classification)
-        """
-        )
+        """)
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_created_at ON comment_classifications(created_at)
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()
@@ -159,21 +153,17 @@ class CommentClassificationDB:
         cursor.execute("SELECT COUNT(*) FROM comment_classifications")
         total = cursor.fetchone()[0]
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT classification, COUNT(*)
             FROM comment_classifications
             GROUP BY classification
-        """
-        )
+        """)
         by_class = dict(cursor.fetchall())
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT AVG(confidence)
             FROM comment_classifications
-        """
-        )
+        """)
         avg_confidence = cursor.fetchone()[0] or 0
 
         conn.close()

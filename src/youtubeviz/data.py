@@ -695,15 +695,11 @@ def load_sentiment_summary(
         if inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link"):
             with eng.connect() as conn:
                 # Check if we have ISRC data AND videos with recording links
-                result = conn.execute(
-                    text(
-                        """
+                result = conn.execute(text("""
                     SELECT COUNT(*) FROM isrc_recordings ir
                     JOIN video_recording_link vrl ON ir.isrc = vrl.isrc
                     JOIN youtube_videos v ON vrl.video_id = v.video_id
-                """
-                    )
-                )
+                """))
                 has_isrc_with_data = result.fetchone()[0] > 0
     except Exception:
         has_isrc_with_data = False
@@ -776,15 +772,11 @@ def load_sentiment_daily(
         if inspect(eng).has_table("isrc_recordings") and inspect(eng).has_table("video_recording_link"):
             with eng.connect() as conn:
                 # Check if we have ISRC data AND videos with recording links
-                result = conn.execute(
-                    text(
-                        """
+                result = conn.execute(text("""
                     SELECT COUNT(*) FROM isrc_recordings ir
                     JOIN video_recording_link vrl ON ir.isrc = vrl.isrc
                     JOIN youtube_videos v ON vrl.video_id = v.video_id
-                """
-                    )
-                )
+                """))
                 has_isrc_with_data = result.fetchone()[0] > 0
     except Exception:
         has_isrc_with_data = False

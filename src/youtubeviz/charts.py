@@ -971,8 +971,8 @@ def create_sentiment_wordcloud(
     if comments is None:
         raise ValueError("[SentimentWordcloud] comments cannot be None")
 
-    import re
     from collections import Counter
+    import re
 
     tokens: list[str] = []
     for comment in comments:
