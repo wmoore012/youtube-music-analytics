@@ -1,6 +1,5 @@
 import pytest
-
-from streamlit_app import _read_int_env
+from streamlit_app import _read_float_env, _read_int_env
 
 
 def test_read_int_env_default(monkeypatch):
@@ -33,3 +32,9 @@ def test_read_int_env_empty_string_returns_default(monkeypatch):
 def test_read_int_env_allows_zero(monkeypatch):
     monkeypatch.setenv("TEST_INT", "0")
     assert _read_int_env("TEST_INT", 10) == 0
+
+
+def test_read_float_env_rejects_non_finite(monkeypatch):
+    monkeypatch.setenv("TEST_FLOAT", "nan")
+    with pytest.raises(RuntimeError, match="finite float"):
+        _read_float_env("TEST_FLOAT", 1.0)

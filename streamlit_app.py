@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+import math
 import os
 from pathlib import Path
 import re
@@ -85,6 +86,8 @@ def _read_float_env(name: str, default: float) -> float:
         value = float(raw)
     except ValueError as exc:  # pragma: no cover - defensive config guard
         raise RuntimeError(f"{name} must be a float, got {raw!r}") from exc
+    if not math.isfinite(value):
+        raise RuntimeError(f"{name} must be a finite float, got {raw!r}")
     if value < 0:
         raise RuntimeError(f"{name} must be >= 0, got {value}")
     return value
@@ -556,9 +559,15 @@ def ensure_columns(df: pd.DataFrame, columns: Iterable[str], context: str) -> bo
 def compute_pct_delta(current: float, baseline: float, threshold: float = 0.1) -> float | None:
     """Return percentage delta, or None when baseline is invalid / change is tiny."""
 
+    if not all(math.isfinite(v) for v in (current, baseline, threshold)):
+        return None
+    if threshold < 0:
+        return None
     if baseline <= 0:
         return None
     change = (current / baseline - 1.0) * 100.0
+    if not math.isfinite(change):
+        return None
     if abs(change) < threshold:
         return None
     return change

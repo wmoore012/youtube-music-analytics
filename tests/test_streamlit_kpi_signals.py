@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from streamlit_app import (
     build_artist_content_action_rows,
     build_delta_signal_rows,
@@ -13,6 +12,8 @@ from streamlit_app import (
 def test_compute_pct_delta_hides_invalid_or_tiny_change() -> None:
     assert compute_pct_delta(100, 0) is None
     assert compute_pct_delta(100.05, 100.0) is None
+    assert compute_pct_delta(float("nan"), 100.0) is None
+    assert compute_pct_delta(100.0, float("inf")) is None
     assert compute_pct_delta(110, 100) == pytest.approx(10.0)
 
 

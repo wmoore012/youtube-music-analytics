@@ -27,13 +27,13 @@ License: Enterprise
 # 3) "Success" status should only be logged when ingestion+pipeline complete.
 # ======================================================================
 
+from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add project root to path
@@ -270,6 +270,26 @@ class EnterpriseETLPipeline:
             }
             return False
 
+    def _finalize_pipeline(self) -> Dict[str, Any]:
+        """Finalize pipeline bookkeeping exactly once before returning."""
+
+        self.results["pipeline_end"] = datetime.now().isoformat()
+
+        if self.results["status"] != "FAILED":
+            self.results["status"] = "SUCCESS"
+            self.log_etl_run("SUCCESS")
+            logger.info("🎉 PRODUCTION PIPELINE COMPLETED SUCCESSFULLY!")
+        else:
+            self.log_etl_run("FAILED")
+            logger.error("💥 PRODUCTION PIPELINE FAILED!")
+            for error in self.results["errors"]:
+                logger.error(f"   • {error}")
+
+        with open("production_pipeline_results.json", "w") as f:
+            json.dump(self.results, f, indent=2)
+
+        return self.results
+
     def run_pipeline(self) -> Dict[str, Any]:
         """Run the complete production pipeline."""
         logger.info("🚀 STARTING PRODUCTION ETL PIPELINE")
@@ -286,7 +306,9 @@ class EnterpriseETLPipeline:
         # Stage 2: Data cleanup and deduplication
         if not self.run_data_cleanup():
             logger.error("💥 Data cleanup failed-aborting pipeline")
-            return self.results
+            self.results["status"] = "FAILED"
+            self.results["errors"].append("data_cleanup failed")
+            return self._finalize_pipeline()
 
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
@@ -294,10 +316,10 @@ class EnterpriseETLPipeline:
                 "channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True
             ):
                 logger.error("💥 Channel ingestion failed-aborting pipeline")
-                return self.results
+                return self._finalize_pipeline()
             if not self.run_stage("main_etl", ["python", "tools/core/run_focused_etl.py"], critical=True):
                 logger.error("💥 Main ETL failed-aborting pipeline")
-                return self.results
+                return self._finalize_pipeline()
         else:
             logger.info("⏭️  Skipping ETL-already run today")
             self.results["stages"]["channel_ingestion"] = {
@@ -333,24 +355,7 @@ class EnterpriseETLPipeline:
         ):
             logger.warning("⚠️  Final quality check had issues")
 
-        # Pipeline completion
-        self.results["pipeline_end"] = datetime.now().isoformat()
-
-        if self.results["status"] != "FAILED":
-            self.results["status"] = "SUCCESS"
-            self.log_etl_run("SUCCESS")
-            logger.info("🎉 PRODUCTION PIPELINE COMPLETED SUCCESSFULLY!")
-        else:
-            self.log_etl_run("FAILED")
-            logger.error("💥 PRODUCTION PIPELINE FAILED!")
-            for error in self.results["errors"]:
-                logger.error(f"   • {error}")
-
-        # Save results
-        with open("production_pipeline_results.json", "w") as f:
-            json.dump(self.results, f, indent=2)
-
-        return self.results
+        return self._finalize_pipeline()
 
 
 def main():
