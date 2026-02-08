@@ -592,14 +592,8 @@ jobs:
         echo "🚀 System is ready for production deployment"
         echo "📊 Enterprise-grade YouTube Analytics Platform v${{ env.ENTERPRISE_VERSION }}"
 
-    - name: Skipped notification (non-blocking)
-      if: needs.deployment-readiness.result == 'skipped'
-      run: |
-        echo "ℹ️ Deployment readiness check was skipped for this event type."
-        echo "✅ No deployment gate is being evaluated in this run."
-
     - name: Failure notification
-      if: needs.deployment-readiness.result == 'failure'
+      if: needs.deployment-readiness.result != 'success'
       run: |
         echo "🚨 ENTERPRISE PIPELINE VALIDATION FAILED"
         echo "========================================"
