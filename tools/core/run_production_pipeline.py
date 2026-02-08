@@ -25,15 +25,17 @@ License: Enterprise
 #    so new youtube_metrics rows are created daily.
 # 2) Stage execution must use explicit timeouts to avoid hangs.
 # 3) "Success" status should only be logged when ingestion+pipeline complete.
+# 4) Daily ETL must refresh demo snapshot artifacts so Demo mode freshness
+#    reflects a true daily heartbeat, not stale checked-in JSON.
 # ======================================================================
 
-from datetime import datetime
 import json
 import logging
 import os
-from pathlib import Path
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add project root to path
@@ -336,7 +338,9 @@ class EnterpriseETLPipeline:
         # Stage 3: Run main ETL (ONLY if not already run today)
         if self.should_run_etl():
             if not self.run_stage(
-                "channel_ingestion", ["python", "tools/core/run_channels_from_env.py"], critical=True
+                "channel_ingestion",
+                ["python", "tools/core/run_channels_from_env.py", "--refresh-demo-snapshot"],
+                critical=True,
             ):
                 logger.error("💥 Channel ingestion failed-aborting pipeline")
                 return self._finalize_pipeline()

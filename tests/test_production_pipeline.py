@@ -88,3 +88,28 @@ def test_run_pipeline_finalizes_results_on_critical_stage_failure(monkeypatch) -
     assert result["status"] == "FAILED"
     assert "pipeline_end" in result
     assert log_calls == ["FAILED"]
+
+
+def test_run_pipeline_channel_ingestion_enables_demo_snapshot_refresh(monkeypatch) -> None:
+    pipeline = EnterpriseETLPipeline(config={})
+    stage_commands: dict[str, list[str]] = {}
+
+    monkeypatch.setattr(pipeline, "should_run_etl", lambda: True)
+    monkeypatch.setattr(pipeline, "run_data_cleanup", lambda: True)
+
+    def fake_run_stage(stage_name, command, critical=False):  # noqa: ANN001
+        stage_commands[stage_name] = list(command)
+        return True
+
+    monkeypatch.setattr(pipeline, "run_stage", fake_run_stage)
+    monkeypatch.setattr("tools.core.run_production_pipeline.json.dump", lambda *args, **kwargs: None)
+    monkeypatch.setattr("builtins.open", mock_open())
+
+    result = pipeline.run_pipeline()
+
+    assert result["status"] == "SUCCESS"
+    assert stage_commands["channel_ingestion"] == [
+        "python",
+        "tools/core/run_channels_from_env.py",
+        "--refresh-demo-snapshot",
+    ]

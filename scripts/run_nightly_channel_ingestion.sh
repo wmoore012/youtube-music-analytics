@@ -6,6 +6,8 @@ set -euo pipefail
 # ----------------------------------------------------------------------
 # This nightly job is intentionally scoped to channel ingestion so the
 # project always gets fresh youtube_metrics/youtube_etl_runs entries.
+# It also forces a demo cohort refresh so Streamlit Demo mode can reflect
+# truly fresh daily snapshots even when no brand-new videos were added.
 # Keep a hard timeout to prevent cron hangs.
 # ======================================================================
 
@@ -31,6 +33,7 @@ cd "${PROJECT_ROOT}"
 
 {
   echo "==== $(date '+%Y-%m-%d %H:%M:%S') nightly channel ingestion start ===="
-  PYTHONPATH=. "${TIMEOUT_CMD}" "${TIMEOUT_SECONDS}" "${PYTHON_EXEC}" tools/core/run_channels_from_env.py
+  PYTHONPATH=. "${TIMEOUT_CMD}" "${TIMEOUT_SECONDS}" "${PYTHON_EXEC}" \
+    tools/core/run_channels_from_env.py --refresh-demo-snapshot
   echo "==== $(date '+%Y-%m-%d %H:%M:%S') nightly channel ingestion success ===="
 } >> "${LOG_FILE}" 2>&1
