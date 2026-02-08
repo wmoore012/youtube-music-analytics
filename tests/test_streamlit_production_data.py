@@ -1,3 +1,5 @@
+from datetime import date
+
 import pandas as pd
 import pytest
 
@@ -8,6 +10,7 @@ from streamlit_app import (
     load_artist_summary_from_demo,
     load_normalized_videos_from_demo,
     resolve_metrics_date_window,
+    select_metrics_window,
 )
 
 
@@ -194,3 +197,54 @@ def test_resolve_metrics_date_window_returns_min_max() -> None:
     min_date, max_date = resolve_metrics_date_window(df)
     assert min_date.isoformat() == "2026-02-05"
     assert max_date.isoformat() == "2026-02-07"
+
+
+def test_resolve_metrics_date_window_allows_single_day_snapshot() -> None:
+    df = pd.DataFrame(
+        [
+            {"metrics_date": "2026-02-08T00:00:00"},
+            {"metrics_date": "2026-02-08T08:12:00"},
+        ]
+    )
+
+    min_date, max_date = resolve_metrics_date_window(df)
+    assert min_date.isoformat() == "2026-02-08"
+    assert max_date.isoformat() == "2026-02-08"
+
+
+def test_select_metrics_window_handles_single_day_snapshot() -> None:
+    snapshot_day = date(2026, 2, 8)
+    start_date, end_date = select_metrics_window(min_date=snapshot_day, max_date=snapshot_day)
+    assert start_date == snapshot_day
+    assert end_date == snapshot_day
+
+
+def test_select_metrics_window_ignores_selection_for_single_day_snapshot() -> None:
+    snapshot_day = date(2026, 2, 8)
+    start_date, end_date = select_metrics_window(
+        min_date=snapshot_day,
+        max_date=snapshot_day,
+        selected_window=(date(2026, 2, 1), date(2026, 2, 28)),
+    )
+    assert start_date == snapshot_day
+    assert end_date == snapshot_day
+
+
+def test_select_metrics_window_clamps_and_sorts_selection() -> None:
+    min_day = date(2026, 2, 1)
+    max_day = date(2026, 2, 8)
+    start_date, end_date = select_metrics_window(
+        min_date=min_day,
+        max_date=max_day,
+        selected_window=(date(2026, 2, 10), date(2026, 1, 28)),
+    )
+    assert start_date == min_day
+    assert end_date == max_day
+
+
+def test_select_metrics_window_rejects_inverted_bounds() -> None:
+    with pytest.raises(ValueError, match="min_date cannot be after max_date"):
+        select_metrics_window(
+            min_date=date(2026, 2, 9),
+            max_date=date(2026, 2, 8),
+        )
