@@ -342,3 +342,7 @@ target-version = "py38"
 "tests/**/*.py" = ["F401", "F841"]
 # Scripts can use print statements
 "scripts/**/*.py" = ["T201"]
+
+[tool.ruff.lint.isort]
+# Keep Ruff import ordering aligned with CI isort profile.
+force-sort-within-sections = true
