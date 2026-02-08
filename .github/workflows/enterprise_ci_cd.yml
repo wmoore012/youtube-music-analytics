@@ -592,8 +592,15 @@ jobs:
         echo "🚀 System is ready for production deployment"
         echo "📊 Enterprise-grade YouTube Analytics Platform v${{ env.ENTERPRISE_VERSION }}"
 
+    - name: Non-main informational notification
+      if: needs.deployment-readiness.result == 'skipped'
+      run: |
+        echo "ℹ️ Deployment readiness is intentionally skipped on non-main refs."
+        echo "✅ Validation checks for pull requests completed."
+        echo "📌 Final production readiness is evaluated on main only."
+
     - name: Failure notification
-      if: needs.deployment-readiness.result != 'success'
+      if: needs.deployment-readiness.result == 'failure' || needs.deployment-readiness.result == 'cancelled'
       run: |
         echo "🚨 ENTERPRISE PIPELINE VALIDATION FAILED"
         echo "========================================"

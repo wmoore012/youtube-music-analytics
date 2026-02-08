@@ -57,6 +57,37 @@ ARTIST_ALIAS_OVERRIDES = {
 DEFAULT_DEMO_TOP_ARTISTS = 8
 DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST = 200
 LOGGER = logging.getLogger(__name__)
+SAFE_VIDEO_EXPORT_ORDER = [
+    "video_id",
+    "title",
+    "song_title",
+    "artist_name",
+    "video_type",
+    "isrc",
+    "has_isrc_code",
+    "published_at",
+    "duration",
+    "duration_seconds",
+    "view_count",
+    "like_count",
+    "comment_count",
+    "like_rate",
+    "comment_rate",
+    "engagement_rate",
+    "days_since_publish",
+    "views_per_day",
+    "metrics_date",
+    "fetched_at",
+]
+SAFE_VIDEO_DROP_COLUMNS = {
+    "est_revenue_usd",
+    "rpm_proxy",
+    "comment_text",
+    "author_name",
+    "author_display_name",
+    "author_channel_id",
+    "comment_id",
+}
 
 
 def _read_positive_int_env(name: str, default: int) -> int:
@@ -155,6 +186,35 @@ def _canonicalize_artist_name(name: object, aliases: dict[str, str], expected_lo
     return expected_lookup.get(aliased.casefold(), aliased)
 
 
+def _build_safe_video_export_frame(music_videos: pd.DataFrame) -> pd.DataFrame:
+    """Return a CSV-safe video table for demo snapshot artifacts.
+
+    IMPORTANT / DO NOT REGRESS:
+    - Never export fan-identifying fields (comment text, author names, etc.).
+    - Never export pseudo-finance derived fields in demo CSV artifacts.
+    - Do not persist boolean columns; normalize to integer code fields.
+    """
+
+    safe = music_videos.copy()
+    drop_cols = [column for column in SAFE_VIDEO_DROP_COLUMNS if column in safe.columns]
+    if drop_cols:
+        safe = safe.drop(columns=drop_cols)
+
+    if "has_isrc" in safe.columns:
+        safe["has_isrc_code"] = pd.Series(safe["has_isrc"]).fillna(False).astype(int)
+        safe = safe.drop(columns=["has_isrc"])
+
+    bool_columns = safe.select_dtypes(include=["bool"]).columns.tolist()
+    for column in bool_columns:
+        safe[column] = pd.Series(safe[column]).fillna(False).astype(int)
+
+    ordered_cols = [column for column in SAFE_VIDEO_EXPORT_ORDER if column in safe.columns]
+    extra_cols = sorted(column for column in safe.columns if column not in ordered_cols)
+    if ordered_cols or extra_cols:
+        safe = safe.loc[:, ordered_cols + extra_cols]
+    return safe
+
+
 def build_curated_cohort(
     *,
     top_artists: int = DEFAULT_DEMO_TOP_ARTISTS,
@@ -211,9 +271,10 @@ def build_curated_cohort(
         .reset_index()
     )
 
-    # Persist full tables used by the Streamlit app in production mode.
+    # Persist sanitized tables used by local demo/bootstrap workflows.
+    safe_music_videos = _build_safe_video_export_frame(music_videos)
     _ensure_dirs()
-    music_videos.to_csv(DATA_DIR / "normalized_music_videos.csv", index=False)
+    safe_music_videos.to_csv(DATA_DIR / "normalized_music_videos.csv", index=False)
     artist_summary.to_csv(DATA_DIR / "artist_music_summary.csv", index=False)
 
     # Choose top artists by total views for the curated cohort.
@@ -226,7 +287,7 @@ def build_curated_cohort(
 
         # Pick the top N videos per artist by view_count.
         artist_videos = (
-            music_videos[music_videos["artist_name"] == artist_name]
+            safe_music_videos[safe_music_videos["artist_name"] == artist_name]
             .sort_values("view_count", ascending=False)
             .head(top_videos_per_artist)
         )

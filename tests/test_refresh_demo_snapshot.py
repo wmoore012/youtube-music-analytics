@@ -193,3 +193,65 @@ def test_build_curated_cohort_drops_nan_like_artist_names(
 
     cohort = snapshot.build_curated_cohort(top_artists=8, top_videos_per_artist=50)
     assert [artist["name"] for artist in cohort["artists"]] == ["COBRAH"]
+
+
+def test_build_curated_cohort_exports_csv_without_pii_or_finance(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setattr(snapshot, "DATA_DIR", tmp_path / "music_analysis_tables")
+    monkeypatch.setattr(snapshot, "DEMO_DATA_PATH", tmp_path / "demo_data" / "curated_cohort.json")
+    monkeypatch.setattr(snapshot, "get_engine", lambda: object())
+    monkeypatch.setattr(snapshot, "_load_expected_artists", lambda: ["COBRAH"])
+    monkeypatch.setattr(snapshot, "_load_artist_aliases", lambda: {"cobrah": "COBRAH"})
+    monkeypatch.setattr(
+        snapshot,
+        "create_music_videos_table",
+        lambda: pd.DataFrame(
+            [
+                {
+                    "artist_name": "Cobrah",
+                    "video_id": "v1",
+                    "title": "Official One",
+                    "song_title": "Official One",
+                    "video_type": "Official Music Video",
+                    "isrc": "US-XXX-26-00001",
+                    "has_isrc": True,
+                    "published_at": pd.Timestamp("2026-02-01"),
+                    "view_count": 1200,
+                    "like_count": 45,
+                    "comment_count": 9,
+                    "like_rate": 3.75,
+                    "comment_rate": 0.75,
+                    "engagement_rate": 4.5,
+                    "days_since_publish": 6,
+                    "views_per_day": 200.0,
+                    "metrics_date": pd.Timestamp("2026-02-07"),
+                    "fetched_at": pd.Timestamp("2026-02-07T04:00:00"),
+                    "est_revenue_usd": 999.0,
+                    "comment_text": "fan comment",
+                    "author_name": "fan_user",
+                }
+            ]
+        ),
+    )
+    monkeypatch.setattr(
+        snapshot,
+        "create_music_summary_by_artist",
+        lambda: pd.DataFrame(
+            [
+                {"artist_name": "Cobrah", "total_views": 1200, "total_videos": 1, "avg_engagement_rate": 4.5},
+            ]
+        ),
+    )
+
+    snapshot.build_curated_cohort(top_artists=8, top_videos_per_artist=50)
+    exported = pd.read_csv(tmp_path / "music_analysis_tables" / "normalized_music_videos.csv")
+
+    assert "est_revenue_usd" not in exported.columns
+    assert "comment_text" not in exported.columns
+    assert "author_name" not in exported.columns
+    assert "has_isrc" not in exported.columns
+    assert "has_isrc_code" in exported.columns
+    assert set(exported["has_isrc_code"].astype(int).unique().tolist()) <= {0, 1}
+    assert "bool" not in {str(dtype) for dtype in exported.dtypes}
