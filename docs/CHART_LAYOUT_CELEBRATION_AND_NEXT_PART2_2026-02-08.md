@@ -135,6 +135,22 @@ Micro-motion direction:
 - Subtle card entrance and hover emphasis only.
 - No looping animation noise.
 
+## DELIVERY OPERATING RULES (PART 2)
+To keep shipping speed high without risky refactors:
+
+1. Pre-commit quality gate:
+   - `ruff --fix`
+   - `ruff-format`
+2. Keep arithmetic-only KPI language:
+   - no pseudo-finance KPI reintroduction
+   - no hidden score naming
+3. Keep short-form taxonomy explicit:
+   - `Short video (<60s)` only
+   - no title hashtag forcing
+4. Tight exception handling on config loaders:
+   - `FileNotFoundError`, `PermissionError`, `OSError`, `JSONDecodeError`
+   - no silent broad catch in these paths
+
 ## HARD GUARDS
 1. No `Estimated revenue` anywhere in exec flow.
 2. No `Shorts` product claims; use `Short video (<60s)` from duration only.

@@ -1914,9 +1914,7 @@ def _build_cadence_lookup(
     typed["video_type"] = typed["video_type"].map(_display_video_type)
     typed["published_at"] = pd.to_datetime(typed["published_at"], errors="coerce").dt.date
     typed = typed.loc[
-        typed["artist_name"].ne("")
-        & typed["published_at"].notna()
-        & typed["video_type"].isin(OFFICIAL_RELEASE_TYPES)
+        typed["artist_name"].ne("") & typed["published_at"].notna() & typed["video_type"].isin(OFFICIAL_RELEASE_TYPES)
     ].copy()
 
     lookup: dict[str, dict[str, float | int | str | None]] = {}
@@ -2111,11 +2109,7 @@ def build_today_meeting_table(signal_frame: pd.DataFrame) -> pd.DataFrame:
     typed["Fans talking"] = typed.apply(
         lambda row: _format_fans_talking(
             float(row["fans_talking_per_1k"]) if pd.notna(row["fans_talking_per_1k"]) else None,
-            (
-                float(row["label_avg_fans_talking_per_1k"])
-                if pd.notna(row["label_avg_fans_talking_per_1k"])
-                else None
-            ),
+            (float(row["label_avg_fans_talking_per_1k"]) if pd.notna(row["label_avg_fans_talking_per_1k"]) else None),
         ),
         axis=1,
     )
@@ -2138,7 +2132,9 @@ def build_today_meeting_table(signal_frame: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def build_hero_signal_snapshots(signal_frame: pd.DataFrame) -> tuple[HeroSignalSnapshot, HeroSignalSnapshot, HeroSignalSnapshot]:
+def build_hero_signal_snapshots(
+    signal_frame: pd.DataFrame,
+) -> tuple[HeroSignalSnapshot, HeroSignalSnapshot, HeroSignalSnapshot]:
     """Build top-row hero card payloads from per-artist signals."""
 
     if signal_frame.empty:
@@ -2233,9 +2229,7 @@ def build_hero_signal_snapshots(signal_frame: pd.DataFrame) -> tuple[HeroSignalS
             direction=fan_direction,
             sentence=fans_sentence,
             context=(
-                "Label avg: —"
-                if label_avg is None
-                else f"Label avg: {label_avg:.1f} / 1K (same window + same roster)"
+                "Label avg: —" if label_avg is None else f"Label avg: {label_avg:.1f} / 1K (same window + same roster)"
             ),
             arithmetic="fans talking = (comments_gained_last_7 / views_gained_last_7) x 1,000",
         ),
@@ -2244,11 +2238,7 @@ def build_hero_signal_snapshots(signal_frame: pd.DataFrame) -> tuple[HeroSignalS
             value="—" if cadence_days is None else f"{cadence_days:.0f} days",
             direction=cadence_direction,
             sentence=cadence_sentence,
-            context=(
-                "Typical gap: —"
-                if typical_gap is None
-                else f"Typical gap: {typical_gap:.0f} days"
-            ),
+            context=("Typical gap: —" if typical_gap is None else f"Typical gap: {typical_gap:.0f} days"),
             arithmetic="cadence gap = days since latest official release",
         ),
     )
@@ -2334,6 +2324,7 @@ def render_today_first_briefing(
     )
     for flag in red_flags:
         st.warning(f"Data check: {flag}")
+
 
 def _build_today_action(
     *,
@@ -2941,7 +2932,9 @@ def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     st.plotly_chart(fig, use_container_width=True, height=380)
 
 
-def _velocity_zone_label(*, views_per_day: float, engagement_rate: float, views_threshold: float, engagement_threshold: float) -> str:
+def _velocity_zone_label(
+    *, views_per_day: float, engagement_rate: float, views_threshold: float, engagement_threshold: float
+) -> str:
     """Classify videos into 3am-readable velocity zones."""
 
     if views_per_day >= views_threshold and engagement_rate >= engagement_threshold:
@@ -3026,20 +3019,23 @@ def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None
         color_discrete_map=color_map,
         title="How big each video is vs how hard fans react",
     )
-    fig.update_layout(legend_title_text="Artist", xaxis_title="Plays per day (last 7 days)", yaxis_title="Fans responding %")
+    fig.update_layout(
+        legend_title_text="Artist", xaxis_title="Plays per day (last 7 days)", yaxis_title="Fans responding %"
+    )
     fig.add_vline(x=views_threshold, line_dash="dot", line_color="#9CA3AF")
     fig.add_hline(y=engagement_threshold, line_dash="dot", line_color="#9CA3AF")
     fig.add_annotation(x=views_threshold, y=engagement_threshold, text="Zone split", showarrow=False, yshift=12)
     fig.add_annotation(x=views_threshold * 1.05, y=engagement_threshold * 1.15, text="Big & loved", showarrow=False)
     fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 1.15, text="Small but loved", showarrow=False)
-    fig.add_annotation(x=views_threshold * 1.05, y=engagement_threshold * 0.55, text="Big but low reaction", showarrow=False)
+    fig.add_annotation(
+        x=views_threshold * 1.05, y=engagement_threshold * 0.55, text="Big but low reaction", showarrow=False
+    )
     fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 0.55, text="Quiet", showarrow=False)
     if clipped_count > 0 and x_axis_cap > 0:
         fig.update_xaxes(range=[0, x_axis_cap])
     st.plotly_chart(fig, use_container_width=True, height=420)
     st.caption(
-        "Plays/day = views gained in the last 7 days / 7. "
-        "Fans responding % = (likes + comments) / views x 100."
+        "Plays/day = views gained in the last 7 days / 7. " "Fans responding % = (likes + comments) / views x 100."
     )
     if clipped_count > 0:
         st.caption(

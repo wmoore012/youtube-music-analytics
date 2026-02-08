@@ -650,15 +650,63 @@ def test_build_artist_today_signal_frame_uses_views_gained_math() -> None:
     metrics = pd.DataFrame(
         [
             # Artist A (accelerating)
-            {"artist_name": "Artist A", "video_id": "a1", "metrics_date": "2026-02-02", "view_count": 110, "comment_count": 10},
-            {"artist_name": "Artist A", "video_id": "a1", "metrics_date": "2026-02-05", "view_count": 160, "comment_count": 16},
-            {"artist_name": "Artist A", "video_id": "a1", "metrics_date": "2026-02-06", "view_count": 200, "comment_count": 22},
-            {"artist_name": "Artist A", "video_id": "a1", "metrics_date": "2026-02-08", "view_count": 260, "comment_count": 38},
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-02",
+                "view_count": 110,
+                "comment_count": 10,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-05",
+                "view_count": 160,
+                "comment_count": 16,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-06",
+                "view_count": 200,
+                "comment_count": 22,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-08",
+                "view_count": 260,
+                "comment_count": 38,
+            },
             # Artist B (slowing)
-            {"artist_name": "Artist B", "video_id": "b1", "metrics_date": "2026-02-02", "view_count": 100, "comment_count": 8},
-            {"artist_name": "Artist B", "video_id": "b1", "metrics_date": "2026-02-05", "view_count": 190, "comment_count": 16},
-            {"artist_name": "Artist B", "video_id": "b1", "metrics_date": "2026-02-06", "view_count": 210, "comment_count": 17},
-            {"artist_name": "Artist B", "video_id": "b1", "metrics_date": "2026-02-08", "view_count": 220, "comment_count": 18},
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-02",
+                "view_count": 100,
+                "comment_count": 8,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-05",
+                "view_count": 190,
+                "comment_count": 16,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-06",
+                "view_count": 210,
+                "comment_count": 17,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-08",
+                "view_count": 220,
+                "comment_count": 18,
+            },
         ]
     )
     latest = pd.DataFrame(

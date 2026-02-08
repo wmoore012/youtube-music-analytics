@@ -90,6 +90,20 @@ Risk states: amber/red only for true data issues
 
 ---
 
+## DELIVERY GUARDRAILS (SPEED + SAFETY)
+
+This project now follows a low-refactor execution rule for fast, safe iteration:
+
+- `pre-commit` runs `ruff --fix` + `ruff-format` before commits.
+- Black/Ruff formatting is enforced so PR diffs stay readable.
+- Revenue language and pseudo-finance KPI paths stay removed from exec flow.
+- `Shorts` product wording stays removed from UI labels (`Short video (<60s)` only).
+- Broad `except Exception` in config-load paths is replaced with specific exceptions.
+
+Result: fewer regressions, faster review cycles, cleaner handoff between agents.
+
+---
+
 ## THE NON-NEGOTIABLE QUESTION
 
 Every section must answer at least one of these:
@@ -98,4 +112,3 @@ Every section must answer at least one of these:
 3. What should we do today?
 
 If a chart does not answer one of those, it does not stay on the main path.
-
