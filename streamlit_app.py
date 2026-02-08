@@ -1236,6 +1236,7 @@ def build_kpi_red_flags(
     """Return user-visible RED FLAG messages for suspicious KPI conditions."""
 
     flags: list[str] = []
+    is_production_mode = mode == "production"
     if total_videos > 0 and total_likes == 0:
         flags.append(
             "Likes are zero across analyzed videos. Check whether like_count "
@@ -1247,32 +1248,27 @@ def build_kpi_red_flags(
             "ingestion or demo derivation is missing.",
         )
 
-    freshness_reference_date = latest_metrics_date
-    freshness_label = "latest metrics row"
-    if mode == "production" and latest_etl_run_date is not None:
-        freshness_reference_date = latest_etl_run_date
-        freshness_label = "ETL heartbeat"
+    is_etl_heartbeat_source = is_production_mode and latest_etl_run_date is not None
+    freshness_reference_date = latest_etl_run_date if is_etl_heartbeat_source else latest_metrics_date
+    if freshness_reference_date is None:
+        return flags
 
-    if freshness_reference_date is not None:
-        age_days = (reference_date or date.today()) - freshness_reference_date
-        freshness_days = _get_data_freshness_days()
-        if age_days.days > freshness_days:
-            if mode == "production":
-                if freshness_label == "ETL heartbeat":
-                    flags.append(
-                        f"Latest successful ETL heartbeat is {age_days.days} days old "
-                        f"(limit: {freshness_days}). Run ETL before trusting KPI cards.",
-                    )
-                else:
-                    flags.append(
-                        f"Latest metrics are {age_days.days} days old (limit: {freshness_days}). "
-                        "Run ETL before trusting KPI cards.",
-                    )
-            else:
-                flags.append(
-                    f"Demo snapshot is {age_days.days} days old (latest: {freshness_reference_date.isoformat()}). "
-                    "Use Production mode for fresh daily ETL KPIs.",
-                )
+    age_days = (reference_date or date.today()) - freshness_reference_date
+    freshness_days = _get_data_freshness_days()
+    if age_days.days <= freshness_days:
+        return flags
+
+    if is_production_mode:
+        source_text = "successful ETL heartbeat is" if is_etl_heartbeat_source else "metrics are"
+        flags.append(
+            f"Latest {source_text} {age_days.days} days old "
+            f"(limit: {freshness_days}). Run ETL before trusting KPI cards.",
+        )
+    else:
+        flags.append(
+            f"Demo snapshot is {age_days.days} days old (latest: {freshness_reference_date.isoformat()}). "
+            "Use Production mode for fresh daily ETL KPIs.",
+        )
     return flags
 
 
