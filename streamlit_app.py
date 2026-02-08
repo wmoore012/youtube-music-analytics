@@ -25,9 +25,9 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 # ----------------------------------------------------------------------
 # 1) In "Production (MySQL)" mode, Streamlit MUST read live MySQL data,
 #    not stale CSV snapshots.
-# 2) Revenue KPI must show explicit TOS-safe arithmetic in plain language:
-#    Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views).
-# 3) If Shorts/video length affects estimates, explain this very simply.
+# 2) Executive KPI strip must stay operationally actionable (speed + engagement),
+#    and must not surface pseudo-finance metrics.
+# 3) If short-form/format labels are shown, keep labels simple and derivation explicit.
 # 4) Never override artist stylistic casing choices automatically.
 # 5) KPI deltas shown in green/red must have matching arithmetic + actions;
 #    otherwise hide the delta.
@@ -889,10 +889,10 @@ def build_delta_signal_rows(
     roster_likes_per_artist: float,
     comments_per_artist: float,
     roster_comments_per_artist: float,
-    avg_engagement: float,
-    roster_avg_engagement: float,
-    revenue_per_artist: float,
-    roster_revenue_per_artist: float,
+    overall_engagement_rate: float,
+    roster_overall_engagement_rate: float,
+    avg_views_per_day: float,
+    roster_avg_views_per_day: float,
 ) -> pd.DataFrame:
     """Build arithmetic-backed rows for every displayed KPI delta."""
 
@@ -926,17 +926,17 @@ def build_delta_signal_rows(
             None,
         ),
         (
-            "Avg engagement rate",
-            avg_engagement,
-            roster_avg_engagement,
+            "Overall engagement rate",
+            overall_engagement_rate,
+            roster_overall_engagement_rate,
             "Replicate the top engagement format with tighter iteration loops.",
             None,
         ),
         (
-            "Est. revenue (USD)",
-            revenue_per_artist,
-            roster_revenue_per_artist,
-            "Allocate budget toward the highest-yield format first.",
+            "Avg views/day",
+            avg_views_per_day,
+            roster_avg_views_per_day,
+            "Use current acceleration leaders as the rollout priority this week.",
             None,
         ),
     ]
@@ -1704,8 +1704,6 @@ def render_kpis(
     total_videos = int(context["total_videos"])
     total_likes = int(context["total_likes"])
     total_comments = int(context["total_comments"])
-    total_revenue = float(context["total_revenue"])
-    avg_engagement = float(context["avg_engagement"])
     selected_artist_count = int(context["selected_artist_count"])
 
     # Roster-wide baselines for directional context
@@ -1713,13 +1711,30 @@ def render_kpis(
     roster_videos_per_artist = float(context["roster_videos_per_artist"])
     roster_likes_per_artist = float(context["roster_likes_per_artist"])
     roster_comments_per_artist = float(context["roster_comments_per_artist"])
-    roster_revenue_per_artist = float(context["roster_revenue_per_artist"])
-    roster_avg_engagement = float(context["roster_avg_engagement"])
     views_per_artist = total_views / selected_artist_count
     videos_per_artist = total_videos / selected_artist_count
     likes_per_artist = total_likes / selected_artist_count
     comments_per_artist = total_comments / selected_artist_count
-    revenue_per_artist = total_revenue / selected_artist_count
+
+    overall_engagement_rate = ((total_likes + total_comments) / total_views * 100.0) if total_views > 0 else 0.0
+    roster_overall_engagement_rate = (
+        ((roster_likes_per_artist + roster_comments_per_artist) / roster_views_per_artist * 100.0)
+        if roster_views_per_artist > 0
+        else 0.0
+    )
+
+    selected_avg_views_per_day = (
+        _mean_or_none(filter_by_artists(videos, artists)["views_per_day"])
+        if videos is not None and not videos.empty and "views_per_day" in videos.columns
+        else None
+    )
+    roster_avg_views_per_day = (
+        _mean_or_none(roster_videos["views_per_day"])
+        if roster_videos is not None and not roster_videos.empty and "views_per_day" in roster_videos.columns
+        else None
+    )
+    avg_views_per_day = selected_avg_views_per_day or 0.0
+    baseline_views_per_day = roster_avg_views_per_day or 0.0
 
     views_delta = compute_delta_display(current=views_per_artist, baseline=roster_views_per_artist)
     videos_delta = compute_delta_display(
@@ -1729,10 +1744,14 @@ def render_kpis(
     )
     likes_delta = compute_delta_display(current=likes_per_artist, baseline=roster_likes_per_artist)
     comments_delta = compute_delta_display(current=comments_per_artist, baseline=roster_comments_per_artist)
-    revenue_delta = compute_delta_display(current=revenue_per_artist, baseline=roster_revenue_per_artist)
-    engagement_delta = compute_delta_display(current=avg_engagement, baseline=roster_avg_engagement)
-    formula_summary = pd.DataFrame([{"total_views": total_views, "total_est_revenue_usd": total_revenue}])
-    formula_context = build_revenue_formula_context(formula_summary, videos)
+    engagement_delta = compute_delta_display(
+        current=overall_engagement_rate,
+        baseline=roster_overall_engagement_rate,
+    )
+    views_per_day_delta = compute_delta_display(
+        current=avg_views_per_day,
+        baseline=baseline_views_per_day,
+    )
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
@@ -1768,20 +1787,20 @@ def render_kpis(
         help="Per-artist comments vs roster-wide average",
     )
     c5.metric(
-        "Avg engagement rate",
-        format_percent(avg_engagement),
+        "Overall engagement rate",
+        format_percent(overall_engagement_rate),
         delta=engagement_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help="Engagement rate vs roster-wide average",
+        help="((Likes + Comments) / Views) x 100, compared to roster average",
     )
     c6.metric(
-        "Est. revenue (USD)",
-        format_currency(total_revenue),
-        delta=revenue_delta,
+        "Avg views/day",
+        f"{avg_views_per_day:,.1f}",
+        delta=views_per_day_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help=formula_context["tooltip_hint"] + " Scroll down to 'Estimated revenue arithmetic'.",
+        help="Average daily velocity vs roster baseline",
     )
 
     # Apply modern, card-like styling to the KPI strip
@@ -1818,8 +1837,6 @@ def render_kpis(
     for flag in red_flags:
         st.warning(f"RED FLAG: {flag}")
 
-    render_revenue_formula_panel(formula_context)
-
     delta_rows = build_delta_signal_rows(
         views_per_artist=views_per_artist,
         roster_views_per_artist=roster_views_per_artist,
@@ -1829,10 +1846,10 @@ def render_kpis(
         roster_likes_per_artist=roster_likes_per_artist,
         comments_per_artist=comments_per_artist,
         roster_comments_per_artist=roster_comments_per_artist,
-        avg_engagement=avg_engagement,
-        roster_avg_engagement=roster_avg_engagement,
-        revenue_per_artist=revenue_per_artist,
-        roster_revenue_per_artist=roster_revenue_per_artist,
+        overall_engagement_rate=overall_engagement_rate,
+        roster_overall_engagement_rate=roster_overall_engagement_rate,
+        avg_views_per_day=avg_views_per_day,
+        roster_avg_views_per_day=baseline_views_per_day,
     )
     if not delta_rows.empty:
         st.markdown("##### KPI delta arithmetic (shown percentages only)")

@@ -47,17 +47,17 @@ def test_build_delta_signal_rows_only_shows_visible_deltas() -> None:
         roster_likes_per_artist=40,
         comments_per_artist=8,
         roster_comments_per_artist=8,  # hidden
-        avg_engagement=5.5,
-        roster_avg_engagement=5.0,
-        revenue_per_artist=220.0,
-        roster_revenue_per_artist=200.0,
+        overall_engagement_rate=5.5,
+        roster_overall_engagement_rate=5.0,
+        avg_views_per_day=225.0,
+        roster_avg_views_per_day=200.0,
     )
 
     assert not rows.empty
     assert "Total views" in rows["KPI"].tolist()
     assert "Total likes" in rows["KPI"].tolist()
-    assert "Avg engagement rate" in rows["KPI"].tolist()
-    assert "Est. revenue (USD)" in rows["KPI"].tolist()
+    assert "Overall engagement rate" in rows["KPI"].tolist()
+    assert "Avg views/day" in rows["KPI"].tolist()
     assert "Videos analyzed" not in rows["KPI"].tolist()
     assert "Total comments" not in rows["KPI"].tolist()
     assert rows["Arithmetic"].str.contains("x 100", regex=False).all()
@@ -73,10 +73,10 @@ def test_build_delta_signal_rows_marks_video_new_entry() -> None:
         roster_likes_per_artist=40.0,
         comments_per_artist=8.0,
         roster_comments_per_artist=7.0,
-        avg_engagement=5.0,
-        roster_avg_engagement=4.0,
-        revenue_per_artist=220.0,
-        roster_revenue_per_artist=200.0,
+        overall_engagement_rate=5.0,
+        roster_overall_engagement_rate=4.0,
+        avg_views_per_day=225.0,
+        roster_avg_views_per_day=200.0,
     )
 
     video_row = rows.loc[rows["KPI"] == "Videos analyzed"].iloc[0]

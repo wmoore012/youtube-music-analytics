@@ -3,10 +3,10 @@
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 6.57,
+        "engagement_rate": Infinity,
         "momentum_score": null,
-        "total_videos": 286,
-        "total_views": 161731417,
+        "total_videos": 297,
+        "total_views": 162894423,
         "views_30d": null,
         "views_7d": null
       },
@@ -14,124 +14,124 @@
       "primary_color": null,
       "videos": [
         {
-          "comment_rate": 0.040312496819632226,
-          "engagement_rate": 0.040312496819632226,
+          "comment_rate": 0.04018974560834524,
+          "engagement_rate": 0.04018974560834524,
           "like_rate": 0.0,
           "published_at": "2023-07-07T17:58:35",
           "title": "We ran through Pizzana Kitchen!! Where to next?!? #flyanaboss",
           "video_id": "MJaL7hO6KYQ",
           "video_type": "Music Content",
-          "view_count": 25743878,
-          "views_per_day": 29865.28770301624
+          "view_count": 25755326,
+          "views_per_day": 27254.313227513227
         },
         {
-          "comment_rate": 0.033731996956098194,
-          "engagement_rate": 0.033731996956098194,
+          "comment_rate": 0.03358567083170864,
+          "engagement_rate": 0.03358567083170864,
           "like_rate": 0.0,
           "published_at": "2023-07-19T22:01:31",
           "title": "Just two besties trying to get a lifetime supply of #chipotle \ud83c\udf2f #flyanaboss",
           "video_id": "IltcRLPz71Y",
           "video_type": "Music Content",
-          "view_count": 17825805,
-          "views_per_day": 20971.535294117646
+          "view_count": 17829032,
+          "views_per_day": 19109.359056806003
         },
         {
-          "comment_rate": 0.10893373951191847,
-          "engagement_rate": 0.10893373951191847,
+          "comment_rate": 0.10838225045435822,
+          "engagement_rate": 0.10838225045435822,
           "like_rate": 0.0,
           "published_at": "2023-07-02T19:29:24",
           "title": "can yall believe we still haven\u2019t bumped into anyone!! where too next?! #flyanaboss #evanblummadeit",
           "video_id": "dYrVt95BY2Q",
           "video_type": "Music Content",
-          "view_count": 7673472,
-          "views_per_day": 8850.602076124567
+          "view_count": 7683915,
+          "views_per_day": 8088.331578947368
         },
         {
-          "comment_rate": 0.06355140289584572,
-          "engagement_rate": 0.06355140289584572,
+          "comment_rate": 0.06327270591148244,
+          "engagement_rate": 0.06327270591148244,
           "like_rate": 0.0,
           "published_at": "2023-07-06T19:26:52",
           "title": "We almost got into a fight with a meat head on this one!!! Where should we run next!!!?!",
           "video_id": "4PcHRTcZ_Ls",
           "video_type": "Music Content",
-          "view_count": 7282294,
-          "views_per_day": 8438.34762456547
+          "view_count": 7285922,
+          "views_per_day": 7701.820295983087
         },
         {
-          "comment_rate": 0.06041755143743242,
-          "engagement_rate": 0.06041755143743242,
+          "comment_rate": 0.060153853701155655,
+          "engagement_rate": 0.060153853701155655,
           "like_rate": 0.0,
           "published_at": "2023-07-01T18:09:53",
           "title": "Where should we run next??? #flyanaboss",
           "video_id": "vl44kKonFio",
           "video_type": "Music Content",
-          "view_count": 6847348,
-          "views_per_day": 7888.649769585253
+          "view_count": 6849104,
+          "views_per_day": 7202.002103049422
         },
         {
-          "comment_rate": 0.07337772302988729,
-          "engagement_rate": 0.07337772302988729,
+          "comment_rate": 0.07297828939395905,
+          "engagement_rate": 0.07297828939395905,
           "like_rate": 0.0,
           "published_at": "2023-07-08T02:58:32",
           "title": "WE RAN THROUGH OUR FAVORITE SEARCH ENGINE @Google \u203c\ufe0f \ud83e\udd8b\ud83d\udc9c#evanblummadeit #flyanaboss",
           "video_id": "LhRjDSyz3NM",
           "video_type": "Music Content",
-          "view_count": 6316631,
-          "views_per_day": 7336.389082462253
+          "view_count": 6321058,
+          "views_per_day": 6696.036016949152
         },
         {
-          "comment_rate": 0.1265677804775,
-          "engagement_rate": 5.465255105516522,
-          "like_rate": 5.338687325039022,
+          "comment_rate": 0.12508339856348916,
+          "engagement_rate": 5.440698565024627,
+          "like_rate": 5.315615166461138,
           "published_at": "2023-06-17T17:18:07",
           "title": "LIKE A SYNONYM!!!!!!! \ud83e\udef0\ud83c\udffe #flyanaboss #besties #hiphop",
           "video_id": "hOU07qaUBYc",
           "video_type": "Music Content",
-          "view_count": 6033131,
-          "views_per_day": 6840.2845804988665
+          "view_count": 6056759,
+          "views_per_day": 6276.434196891191
         },
         {
-          "comment_rate": 0.06620938684601661,
-          "engagement_rate": 0.06620938684601661,
+          "comment_rate": 0.06585659878532295,
+          "engagement_rate": 0.06585659878532295,
           "like_rate": 0.0,
           "published_at": "2023-07-09T17:34:09",
           "title": "WE\u2019RE HAVING SO MUCH FUN MAKING THESE VIDEOS \ud83d\ude2d\ud83d\ude2d #flyanaboss #evanblummadeit",
           "video_id": "J4L1inqG0JA",
           "video_type": "Music Content",
-          "view_count": 5884362,
-          "views_per_day": 6842.281395348838
+          "view_count": 5885515,
+          "views_per_day": 6241.26723223754
         },
         {
-          "comment_rate": 0.06119742844390295,
-          "engagement_rate": 0.06119742844390295,
+          "comment_rate": 0.06099846797571138,
+          "engagement_rate": 0.06099846797571138,
           "like_rate": 0.0,
           "published_at": "2023-07-03T17:57:12",
           "title": "Just rode bikes \ud83d\udeb2\u2026 where to next??? \u263a\ufe0f\u2728 #flyanaboss #evanblummadeit",
           "video_id": "Bcsa2VkDesk",
           "video_type": "Music Content",
-          "view_count": 5379311,
-          "views_per_day": 6211.675519630485
+          "view_count": 5380463,
+          "views_per_day": 5669.613277133825
         },
         {
-          "comment_rate": 0.026457001840927967,
-          "engagement_rate": 0.026457001840927967,
+          "comment_rate": 0.02761278174709916,
+          "engagement_rate": 0.02761278174709916,
           "like_rate": 0.0,
           "published_at": "2023-08-02T18:37:29",
           "title": "we love @TikTok and can\u2019t believe we\u2019ve hit 1 million followers \ud83e\udd8b\u2728",
           "video_id": "1QZxwgMx2KU",
           "video_type": "Music Content",
-          "view_count": 4339116,
-          "views_per_day": 5190.33014354067
+          "view_count": 4342192,
+          "views_per_day": 4724.909684439608
         }
       ]
     },
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 3.08,
+        "engagement_rate": 3.06,
         "momentum_score": null,
-        "total_videos": 95,
-        "total_views": 53644682,
+        "total_videos": 97,
+        "total_views": 56282307,
         "views_30d": null,
         "views_7d": null
       },
@@ -139,249 +139,249 @@
       "primary_color": null,
       "videos": [
         {
-          "comment_rate": 0.00805996670768618,
-          "engagement_rate": 0.9023275045634962,
-          "like_rate": 0.89426753785581,
+          "comment_rate": 0.007937979345631438,
+          "engagement_rate": 0.8901686089569114,
+          "like_rate": 0.88223062961128,
           "published_at": "2021-12-17T05:00:33",
           "title": "BiC Fizzle - Servin [Official Music Video]",
           "video_id": "yaNak3VgCXQ",
           "video_type": "Official Music Video",
-          "view_count": 14404526,
-          "views_per_day": 10080.144156752975
+          "view_count": 14978623,
+          "views_per_day": 9906.496693121693
         },
         {
-          "comment_rate": 0.014030056100845872,
-          "engagement_rate": 1.217456180297848,
-          "like_rate": 1.2034261241970021,
+          "comment_rate": 0.012991337034178884,
+          "engagement_rate": 1.1387256976425781,
+          "like_rate": 1.1257343606083992,
           "published_at": "2025-06-27T19:00:33",
           "title": "BiC Fizzle - CREEPIN [Official Music Video]",
           "video_id": "RZSQtCm8dyo",
           "video_type": "Official Music Video",
-          "view_count": 5160350,
-          "views_per_day": 36598.22695035461
+          "view_count": 6427360,
+          "views_per_day": 28693.571428571428
         },
         {
-          "comment_rate": 0.014240723224082683,
-          "engagement_rate": 1.3008303748657204,
-          "like_rate": 1.2865896516416377,
+          "comment_rate": 0.014114111551026364,
+          "engagement_rate": 1.287714914931252,
+          "like_rate": 1.2736008033802255,
           "published_at": "2022-03-25T19:00:03",
           "title": "BiC Fizzle - Turnt Sh*t [Official Music Video]",
           "video_id": "9aw1YXo1QQA",
           "video_type": "Official Music Video",
-          "view_count": 4690773,
-          "views_per_day": 3524.2471825694965
+          "view_count": 4803703,
+          "views_per_day": 3397.2439886845827
         },
         {
-          "comment_rate": 0.01340335873728627,
-          "engagement_rate": 1.1291539975968727,
-          "like_rate": 1.1157506388595864,
+          "comment_rate": 0.013489898582898298,
+          "engagement_rate": 1.125998081387583,
+          "like_rate": 1.1125081828046846,
           "published_at": "2022-01-07T20:00:29",
           "title": "BiC Fizzle - Dope Fein [Official Video]",
           "video_id": "vfmrQGToT28",
           "video_type": "Official Music Video",
-          "view_count": 4431725,
-          "views_per_day": 3147.5319602272725
+          "view_count": 4529315,
+          "views_per_day": 3037.7699530516434
         },
         {
-          "comment_rate": 0.016225883565588243,
-          "engagement_rate": 1.3453033592997643,
-          "like_rate": 1.3290774757341761,
+          "comment_rate": 0.01602854329684238,
+          "engagement_rate": 1.338219808722085,
+          "like_rate": 1.3221912654252426,
           "published_at": "2022-02-18T05:00:02",
           "title": "BiC Fizzle - Changes [Official Music Video]",
           "video_id": "5Tp8bJ59-S0",
           "video_type": "Official Music Video",
-          "view_count": 3321853,
-          "views_per_day": 2431.810395314788
+          "view_count": 3362751,
+          "views_per_day": 2320.7391304347825
         },
         {
-          "comment_rate": 0.0149110751766163,
-          "engagement_rate": 1.1272381295442888,
-          "like_rate": 1.1123270543676724,
+          "comment_rate": 0.014851510555799339,
+          "engagement_rate": 1.1264373567775494,
+          "like_rate": 1.11158584622175,
           "published_at": "2021-10-18T04:00:16",
           "title": "BiC Fizzle - Clark Street Baby (feat. Big Scarr) [Official Audio]",
           "video_id": "pSGAFzbVlXo",
           "video_type": "Official Audio",
-          "view_count": 3064836,
-          "views_per_day": 2058.318334452653
+          "view_count": 3117528,
+          "views_per_day": 1983.1603053435115
         },
         {
-          "comment_rate": 0.03456134036099693,
-          "engagement_rate": 2.141140948367765,
-          "like_rate": 2.106579608006768,
+          "comment_rate": 0.03429791486848681,
+          "engagement_rate": 2.1260732294553217,
+          "like_rate": 2.091775314586835,
           "published_at": "2022-06-17T04:00:09",
           "title": "BiC Fizzle - Blow the Deposit (feat. Gucci Mane) [Official Music Video]",
           "video_id": "HgAvVd6ABtA",
           "video_type": "Official Music Video",
-          "view_count": 1744724,
-          "views_per_day": 1399.1371291098637
+          "view_count": 1761040,
+          "views_per_day": 1324.0902255639098
         },
         {
-          "comment_rate": 0.05500012319391756,
-          "engagement_rate": 1.9241300323721826,
-          "like_rate": 1.869129909178265,
+          "comment_rate": 0.054807521205290935,
+          "engagement_rate": 1.9190541155070486,
+          "like_rate": 1.8642465943017577,
           "published_at": "2021-10-18T04:00:13",
           "title": "BiC Fizzle - Rich Criminals (feat. Cootie & Big 30) [Official Music Video]",
           "video_id": "oLBF5JM-P3c",
           "video_type": "Official Music Video",
-          "view_count": 1258179,
-          "views_per_day": 844.9825386165212
+          "view_count": 1264425,
+          "views_per_day": 804.3416030534352
         },
         {
-          "comment_rate": 0.038026707750947325,
-          "engagement_rate": 1.7027415742344563,
-          "like_rate": 1.664714866483509,
+          "comment_rate": 0.03778716927418687,
+          "engagement_rate": 1.6926714031283197,
+          "like_rate": 1.6548842338541327,
           "published_at": "2021-11-30T20:00:30",
           "title": "BiC Fizzle - So Icy Fizzle (feat. Cootie) [Official Music Video]",
           "video_id": "xBGUJ67fdA0",
           "video_type": "Official Music Video",
-          "view_count": 1122895,
-          "views_per_day": 776.5525587828492
+          "view_count": 1135306,
+          "views_per_day": 742.5153695225638
         },
         {
-          "comment_rate": 0.026164430419604975,
-          "engagement_rate": 2.418907255589107,
-          "like_rate": 2.392742825169502,
+          "comment_rate": 0.025969897306966423,
+          "engagement_rate": 2.4028871361695745,
+          "like_rate": 2.376917238862608,
           "published_at": "2022-09-01T19:00:16",
           "title": "BiC Fizzle x Gwapo - We Got It [Official Video]",
           "video_id": "Sa_hh4cuS2o",
           "video_type": "Official Music Video",
-          "view_count": 882878,
-          "views_per_day": 753.9521776259608
+          "view_count": 893342,
+          "views_per_day": 712.3939393939394
         }
       ]
     },
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 4.06,
+        "engagement_rate": 4.08,
         "momentum_score": null,
-        "total_videos": 66,
-        "total_views": 26637106,
+        "total_videos": 77,
+        "total_views": 30174423,
         "views_30d": null,
         "views_7d": null
       },
-      "name": "COBRAH",
+      "name": "Cobrah",
       "primary_color": null,
       "videos": [
         {
-          "comment_rate": 0.0106333853038393,
-          "engagement_rate": 0.40190243517172836,
-          "like_rate": 0.3912690498678891,
+          "comment_rate": 0.009736339650304947,
+          "engagement_rate": 0.39385941568635824,
+          "like_rate": 0.3841230760360533,
           "published_at": "2023-06-16T17:00:06",
           "title": "COBRAH - SUCK (Official Music Video)",
           "video_id": "YtvC06AgrlU",
           "video_type": "Official Music Video",
-          "view_count": 12648841,
-          "views_per_day": 14324.84824462061
+          "view_count": 14707786,
+          "views_per_day": 15225.451345755693
         },
         {
-          "comment_rate": 0.06401310035542158,
-          "engagement_rate": 2.1244347680455533,
-          "like_rate": 2.060421667690132,
+          "comment_rate": 0.062419129721953584,
+          "engagement_rate": 2.075748605392334,
+          "like_rate": 2.0133294756703806,
           "published_at": "2021-07-22T16:00:09",
           "title": "COBRAH - GOOD PUSS (Official Music Video)",
           "video_id": "iEL5yL4aThc",
           "video_type": "Official Music Video",
-          "view_count": 4299120,
-          "views_per_day": 2726.138237159163
+          "view_count": 4479396,
+          "views_per_day": 2698.4313253012047
         },
         {
-          "comment_rate": 0.05922126501128795,
-          "engagement_rate": 2.653760515119379,
-          "like_rate": 2.594539250108091,
+          "comment_rate": 0.05818792978214651,
+          "engagement_rate": 2.617330194631335,
+          "like_rate": 2.5591422648491884,
           "published_at": "2022-09-09T17:00:10",
           "title": "COBRAH - BRAND NEW BITCH (Official Rebirth Video)",
           "video_id": "ijfvBM6jeRo",
           "video_type": "Music Content",
-          "view_count": 1420098,
-          "views_per_day": 1221.0644883920895
+          "view_count": 1508904,
+          "views_per_day": 1210.9983948635634
         },
         {
-          "comment_rate": 0.035177602517296326,
-          "engagement_rate": 1.8301228392197997,
-          "like_rate": 1.7949452367025034,
+          "comment_rate": 0.03410165159127209,
+          "engagement_rate": 1.7870925248727032,
+          "like_rate": 1.7529908732814312,
           "published_at": "2023-09-08T04:00:09",
           "title": "COBRAH - FEMININE ENERGY (Official Music Video)",
           "video_id": "ggv9UO-CLug",
           "video_type": "Official Music Video",
-          "view_count": 1239425,
-          "views_per_day": 1551.2202753441802
+          "view_count": 1325449,
+          "views_per_day": 1502.7766439909296
         },
         {
-          "comment_rate": 0.03564131261862758,
-          "engagement_rate": 1.9089788763934763,
-          "like_rate": 1.8733375637748486,
+          "comment_rate": 0.034291779498414686,
+          "engagement_rate": 1.8712606764915338,
+          "like_rate": 1.836968896993119,
           "published_at": "2021-02-21T14:58:02",
           "title": "COBRAH - DIP N DRIP",
           "video_id": "_vVTl-uWAwo",
           "video_type": "Music Content",
-          "view_count": 1060567,
-          "views_per_day": 613.754050925926
+          "view_count": 1102305,
+          "views_per_day": 608.6720044174489
         },
         {
-          "comment_rate": 0.08851411061251191,
-          "engagement_rate": 2.9335900290360715,
-          "like_rate": 2.8450759184235594,
-          "published_at": "2022-02-23T05:00:08",
-          "title": "COBRAH - Good PusS feat. cupcakKe (Official Visualizer)",
-          "video_id": "6sg8vCZEqtk",
-          "video_type": "Visualizer",
-          "view_count": 697064,
-          "views_per_day": 512.1704628949302
-        },
-        {
-          "comment_rate": 0.03989251946479829,
-          "engagement_rate": 1.9765902747845652,
-          "like_rate": 1.9366977553197668,
-          "published_at": "2018-11-02T06:59:38",
-          "title": "COBRAH -  IDFKA (Official Video)",
-          "video_id": "H9mxcexSkBA",
-          "video_type": "Official Music Video",
-          "view_count": 654258,
-          "views_per_day": 254.5750972762646
-        },
-        {
-          "comment_rate": 0.05719240632437319,
-          "engagement_rate": 2.066921265120627,
-          "like_rate": 2.0097288587962536,
+          "comment_rate": 0.053448461059625446,
+          "engagement_rate": 1.9146972914701172,
+          "like_rate": 1.8612488304104917,
           "published_at": "2024-10-25T14:55:26",
           "title": "Cobrah - Record Deal (Official Visualizer)",
           "video_id": "WqUxQBBPRi4",
           "video_type": "Visualizer",
-          "view_count": 650436,
-          "views_per_day": 1685.0673575129533
+          "view_count": 772707,
+          "views_per_day": 1647.5628997867805
         },
         {
-          "comment_rate": 0.06986703142541649,
-          "engagement_rate": 2.5078393021408067,
-          "like_rate": 2.4379722707153904,
-          "published_at": "2022-06-22T04:00:10",
-          "title": "COBRAH - BRAND NEW BITCH (Official Audio)",
-          "video_id": "N1dnK0HHBUk",
-          "video_type": "Official Audio",
-          "view_count": 542459,
-          "views_per_day": 436.7624798711755
+          "comment_rate": 0.08676236223496482,
+          "engagement_rate": 2.896937807224964,
+          "like_rate": 2.810175444989999,
+          "published_at": "2022-02-23T05:00:08",
+          "title": "COBRAH - Good PusS feat. cupcakKe (Official Visualizer)",
+          "video_id": "6sg8vCZEqtk",
+          "video_type": "Visualizer",
+          "view_count": 713443,
+          "views_per_day": 494.07409972299166
         },
         {
-          "comment_rate": 0.03112633810603851,
-          "engagement_rate": 1.1355671741203002,
-          "like_rate": 1.1044408360142617,
+          "comment_rate": 0.038086183592586656,
+          "engagement_rate": 1.911038693271632,
+          "like_rate": 1.8729525096790451,
+          "published_at": "2018-11-02T06:59:38",
+          "title": "COBRAH -  IDFKA (Official Video)",
+          "video_id": "H9mxcexSkBA",
+          "video_type": "Official Music Video",
+          "view_count": 698416,
+          "views_per_day": 263.255182811911
+        },
+        {
+          "comment_rate": 0.022609088853719195,
+          "engagement_rate": 0.8713423849018884,
+          "like_rate": 0.8487332960481693,
           "published_at": "2023-10-13T04:00:12",
           "title": "COBRAH - ACTIVATE (Official Audio)",
           "video_id": "TbP9fd9aOko",
           "video_type": "Official Audio",
-          "view_count": 459418,
-          "views_per_day": 601.3324607329843
+          "view_count": 672296,
+          "views_per_day": 793.7378984651712
+        },
+        {
+          "comment_rate": 0.06721412602024625,
+          "engagement_rate": 2.463210517495284,
+          "like_rate": 2.395996391475038,
+          "published_at": "2022-06-22T04:00:10",
+          "title": "COBRAH - BRAND NEW BITCH (Official Audio)",
+          "video_id": "N1dnK0HHBUk",
+          "video_type": "Official Audio",
+          "view_count": 560894,
+          "views_per_day": 423.3162264150943
         }
       ]
     },
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 7.22,
+        "engagement_rate": 7.05,
         "momentum_score": null,
-        "total_videos": 352,
-        "total_views": 23918453,
+        "total_videos": 360,
+        "total_views": 24837568,
         "views_30d": null,
         "views_7d": null
       },
@@ -389,124 +389,124 @@
       "primary_color": null,
       "videos": [
         {
-          "comment_rate": 0.27626021633965503,
-          "engagement_rate": 4.536428024507346,
-          "like_rate": 4.260167808167691,
+          "comment_rate": 0.2741778355080593,
+          "engagement_rate": 4.5170020833509055,
+          "like_rate": 4.242824247842846,
           "published_at": "2023-05-26T20:37:35",
           "title": "My EP comes out June 2! \ud83d\udc38\ud83d\udc20",
           "video_id": "aajPT-f4hu4",
           "video_type": "Music Content",
-          "view_count": 3791353,
-          "views_per_day": 4193.974557522124
+          "view_count": 3793888,
+          "views_per_day": 3843.8581560283687
         },
         {
-          "comment_rate": 0.18099622027438234,
-          "engagement_rate": 5.080336704813615,
-          "like_rate": 4.899340484539233,
+          "comment_rate": 0.17976078549499633,
+          "engagement_rate": 5.0553309052848086,
+          "like_rate": 4.8755701197898125,
           "published_at": "2023-04-14T20:25:12",
           "title": "if i were a fish - corook ft. Olivia Barton",
           "video_id": "QU7Z-lzNdMc",
           "video_type": "Music Content",
-          "view_count": 3279074,
-          "views_per_day": 3466.2515856236787
+          "view_count": 3286590,
+          "views_per_day": 3193.9650145772594
         },
         {
-          "comment_rate": 0.20120192246734273,
-          "engagement_rate": 3.0881270941175063,
-          "like_rate": 2.8869251716501636,
+          "comment_rate": 0.19937393455998548,
+          "engagement_rate": 3.0560596984149275,
+          "like_rate": 2.856685763854942,
           "published_at": "2023-04-21T05:01:20",
           "title": "corook - if i were a fish ft. olivia barton (music video)",
           "video_id": "dx_vMONe3tM",
           "video_type": "Music Video",
-          "view_count": 2760411,
-          "views_per_day": 2939.73482428115
+          "view_count": 2812805,
+          "views_per_day": 2752.2553816046966
         },
         {
-          "comment_rate": 0.06268642883867491,
-          "engagement_rate": 3.3803045333315027,
-          "like_rate": 3.3176181044928277,
+          "comment_rate": 0.062322869621907924,
+          "engagement_rate": 3.3471941196936887,
+          "like_rate": 3.284871250071781,
           "published_at": "2022-07-22T03:58:53",
           "title": "corook - it's ok! (lyric video)",
           "video_id": "8tem27lgr1Q",
           "video_type": "Lyric Video",
-          "view_count": 2330648,
-          "views_per_day": 1922.976897689769
+          "view_count": 2368312,
+          "views_per_day": 1828.8123552123552
         },
         {
-          "comment_rate": 0.06891751799594088,
-          "engagement_rate": 2.3617877671405556,
-          "like_rate": 2.292870249144615,
+          "comment_rate": 0.06828242986269129,
+          "engagement_rate": 2.361656554636434,
+          "like_rate": 2.293374124773743,
           "published_at": "2022-09-15T16:01:13",
           "title": "corook - it's ok! (music video)",
           "video_id": "8Z-0iwV940s",
           "video_type": "Music Video",
-          "view_count": 1027315,
-          "views_per_day": 887.9127052722558
+          "view_count": 1048586,
+          "views_per_day": 845.6338709677419
         },
         {
-          "comment_rate": 0.10343473502159764,
-          "engagement_rate": 2.41943704099792,
-          "like_rate": 2.316002305976322,
+          "comment_rate": 0.10507306394353663,
+          "engagement_rate": 2.3908588058373206,
+          "like_rate": 2.285785741893784,
           "published_at": "2023-05-15T18:05:30",
           "title": "corook - if i were a fish ft. olivia barton (lyric video)",
           "video_id": "HVMc1ANfeMw",
           "video_type": "Lyric Video",
-          "view_count": 598445,
-          "views_per_day": 654.0382513661202
+          "view_count": 615762,
+          "views_per_day": 616.9959919839679
         },
         {
-          "comment_rate": 0.01852324987225345,
-          "engagement_rate": 0.30126894907170837,
-          "like_rate": 0.2827456991994549,
+          "comment_rate": 0.01846467304794448,
+          "engagement_rate": 0.304136511237982,
+          "like_rate": 0.28567183819003755,
           "published_at": "2023-01-24T17:00:10",
           "title": "corook - the dog (music video)",
           "video_id": "t1m0nLG7Ics",
           "video_type": "Music Video",
-          "view_count": 469680,
-          "views_per_day": 457.77777777777777
+          "view_count": 471170,
+          "views_per_day": 424.86023444544634
         },
         {
-          "comment_rate": 0.03646258255356581,
-          "engagement_rate": 0.6364999567006833,
-          "like_rate": 0.6000373741471174,
+          "comment_rate": 0.03701996125395466,
+          "engagement_rate": 0.6368341800987048,
+          "like_rate": 0.5998142188447502,
           "published_at": "2022-10-05T17:15:45",
           "title": "corook - your mom (music video)",
           "video_id": "qtNZl2jz4WM",
           "video_type": "Music Video",
-          "view_count": 438806,
-          "views_per_day": 385.9331574318382
+          "view_count": 440303,
+          "views_per_day": 360.9040983606557
         },
         {
-          "comment_rate": 0.026011492350256567,
-          "engagement_rate": 0.5538083189481898,
-          "like_rate": 0.5277968265979333,
+          "comment_rate": 0.026183073940057273,
+          "engagement_rate": 0.5550339908194122,
+          "like_rate": 0.5288509168793549,
           "published_at": "2022-02-11T15:00:03",
           "title": "corook - degree (music video)",
           "video_id": "oDcjg8RgIWY",
           "video_type": "Music Video",
-          "view_count": 422890,
-          "views_per_day": 308.0043699927167
+          "view_count": 423938,
+          "views_per_day": 291.1662087912088
         },
         {
-          "comment_rate": 0.027708211221825547,
-          "engagement_rate": 0.6484787126338787,
-          "like_rate": 0.6207705014120531,
+          "comment_rate": 0.027645163691267318,
+          "engagement_rate": 0.6493955278631351,
+          "like_rate": 0.6217503641718678,
           "published_at": "2022-01-14T15:00:14",
           "title": "corook - bad friend (music video)",
           "video_id": "0aj3Ko1DFhQ",
           "video_type": "Music Video",
-          "view_count": 375340,
-          "views_per_day": 267.9086366880799
+          "view_count": 376196,
+          "views_per_day": 253.50134770889488
         }
       ]
     },
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 4.13,
+        "engagement_rate": 4.02,
         "momentum_score": null,
         "total_videos": 110,
-        "total_views": 7685551,
+        "total_views": 7754383,
         "views_30d": null,
         "views_7d": null
       },
@@ -514,117 +514,117 @@
       "primary_color": null,
       "videos": [
         {
-          "comment_rate": 0.03950581060264699,
-          "engagement_rate": 0.9754896310345912,
-          "like_rate": 0.9359838204319442,
+          "comment_rate": 0.03947512701487627,
+          "engagement_rate": 0.974137525912079,
+          "like_rate": 0.9346623988972027,
           "published_at": "2019-01-09T16:05:42",
           "title": "Raiche - Complicated [Official Music Video]",
           "video_id": "ORMLd-EEU0U",
           "video_type": "Official Music Video",
-          "view_count": 954290,
-          "views_per_day": 381.4108713029576
+          "view_count": 957565,
+          "views_per_day": 370.431334622824
         },
         {
-          "comment_rate": 0.08015181323677098,
-          "engagement_rate": 1.6015578386678113,
-          "like_rate": 1.5214060254310404,
+          "comment_rate": 0.07981724891654116,
+          "engagement_rate": 1.5955059008126466,
+          "like_rate": 1.5156886518961055,
           "published_at": "2020-09-03T16:00:09",
           "title": "Raiche - Pick A Side [Official Music Video]",
           "video_id": "kU_3fs2Cva4",
           "video_type": "Official Music Video",
-          "view_count": 946953,
-          "views_per_day": 498.65876777251185
+          "view_count": 953428,
+          "views_per_day": 481.0433905146317
         },
         {
-          "comment_rate": 0.05008637206365278,
-          "engagement_rate": 1.315709752166707,
-          "like_rate": 1.265623380103054,
+          "comment_rate": 0.04957414340957863,
+          "engagement_rate": 1.3100401670822344,
+          "like_rate": 1.2604660236726557,
           "published_at": "2020-08-28T04:00:18",
           "title": "Raiche - Pick A Side [Official Audio]",
           "video_id": "jDQ0FfXmx2M",
           "video_type": "Official Audio",
-          "view_count": 742717,
-          "views_per_day": 389.8776902887139
+          "view_count": 748374,
+          "views_per_day": 376.4456740442656
         },
         {
-          "comment_rate": 0.03384414675880846,
-          "engagement_rate": 0.8194443131434406,
-          "like_rate": 0.7856001663846321,
+          "comment_rate": 0.03388152384035779,
+          "engagement_rate": 0.8218151838166783,
+          "like_rate": 0.7879336599763205,
           "published_at": "2019-05-07T15:57:46",
           "title": "Raiche - Drive [Official Video]",
           "video_id": "b6g2MDcVyag",
           "video_type": "Official Music Video",
-          "view_count": 528895,
-          "views_per_day": 221.85192953020135
+          "view_count": 531263,
+          "views_per_day": 215.3477908390758
         },
         {
-          "comment_rate": 0.07430313274825458,
-          "engagement_rate": 0.8197377960609326,
-          "like_rate": 0.7454346633126779,
+          "comment_rate": 0.0744892381072525,
+          "engagement_rate": 0.8187808995176221,
+          "like_rate": 0.7442916614103696,
           "published_at": "2021-02-16T17:52:42",
           "title": "Raiche - Pick A Side [In Studio Performance]",
           "video_id": "ZEbhhfn7zew",
           "video_type": "Music Content",
-          "view_count": 499306,
-          "views_per_day": 288.11656087709173
+          "view_count": 499401,
+          "views_per_day": 275.00055066079295
         },
         {
-          "comment_rate": 0.025247221688480564,
-          "engagement_rate": 0.5078489813974896,
-          "like_rate": 0.48260175970900904,
+          "comment_rate": 0.025624571066962573,
+          "engagement_rate": 0.5095947306968992,
+          "like_rate": 0.4839701596299366,
           "published_at": "2022-07-15T14:00:02",
           "title": "Raiche - Fool [Official Music Video]",
           "video_id": "e9RZ8LD2Ack",
           "video_type": "Official Music Video",
-          "view_count": 447574,
-          "views_per_day": 367.1648892534865
+          "view_count": 448788,
+          "views_per_day": 344.6912442396313
         },
         {
-          "comment_rate": 0.030468629890005452,
-          "engagement_rate": 0.5269116269968832,
-          "like_rate": 0.4964429971068778,
+          "comment_rate": 0.030401071010208065,
+          "engagement_rate": 0.5276956545992079,
+          "like_rate": 0.4972945835889998,
           "published_at": "2021-10-15T14:00:19",
           "title": "Raiche - Burn Your Clothes [Official Music Video]",
           "video_id": "f4fv6exT7i8",
           "video_type": "Official Music Video",
-          "view_count": 357745,
-          "views_per_day": 239.7754691689008
+          "view_count": 358540,
+          "views_per_day": 227.64444444444445
         },
         {
-          "comment_rate": 0.0873705103097202,
-          "engagement_rate": 1.3593532604036846,
-          "like_rate": 1.2719827500939644,
+          "comment_rate": 0.08712577015893055,
+          "engagement_rate": 1.3594907909704825,
+          "like_rate": 1.272365020811552,
           "published_at": "2018-08-23T16:00:02",
           "title": "Raiche - Money Pies [Official Music Video]",
           "video_id": "UKNm0U-Yy9A",
           "video_type": "Official Music Video",
-          "view_count": 303306,
-          "views_per_day": 114.84513441878076
+          "view_count": 304158,
+          "views_per_day": 111.65859030837004
         },
         {
-          "comment_rate": 0.018611707114939584,
-          "engagement_rate": 0.5759094277075644,
-          "like_rate": 0.5572977205926248,
+          "comment_rate": 0.018559632449241158,
+          "engagement_rate": 0.5785002416254037,
+          "like_rate": 0.5599406091761625,
           "published_at": "2022-01-20T20:00:11",
           "title": "Raiche - Yebba's Heartbreak (Cover)",
           "video_id": "LLqY6JlHUs8",
           "video_type": "Music Content",
-          "view_count": 284767,
-          "views_per_day": 204.13405017921147
+          "view_count": 285566,
+          "views_per_day": 193.21109607577807
         },
         {
-          "comment_rate": 0.017445087621917373,
-          "engagement_rate": 0.14867972405043217,
-          "like_rate": 0.1312346364285148,
+          "comment_rate": 0.01744017820691186,
+          "engagement_rate": 0.14943061781831296,
+          "like_rate": 0.1319904396114011,
           "published_at": "2022-01-18T20:00:08",
           "title": "Raiche - Up Late (Cover)",
           "video_id": "PsVZec9rGyA",
           "video_type": "Music Content",
-          "view_count": 252220,
-          "views_per_day": 180.54402290622764
+          "view_count": 252291,
+          "views_per_day": 170.4668918918919
         }
       ]
     }
   ],
-  "last_updated": "2025-12-16T13:38:42.776563+00:00"
+  "last_updated": "2026-02-08T04:38:31.461000+00:00"
 }
