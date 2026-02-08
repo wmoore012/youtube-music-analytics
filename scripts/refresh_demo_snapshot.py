@@ -29,10 +29,10 @@ JSON/CSV snapshot without touching any database.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import logging
 import os
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -287,8 +287,10 @@ def main() -> None:
         top_videos_per_artist=top_videos_per_artist,
     )
     DEMO_DATA_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True))
+    artist_count = len(payload.get("artists", []))
     print(
-        "Updated demo cohort at " f"{DEMO_DATA_PATH} (artists={top_artists}, videos_per_artist={top_videos_per_artist})"
+        "Updated demo cohort at "
+        f"{DEMO_DATA_PATH} (artists={artist_count}, videos_per_artist={top_videos_per_artist})"
     )
 
 
