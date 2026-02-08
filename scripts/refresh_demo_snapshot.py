@@ -76,12 +76,28 @@ def _ensure_dirs() -> None:
     DEMO_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
+def _normalize_optional_text(value: object) -> str:
+    """Normalize nullable scalar values into cleaned text."""
+
+    if value is None:
+        return ""
+    try:
+        if bool(pd.isna(value)):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.casefold() in {"", "nan", "<na>", "none", "null"}:
+        return ""
+    return text
+
+
 def _load_expected_artists() -> list[str]:
     if not EXPECTED_ARTISTS_PATH.exists():
         return []
     try:
         payload = json.loads(EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001
+    except (OSError, json.JSONDecodeError):
         return []
     names = payload.get("expected_artists") if isinstance(payload, dict) else None
     if not isinstance(names, list):
@@ -94,7 +110,7 @@ def _load_artist_aliases() -> dict[str, str]:
     if ARTIST_ALIASES_PATH.exists():
         try:
             payload = json.loads(ARTIST_ALIASES_PATH.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
+        except (OSError, json.JSONDecodeError):
             payload = {}
         if isinstance(payload, dict):
             for alias, canonical in payload.items():
@@ -106,12 +122,11 @@ def _load_artist_aliases() -> dict[str, str]:
     return aliases
 
 
-def _canonicalize_artist_name(name: object, aliases: dict[str, str], expected: list[str]) -> str:
-    text = str(name or "").strip()
+def _canonicalize_artist_name(name: object, aliases: dict[str, str], expected_lookup: dict[str, str]) -> str:
+    text = _normalize_optional_text(name)
     if not text:
         return ""
     aliased = aliases.get(text.casefold(), text)
-    expected_lookup = {artist.casefold(): artist for artist in expected}
     return expected_lookup.get(aliased.casefold(), aliased)
 
 
@@ -132,6 +147,7 @@ def build_curated_cohort(
     artist_summary = create_music_summary_by_artist()
     expected_artists = _load_expected_artists()
     alias_map = _load_artist_aliases()
+    expected_lookup = {artist.casefold(): artist for artist in expected_artists}
 
     if artist_summary.empty or music_videos.empty:
         raise RuntimeError(
@@ -141,13 +157,13 @@ def build_curated_cohort(
 
     music_videos = music_videos.copy()
     music_videos["artist_name"] = music_videos["artist_name"].map(
-        lambda name: _canonicalize_artist_name(name, alias_map, expected_artists)
+        lambda name: _canonicalize_artist_name(name, alias_map, expected_lookup)
     )
     music_videos = music_videos.loc[music_videos["artist_name"] != ""]
 
     artist_summary = artist_summary.copy()
     artist_summary["artist_name"] = artist_summary["artist_name"].map(
-        lambda name: _canonicalize_artist_name(name, alias_map, expected_artists)
+        lambda name: _canonicalize_artist_name(name, alias_map, expected_lookup)
     )
     artist_summary = artist_summary.loc[artist_summary["artist_name"] != ""]
     if expected_artists:

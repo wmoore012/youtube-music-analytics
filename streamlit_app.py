@@ -74,15 +74,40 @@ ARTIST_ALIAS_OVERRIDES = {
 }
 
 
-@st.cache_data(show_spinner=False)
-def _load_expected_artists() -> list[str]:
-    """Load expected artist roster from config, when available."""
+def _cache_key_for_path(path: Path) -> tuple[str, int]:
+    """Return a stable cache key that changes when file mtime changes."""
 
-    if not EXPECTED_ARTISTS_PATH.exists():
+    try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        mtime_ns = -1
+    return str(path), mtime_ns
+
+
+def _normalize_optional_text(value: object) -> str:
+    """Convert scalar-ish values to text while dropping common missing sentinels."""
+
+    if value is None:
+        return ""
+    try:
+        if bool(pd.isna(value)):  # scalar NaN/NA/NaT
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.casefold() in {"", "nan", "<na>", "none", "null"}:
+        return ""
+    return text
+
+
+@st.cache_data(show_spinner=False)
+def _load_expected_artists_cached(path_text: str, _mtime_ns: int) -> list[str]:
+    path = Path(path_text)
+    if not path.exists():
         return []
     try:
-        payload = json.loads(EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 - config fallback
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
         return []
     names = payload.get("expected_artists") if isinstance(payload, dict) else None
     if not isinstance(names, list):
@@ -91,14 +116,20 @@ def _load_expected_artists() -> list[str]:
 
 
 @st.cache_data(show_spinner=False)
-def _load_artist_aliases() -> dict[str, str]:
-    """Load artist aliases (case-insensitive key map)."""
+def _load_expected_artists() -> list[str]:
+    """Load expected artist roster from config, when available."""
 
+    return _load_expected_artists_cached(*_cache_key_for_path(EXPECTED_ARTISTS_PATH))
+
+
+@st.cache_data(show_spinner=False)
+def _load_artist_aliases_cached(path_text: str, _mtime_ns: int) -> dict[str, str]:
     alias_map: dict[str, str] = {}
-    if ARTIST_ALIASES_PATH.exists():
+    path = Path(path_text)
+    if path.exists():
         try:
-            payload = json.loads(ARTIST_ALIASES_PATH.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001 - config fallback
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
             payload = {}
         if isinstance(payload, dict):
             for alias, canonical in payload.items():
@@ -109,6 +140,13 @@ def _load_artist_aliases() -> dict[str, str]:
     for alias, canonical in ARTIST_ALIAS_OVERRIDES.items():
         alias_map[alias.casefold()] = canonical
     return alias_map
+
+
+@st.cache_data(show_spinner=False)
+def _load_artist_aliases() -> dict[str, str]:
+    """Load artist aliases (case-insensitive key map)."""
+
+    return _load_artist_aliases_cached(*_cache_key_for_path(ARTIST_ALIASES_PATH))
 
 
 def _build_artist_name_index(
@@ -143,7 +181,7 @@ def _canonicalize_artist_name(
 ) -> str:
     """Return canonical artist display name while preserving stylistic casing."""
 
-    raw = str(value or "").strip()
+    raw = _normalize_optional_text(value)
     if not raw:
         return ""
     alias_canonical = alias_map.get(raw.casefold(), raw)
@@ -180,6 +218,7 @@ def normalize_artist_dimension(
     typed["artist_name"] = typed["artist_name"].map(
         lambda name: _canonicalize_artist_name(name, alias_map=alias_map, name_index=name_index)
     )
+    typed = typed.loc[typed["artist_name"] != ""].copy()
 
     tracked_roster = expected_artists if expected_artists else sorted(set(str(name) for name in palette.keys()))
     tracked_keys = {name.casefold() for name in tracked_roster}
@@ -192,9 +231,7 @@ def normalize_artist_dimension(
     )
 
     if drop_untracked and unknown_artists:
-        filtered = typed.loc[~typed["artist_name"].isin(unknown_artists)].copy()
-        if not filtered.empty:
-            typed = filtered
+        typed = typed.loc[~typed["artist_name"].isin(unknown_artists)].copy()
 
     return typed, unknown_artists
 
@@ -2118,7 +2155,7 @@ def build_release_anchor_trend_frame(df: pd.DataFrame) -> pd.DataFrame:
             rows.append(
                 {
                     "artist_name": str(artist_name),
-                    "day_since_first_release": max(1, day_offset),
+                    "day_since_first_release": max(0, day_offset),
                     "cumulative_views": running,
                 }
             )

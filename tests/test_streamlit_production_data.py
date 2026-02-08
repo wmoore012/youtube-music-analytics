@@ -250,6 +250,8 @@ def test_select_metrics_window_rejects_inverted_bounds() -> None:
             min_date=date(2026, 2, 9),
             max_date=date(2026, 2, 8),
         )
+
+
 def test_normalize_artist_dimension_merges_case_and_filters_untracked(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("streamlit_app._load_expected_artists", lambda: ["COBRAH", "Corook", "BiC Fizzle"])
     monkeypatch.setattr(
@@ -279,6 +281,49 @@ def test_normalize_artist_dimension_merges_case_and_filters_untracked(monkeypatc
     assert int(normalized.loc[normalized["artist_name"] == "COBRAH", "view_count"].sum()) == 500
 
 
+def test_normalize_artist_dimension_drops_all_untracked_when_roster_is_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("streamlit_app._load_expected_artists", lambda: ["COBRAH"])
+    monkeypatch.setattr("streamlit_app._load_artist_aliases", lambda: {})
+    df = pd.DataFrame(
+        [
+            {"artist_name": "No loses", "view_count": 10},
+            {"artist_name": "Unknown Artist", "view_count": 5},
+        ]
+    )
+
+    normalized, unknown = normalize_artist_dimension(
+        df,
+        palette={"COBRAH": "#fb8072"},
+        drop_untracked=True,
+    )
+
+    assert normalized.empty
+    assert unknown == ["No loses", "Unknown Artist"]
+
+
+def test_normalize_artist_dimension_drops_nan_like_artist_names(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("streamlit_app._load_expected_artists", lambda: ["COBRAH"])
+    monkeypatch.setattr("streamlit_app._load_artist_aliases", lambda: {"cobrah": "COBRAH"})
+    df = pd.DataFrame(
+        [
+            {"artist_name": pd.NA, "view_count": 10},
+            {"artist_name": float("nan"), "view_count": 11},
+            {"artist_name": "Cobrah", "view_count": 20},
+        ]
+    )
+
+    normalized, unknown = normalize_artist_dimension(
+        df,
+        palette={"COBRAH": "#fb8072"},
+        drop_untracked=True,
+    )
+
+    assert unknown == []
+    assert normalized["artist_name"].tolist() == ["COBRAH"]
+
+
 def test_build_release_anchor_trend_frame_has_day_zero_anchor_and_cumulative_curve() -> None:
     df = pd.DataFrame(
         [
@@ -305,3 +350,4 @@ def test_build_release_anchor_trend_frame_has_day_zero_anchor_and_cumulative_cur
     assert int(artist_curve.iloc[0]["day_since_first_release"]) == 0
     assert float(artist_curve.iloc[0]["cumulative_views"]) == 0.0
     assert float(artist_curve.iloc[-1]["cumulative_views"]) == 1500.0
+    assert 0 in artist_curve["day_since_first_release"].astype(int).tolist()
