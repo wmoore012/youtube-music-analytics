@@ -1,9 +1,11 @@
 import pandas as pd
 import pytest
+
 from streamlit_app import (
     build_artist_content_action_rows,
     build_delta_signal_rows,
     build_kpi_context,
+    build_kpi_red_flags,
     compute_pct_delta,
     format_delta_value,
 )
@@ -172,3 +174,30 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
     assert context["roster_comments_per_artist"] == pytest.approx(5.5)
     assert context["roster_revenue_per_artist"] == pytest.approx(1.0)
     assert context["roster_avg_engagement"] == pytest.approx(10.25)
+
+
+def test_build_kpi_red_flags_for_zero_kpis_and_stale_data() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=50,
+        total_likes=0,
+        total_comments=0,
+        latest_metrics_date=pd.Timestamp("2025-06-27").date(),
+        mode="demo",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+
+    assert any("Likes are zero" in flag for flag in flags)
+    assert any("Comments are zero" in flag for flag in flags)
+    assert any("Demo snapshot is" in flag for flag in flags)
+
+
+def test_build_kpi_red_flags_empty_when_metrics_are_healthy() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=20,
+        total_likes=1200,
+        total_comments=250,
+        latest_metrics_date=pd.Timestamp("2026-02-06").date(),
+        mode="production",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+    assert flags == []

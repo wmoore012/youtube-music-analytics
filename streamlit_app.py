@@ -6,7 +6,7 @@ import os
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Iterable, Literal, Tuple
+from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
@@ -35,6 +35,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 #    DB_* values alone; require explicit secrets/session intent.
 # 7) Demo cohort JSON must be loaded with json.load (not pandas read_json->to_dict),
 #    because pandas reshapes nested JSON and can crash artist/video loops.
+# 8) Zero likes/comments with non-zero videos must trigger RED FLAG warnings
+#    and regression tests before deployment.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -44,6 +46,8 @@ RPM_VARIATION_TOLERANCE = 0.05
 REVENUE_RPM_DEFAULT_ENV = "REVENUE_RPM_DEFAULT"
 DEFAULT_REVENUE_RPM_USD = 2.5
 SHORTS_MAX_SECONDS = 60
+PUBLIC_RPM_LOW_USD = 1.0
+PUBLIC_RPM_HIGH_USD = 5.0
 DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
 
 try:
@@ -183,14 +187,85 @@ def _get_requested_data_mode(*, allow_env: bool) -> Literal["demo", "production"
 
 
 def _classify_video_type_from_duration(duration: object) -> str:
-    """Classify video type from duration with a simple Shorts cutoff."""
+    """Classify short-form vs other content from duration only.
+
+    This helper intentionally avoids labeling long videos as "Official Music
+    Video" without title metadata. That stronger label is applied in
+    `_classify_video_type` when text evidence exists.
+    """
 
     seconds = _parse_iso8601_duration_seconds(duration)
     if seconds is None:
-        return "Video"
+        return "Other Content"
     if seconds <= SHORTS_MAX_SECONDS:
-        return "Short"
-    return "Official Music Video"
+        return "Shorts"
+    return "Other Content"
+
+
+def _display_video_type(video_type: object) -> str:
+    """Normalize raw type labels to a small, understandable set."""
+
+    if video_type is None:
+        return "Other Content"
+    text = str(video_type).strip()
+    if not text:
+        return "Other Content"
+    normalized = text.lower()
+
+    if normalized in {"short", "shorts", "short / reel", "reel", "reels", "youtube short"}:
+        return "Shorts"
+    if normalized in {"official music video", "music video", "mv"}:
+        return "Official Music Video"
+    if "official audio" in normalized or normalized == "audio":
+        return "Official Audio"
+    if "lyric" in normalized:
+        return "Lyric Video"
+    if "live" in normalized:
+        return "Live Performance"
+    if normalized in {"music content", "video", "unknown", "nan", "none"}:
+        return "Other Content"
+    return "Other Content"
+
+
+def _classify_video_type(*, duration: object, title: object, raw_video_type: object = None) -> str:
+    """Classify display label as Shorts, music-video family, or Other Content."""
+
+    explicit_label = _display_video_type(raw_video_type)
+    if explicit_label != "Other Content":
+        return explicit_label
+
+    title_text = str(title or "").strip().lower()
+    if "official music video" in title_text:
+        return "Official Music Video"
+    if "official audio" in title_text:
+        return "Official Audio"
+    if "lyric video" in title_text:
+        return "Lyric Video"
+    if "#shorts" in title_text or "youtube short" in title_text:
+        return "Shorts"
+
+    return _classify_video_type_from_duration(duration)
+
+
+def _coerce_float(value: object, default: float = 0.0) -> float:
+    """Return a finite float or *default* for malformed values."""
+
+    try:
+        candidate = float(value)
+    except (TypeError, ValueError):
+        return default
+    if not math.isfinite(candidate):
+        return default
+    return candidate
+
+
+def _coerce_timestamp(value: object) -> pd.Timestamp:
+    """Parse a timestamp and return timezone-naive UTC; NaT when invalid."""
+
+    ts = pd.to_datetime(value, errors="coerce", utc=True)
+    if pd.isna(ts):
+        return pd.NaT
+    return ts.tz_convert(None)
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -380,23 +455,22 @@ def get_data_mode() -> Literal["demo", "production"]:
 
 
 def load_artist_summary_from_demo() -> pd.DataFrame:
-    payload = _load_demo_cohort()
-    rows: list[dict[str, object]] = []
-    for artist in _coerce_record_list(payload.get("artists")):
-        metrics_raw = artist.get("metrics", {})
-        metrics = metrics_raw if isinstance(metrics_raw, dict) else {}
-        rows.append(
-            {
-                "artist_name": artist.get("name"),
-                "total_views": metrics.get("total_views", 0),
-                "total_videos": metrics.get("total_videos", 0),
-                "total_likes": 0,
-                "total_comments": 0,
-                "total_est_revenue_usd": metrics.get("total_views", 0) * 0.0015,
-                "avg_engagement_rate": metrics.get("engagement_rate", 0.0),
-            }
+    """Build demo summary from normalized rows, not sparse top-level rollups."""
+
+    videos = load_normalized_videos_from_demo()
+    if videos.empty:
+        return pd.DataFrame(
+            columns=[
+                "artist_name",
+                "total_videos",
+                "total_views",
+                "total_likes",
+                "total_comments",
+                "total_est_revenue_usd",
+                "avg_engagement_rate",
+            ]
         )
-    return pd.DataFrame(rows)
+    return build_artist_summary_from_metrics(videos)
 
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
@@ -447,29 +521,63 @@ def load_production_metrics_from_db() -> pd.DataFrame:
     df["like_rate"] = ((df["like_count"] / views_nonzero) * 100).astype(float).fillna(0.0)
     df["comment_rate"] = ((df["comment_count"] / views_nonzero) * 100).astype(float).fillna(0.0)
     df["engagement_rate"] = df["like_rate"] + df["comment_rate"]
-    df["video_type"] = df["duration"].map(_classify_video_type_from_duration)
+    df["video_type"] = df.apply(
+        lambda row: _classify_video_type(
+            duration=row.get("duration"),
+            title=row.get("title"),
+        ),
+        axis=1,
+    )
 
     return df
 
 
 def load_normalized_videos_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
+    snapshot_ts = _coerce_timestamp(payload.get("last_updated"))
+    rpm_usd = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
     records: list[dict[str, object]] = []
     for artist in _coerce_record_list(payload.get("artists")):
         name = artist.get("name")
         for video in _coerce_record_list(artist.get("videos")):
+            view_count = max(int(round(_coerce_float(video.get("view_count"), 0.0))), 0)
+            like_rate = max(_coerce_float(video.get("like_rate"), 0.0), 0.0)
+            comment_rate = max(_coerce_float(video.get("comment_rate"), 0.0), 0.0)
+            engagement_rate_raw = _coerce_float(video.get("engagement_rate"), float("nan"))
+            engagement_rate = (
+                like_rate + comment_rate if not math.isfinite(engagement_rate_raw) else max(engagement_rate_raw, 0.0)
+            )
+            published_at = _coerce_timestamp(video.get("published_at"))
+            metrics_date = snapshot_ts if pd.notna(snapshot_ts) else published_at
+            views_per_day = _coerce_float(video.get("views_per_day"), 0.0)
+            if views_per_day <= 0 and view_count > 0 and pd.notna(metrics_date) and pd.notna(published_at):
+                age_days = max(int((metrics_date - published_at).days), 1)
+                views_per_day = view_count / age_days
+
+            video_type = _classify_video_type(
+                duration=video.get("duration"),
+                title=video.get("title"),
+                raw_video_type=video.get("video_type"),
+            )
+            like_count = int(round(view_count * (like_rate / 100.0)))
+            comment_count = int(round(view_count * (comment_rate / 100.0)))
+
             records.append(
                 {
                     "video_id": video.get("video_id"),
                     "artist_name": name,
                     "title": video.get("title"),
-                    "metrics_date": pd.to_datetime(video.get("published_at")),
-                    "view_count": video.get("view_count", 0),
-                    "views_per_day": video.get("views_per_day", 0.0),
-                    "engagement_rate": video.get("engagement_rate", 0.0),
-                    "like_rate": video.get("like_rate", 0.0),
-                    "comment_rate": video.get("comment_rate", 0.0),
-                    "video_type": video.get("video_type", "Official Music Video"),
+                    "published_at": published_at,
+                    "metrics_date": metrics_date,
+                    "view_count": view_count,
+                    "views_per_day": views_per_day,
+                    "engagement_rate": engagement_rate,
+                    "like_rate": like_rate,
+                    "comment_rate": comment_rate,
+                    "like_count": like_count,
+                    "comment_count": comment_count,
+                    "video_type": video_type,
+                    "est_revenue_usd": (view_count / 1000.0) * rpm_usd,
                 }
             )
     return pd.DataFrame(records)
@@ -659,7 +767,7 @@ def filter_by_artists(df: pd.DataFrame, artists: list[str]) -> pd.DataFrame:
     return df[df["artist_name"].isin(artists)]
 
 
-def filter_by_date_window(df: pd.DataFrame, window: Tuple[date, date]) -> pd.DataFrame:
+def filter_by_date_window(df: pd.DataFrame, window: tuple[date, date]) -> pd.DataFrame:
     if df.empty or "metrics_date" not in df.columns:
         return df
     start, end = window
@@ -856,14 +964,56 @@ def build_kpi_context(
     }
 
 
+def build_kpi_red_flags(
+    *,
+    total_videos: int,
+    total_likes: int,
+    total_comments: int,
+    latest_metrics_date: date | None,
+    mode: Literal["demo", "production"] | str | None,
+    reference_date: date | None = None,
+) -> list[str]:
+    """Return user-visible RED FLAG messages for suspicious KPI conditions."""
+
+    flags: list[str] = []
+    if total_videos > 0 and total_likes == 0:
+        flags.append(
+            "Likes are zero across analyzed videos. Check whether like_count "
+            "ingestion or demo derivation is missing.",
+        )
+    if total_videos > 0 and total_comments == 0:
+        flags.append(
+            "Comments are zero across analyzed videos. Check whether comment_count "
+            "ingestion or demo derivation is missing.",
+        )
+
+    if latest_metrics_date is not None:
+        age_days = (reference_date or date.today()) - latest_metrics_date
+        freshness_days = _get_data_freshness_days()
+        if age_days.days > freshness_days:
+            if mode == "production":
+                flags.append(
+                    f"Latest metrics are {age_days.days} days old (limit: {freshness_days}). "
+                    "Run ETL before trusting KPI cards.",
+                )
+            else:
+                flags.append(
+                    f"Demo snapshot is {age_days.days} days old (latest: {latest_metrics_date.isoformat()}). "
+                    "Use Production mode for fresh daily ETL KPIs.",
+                )
+    return flags
+
+
 def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Return artist-level action rows from content-type KPIs."""
 
     if df.empty:
         return pd.DataFrame(columns=["Artist", "Best Reach Format", "Best Engagement Format", "Action Plan"])
 
+    typed = df.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
     mix = (
-        df.groupby(["artist_name", "video_type"], dropna=False)
+        typed.groupby(["artist_name", "video_type_label"], dropna=False)
         .agg(
             videos=("video_id", "nunique"),
             total_views=("view_count", "sum"),
@@ -877,10 +1027,8 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
         best_reach = artist_mix.sort_values(["avg_views_per_day", "total_views"], ascending=False).iloc[0]
         best_engagement = artist_mix.sort_values(["avg_engagement", "videos"], ascending=False).iloc[0]
 
-        reach_format = "Short / Reel" if str(best_reach["video_type"]) == "Short" else str(best_reach["video_type"])
-        engagement_format = (
-            "Short / Reel" if str(best_engagement["video_type"]) == "Short" else str(best_engagement["video_type"])
-        )
+        reach_format = str(best_reach["video_type_label"])
+        engagement_format = str(best_engagement["video_type_label"])
 
         if reach_format == engagement_format:
             action = (
@@ -914,11 +1062,12 @@ def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
     typed = videos[list(required)].copy()
     typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
     typed["est_revenue_usd"] = pd.to_numeric(typed["est_revenue_usd"], errors="coerce")
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
     typed = typed[(typed["view_count"] > 0) & typed["est_revenue_usd"].notna()]
     if typed.empty:
         return {}
 
-    grouped = typed.groupby("video_type", dropna=False).agg(
+    grouped = typed.groupby("video_type_label", dropna=False).agg(
         total_views=("view_count", "sum"),
         total_revenue=("est_revenue_usd", "sum"),
     )
@@ -929,8 +1078,7 @@ def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
     grouped["rpm"] = (grouped["total_revenue"] / grouped["total_views"]) * 1000.0
     rpm_by_type: dict[str, float] = {}
     for idx, row in grouped.iterrows():
-        label = str(idx).strip()
-        label = label if label and label.lower() != "nan" else "Unknown"
+        label = str(idx)
         rpm_by_type[label] = float(row["rpm"])
     return rpm_by_type
 
@@ -954,32 +1102,48 @@ def build_revenue_formula_context(
         f"Current selection: ({format_number(total_views)} / 1,000) x "
         f"${blended_rpm:.2f} = {format_currency(total_revenue)}"
     )
+    plain_language = (
+        "Plain-English math: divide views by 1,000, then multiply by RPM. "
+        "RPM is dollars per 1,000 views. No hidden score is used."
+    )
+    scope_note = (
+        "What this is: a directional ad-revenue estimate from public metrics. "
+        "What this is not: an official YouTube payout, label settlement, "
+        "or publishing/songwriter royalty statement."
+    )
+    public_range_note = (
+        f"Public creator discussions often cite rough RPM ranges around "
+        f"${PUBLIC_RPM_LOW_USD:.0f}-${PUBLIC_RPM_HIGH_USD:.0f} per 1,000 views. "
+        "Actual RPM can be lower or higher based on audience country mix, "
+        "watch time, ad demand, seasonality, and rights splits."
+    )
+    tooltip_hint = "See the full arithmetic panel below for assumptions and caveats."
 
     has_video_rows = videos_filtered is not None and not videos_filtered.empty
     rpm_by_type = _compute_rpm_by_video_type(videos_filtered)
     if not has_video_rows or not rpm_by_type:
         type_note = (
-            "Shorts vs music videos: no type-level revenue rows are available for "
-            "the current filters. Video length is not in this formula."
+            "Shorts vs Other Content: no type-level revenue rows are available for "
+            "the current filters. Length/type is not changing the arithmetic here."
         )
     elif len(rpm_by_type) < 2:
         type_note = (
-            "Shorts vs music videos: this model uses one RPM value for all video "
-            "types. Video length is not in this formula."
+            "Shorts vs Other Content: this view uses one RPM for all content types. "
+            "Length/type is not changing the arithmetic here."
         )
     else:
         rpm_values = list(rpm_by_type.values())
         spread = max(rpm_values) - min(rpm_values)
         if spread <= RPM_VARIATION_TOLERANCE:
             type_note = (
-                "Shorts vs music videos: this model is effectively using the same RPM "
-                "across video types in this view. Video length is not in this formula."
+                "Shorts vs Other Content: this view is effectively using one RPM "
+                "for all content types."
             )
         else:
             top_types = sorted(rpm_by_type.items(), key=lambda item: item[1], reverse=True)
             sample = "; ".join(f"{name}: ${rpm:.2f}" for name, rpm in top_types[:4])
             type_note = (
-                "Shorts vs music videos: this view uses different RPM values by video type. "
+                "Shorts vs Other Content: this view uses different RPM values by content type. "
                 "Per-video arithmetic is still: (video views / 1,000) x type RPM. "
                 f"Current type RPMs (USD per 1,000 views): {sample}."
             )
@@ -987,8 +1151,53 @@ def build_revenue_formula_context(
     return {
         "equation": equation,
         "worked_example": worked_example,
+        "plain_language": plain_language,
+        "scope_note": scope_note,
+        "public_range_note": public_range_note,
+        "tooltip_hint": tooltip_hint,
         "type_note": type_note,
     }
+
+
+def render_revenue_formula_panel(formula_context: dict[str, str]) -> None:
+    """Render a high-signal, plain-language revenue explanation panel."""
+
+    st.markdown("##### Estimated revenue arithmetic (TOS-safe explicit formula)")
+    st.markdown(
+        (
+            "<div style='padding:14px 16px; border-radius:12px; "
+            "border:1px solid #BFDBFE; background:linear-gradient(135deg,#EFF6FF,#DBEAFE);'>"
+            f"<div style='font-size:1.05rem; font-weight:700; color:#1E3A8A;'>{formula_context['equation']}</div>"
+            f"<div style='margin-top:8px; font-weight:700; color:#065F46;'>{formula_context['worked_example']}</div>"
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        (
+            "<div style='margin-top:10px; padding:10px 12px; border-left:5px solid #0EA5E9; "
+            "background:#F0F9FF; color:#0C4A6E;'>"
+            f"{formula_context['plain_language']}</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        (
+            "<div style='margin-top:8px; padding:10px 12px; border-left:5px solid #F59E0B; "
+            "background:#FFFBEB; color:#78350F;'>"
+            f"{formula_context['public_range_note']}</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        (
+            "<div style='margin-top:8px; padding:10px 12px; border-left:5px solid #DC2626; "
+            "background:#FEF2F2; color:#7F1D1D;'>"
+            f"{formula_context['scope_note']}</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    st.caption(formula_context["type_note"])
 
 
 def render_kpis(
@@ -996,6 +1205,7 @@ def render_kpis(
     artists: list[str],
     videos: pd.DataFrame | None = None,
     roster_videos: pd.DataFrame | None = None,
+    mode: Literal["demo", "production"] | str | None = None,
 ) -> None:
     """Render KPI cards with directional deltas vs roster averages.
 
@@ -1041,6 +1251,8 @@ def render_kpis(
     comments_delta = format_delta_value(compute_pct_delta(comments_per_artist, roster_comments_per_artist))
     revenue_delta = format_delta_value(compute_pct_delta(revenue_per_artist, roster_revenue_per_artist))
     engagement_delta = format_delta_value(compute_pct_delta(avg_engagement, roster_avg_engagement))
+    formula_summary = pd.DataFrame([{"total_views": total_views, "total_est_revenue_usd": total_revenue}])
+    formula_context = build_revenue_formula_context(formula_summary, videos)
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
@@ -1089,10 +1301,7 @@ def render_kpis(
         delta=revenue_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help=(
-            "Per-artist estimated revenue vs roster-wide average. "
-            "Formula: (Total views / 1,000) x RPM (USD per 1,000 views)."
-        ),
+        help=formula_context["tooltip_hint"] + " Scroll down to 'Estimated revenue arithmetic'.",
     )
 
     # Apply modern, card-like styling to the KPI strip
@@ -1112,16 +1321,23 @@ def render_kpis(
     #         animation_length=2,
     #     )
 
-    formula_summary = pd.DataFrame(
-        [{"total_views": total_views, "total_est_revenue_usd": total_revenue}],
+    latest_metrics_date: date | None = None
+    if videos is not None and not videos.empty and "metrics_date" in videos.columns:
+        latest_value = pd.to_datetime(videos["metrics_date"], errors="coerce").max()
+        if not pd.isna(latest_value):
+            latest_metrics_date = pd.Timestamp(latest_value).date()
+
+    red_flags = build_kpi_red_flags(
+        total_videos=total_videos,
+        total_likes=total_likes,
+        total_comments=total_comments,
+        latest_metrics_date=latest_metrics_date,
+        mode=mode,
     )
-    formula_context = build_revenue_formula_context(formula_summary, videos)
-    st.markdown("##### Estimated revenue arithmetic (TOS-safe explicit formula)")
-    st.code(formula_context["equation"], language="text")
-    st.caption(formula_context["worked_example"])
-    st.caption("No hidden score is used. RPM means explicit USD per 1,000 views arithmetic.")
-    st.caption("This is a directional estimate from public metrics, not a YouTube payout statement.")
-    st.caption(formula_context["type_note"])
+    for flag in red_flags:
+        st.warning(f"RED FLAG: {flag}")
+
+    render_revenue_formula_panel(formula_context)
 
     delta_rows = build_delta_signal_rows(
         views_per_artist=views_per_artist,
@@ -1216,8 +1432,10 @@ def render_content_mix(df: pd.DataFrame) -> None:
     if not ensure_columns(df, ["video_type", "video_id", "view_count", "engagement_rate"], "Content mix chart"):
         return
 
+    typed = df.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
     mix = (
-        df.groupby("video_type")
+        typed.groupby("video_type_label")
         .agg(
             video_count=("video_id", "nunique"),
             total_views=("view_count", "sum"),
@@ -1230,7 +1448,7 @@ def render_content_mix(df: pd.DataFrame) -> None:
     # Use an ECharts bar chart for a slightly more dynamic content-mix view
     options = {
         "tooltip": {"trigger": "axis"},
-        "xAxis": {"type": "category", "data": mix["video_type"].tolist()},
+        "xAxis": {"type": "category", "data": mix["video_type_label"].tolist()},
         "yAxis": {"type": "value"},
         "series": [
             {
@@ -1254,8 +1472,10 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
     if not ensure_columns(df, required, "Artist content mix chart"):
         return
 
+    typed = df.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
     mix = (
-        df.groupby(["artist_name", "video_type"], dropna=False)
+        typed.groupby(["artist_name", "video_type_label"], dropna=False)
         .agg(
             video_count=("video_id", "nunique"),
             total_views=("view_count", "sum"),
@@ -1264,7 +1484,6 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
         )
         .reset_index()
     )
-    mix["video_type_label"] = mix["video_type"].replace({"Short": "Short / Reel"})
 
     fig = px.bar(
         mix,
@@ -1277,7 +1496,7 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
             "total_views": ":,.0f",
             "avg_views_per_day": ":,.1f",
             "avg_engagement": ":.2f",
-            "video_type": False,
+            "video_type_label": False,
         },
     )
     fig.update_layout(xaxis_title="Artist", yaxis_title="Videos", legend_title_text="Format")
@@ -1501,7 +1720,7 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -1525,7 +1744,7 @@ def main() -> None:
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster)
+        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
         st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
         render_content_mix(latest)
         render_artist_content_mix(latest)
