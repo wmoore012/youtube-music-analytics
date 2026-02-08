@@ -2,7 +2,6 @@ from datetime import date
 
 import pandas as pd
 import pytest
-
 from streamlit_app import (
     _classify_video_type_from_duration,
     _parse_iso8601_duration_seconds,

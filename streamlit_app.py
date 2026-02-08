@@ -1,22 +1,22 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
 import html
 import json
 import math
 import os
-import re
-from datetime import date, datetime, timezone
 from pathlib import Path
+import re
 from typing import Iterable, Literal, Mapping
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
+import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -803,7 +803,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text("""
+    sql = text(
+        """
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -818,7 +819,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """)
+        """
+    )
 
     engine = get_engine()
     with engine.connect() as conn:
@@ -984,11 +986,13 @@ def load_latest_successful_etl_run_at() -> datetime | None:
 
     from sqlalchemy import text
 
-    query = text("""
+    query = text(
+        """
         SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
-        """)
+        """
+    )
 
     try:
         engine = get_engine()
