@@ -650,13 +650,11 @@ def load_latest_successful_etl_run_at() -> datetime | None:
 
     from sqlalchemy import text
 
-    query = text(
-        """
+    query = text("""
         SELECT COALESCE(MAX(finished_at), MAX(started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
-        """
-    )
+        """)
 
     try:
         engine = get_engine()
