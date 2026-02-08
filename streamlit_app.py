@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import json
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -37,6 +37,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 #    because pandas reshapes nested JSON and can crash artist/video loops.
 # 8) Zero likes/comments with non-zero videos must trigger RED FLAG warnings
 #    and regression tests before deployment.
+# 9) Snapshot freshness in Production must follow ETL heartbeat (youtube_etl_runs):
+#    a run completed today can be "fresh" even when no brand-new videos were added.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -629,6 +631,59 @@ def _get_data_freshness_days() -> int:
     return max(1, value)
 
 
+def _coerce_utc_datetime(value: object) -> datetime | None:
+    """Return a timezone-aware UTC datetime, or None when invalid."""
+
+    ts = pd.to_datetime(value, errors="coerce", utc=True)
+    if pd.isna(ts):
+        return None
+    return pd.Timestamp(ts).to_pydatetime()
+
+
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
+def load_latest_successful_etl_run_at() -> datetime | None:
+    """Return latest completed ETL heartbeat from youtube_etl_runs.
+
+    Uses successful/partial/completed statuses only so a failed or in-flight run
+    does not get treated as a fresh snapshot.
+    """
+
+    from sqlalchemy import text
+
+    query = text(
+        """
+        SELECT COALESCE(MAX(finished_at), MAX(started_at)) AS latest_run_at
+        FROM youtube_etl_runs
+        WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
+        """
+    )
+
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            latest_run_at = conn.execute(query).scalar_one_or_none()
+    except Exception:  # noqa: BLE001 - optional diagnostic; fall back to metrics_date
+        return None
+    return _coerce_utc_datetime(latest_run_at)
+
+
+def _resolve_freshness_anchor(
+    *,
+    mode: Literal["demo", "production"] | str | None,
+    latest_metrics_at: datetime | None,
+    latest_etl_run_at: datetime | None,
+) -> tuple[datetime | None, str]:
+    """Pick the timestamp used for freshness checks."""
+
+    if mode == "production" and latest_etl_run_at is not None:
+        return latest_etl_run_at, "ETL heartbeat"
+    if latest_metrics_at is not None:
+        return latest_metrics_at, "latest metrics row"
+    if latest_etl_run_at is not None:
+        return latest_etl_run_at, "ETL heartbeat"
+    return None, "snapshot timestamp"
+
+
 def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
     """Load artist summary for either demo or production mode.
 
@@ -806,6 +861,23 @@ def format_delta_value(change: float | None) -> str | None:
     return f"{change:+.1f}%"
 
 
+def compute_delta_display(
+    *,
+    current: float,
+    baseline: float,
+    new_entry_floor: float | None = None,
+) -> str | None:
+    """Return user-facing delta text with optional NEW ENTRY handling.
+
+    Use NEW ENTRY when baseline is effectively near-zero and current is now
+    materially positive; this avoids misleading huge percentages.
+    """
+
+    if new_entry_floor is not None and baseline < new_entry_floor <= current and current > baseline:
+        return "NEW ENTRY"
+    return format_delta_value(compute_pct_delta(current, baseline))
+
+
 def build_delta_signal_rows(
     *,
     views_per_artist: float,
@@ -829,44 +901,63 @@ def build_delta_signal_rows(
             views_per_artist,
             roster_views_per_artist,
             "Scale the format mix that is already pulling reach.",
+            None,
         ),
-        ("Videos analyzed", videos_per_artist, roster_videos_per_artist, "Tune release cadence to match capacity."),
+        (
+            "Videos analyzed",
+            videos_per_artist,
+            roster_videos_per_artist,
+            "Tune release cadence to match capacity.",
+            1.0,
+        ),
         (
             "Total likes",
             likes_per_artist,
             roster_likes_per_artist,
             "Double down on hooks/creative that drives positive reactions.",
+            None,
         ),
         (
             "Total comments",
             comments_per_artist,
             roster_comments_per_artist,
             "Prioritize call-to-action formats that trigger conversation.",
+            None,
         ),
         (
             "Avg engagement rate",
             avg_engagement,
             roster_avg_engagement,
             "Replicate the top engagement format with tighter iteration loops.",
+            None,
         ),
         (
             "Est. revenue (USD)",
             revenue_per_artist,
             roster_revenue_per_artist,
             "Allocate budget toward the highest-yield format first.",
+            None,
         ),
     ]
     rows: list[dict[str, str]] = []
-    for name, current, baseline, action in specs:
-        change = compute_pct_delta(current, baseline)
-        delta_text = format_delta_value(change)
+    for name, current, baseline, action, new_entry_floor in specs:
+        delta_text = compute_delta_display(
+            current=current,
+            baseline=baseline,
+            new_entry_floor=new_entry_floor,
+        )
         if delta_text is None:
             continue
+        arithmetic = (
+            f"{current:,.2f} vs {baseline:,.2f} baseline (new entry floor: {new_entry_floor:,.1f})"
+            if delta_text == "NEW ENTRY"
+            else f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100"
+        )
         rows.append(
             {
                 "KPI": name,
                 "Delta": delta_text,
-                "Arithmetic": f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100",
+                "Arithmetic": arithmetic,
                 "Action": action,
             }
         )
@@ -971,6 +1062,7 @@ def build_kpi_red_flags(
     total_comments: int,
     latest_metrics_date: date | None,
     mode: Literal["demo", "production"] | str | None,
+    latest_etl_run_date: date | None = None,
     reference_date: date | None = None,
 ) -> list[str]:
     """Return user-visible RED FLAG messages for suspicious KPI conditions."""
@@ -987,18 +1079,30 @@ def build_kpi_red_flags(
             "ingestion or demo derivation is missing.",
         )
 
-    if latest_metrics_date is not None:
-        age_days = (reference_date or date.today()) - latest_metrics_date
+    freshness_reference_date = latest_metrics_date
+    freshness_label = "latest metrics row"
+    if mode == "production" and latest_etl_run_date is not None:
+        freshness_reference_date = latest_etl_run_date
+        freshness_label = "ETL heartbeat"
+
+    if freshness_reference_date is not None:
+        age_days = (reference_date or date.today()) - freshness_reference_date
         freshness_days = _get_data_freshness_days()
         if age_days.days > freshness_days:
             if mode == "production":
-                flags.append(
-                    f"Latest metrics are {age_days.days} days old (limit: {freshness_days}). "
-                    "Run ETL before trusting KPI cards.",
-                )
+                if freshness_label == "ETL heartbeat":
+                    flags.append(
+                        f"Latest successful ETL heartbeat is {age_days.days} days old "
+                        f"(limit: {freshness_days}). Run ETL before trusting KPI cards.",
+                    )
+                else:
+                    flags.append(
+                        f"Latest metrics are {age_days.days} days old (limit: {freshness_days}). "
+                        "Run ETL before trusting KPI cards.",
+                    )
             else:
                 flags.append(
-                    f"Demo snapshot is {age_days.days} days old (latest: {latest_metrics_date.isoformat()}). "
+                    f"Demo snapshot is {age_days.days} days old (latest: {freshness_reference_date.isoformat()}). "
                     "Use Production mode for fresh daily ETL KPIs.",
                 )
     return flags
@@ -1203,6 +1307,7 @@ def render_kpis(
     videos: pd.DataFrame | None = None,
     roster_videos: pd.DataFrame | None = None,
     mode: Literal["demo", "production"] | str | None = None,
+    latest_etl_run_date: date | None = None,
 ) -> None:
     """Render KPI cards with directional deltas vs roster averages.
 
@@ -1242,12 +1347,16 @@ def render_kpis(
     comments_per_artist = total_comments / selected_artist_count
     revenue_per_artist = total_revenue / selected_artist_count
 
-    views_delta = format_delta_value(compute_pct_delta(views_per_artist, roster_views_per_artist))
-    videos_delta = format_delta_value(compute_pct_delta(videos_per_artist, roster_videos_per_artist))
-    likes_delta = format_delta_value(compute_pct_delta(likes_per_artist, roster_likes_per_artist))
-    comments_delta = format_delta_value(compute_pct_delta(comments_per_artist, roster_comments_per_artist))
-    revenue_delta = format_delta_value(compute_pct_delta(revenue_per_artist, roster_revenue_per_artist))
-    engagement_delta = format_delta_value(compute_pct_delta(avg_engagement, roster_avg_engagement))
+    views_delta = compute_delta_display(current=views_per_artist, baseline=roster_views_per_artist)
+    videos_delta = compute_delta_display(
+        current=videos_per_artist,
+        baseline=roster_videos_per_artist,
+        new_entry_floor=1.0,
+    )
+    likes_delta = compute_delta_display(current=likes_per_artist, baseline=roster_likes_per_artist)
+    comments_delta = compute_delta_display(current=comments_per_artist, baseline=roster_comments_per_artist)
+    revenue_delta = compute_delta_display(current=revenue_per_artist, baseline=roster_revenue_per_artist)
+    engagement_delta = compute_delta_display(current=avg_engagement, baseline=roster_avg_engagement)
     formula_summary = pd.DataFrame([{"total_views": total_views, "total_est_revenue_usd": total_revenue}])
     formula_context = build_revenue_formula_context(formula_summary, videos)
 
@@ -1329,6 +1438,7 @@ def render_kpis(
         total_likes=total_likes,
         total_comments=total_comments,
         latest_metrics_date=latest_metrics_date,
+        latest_etl_run_date=latest_etl_run_date,
         mode=mode,
     )
     for flag in red_flags:
@@ -1630,22 +1740,45 @@ def main() -> None:
         st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
         st.stop()
 
-    # In production mode, enforce a freshness window against normalized_videos.
-    if mode == "production" and "metrics_date" in normalized_videos.columns:
+    latest_metrics_at: datetime | None = None
+    if "metrics_date" in normalized_videos.columns:
+        latest_metrics_at = _coerce_utc_datetime(normalized_videos["metrics_date"].max())
+    latest_etl_run_at = load_latest_successful_etl_run_at() if mode == "production" else None
+    latest_etl_run_date = latest_etl_run_at.date() if latest_etl_run_at is not None else None
+
+    # In production mode, freshness is based on ETL heartbeat when available.
+    if mode == "production":
         freshness_days = _get_data_freshness_days()
-        latest_metrics_value = normalized_videos["metrics_date"].max()
-        if not pd.isna(latest_metrics_value):
-            latest_dt = pd.to_datetime(latest_metrics_value).to_pydatetime()
-            if latest_dt.tzinfo is None:
-                latest_dt = latest_dt.replace(tzinfo=timezone.utc)
-            age_days = (datetime.now(timezone.utc) - latest_dt).days
-            if age_days > freshness_days:
-                st.error(
-                    "Production (MySQL) data is older than the configured "
-                    f"freshness window ({freshness_days} days). Run the ETL "
-                    "pipeline before demoing this dashboard.",
-                )
-                st.stop()
+        freshness_anchor_at, freshness_source = _resolve_freshness_anchor(
+            mode=mode,
+            latest_metrics_at=latest_metrics_at,
+            latest_etl_run_at=latest_etl_run_at,
+        )
+        if freshness_anchor_at is None:
+            st.error(
+                "Production (MySQL) mode has no freshness timestamp "
+                "(no metrics_date and no completed ETL run). Run ETL before demoing.",
+            )
+            st.stop()
+
+        age_days = (datetime.now(timezone.utc) - freshness_anchor_at).days
+        if age_days > freshness_days:
+            st.error(
+                f"Production (MySQL) data freshness is stale: {freshness_source} "
+                f"is {age_days} days old (limit: {freshness_days}). Run ETL before demoing.",
+            )
+            st.stop()
+
+        if (
+            latest_etl_run_at is not None
+            and latest_metrics_at is not None
+            and latest_etl_run_at.date() > latest_metrics_at.date()
+        ):
+            st.info(
+                "Fresh snapshot confirmed by ETL heartbeat "
+                f"({latest_etl_run_at.date().isoformat()}). No new video metric rows "
+                f"were added after {latest_metrics_at.date().isoformat()}.",
+            )
 
     palette = get_artist_color_palette()
 
@@ -1698,6 +1831,8 @@ def main() -> None:
 
     top_n = st.sidebar.slider("Show top videos", min_value=5, max_value=25, value=10, step=1)
     st.sidebar.metric("Latest metrics date", max_date.isoformat())
+    if mode == "production" and latest_etl_run_date is not None:
+        st.sidebar.metric("Latest ETL heartbeat", latest_etl_run_date.isoformat())
     st.sidebar.metric("Rows loaded", f"{len(normalized_videos):,}")
 
     window_filtered_all = filter_by_date_window(normalized_videos, (start_date, end_date))
@@ -1717,7 +1852,14 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
+        render_kpis(
+            artist_summary,
+            selected_artists,
+            latest,
+            latest_roster,
+            mode=mode,
+            latest_etl_run_date=latest_etl_run_date,
+        )
 
         col1, col2 = st.columns(2)
         with col1:

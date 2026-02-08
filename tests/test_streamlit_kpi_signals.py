@@ -6,6 +6,7 @@ from streamlit_app import (
     build_delta_signal_rows,
     build_kpi_context,
     build_kpi_red_flags,
+    compute_delta_display,
     compute_pct_delta,
     format_delta_value,
 )
@@ -23,6 +24,12 @@ def test_format_delta_value() -> None:
     assert format_delta_value(None) is None
     assert format_delta_value(12.34) == "+12.3%"
     assert format_delta_value(-3.21) == "-3.2%"
+
+
+def test_compute_delta_display_marks_new_entry_when_baseline_near_zero() -> None:
+    assert compute_delta_display(current=2.0, baseline=0.2, new_entry_floor=1.0) == "NEW ENTRY"
+    assert compute_delta_display(current=0.8, baseline=0.2, new_entry_floor=1.0) == "+300.0%"
+    assert compute_delta_display(current=2.0, baseline=1.0, new_entry_floor=1.0) == "+100.0%"
 
 
 def test_build_delta_signal_rows_only_shows_visible_deltas() -> None:
@@ -49,6 +56,27 @@ def test_build_delta_signal_rows_only_shows_visible_deltas() -> None:
     assert "Videos analyzed" not in rows["KPI"].tolist()
     assert "Total comments" not in rows["KPI"].tolist()
     assert rows["Arithmetic"].str.contains("x 100", regex=False).all()
+
+
+def test_build_delta_signal_rows_marks_video_new_entry() -> None:
+    rows = build_delta_signal_rows(
+        views_per_artist=110.0,
+        roster_views_per_artist=100.0,
+        videos_per_artist=2.0,
+        roster_videos_per_artist=0.2,
+        likes_per_artist=50.0,
+        roster_likes_per_artist=40.0,
+        comments_per_artist=8.0,
+        roster_comments_per_artist=7.0,
+        avg_engagement=5.0,
+        roster_avg_engagement=4.0,
+        revenue_per_artist=220.0,
+        roster_revenue_per_artist=200.0,
+    )
+
+    video_row = rows.loc[rows["KPI"] == "Videos analyzed"].iloc[0]
+    assert video_row["Delta"] == "NEW ENTRY"
+    assert "new entry floor" in video_row["Arithmetic"]
 
 
 def test_build_artist_content_action_rows_returns_actionable_rows() -> None:
@@ -189,6 +217,35 @@ def test_build_kpi_red_flags_for_zero_kpis_and_stale_data() -> None:
     assert any("Likes are zero" in flag for flag in flags)
     assert any("Comments are zero" in flag for flag in flags)
     assert any("Demo snapshot is" in flag for flag in flags)
+
+
+def test_build_kpi_red_flags_uses_etl_heartbeat_for_production_freshness() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=20,
+        total_likes=1200,
+        total_comments=250,
+        latest_metrics_date=pd.Timestamp("2025-06-27").date(),
+        latest_etl_run_date=pd.Timestamp("2026-02-07").date(),
+        mode="production",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+
+    # ETL heartbeat is fresh, so old metrics_date alone should not trigger stale flag.
+    assert flags == []
+
+
+def test_build_kpi_red_flags_reports_stale_etl_heartbeat() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=20,
+        total_likes=1200,
+        total_comments=250,
+        latest_metrics_date=pd.Timestamp("2026-02-06").date(),
+        latest_etl_run_date=pd.Timestamp("2025-12-01").date(),
+        mode="production",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+
+    assert any("ETL heartbeat" in flag for flag in flags)
 
 
 def test_build_kpi_red_flags_empty_when_metrics_are_healthy() -> None:
