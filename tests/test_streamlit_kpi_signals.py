@@ -4,11 +4,16 @@ import pytest
 from streamlit_app import (
     build_artist_content_action_rows,
     build_delta_signal_rows,
+    build_focus_artist_scorecard,
+    build_focus_format_lift_table,
+    build_focus_trend_frame,
     build_kpi_context,
     build_kpi_red_flags,
+    build_release_strategy_board,
     compute_delta_display,
     compute_pct_delta,
     format_delta_value,
+    prepare_recent_release_windows,
 )
 
 
@@ -258,3 +263,191 @@ def test_build_kpi_red_flags_empty_when_metrics_are_healthy() -> None:
         reference_date=pd.Timestamp("2026-02-07").date(),
     )
     assert flags == []
+
+
+def test_prepare_recent_release_windows_limits_to_latest_n_per_artist() -> None:
+    rows = []
+    for idx in range(4):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"official-{idx}",
+                "title": f"Official {idx}",
+                "video_type": "Official Music Video",
+                "view_count": 1000 + idx,
+                "views_per_day": 100.0 + idx,
+                "engagement_rate": 2.0 + idx,
+                "published_at": pd.Timestamp("2026-02-07") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            }
+        )
+    for idx in range(3):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"other-{idx}",
+                "title": f"Other {idx}",
+                "video_type": "Shorts",
+                "view_count": 500 + idx,
+                "views_per_day": 80.0 + idx,
+                "engagement_rate": 3.0 + idx,
+                "published_at": pd.Timestamp("2026-01-20") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            }
+        )
+    df = pd.DataFrame(rows)
+
+    official, other = prepare_recent_release_windows(df, per_artist_limit=2)
+
+    assert official["video_id"].tolist() == ["official-0", "official-1"]
+    assert other["video_id"].tolist() == ["other-0", "other-1"]
+
+
+def test_build_release_strategy_board_computes_music_video_lift() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "artist_name": "Artist A",
+                "video_id": "mv1",
+                "title": "Official Music Video 1",
+                "video_type": "Official Music Video",
+                "view_count": 20_000,
+                "views_per_day": 400.0,
+                "engagement_rate": 4.0,
+                "published_at": pd.Timestamp("2026-02-01"),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "mv2",
+                "title": "Official Music Video 2",
+                "video_type": "Official Music Video",
+                "view_count": 22_000,
+                "views_per_day": 420.0,
+                "engagement_rate": 4.1,
+                "published_at": pd.Timestamp("2026-01-28"),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "oa1",
+                "title": "Official Audio 1",
+                "video_type": "Official Audio",
+                "view_count": 8_000,
+                "views_per_day": 200.0,
+                "engagement_rate": 2.0,
+                "published_at": pd.Timestamp("2026-01-22"),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "short1",
+                "title": "Short 1",
+                "video_type": "Shorts",
+                "view_count": 3_000,
+                "views_per_day": 120.0,
+                "engagement_rate": 5.5,
+                "published_at": pd.Timestamp("2026-02-05"),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "short2",
+                "title": "Short 2",
+                "video_type": "Shorts",
+                "view_count": 2_500,
+                "views_per_day": 100.0,
+                "engagement_rate": 5.0,
+                "published_at": pd.Timestamp("2026-02-03"),
+                "metrics_date": pd.Timestamp("2026-02-07"),
+            },
+        ]
+    )
+
+    board = build_release_strategy_board(df, per_artist_limit=10)
+    row = board.iloc[0]
+
+    # MV avg=(400+420)/2=410, non-MV official avg=200 => +105%
+    assert row["MV vs other official lift (%)"] == pytest.approx(105.0)
+    # Official avg=(400+420+200)/3=340, other avg=(120+100)/2=110 => +209.09%
+    assert row["Official vs Other lift (%)"] == pytest.approx(209.0909, rel=1e-3)
+    assert row["Official release count"] == 3
+    assert row["Other content count"] == 2
+    assert isinstance(row["Today action"], str)
+    assert len(row["Today action"]) > 20
+
+
+def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
+    board = pd.DataFrame(
+        [
+            {
+                "Artist": "Artist A",
+                "Official avg views/day": 300.0,
+                "Other avg views/day": 100.0,
+                "Official vs Other lift (%)": 200.0,
+                "MV vs other official lift (%)": 50.0,
+                "Shorts share in other content (%)": 60.0,
+                "Official cadence (days)": 14.0,
+            },
+            {
+                "Artist": "Artist B",
+                "Official avg views/day": 150.0,
+                "Other avg views/day": 75.0,
+                "Official vs Other lift (%)": 100.0,
+                "MV vs other official lift (%)": 25.0,
+                "Shorts share in other content (%)": 40.0,
+                "Official cadence (days)": 21.0,
+            },
+            {
+                "Artist": "Artist C",
+                "Official avg views/day": 200.0,
+                "Other avg views/day": 100.0,
+                "Official vs Other lift (%)": 100.0,
+                "MV vs other official lift (%)": 30.0,
+                "Shorts share in other content (%)": 20.0,
+                "Official cadence (days)": 28.0,
+            },
+        ]
+    )
+
+    scorecard = build_focus_artist_scorecard(board, "Artist A")
+    row = scorecard.loc[scorecard["Metric"] == "Official avg views/day"].iloc[0]
+    assert row["Focus value"] == pytest.approx(300.0)
+    assert row["Benchmark avg"] == pytest.approx(175.0)
+    assert row["Lift vs benchmark (%)"] == pytest.approx(((300.0 / 175.0) - 1.0) * 100.0)
+
+
+def test_build_focus_trend_frame_returns_focus_and_benchmark_series() -> None:
+    df = pd.DataFrame(
+        [
+            {"artist_name": "Artist A", "metrics_date": "2026-02-06", "views_per_day": 200.0},
+            {"artist_name": "Artist A", "metrics_date": "2026-02-07", "views_per_day": 220.0},
+            {"artist_name": "Artist B", "metrics_date": "2026-02-06", "views_per_day": 100.0},
+            {"artist_name": "Artist B", "metrics_date": "2026-02-07", "views_per_day": 120.0},
+            {"artist_name": "Artist C", "metrics_date": "2026-02-07", "views_per_day": 140.0},
+        ]
+    )
+
+    trend = build_focus_trend_frame(df, "Artist A")
+    assert set(trend["Series"].unique().tolist()) == {"Focus artist", "Benchmark average"}
+    benchmark_day = trend.loc[
+        (trend["Series"] == "Benchmark average") & (trend["metrics_date"] == pd.Timestamp("2026-02-07"))
+    ].iloc[0]
+    assert benchmark_day["views_per_day"] == pytest.approx(130.0)
+
+
+def test_build_focus_format_lift_table_compares_focus_vs_benchmark() -> None:
+    df = pd.DataFrame(
+        [
+            {"artist_name": "Artist A", "video_type": "Shorts", "video_id": "a1", "views_per_day": 300.0},
+            {"artist_name": "Artist A", "video_type": "Official Music Video", "video_id": "a2", "views_per_day": 200.0},
+            {"artist_name": "Artist B", "video_type": "Shorts", "video_id": "b1", "views_per_day": 150.0},
+            {"artist_name": "Artist B", "video_type": "Official Music Video", "video_id": "b2", "views_per_day": 100.0},
+        ]
+    )
+
+    table = build_focus_format_lift_table(df, "Artist A")
+    shorts = table.loc[table["Format"] == "Shorts"].iloc[0]
+    assert shorts["Focus avg views/day"] == pytest.approx(300.0)
+    assert shorts["Benchmark avg views/day"] == pytest.approx(150.0)
+    assert shorts["Lift vs benchmark (%)"] == pytest.approx(100.0)

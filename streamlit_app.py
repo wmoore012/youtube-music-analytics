@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import json
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -39,6 +39,8 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 #    and regression tests before deployment.
 # 9) Snapshot freshness in Production must follow ETL heartbeat (youtube_etl_runs):
 #    a run completed today can be "fresh" even when no brand-new videos were added.
+# 10) Executive rollout view must answer "what do we do today" with
+#     last-10 release windows + simple lift arithmetic (official vs other).
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
@@ -51,6 +53,7 @@ SHORTS_MAX_SECONDS = 60
 PUBLIC_RPM_LOW_USD = 1.0
 PUBLIC_RPM_HIGH_USD = 5.0
 DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
+OFFICIAL_RELEASE_TYPES = frozenset({"Official Music Video", "Official Audio", "Lyric Video"})
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -1152,6 +1155,379 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return per-artist recent windows for official releases and other content."""
+
+    required = {"artist_name", "video_id", "title", "video_type", "view_count", "views_per_day", "engagement_rate"}
+    if videos.empty or not required.issubset(videos.columns):
+        return pd.DataFrame(), pd.DataFrame()
+
+    typed = videos.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
+    typed["published_at"] = pd.to_datetime(typed.get("published_at"), errors="coerce")
+    typed["metrics_date"] = pd.to_datetime(typed.get("metrics_date"), errors="coerce")
+    typed["activity_date"] = typed["published_at"].fillna(typed["metrics_date"])
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed["engagement_rate"] = pd.to_numeric(typed["engagement_rate"], errors="coerce")
+    typed = typed[typed["artist_name"].notna() & typed["video_id"].notna()]
+    typed = typed.sort_values(
+        ["artist_name", "activity_date", "view_count"],
+        ascending=[True, False, False],
+        na_position="last",
+    )
+
+    official_recent = (
+        typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+        .groupby("artist_name", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    other_recent = (
+        typed.loc[~typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+        .groupby("artist_name", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    return official_recent, other_recent
+
+
+def prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Public wrapper for recent official/other release windows."""
+
+    return _prepare_recent_release_windows(videos, per_artist_limit=per_artist_limit)
+
+
+def _mean_or_none(series: pd.Series) -> float | None:
+    values = pd.to_numeric(series, errors="coerce").dropna()
+    if values.empty:
+        return None
+    return float(values.mean())
+
+
+def _median_release_gap_days(official_rows: pd.DataFrame) -> float | None:
+    if "activity_date" not in official_rows.columns:
+        return None
+    dates = pd.to_datetime(official_rows["activity_date"], errors="coerce").dropna().drop_duplicates()
+    if len(dates) < 2:
+        return None
+    sorted_dates = dates.sort_values(ascending=False).to_list()
+    day_gaps = [
+        float((sorted_dates[idx] - sorted_dates[idx + 1]).days)
+        for idx in range(len(sorted_dates) - 1)
+        if (sorted_dates[idx] - sorted_dates[idx + 1]).days > 0
+    ]
+    if not day_gaps:
+        return None
+    return float(pd.Series(day_gaps).median())
+
+
+def _safe_lift_pct(current: float | None, baseline: float | None) -> float | None:
+    if current is None or baseline is None:
+        return None
+    if not (math.isfinite(current) and math.isfinite(baseline)):
+        return None
+    if baseline <= 0:
+        return None
+    return (current / baseline - 1.0) * 100.0
+
+
+def _build_today_action(
+    *,
+    official_count: int,
+    other_count: int,
+    official_vs_other_lift_pct: float | None,
+    mv_vs_other_official_lift_pct: float | None,
+    shorts_share_pct: float | None,
+) -> str:
+    """Return a plain-language rollout action for today's planning."""
+
+    if official_count == 0:
+        return "No recent official releases in window. Schedule one official release with Shorts support this week."
+    if mv_vs_other_official_lift_pct is not None and mv_vs_other_official_lift_pct >= 20.0:
+        return "Official music videos are leading. Prioritize next budget for an Official Music Video rollout."
+    if official_vs_other_lift_pct is not None and official_vs_other_lift_pct < 0:
+        return "Other content is outperforming official releases. Rework official rollout hooks and thumbnails."
+    if shorts_share_pct is not None and shorts_share_pct < 40.0:
+        return "Increase Shorts support around each official release to improve discovery and follow-through."
+    if other_count == 0:
+        return "Add short-form support posts around each official release to create follow-on audience lift."
+    return "Mix looks healthy. Keep cadence steady and run one controlled title/thumbnail experiment this week."
+
+
+def build_release_strategy_board(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> pd.DataFrame:
+    """Build per-artist rollout KPIs from latest official vs other content windows."""
+
+    official_recent, other_recent = _prepare_recent_release_windows(
+        videos,
+        per_artist_limit=per_artist_limit,
+    )
+    if official_recent.empty and other_recent.empty:
+        return pd.DataFrame(
+            columns=[
+                "Artist",
+                "Official release count",
+                "Other content count",
+                "Official avg views/day",
+                "Other avg views/day",
+                "Official vs Other lift (%)",
+                "MV vs other official lift (%)",
+                "Shorts share in other content (%)",
+                "Official cadence (days)",
+                "Today action",
+            ]
+        )
+
+    artists = sorted(
+        set(official_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+        | set(other_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+    )
+    rows: list[dict[str, float | int | str]] = []
+    for artist_name in artists:
+        official_rows = official_recent.loc[official_recent["artist_name"] == artist_name]
+        other_rows = other_recent.loc[other_recent["artist_name"] == artist_name]
+
+        official_avg_views_per_day = _mean_or_none(official_rows["views_per_day"])
+        other_avg_views_per_day = _mean_or_none(other_rows["views_per_day"])
+        official_vs_other_lift = _safe_lift_pct(official_avg_views_per_day, other_avg_views_per_day)
+
+        mv_rows = official_rows.loc[official_rows["video_type_label"] == "Official Music Video"]
+        non_mv_official_rows = official_rows.loc[official_rows["video_type_label"] != "Official Music Video"]
+        mv_avg_views_per_day = _mean_or_none(mv_rows["views_per_day"])
+        non_mv_official_avg_views_per_day = _mean_or_none(non_mv_official_rows["views_per_day"])
+        mv_lift = _safe_lift_pct(mv_avg_views_per_day, non_mv_official_avg_views_per_day)
+
+        shorts_rows = other_rows.loc[other_rows["video_type_label"] == "Shorts"]
+        shorts_share_pct = None
+        if len(other_rows) > 0:
+            shorts_share_pct = float(len(shorts_rows) / len(other_rows) * 100.0)
+
+        official_count = int(official_rows["video_id"].nunique()) if not official_rows.empty else 0
+        other_count = int(other_rows["video_id"].nunique()) if not other_rows.empty else 0
+        cadence_days = _median_release_gap_days(official_rows)
+
+        rows.append(
+            {
+                "Artist": str(artist_name),
+                "Official release count": official_count,
+                "Other content count": other_count,
+                "Official avg views/day": official_avg_views_per_day or 0.0,
+                "Other avg views/day": other_avg_views_per_day or 0.0,
+                "Official vs Other lift (%)": official_vs_other_lift,
+                "MV vs other official lift (%)": mv_lift,
+                "Shorts share in other content (%)": shorts_share_pct,
+                "Official cadence (days)": cadence_days,
+                "Today action": _build_today_action(
+                    official_count=official_count,
+                    other_count=other_count,
+                    official_vs_other_lift_pct=official_vs_other_lift,
+                    mv_vs_other_official_lift_pct=mv_lift,
+                    shorts_share_pct=shorts_share_pct,
+                ),
+            }
+        )
+
+    result = pd.DataFrame(rows)
+    return result.sort_values("MV vs other official lift (%)", ascending=False, na_position="last").reset_index(
+        drop=True
+    )
+
+
+def _build_focus_artist_color_map(
+    artists: list[str],
+    *,
+    focus_artist: str,
+    base_color_map: dict[str, str],
+) -> dict[str, str]:
+    """Highlight one artist and mute all benchmark artists to grayscale."""
+
+    color_map: dict[str, str] = {}
+    for artist in artists:
+        if artist == focus_artist:
+            color_map[artist] = base_color_map.get(artist, "#0EA5E9")
+        else:
+            color_map[artist] = "#C7CBD4"
+    return color_map
+
+
+def build_focus_artist_scorecard(board: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Build one-artist KPI comparisons against benchmark artist averages."""
+
+    columns = ["Metric", "Focus value", "Benchmark avg", "Lift vs benchmark (%)", "Interpretation"]
+    if board.empty or "Artist" not in board.columns:
+        return pd.DataFrame(columns=columns)
+
+    focus_rows = board.loc[board["Artist"] == focus_artist]
+    if focus_rows.empty:
+        return pd.DataFrame(columns=columns)
+
+    focus = focus_rows.iloc[0]
+    peers = board.loc[board["Artist"] != focus_artist]
+
+    def _peer_mean(column: str) -> float | None:
+        if peers.empty or column not in peers.columns:
+            return None
+        values = pd.to_numeric(peers[column], errors="coerce").dropna()
+        if values.empty:
+            return None
+        return float(values.mean())
+
+    specs = [
+        ("Official avg views/day", "Official avg views/day", "Higher means official drops are compounding faster."),
+        ("Other avg views/day", "Other avg views/day", "Tracks discovery speed from Shorts/other content."),
+        (
+            "Official vs Other lift (%)",
+            "Official vs Other lift (%)",
+            "Positive means official releases beat other content.",
+        ),
+        (
+            "MV vs other official lift (%)",
+            "MV vs other official lift (%)",
+            "Positive means music videos beat other official formats.",
+        ),
+        (
+            "Shorts share in other content (%)",
+            "Shorts share in other content (%)",
+            "Shows how much of support content is Shorts.",
+        ),
+        ("Official cadence (days)", "Official cadence (days)", "Lower means more frequent official release cadence."),
+    ]
+
+    rows: list[dict[str, float | str | None]] = []
+    for label, column, interpretation in specs:
+        focus_value = pd.to_numeric(pd.Series([focus.get(column)]), errors="coerce").iloc[0]
+        focus_float = float(focus_value) if pd.notna(focus_value) else None
+        benchmark_avg = _peer_mean(column)
+        lift_pct = _safe_lift_pct(focus_float, benchmark_avg)
+        rows.append(
+            {
+                "Metric": label,
+                "Focus value": focus_float,
+                "Benchmark avg": benchmark_avg,
+                "Lift vs benchmark (%)": lift_pct,
+                "Interpretation": interpretation,
+            }
+        )
+    return pd.DataFrame(rows, columns=columns)
+
+
+def build_focus_trend_frame(df: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Return focus-vs-benchmark trend frame (views/day) for charting."""
+
+    required = {"artist_name", "metrics_date", "views_per_day"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+
+    typed = df.copy()
+    typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed = typed.dropna(subset=["metrics_date", "views_per_day"])
+    if typed.empty:
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+
+    artist_day = (
+        typed.groupby(["metrics_date", "artist_name"], dropna=False)
+        .agg(views_per_day=("views_per_day", "mean"))
+        .reset_index()
+    )
+    focus = artist_day.loc[artist_day["artist_name"] == focus_artist, ["metrics_date", "views_per_day"]].copy()
+    if focus.empty:
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+    focus["Series"] = "Focus artist"
+
+    peers = artist_day.loc[artist_day["artist_name"] != focus_artist]
+    if peers.empty:
+        return focus.loc[:, ["metrics_date", "Series", "views_per_day"]]
+
+    benchmark = peers.groupby("metrics_date", dropna=False).agg(views_per_day=("views_per_day", "mean")).reset_index()
+    benchmark["Series"] = "Benchmark average"
+    return pd.concat(
+        [
+            focus.loc[:, ["metrics_date", "Series", "views_per_day"]],
+            benchmark.loc[:, ["metrics_date", "Series", "views_per_day"]],
+        ],
+        ignore_index=True,
+    ).sort_values(["metrics_date", "Series"])
+
+
+def build_focus_format_lift_table(df: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Compare focus artist format performance against benchmark averages."""
+
+    required = {"artist_name", "video_type", "video_id", "views_per_day"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    typed = df.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed = typed.dropna(subset=["views_per_day"])
+    if typed.empty:
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    focus_mix = (
+        typed.loc[typed["artist_name"] == focus_artist]
+        .groupby("video_type_label", dropna=False)
+        .agg(focus_views_per_day=("views_per_day", "mean"))
+    )
+    if focus_mix.empty:
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    benchmark_mix = (
+        typed.loc[typed["artist_name"] != focus_artist]
+        .groupby("video_type_label", dropna=False)
+        .agg(benchmark_views_per_day=("views_per_day", "mean"))
+    )
+    merged = focus_mix.join(benchmark_mix, how="left").reset_index()
+    merged["Lift vs benchmark (%)"] = merged.apply(
+        lambda row: _safe_lift_pct(
+            float(row["focus_views_per_day"]) if pd.notna(row["focus_views_per_day"]) else None,
+            float(row["benchmark_views_per_day"]) if pd.notna(row["benchmark_views_per_day"]) else None,
+        ),
+        axis=1,
+    )
+    merged = merged.rename(
+        columns={
+            "video_type_label": "Format",
+            "focus_views_per_day": "Focus avg views/day",
+            "benchmark_views_per_day": "Benchmark avg views/day",
+        }
+    )
+    return merged.sort_values("Focus avg views/day", ascending=False).reset_index(drop=True)
+
+
 def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
     """Compute RPM (USD per 1,000 views) by video type from video rows."""
 
@@ -1623,6 +1999,263 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
         )
 
 
+def _prepare_release_table_for_display(df: pd.DataFrame) -> pd.DataFrame:
+    columns = [
+        "artist_name",
+        "title",
+        "video_type_label",
+        "activity_date",
+        "view_count",
+        "views_per_day",
+        "engagement_rate",
+    ]
+    if df.empty:
+        return pd.DataFrame(columns=columns)
+
+    table = df.copy()
+    table["activity_date"] = pd.to_datetime(table["activity_date"], errors="coerce").dt.date
+    return table.loc[:, columns].rename(
+        columns={
+            "artist_name": "Artist",
+            "title": "Title",
+            "video_type_label": "Format",
+            "activity_date": "Release date",
+            "view_count": "Views",
+            "views_per_day": "Views/day",
+            "engagement_rate": "Engagement %",
+        }
+    )
+
+
+def render_executive_action_center(df: pd.DataFrame) -> None:
+    """Render high-signal planning view for rollout meetings."""
+
+    st.markdown("### Executive Action Center")
+    st.caption(
+        "Official releases = Official Music Video, Official Audio, Lyric Video. "
+        "Other content = Shorts + everything else."
+    )
+
+    official_recent, other_recent = _prepare_recent_release_windows(df, per_artist_limit=10)
+    board = build_release_strategy_board(df, per_artist_limit=10)
+    if board.empty:
+        st.info("Not enough data to build executive rollout actions yet.")
+        return
+
+    chart_rows = board.dropna(subset=["MV vs other official lift (%)"])
+    if not chart_rows.empty:
+        lift_chart = px.bar(
+            chart_rows,
+            x="Artist",
+            y="MV vs other official lift (%)",
+            color="MV vs other official lift (%)",
+            color_continuous_scale=[(0.0, "#B91C1C"), (0.5, "#F59E0B"), (1.0, "#15803D")],
+            title="Music video lift vs other official formats (views/day, latest 10 official releases)",
+        )
+        lift_chart.add_hline(y=0.0, line_dash="dot", line_color="#6B7280")
+        lift_chart.update_layout(coloraxis_colorbar_title="Lift %")
+        st.plotly_chart(lift_chart, use_container_width=True, height=360)
+
+    st.markdown("##### Today-first rollout KPIs")
+    st.dataframe(
+        board,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Official release count": st.column_config.NumberColumn("Official count", format="%d"),
+            "Other content count": st.column_config.NumberColumn("Other count", format="%d"),
+            "Official avg views/day": st.column_config.NumberColumn("Official avg views/day", format="%.1f"),
+            "Other avg views/day": st.column_config.NumberColumn("Other avg views/day", format="%.1f"),
+            "Official vs Other lift (%)": st.column_config.NumberColumn("Official vs Other lift %", format="%.1f"),
+            "MV vs other official lift (%)": st.column_config.NumberColumn(
+                "MV vs other official lift %", format="%.1f"
+            ),
+            "Shorts share in other content (%)": st.column_config.NumberColumn("Shorts share %", format="%.1f"),
+            "Official cadence (days)": st.column_config.NumberColumn("Official cadence (days)", format="%.0f"),
+            "Today action": st.column_config.TextColumn("Today action", width="large"),
+        },
+    )
+
+    st.markdown("##### Rollout Meeting Talking Points")
+    for row in board.to_dict(orient="records"):
+        st.markdown(f"- **{row['Artist']}:** {row['Today action']}")
+
+    official_table = _prepare_release_table_for_display(official_recent)
+    other_table = _prepare_release_table_for_display(other_recent)
+
+    left, right = st.columns(2)
+    with left:
+        st.markdown("##### Last 10 official releases per artist")
+        st.dataframe(
+            official_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+    with right:
+        st.markdown("##### Last 10 other content posts per artist")
+        st.dataframe(
+            other_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+
+
+def render_artist_focus_dashboard(
+    *,
+    latest: pd.DataFrame,
+    normalized_filtered: pd.DataFrame,
+    selected_artists: list[str],
+    focus_artist: str,
+    base_color_map: dict[str, str],
+) -> None:
+    """Render one-artist coaching dashboard with grayscale benchmarks."""
+
+    st.markdown("### Artist Coaching View")
+    st.caption("Focus artist is highlighted. Other selected artists are benchmarks in grayscale.")
+
+    board = build_release_strategy_board(latest, per_artist_limit=10)
+    scorecard = build_focus_artist_scorecard(board, focus_artist)
+
+    focus_row = board.loc[board["Artist"] == focus_artist]
+    if not focus_row.empty:
+        today_action = str(focus_row.iloc[0]["Today action"])
+        st.markdown(
+            (
+                "<div style='padding:14px 16px; border-radius:14px; "
+                "border:1px solid #67E8F9; background:linear-gradient(120deg,#0F172A,#1E3A8A);'>"
+                f"<div style='font-size:1.1rem; font-weight:700; color:#F8FAFC;'>"
+                f"{focus_artist}: rollout priority for today</div>"
+                f"<div style='margin-top:8px; color:#CFFAFE; font-weight:600;'>{today_action}</div>"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
+        )
+
+    if not scorecard.empty:
+        st.markdown("##### Focus KPI scorecard (vs benchmark artists)")
+        st.dataframe(
+            scorecard,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Focus value": st.column_config.NumberColumn("Focus value", format="%.2f"),
+                "Benchmark avg": st.column_config.NumberColumn("Benchmark avg", format="%.2f"),
+                "Lift vs benchmark (%)": st.column_config.NumberColumn("Lift %", format="%.1f"),
+                "Interpretation": st.column_config.TextColumn("Interpretation", width="large"),
+            },
+        )
+
+    trend_df = build_focus_trend_frame(normalized_filtered, focus_artist)
+    format_lift_df = build_focus_format_lift_table(latest, focus_artist)
+    focus_color = _build_focus_artist_color_map(
+        selected_artists,
+        focus_artist=focus_artist,
+        base_color_map=base_color_map,
+    ).get(focus_artist, "#0EA5E9")
+
+    left, right = st.columns(2)
+    with left:
+        if trend_df.empty:
+            st.info("Not enough trend points to compare focus artist vs benchmarks.")
+        else:
+            trend_fig = px.line(
+                trend_df,
+                x="metrics_date",
+                y="views_per_day",
+                color="Series",
+                markers=True,
+                color_discrete_map={"Focus artist": focus_color, "Benchmark average": "#B4B9C3"},
+                title="Daily velocity trend: focus artist vs benchmark average",
+            )
+            trend_fig.update_layout(hovermode="x unified", legend_title_text="")
+            st.plotly_chart(trend_fig, use_container_width=True, height=360)
+    with right:
+        scatter_df = latest.copy()
+        if scatter_df.empty:
+            st.info("No recent videos available for benchmark comparison.")
+        else:
+            scatter_df["Role"] = scatter_df["artist_name"].apply(
+                lambda name: "Focus artist" if str(name) == focus_artist else "Benchmark artists"
+            )
+            scatter_fig = px.scatter(
+                scatter_df,
+                x="views_per_day",
+                y="engagement_rate",
+                color="Role",
+                size="view_count",
+                hover_name="title",
+                hover_data={
+                    "artist_name": True,
+                    "view_count": ":,.0f",
+                    "views_per_day": ":,.1f",
+                    "engagement_rate": ":.2f",
+                },
+                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": "#C7CBD4"},
+                title="Latest videos: focus highlight with benchmark context",
+            )
+            for trace in scatter_fig.data:
+                if trace.name == "Benchmark artists":
+                    trace.marker.opacity = 0.35
+                else:
+                    trace.marker.opacity = 0.95
+                    trace.marker.line = {"width": 1.5, "color": "#0F172A"}
+            st.plotly_chart(scatter_fig, use_container_width=True, height=360)
+
+    if not format_lift_df.empty:
+        st.markdown("##### Format lift board (focus artist)")
+        st.dataframe(
+            format_lift_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Focus avg views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Benchmark avg views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Lift vs benchmark (%)": st.column_config.NumberColumn(format="%.1f"),
+            },
+        )
+
+    official_recent, other_recent = _prepare_recent_release_windows(latest, per_artist_limit=10)
+    official_focus = _prepare_release_table_for_display(
+        official_recent.loc[official_recent["artist_name"] == focus_artist]
+    )
+    other_focus = _prepare_release_table_for_display(other_recent.loc[other_recent["artist_name"] == focus_artist])
+    col_official, col_other = st.columns(2)
+    with col_official:
+        st.markdown(f"##### {focus_artist}: last 10 official releases")
+        st.dataframe(
+            official_focus,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+    with col_other:
+        st.markdown(f"##### {focus_artist}: last 10 other-content posts")
+        st.dataframe(
+            other_focus,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+
+
 def render_top_videos(df: pd.DataFrame, limit: int) -> None:
     if df.empty:
         st.info("No videos match the current filters.")
@@ -1868,6 +2501,7 @@ def main() -> None:
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
         render_artist_content_mix(latest)
+        render_executive_action_center(latest)
 
         ui.card(
             content=(
@@ -1881,10 +2515,27 @@ def main() -> None:
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
-        st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
-        render_content_mix(latest)
-        render_artist_content_mix(latest)
+        focus_artist = st.selectbox(
+            "Focus artist",
+            selected_artists,
+            index=0,
+            help=("Choose one artist to coach. Other selected artists stay on screen " "as grayscale benchmarks."),
+        )
+        render_kpis(
+            artist_summary,
+            [focus_artist],
+            latest,
+            latest,
+            mode=mode,
+            latest_etl_run_date=latest_etl_run_date,
+        )
+        render_artist_focus_dashboard(
+            latest=latest,
+            normalized_filtered=normalized_filtered,
+            selected_artists=selected_artists,
+            focus_artist=focus_artist,
+            base_color_map=color_map,
+        )
 
     else:  # "Velocity Analysis"
         st.markdown("### Velocity & momentum")
