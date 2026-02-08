@@ -123,6 +123,7 @@ ARTIST_ALIASES_PATH = BASE_DIR / "config" / "artist_aliases.json"
 ARTIST_ALIAS_OVERRIDES = {
     "hicorook": "Corook",
     "@hicorook": "Corook",
+    "cobrah": "COBRAH",
 }
 
 
@@ -928,7 +929,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text("""
+    sql = text(
+        """
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -943,7 +945,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """)
+        """
+    )
 
     engine = get_engine()
     with engine.connect() as conn:
@@ -1109,11 +1112,13 @@ def load_latest_successful_etl_run_at() -> datetime | None:
 
     from sqlalchemy import text
 
-    query = text("""
+    query = text(
+        """
         SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
-        """)
+        """
+    )
 
     try:
         engine = get_engine()
@@ -2617,8 +2622,7 @@ def build_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2) 
         "Artist",
         "Thumbnail",
         "Video",
-        "Why this is flagged",
-        "Reason key",
+        "Signal",
         "Quick arithmetic",
         "Comments",
         "Likes",
@@ -2709,8 +2713,7 @@ def build_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2) 
                     "Artist": str(artist_name),
                     "Thumbnail": _youtube_thumbnail_url(video_id),
                     "Video": str(row.get("title") or "(untitled video)"),
-                    "Why this is flagged": str(best_reason["reason_label"]),
-                    "Reason key": str(best_reason["reason_key"]),
+                    "Signal": str(best_reason["reason_label"]),
                     "Quick arithmetic": str(best_reason["math"]),
                     "Comments": int(round(_coerce_float(row.get("comment_count"), 0.0))),
                     "Likes": likes,
@@ -2757,8 +2760,11 @@ def render_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2,
                 width="small",
             ),
             "Video": st.column_config.TextColumn("Video", width="large"),
-            "Why this is flagged": st.column_config.TextColumn("Why this is flagged", width="medium"),
-            "Reason key": st.column_config.TextColumn("Reason key", width="medium"),
+            "Signal": st.column_config.TextColumn(
+                "Signal",
+                width="medium",
+                help="Plain-language reason this video stands out for comment behavior.",
+            ),
             "Quick arithmetic": st.column_config.TextColumn("Quick arithmetic", width="large"),
             "Comments": st.column_config.NumberColumn("Comments", format="%,d"),
             "Likes": st.column_config.NumberColumn("Likes", format="%,d"),
@@ -3175,6 +3181,16 @@ def main() -> None:
     latest_roster = latest_snapshot(window_filtered_all)
     latest = filter_by_artists(latest_roster, selected_artists)
     color_map = build_color_discrete_map(selected_artists, palette)
+    configured_palette_names = {name.casefold() for name in palette}
+    unconfigured_palette_artists = sorted(
+        {artist_name for artist_name in selected_artists if str(artist_name).casefold() not in configured_palette_names}
+    )
+    if unconfigured_palette_artists:
+        st.info(
+            "Palette check: using deterministic fallback colors for new artists: "
+            + ", ".join(unconfigured_palette_artists)
+            + ". Add them to config/artist_colors.json to lock brand colors.",
+        )
 
     # Top-level navigation for different storytelling modes
     selected_view = option_menu(

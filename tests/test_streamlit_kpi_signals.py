@@ -241,9 +241,7 @@ def test_build_comment_watchlist_returns_two_videos_per_artist_with_links() -> N
     assert watchlist["Watch"].str.startswith("https://www.youtube.com/watch?v=").all()
     assert watchlist["Thumbnail"].str.startswith("https://i.ytimg.com/vi/").all()
     assert watchlist["Quick arithmetic"].str.contains("artist median").all()
-    assert set(watchlist["Reason key"]).issubset(
-        {"comments per 1k views spike", "comments per like spike", "views per comment spike"}
-    )
+    assert watchlist["Signal"].str.contains("unusually", case=False).all()
 
 
 def test_build_comment_watchlist_returns_empty_without_required_columns() -> None:
