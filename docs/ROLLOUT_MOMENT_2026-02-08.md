@@ -9,6 +9,7 @@ This log captures a high-impact product direction change so future agents do not
 3. Do not reintroduce pseudo-finance KPI cards (for example, Estimated Revenue) in the exec strip.
 4. New entries must never render fake gigantic percentage deltas; mark as `NEW ENTRY`.
 5. Snapshot freshness must follow ETL heartbeat and daily snapshot regeneration.
+6. Use duration-only wording for short-form (`Short video (<60s)`), not product claims.
 
 ## What changed in this moment
 ### 1) Executive-first KPI emphasis
@@ -26,6 +27,12 @@ This log captures a high-impact product direction change so future agents do not
 ### 3) Daily demo snapshot guardrail
 - Nightly ingestion now regenerates demo snapshot artifacts after successful ingestion.
 - Snapshot refresh is timeout-guarded and test-covered.
+- Demo snapshot defaults are now portfolio-sized (`8` artists, up to `200` ranked videos per artist).
+
+### 4) Label-safe content taxonomy cleanup
+- Removed pseudo-finance wiring from Streamlit KPI paths (no estimated revenue rollups/cards/tooltips).
+- Replaced `Shorts` UI language with `Short video (<60s)` and removed title hashtag forcing.
+- Added age/velocity sentinel handling so unknown publish age cannot create fake views/day spikes.
 
 ## Decision rationale
 | Decision | Reason |
@@ -40,6 +47,7 @@ This log captures a high-impact product direction change so future agents do not
 - [ ] No `Estimated Revenue` card in the exec KPI strip.
 - [ ] Delta table does not include finance rows.
 - [ ] `NEW ENTRY` behavior is intact for near-zero baselines.
+- [ ] `Avg views/day` uses `NEW ENTRY` guard when baseline is near-zero.
 - [ ] Deep Dive supports one focus artist with grayscale benchmarks.
 - [ ] Nightly ETL path refreshes demo snapshot.
-
+- [ ] Short-form language in UI is `Short video (<60s)` (duration-based).

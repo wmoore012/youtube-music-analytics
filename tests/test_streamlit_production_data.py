@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from streamlit_app import (
     _classify_video_type_from_duration,
     _parse_iso8601_duration_seconds,
@@ -19,8 +20,8 @@ def test_parse_iso8601_duration_seconds() -> None:
 
 
 def test_classify_video_type_from_duration() -> None:
-    assert _classify_video_type_from_duration("PT59S") == "Shorts"
-    assert _classify_video_type_from_duration("PT1M") == "Shorts"
+    assert _classify_video_type_from_duration("PT59S") == "Short video (<60s)"
+    assert _classify_video_type_from_duration("PT1M") == "Short video (<60s)"
     assert _classify_video_type_from_duration("PT1M1S") == "Other Content"
     assert _classify_video_type_from_duration(None) == "Other Content"
 
@@ -35,7 +36,6 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
                 "view_count": 100,
                 "like_count": 10,
                 "comment_count": 2,
-                "est_revenue_usd": 1.0,
                 "engagement_rate": 12.0,
             },
             {
@@ -45,7 +45,6 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
                 "view_count": 120,
                 "like_count": 12,
                 "comment_count": 3,
-                "est_revenue_usd": 1.2,
                 "engagement_rate": 12.5,
             },
             {
@@ -55,7 +54,6 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
                 "view_count": 80,
                 "like_count": 8,
                 "comment_count": 1,
-                "est_revenue_usd": 0.8,
                 "engagement_rate": 11.25,
             },
         ]
@@ -68,7 +66,6 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
     assert int(row["total_views"]) == 200
     assert int(row["total_likes"]) == 20
     assert int(row["total_comments"]) == 4
-    assert float(row["total_est_revenue_usd"]) == 2.0
 
 
 def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -118,7 +115,7 @@ def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pyt
     assert normalized_videos["metrics_date"].dt.date.iloc[0].isoformat() == "2026-02-07"
 
 
-def test_demo_loader_maps_music_content_to_clear_bucket(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_demo_loader_uses_duration_only_for_short_video_bucket(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = {
         "last_updated": "2026-02-07T00:00:00+00:00",
         "artists": [
@@ -130,6 +127,7 @@ def test_demo_loader_maps_music_content_to_clear_bucket(monkeypatch: pytest.Monk
                         "title": "quick run clip #shorts",
                         "published_at": "2025-01-01T00:00:00",
                         "view_count": 1000,
+                        "duration": "PT45S",
                         "like_rate": 2.0,
                         "comment_rate": 1.0,
                         "video_type": "Music Content",
@@ -142,9 +140,35 @@ def test_demo_loader_maps_music_content_to_clear_bucket(monkeypatch: pytest.Monk
     monkeypatch.setattr("streamlit_app._load_demo_cohort", lambda: payload)
 
     normalized = load_normalized_videos_from_demo()
-    assert normalized["video_type"].tolist() == ["Shorts"]
+    assert normalized["video_type"].tolist() == ["Short video (<60s)"]
     assert int(normalized["like_count"].iloc[0]) == 20
     assert int(normalized["comment_count"].iloc[0]) == 10
+
+
+def test_demo_loader_sets_unknown_age_to_sentinel_and_zero_velocity(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = {
+        "last_updated": "2026-02-07T00:00:00+00:00",
+        "artists": [
+            {
+                "name": "BiC Fizzle",
+                "videos": [
+                    {
+                        "video_id": "b1",
+                        "title": "missing publish date",
+                        "view_count": 5000,
+                        "views_per_day": 9999.0,
+                        "video_type": "Official Music Video",
+                    }
+                ],
+            }
+        ],
+    }
+
+    monkeypatch.setattr("streamlit_app._load_demo_cohort", lambda: payload)
+
+    normalized = load_normalized_videos_from_demo()
+    assert int(normalized["age_days"].iloc[0]) == -1
+    assert float(normalized["views_per_day"].iloc[0]) == 0.0
 
 
 def test_resolve_metrics_date_window_requires_column() -> None:

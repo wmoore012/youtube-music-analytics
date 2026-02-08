@@ -30,6 +30,7 @@ JSON/CSV snapshot without touching any database.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -42,10 +43,25 @@ from tools.specialized.analytics.create_music_videos_table import (
 )
 from web.etl_helpers import get_engine
 
-
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
+DEFAULT_DEMO_TOP_ARTISTS = 8
+DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST = 200
+
+
+def _read_positive_int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    raw = raw.strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
 
 
 def _ensure_dirs() -> None:
@@ -55,8 +71,8 @@ def _ensure_dirs() -> None:
 
 def build_curated_cohort(
     *,
-    top_artists: int = 5,
-    top_videos_per_artist: int = 10,
+    top_artists: int = DEFAULT_DEMO_TOP_ARTISTS,
+    top_videos_per_artist: int = DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST,
 ) -> Dict[str, Any]:
     """Build the curated cohort payload from the live warehouse.
 
@@ -138,9 +154,22 @@ def build_curated_cohort(
 
 def main() -> None:
     _ensure_dirs()
-    payload = build_curated_cohort()
+    # IMPORTANT / DO NOT REGRESS:
+    # Demo mode must remain rich enough for portfolio exploration without
+    # requiring live cloud DB setup. Keep these defaults substantial.
+    top_artists = _read_positive_int_env("DEMO_SNAPSHOT_TOP_ARTISTS", DEFAULT_DEMO_TOP_ARTISTS)
+    top_videos_per_artist = _read_positive_int_env(
+        "DEMO_SNAPSHOT_TOP_VIDEOS_PER_ARTIST",
+        DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST,
+    )
+    payload = build_curated_cohort(
+        top_artists=top_artists,
+        top_videos_per_artist=top_videos_per_artist,
+    )
     DEMO_DATA_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True))
-    print(f"Updated demo cohort at {DEMO_DATA_PATH}")
+    print(
+        "Updated demo cohort at " f"{DEMO_DATA_PATH} (artists={top_artists}, videos_per_artist={top_videos_per_artist})"
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover

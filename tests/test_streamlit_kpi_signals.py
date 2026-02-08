@@ -4,6 +4,7 @@ import pytest
 from streamlit_app import (
     build_artist_content_action_rows,
     build_delta_signal_rows,
+    build_focus_artist_header_html,
     build_focus_artist_scorecard,
     build_focus_format_lift_table,
     build_focus_trend_frame,
@@ -13,7 +14,9 @@ from streamlit_app import (
     compute_delta_display,
     compute_pct_delta,
     format_delta_value,
+    hex_color_to_rgb_csv,
     prepare_recent_release_windows,
+    sanitize_hex_color,
 )
 
 
@@ -29,6 +32,26 @@ def test_format_delta_value() -> None:
     assert format_delta_value(None) is None
     assert format_delta_value(12.34) == "+12.3%"
     assert format_delta_value(-3.21) == "-3.2%"
+
+
+def test_sanitize_hex_color_is_safe_and_normalized() -> None:
+    assert sanitize_hex_color("#abc") == "#AABBCC"
+    assert sanitize_hex_color("#12af09") == "#12AF09"
+    assert sanitize_hex_color("invalid") == "#FF4B4B"
+    assert sanitize_hex_color(None, fallback="#0099FF") == "#0099FF"
+
+
+def test_hex_color_to_rgb_csv_converts_color() -> None:
+    assert hex_color_to_rgb_csv("#FF4B4B") == "255, 75, 75"
+    # Invalid colors fall back to default accent red before conversion.
+    assert hex_color_to_rgb_csv("bad-color") == "255, 75, 75"
+
+
+def test_build_focus_artist_header_html_escapes_artist_name() -> None:
+    header_html = build_focus_artist_header_html("Flyana <Boss>", "#80b1d3")
+    assert "Flyana &lt;Boss&gt;" in header_html
+    assert "Assigned color: #80B1D3" in header_html
+    assert "--focus-rgb:128, 177, 211;" in header_html
 
 
 def test_compute_delta_display_marks_new_entry_when_baseline_near_zero() -> None:
@@ -84,6 +107,27 @@ def test_build_delta_signal_rows_marks_video_new_entry() -> None:
     assert "new entry floor" in video_row["Arithmetic"]
 
 
+def test_build_delta_signal_rows_marks_views_per_day_new_entry() -> None:
+    rows = build_delta_signal_rows(
+        views_per_artist=110.0,
+        roster_views_per_artist=100.0,
+        videos_per_artist=2.0,
+        roster_videos_per_artist=1.5,
+        likes_per_artist=50.0,
+        roster_likes_per_artist=40.0,
+        comments_per_artist=8.0,
+        roster_comments_per_artist=7.0,
+        overall_engagement_rate=5.0,
+        roster_overall_engagement_rate=4.0,
+        avg_views_per_day=250.0,
+        roster_avg_views_per_day=40.0,
+    )
+
+    velocity_row = rows.loc[rows["KPI"] == "Avg views/day"].iloc[0]
+    assert velocity_row["Delta"] == "NEW ENTRY"
+    assert "new entry floor" in velocity_row["Arithmetic"]
+
+
 def test_build_artist_content_action_rows_returns_actionable_rows() -> None:
     df = pd.DataFrame(
         [
@@ -129,7 +173,6 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
                 "total_videos": 10,
                 "total_likes": 100,
                 "total_comments": 20,
-                "total_est_revenue_usd": 5.0,
                 "avg_engagement_rate": 5.0,
             },
             {
@@ -138,7 +181,6 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
                 "total_videos": 9,
                 "total_likes": 90,
                 "total_comments": 18,
-                "total_est_revenue_usd": 4.5,
                 "avg_engagement_rate": 4.0,
             },
         ]
@@ -152,7 +194,6 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
                 "view_count": 120,
                 "like_count": 12,
                 "comment_count": 4,
-                "est_revenue_usd": 0.6,
                 "engagement_rate": 13.0,
             },
             {
@@ -161,7 +202,6 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
                 "view_count": 80,
                 "like_count": 8,
                 "comment_count": 2,
-                "est_revenue_usd": 0.4,
                 "engagement_rate": 12.0,
             },
         ]
@@ -178,7 +218,6 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
                         "view_count": 200,
                         "like_count": 20,
                         "comment_count": 5,
-                        "est_revenue_usd": 1.0,
                         "engagement_rate": 8.0,
                     }
                 ]
@@ -198,14 +237,12 @@ def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
     assert context["total_videos"] == 2
     assert context["total_likes"] == 20
     assert context["total_comments"] == 6
-    assert context["total_revenue"] == pytest.approx(1.0)
     assert context["avg_engagement"] == pytest.approx(12.5)
     assert context["selected_artist_count"] == 1
     assert context["roster_views_per_artist"] == pytest.approx(200.0)
     assert context["roster_videos_per_artist"] == pytest.approx(1.5)
     assert context["roster_likes_per_artist"] == pytest.approx(20.0)
     assert context["roster_comments_per_artist"] == pytest.approx(5.5)
-    assert context["roster_revenue_per_artist"] == pytest.approx(1.0)
     assert context["roster_avg_engagement"] == pytest.approx(10.25)
 
 
@@ -287,7 +324,7 @@ def test_prepare_recent_release_windows_limits_to_latest_n_per_artist() -> None:
                 "artist_name": "Artist A",
                 "video_id": f"other-{idx}",
                 "title": f"Other {idx}",
-                "video_type": "Shorts",
+                "video_type": "Short",
                 "view_count": 500 + idx,
                 "views_per_day": 80.0 + idx,
                 "engagement_rate": 3.0 + idx,
@@ -343,7 +380,7 @@ def test_build_release_strategy_board_computes_music_video_lift() -> None:
                 "artist_name": "Artist A",
                 "video_id": "short1",
                 "title": "Short 1",
-                "video_type": "Shorts",
+                "video_type": "Short",
                 "view_count": 3_000,
                 "views_per_day": 120.0,
                 "engagement_rate": 5.5,
@@ -354,7 +391,7 @@ def test_build_release_strategy_board_computes_music_video_lift() -> None:
                 "artist_name": "Artist A",
                 "video_id": "short2",
                 "title": "Short 2",
-                "video_type": "Shorts",
+                "video_type": "Short",
                 "view_count": 2_500,
                 "views_per_day": 100.0,
                 "engagement_rate": 5.0,
@@ -386,7 +423,7 @@ def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
                 "Other avg views/day": 100.0,
                 "Official vs Other lift (%)": 200.0,
                 "MV vs other official lift (%)": 50.0,
-                "Shorts share in other content (%)": 60.0,
+                "Short video (<60s) share in other content (%)": 60.0,
                 "Official cadence (days)": 14.0,
             },
             {
@@ -395,7 +432,7 @@ def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
                 "Other avg views/day": 75.0,
                 "Official vs Other lift (%)": 100.0,
                 "MV vs other official lift (%)": 25.0,
-                "Shorts share in other content (%)": 40.0,
+                "Short video (<60s) share in other content (%)": 40.0,
                 "Official cadence (days)": 21.0,
             },
             {
@@ -404,7 +441,7 @@ def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
                 "Other avg views/day": 100.0,
                 "Official vs Other lift (%)": 100.0,
                 "MV vs other official lift (%)": 30.0,
-                "Shorts share in other content (%)": 20.0,
+                "Short video (<60s) share in other content (%)": 20.0,
                 "Official cadence (days)": 28.0,
             },
         ]
@@ -439,15 +476,15 @@ def test_build_focus_trend_frame_returns_focus_and_benchmark_series() -> None:
 def test_build_focus_format_lift_table_compares_focus_vs_benchmark() -> None:
     df = pd.DataFrame(
         [
-            {"artist_name": "Artist A", "video_type": "Shorts", "video_id": "a1", "views_per_day": 300.0},
+            {"artist_name": "Artist A", "video_type": "Short", "video_id": "a1", "views_per_day": 300.0},
             {"artist_name": "Artist A", "video_type": "Official Music Video", "video_id": "a2", "views_per_day": 200.0},
-            {"artist_name": "Artist B", "video_type": "Shorts", "video_id": "b1", "views_per_day": 150.0},
+            {"artist_name": "Artist B", "video_type": "Short", "video_id": "b1", "views_per_day": 150.0},
             {"artist_name": "Artist B", "video_type": "Official Music Video", "video_id": "b2", "views_per_day": 100.0},
         ]
     )
 
     table = build_focus_format_lift_table(df, "Artist A")
-    shorts = table.loc[table["Format"] == "Shorts"].iloc[0]
-    assert shorts["Focus avg views/day"] == pytest.approx(300.0)
-    assert shorts["Benchmark avg views/day"] == pytest.approx(150.0)
-    assert shorts["Lift vs benchmark (%)"] == pytest.approx(100.0)
+    short_video = table.loc[table["Format"] == "Short video (<60s)"].iloc[0]
+    assert short_video["Focus avg views/day"] == pytest.approx(300.0)
+    assert short_video["Benchmark avg views/day"] == pytest.approx(150.0)
+    assert short_video["Lift vs benchmark (%)"] == pytest.approx(100.0)
