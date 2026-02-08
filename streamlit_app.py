@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import logging
 import math
 import os
 import re
@@ -60,6 +61,18 @@ COMMENT_WATCHLIST_MIN_VIEWS = 500
 COMMENT_WATCHLIST_MIN_COMMENTS = 3
 COMMENT_WATCHLIST_MIN_LIKES = 3
 COMMENT_WATCHLIST_MIN_LIFT = 1.35
+LOGGER = logging.getLogger(__name__)
+APP_RED_700 = "#7A1F2B"
+APP_RED_600 = "#8B2635"
+APP_RED_500 = "#A3262A"
+APP_RED_100 = "#FBE9E8"
+APP_RED_050 = "#FFF5F4"
+APP_BENCHMARK_GRAY = "#C7CBD4"
+APP_BENCHMARK_GRAY_DARK = "#B4B9C3"
+# IMPORTANT / DO NOT REGRESS:
+# Keep one global artist palette source for the full app so styling remains
+# consistent across Overview, Deep Dive, Velocity, and callout components.
+GLOBAL_ARTIST_PALETTE = get_artist_color_palette()
 
 
 @dataclass(frozen=True)
@@ -142,12 +155,23 @@ def _normalize_optional_text(value: object) -> str:
 @st.cache_data(show_spinner=False)
 def _load_expected_artists_cached(path_text: str, _mtime_ns: int) -> list[str]:
     path = Path(path_text)
-    if not path.exists():
-        return []
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        raw_text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
         return []
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read expected artists config '%s': %s", path.name, exc)
+        return []
+    except OSError as exc:
+        LOGGER.warning("OS error reading expected artists config '%s': %s", path.name, exc)
+        return []
+
+    try:
+        payload = json.loads(raw_text)
+    except json.JSONDecodeError as exc:
+        LOGGER.warning("Could not parse expected artists config '%s': %s", path.name, exc)
+        return []
+
     names = payload.get("expected_artists") if isinstance(payload, dict) else None
     if not isinstance(names, list):
         return []
@@ -165,17 +189,32 @@ def _load_expected_artists() -> list[str]:
 def _load_artist_aliases_cached(path_text: str, _mtime_ns: int) -> dict[str, str]:
     alias_map: dict[str, str] = {}
     path = Path(path_text)
-    if path.exists():
+
+    payload: object = {}
+    try:
+        raw_text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raw_text = ""
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read artist aliases config '%s': %s", path.name, exc)
+        raw_text = ""
+    except OSError as exc:
+        LOGGER.warning("OS error reading artist aliases config '%s': %s", path.name, exc)
+        raw_text = ""
+
+    if raw_text:
         try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            payload = json.loads(raw_text)
+        except json.JSONDecodeError as exc:
+            LOGGER.warning("Could not parse artist aliases config '%s': %s", path.name, exc)
             payload = {}
-        if isinstance(payload, dict):
-            for alias, canonical in payload.items():
-                alias_text = str(alias).strip()
-                canonical_text = str(canonical).strip()
-                if alias_text and canonical_text:
-                    alias_map[alias_text.casefold()] = canonical_text
+
+    if isinstance(payload, dict):
+        for alias, canonical in payload.items():
+            alias_text = str(alias).strip()
+            canonical_text = str(canonical).strip()
+            if alias_text and canonical_text:
+                alias_map[alias_text.casefold()] = canonical_text
     for alias, canonical in ARTIST_ALIAS_OVERRIDES.items():
         alias_map[alias.casefold()] = canonical
     return alias_map
@@ -328,7 +367,7 @@ def read_float_env(name: str, default: float) -> float:
     return _read_float_env(name, default)
 
 
-def _sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+def _sanitize_hex_color(color: str | None, fallback: str = APP_RED_500) -> str:
     """Return a safe CSS hex color or fallback."""
 
     candidate = (color or "").strip()
@@ -339,7 +378,7 @@ def _sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
     return candidate.upper()
 
 
-def sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+def sanitize_hex_color(color: str | None, fallback: str = APP_RED_500) -> str:
     """Public wrapper for safe CSS hex colors."""
 
     return _sanitize_hex_color(color, fallback=fallback)
@@ -364,29 +403,33 @@ def hex_color_to_rgb_csv(color: str) -> str:
 def inject_dashboard_motion_styles() -> None:
     """Inject subtle, premium motion + accent styling for Streamlit widgets."""
 
-    st.markdown(
-        """
+    accent_rgb = _hex_color_to_rgb_csv(APP_RED_500)
+    accent_rgb_700 = _hex_color_to_rgb_csv(APP_RED_700)
+    css = """
         <style>
           :root {
-            --yt-red-600: #C62828;
-            --yt-red-500: #FF4B4B;
-            --yt-red-100: #FEE2E2;
+            --yt-red-700: __APP_RED_700__;
+            --yt-red-600: __APP_RED_600__;
+            --yt-red-500: __APP_RED_500__;
+            --yt-red-100: __APP_RED_100__;
+            --yt-red-050: __APP_RED_050__;
             --ink-900: #111827;
             --ink-600: #4B5563;
-            --benchmark-gray: #C7CBD4;
+            --benchmark-gray: __APP_BENCHMARK_GRAY__;
           }
           @keyframes focusRise {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
           }
           [data-testid="stSelectbox"] > div[data-baseweb="select"] {
-            border: 1px solid rgba(198, 40, 40, 0.35);
+            border: 1px solid rgba(__ACCENT_RGB_700__, 0.40);
             border-radius: 14px;
             transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+            background: linear-gradient(180deg, var(--yt-red-050) 0%, #FFFFFF 100%);
           }
           [data-testid="stSelectbox"] > div[data-baseweb="select"]:focus-within {
             border-color: var(--yt-red-500);
-            box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.20);
+            box-shadow: 0 0 0 3px rgba(__ACCENT_RGB__, 0.18);
             transform: translateY(-1px);
           }
           .focus-artist-hero {
@@ -441,7 +484,19 @@ def inject_dashboard_motion_styles() -> None:
             animation: focusRise .36s ease-out;
           }
         </style>
-        """,
+    """
+    css = (
+        css.replace("__APP_RED_700__", APP_RED_700)
+        .replace("__APP_RED_600__", APP_RED_600)
+        .replace("__APP_RED_500__", APP_RED_500)
+        .replace("__APP_RED_100__", APP_RED_100)
+        .replace("__APP_RED_050__", APP_RED_050)
+        .replace("__APP_BENCHMARK_GRAY__", APP_BENCHMARK_GRAY)
+        .replace("__ACCENT_RGB__", accent_rgb)
+        .replace("__ACCENT_RGB_700__", accent_rgb_700)
+    )
+    st.markdown(
+        css,
         unsafe_allow_html=True,
     )
 
@@ -1805,9 +1860,9 @@ def _build_focus_artist_color_map(
     color_map: dict[str, str] = {}
     for artist in artists:
         if artist == focus_artist:
-            color_map[artist] = base_color_map.get(artist, "#0EA5E9")
+            color_map[artist] = base_color_map.get(artist, APP_RED_500)
         else:
-            color_map[artist] = "#C7CBD4"
+            color_map[artist] = APP_BENCHMARK_GRAY
     return color_map
 
 
@@ -2113,7 +2168,7 @@ def render_kpis(
     # Apply modern, card-like styling to the KPI strip
     style_metric_cards(
         background_color="#F0F2F6",
-        border_left_color="#FF4B4B",
+        border_left_color=APP_RED_500,
         border_radius_px=8,
         box_shadow=True,
     )
@@ -2346,7 +2401,7 @@ def render_content_mix(df: pd.DataFrame) -> None:
                 "name": "Total views",
                 "type": "bar",
                 "data": mix["total_views"].tolist(),
-                "itemStyle": {"color": "#FF4B4B"},
+                "itemStyle": {"color": APP_RED_500},
             }
         ],
     }
@@ -2510,7 +2565,7 @@ def render_executive_action_center(df: pd.DataFrame, *, palette: Mapping[str, st
     point_columns = st.columns(2)
     for idx, row in enumerate(points):
         artist_name = str(row["Artist"])
-        accent = sanitize_hex_color(palette.get(artist_name), fallback="#FF4B4B")
+        accent = sanitize_hex_color(palette.get(artist_name), fallback=APP_RED_500)
         body = html.escape(str(row["Today action"]))
         with point_columns[idx % 2]:
             st.markdown(
@@ -2737,7 +2792,7 @@ def render_artist_focus_dashboard(
         focus_artist=focus_artist,
         base_color_map=base_color_map,
     )
-    focus_color = focus_color_map.get(focus_artist, "#FF4B4B")
+    focus_color = focus_color_map.get(focus_artist, APP_RED_500)
 
     st.markdown("### Artist Coaching View")
     render_focus_artist_header(focus_artist, focus_color)
@@ -2752,9 +2807,9 @@ def render_artist_focus_dashboard(
         st.markdown(
             (
                 "<div style='padding:14px 16px; border-radius:14px; "
-                f"border:1px solid {focus_color}; background:linear-gradient(120deg,#FFFFFF,#FDECEC); "
+                f"border:1px solid {focus_color}; background:linear-gradient(120deg,#FFFFFF,{APP_RED_050}); "
                 "animation: focusRise .28s ease-out;'>"
-                "<div style='font-size:1.02rem; font-weight:700; color:#991B1B;'>Rollout Priority Today</div>"
+                f"<div style='font-size:1.02rem; font-weight:700; color:{APP_RED_700};'>Rollout Priority Today</div>"
                 f"<div style='margin-top:8px; color:#1F2937; font-weight:600;'>{html.escape(today_action)}</div>"
                 "</div>"
             ),
@@ -2789,7 +2844,7 @@ def render_artist_focus_dashboard(
                 y="views_per_day",
                 color="Series",
                 markers=True,
-                color_discrete_map={"Focus artist": focus_color, "Benchmark average": "#B4B9C3"},
+                color_discrete_map={"Focus artist": focus_color, "Benchmark average": APP_BENCHMARK_GRAY_DARK},
                 title="Daily velocity trend: focus artist vs benchmark average",
             )
             trend_fig.update_layout(hovermode="x unified", legend_title_text="")
@@ -2815,7 +2870,7 @@ def render_artist_focus_dashboard(
                     "views_per_day": ":,.1f",
                     "engagement_rate": ":.2f",
                 },
-                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": "#C7CBD4"},
+                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": APP_BENCHMARK_GRAY},
                 title="Latest videos: focus highlight with benchmark context",
             )
             for trace in scatter_fig.data:
@@ -2977,7 +3032,7 @@ def main() -> None:
         label = "Demo Mode" if mode == "demo" else "Production (MySQL)"
         st.badge(label)
 
-    palette = get_artist_color_palette()
+    palette = GLOBAL_ARTIST_PALETTE.copy()
     normalized_videos = load_normalized_videos(mode)
     normalized_videos, excluded_artists = normalize_artist_dimension(
         normalized_videos,
@@ -3175,7 +3230,7 @@ def main() -> None:
                 "peers stay on screen as grayscale benchmarks."
             ),
         )
-        focus_artist_color = sanitize_hex_color(color_map.get(focus_artist), fallback="#FF4B4B")
+        focus_artist_color = sanitize_hex_color(color_map.get(focus_artist), fallback=APP_RED_500)
         st.markdown(
             (
                 "<div style='margin-top:2px; margin-bottom:8px; font-weight:900; "

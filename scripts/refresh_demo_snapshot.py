@@ -29,9 +29,10 @@ JSON/CSV snapshot without touching any database.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
+import logging
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -55,6 +56,7 @@ ARTIST_ALIAS_OVERRIDES = {
 }
 DEFAULT_DEMO_TOP_ARTISTS = 8
 DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST = 200
+LOGGER = logging.getLogger(__name__)
 
 
 def _read_positive_int_env(name: str, default: int) -> int:
@@ -93,11 +95,20 @@ def _normalize_optional_text(value: object) -> str:
 
 
 def _load_expected_artists() -> list[str]:
-    if not EXPECTED_ARTISTS_PATH.exists():
+    try:
+        raw_text = EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return []
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read expected artists config '%s': %s", EXPECTED_ARTISTS_PATH.name, exc)
+        return []
+    except OSError as exc:
+        LOGGER.warning("OS error reading expected artists config '%s': %s", EXPECTED_ARTISTS_PATH.name, exc)
         return []
     try:
-        payload = json.loads(EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        payload = json.loads(raw_text)
+    except json.JSONDecodeError as exc:
+        LOGGER.warning("Could not parse expected artists config '%s': %s", EXPECTED_ARTISTS_PATH.name, exc)
         return []
     names = payload.get("expected_artists") if isinstance(payload, dict) else None
     if not isinstance(names, list):
@@ -107,17 +118,31 @@ def _load_expected_artists() -> list[str]:
 
 def _load_artist_aliases() -> dict[str, str]:
     aliases: dict[str, str] = {}
-    if ARTIST_ALIASES_PATH.exists():
+    payload: object = {}
+    try:
+        raw_text = ARTIST_ALIASES_PATH.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raw_text = ""
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read artist aliases config '%s': %s", ARTIST_ALIASES_PATH.name, exc)
+        raw_text = ""
+    except OSError as exc:
+        LOGGER.warning("OS error reading artist aliases config '%s': %s", ARTIST_ALIASES_PATH.name, exc)
+        raw_text = ""
+
+    if raw_text:
         try:
-            payload = json.loads(ARTIST_ALIASES_PATH.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            payload = json.loads(raw_text)
+        except json.JSONDecodeError as exc:
+            LOGGER.warning("Could not parse artist aliases config '%s': %s", ARTIST_ALIASES_PATH.name, exc)
             payload = {}
-        if isinstance(payload, dict):
-            for alias, canonical in payload.items():
-                alias_text = str(alias).strip()
-                canonical_text = str(canonical).strip()
-                if alias_text and canonical_text:
-                    aliases[alias_text.casefold()] = canonical_text
+
+    if isinstance(payload, dict):
+        for alias, canonical in payload.items():
+            alias_text = str(alias).strip()
+            canonical_text = str(canonical).strip()
+            if alias_text and canonical_text:
+                aliases[alias_text.casefold()] = canonical_text
     aliases.update({key.casefold(): value for key, value in ARTIST_ALIAS_OVERRIDES.items()})
     return aliases
 

@@ -38,14 +38,14 @@ def test_format_delta_value() -> None:
 def test_sanitize_hex_color_is_safe_and_normalized() -> None:
     assert sanitize_hex_color("#abc") == "#AABBCC"
     assert sanitize_hex_color("#12af09") == "#12AF09"
-    assert sanitize_hex_color("invalid") == "#FF4B4B"
+    assert sanitize_hex_color("invalid") == "#A3262A"
     assert sanitize_hex_color(None, fallback="#0099FF") == "#0099FF"
 
 
 def test_hex_color_to_rgb_csv_converts_color() -> None:
     assert hex_color_to_rgb_csv("#FF4B4B") == "255, 75, 75"
     # Invalid colors fall back to default accent red before conversion.
-    assert hex_color_to_rgb_csv("bad-color") == "255, 75, 75"
+    assert hex_color_to_rgb_csv("bad-color") == "163, 38, 42"
 
 
 def test_build_focus_artist_header_html_escapes_artist_name() -> None:
