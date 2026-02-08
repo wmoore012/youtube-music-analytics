@@ -479,7 +479,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text("""
+    sql = text(
+        """
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -494,7 +495,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """)
+        """
+    )
 
     engine = get_engine()
     with engine.connect() as conn:
@@ -1135,10 +1137,7 @@ def build_revenue_formula_context(
         rpm_values = list(rpm_by_type.values())
         spread = max(rpm_values) - min(rpm_values)
         if spread <= RPM_VARIATION_TOLERANCE:
-            type_note = (
-                "Shorts vs Other Content: this view is effectively using one RPM "
-                "for all content types."
-            )
+            type_note = "Shorts vs Other Content: this view is effectively using one RPM " "for all content types."
         else:
             top_types = sorted(rpm_by_type.items(), key=lambda item: item[1], reverse=True)
             sample = "; ".join(f"{name}: ${rpm:.2f}" for name, rpm in top_types[:4])
