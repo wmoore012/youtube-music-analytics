@@ -929,8 +929,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text(
-        """
+    sql = text("""
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -945,8 +944,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """
-    )
+        """)
 
     engine = get_engine()
     with engine.connect() as conn:
@@ -1112,13 +1110,11 @@ def load_latest_successful_etl_run_at() -> datetime | None:
 
     from sqlalchemy import text
 
-    query = text(
-        """
+    query = text("""
         SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
-        """
-    )
+        """)
 
     try:
         engine = get_engine()
