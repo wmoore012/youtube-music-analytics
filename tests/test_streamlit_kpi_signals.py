@@ -444,6 +444,44 @@ def test_build_release_strategy_board_computes_music_video_lift() -> None:
     assert len(row["Today action"]) > 20
 
 
+def test_build_release_strategy_board_counts_use_full_window_not_sample_cap() -> None:
+    rows = []
+    for idx in range(12):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"official-{idx}",
+                "title": f"Official {idx}",
+                "video_type": "Official Music Video",
+                "view_count": 1_000 + idx,
+                "views_per_day": 100.0 + idx,
+                "engagement_rate": 2.0,
+                "published_at": pd.Timestamp("2026-02-07") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-08"),
+            }
+        )
+    for idx in range(4):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"other-{idx}",
+                "title": f"Other {idx}",
+                "video_type": "Short",
+                "view_count": 500 + idx,
+                "views_per_day": 80.0 + idx,
+                "engagement_rate": 3.0,
+                "published_at": pd.Timestamp("2026-01-20") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-08"),
+            }
+        )
+
+    board = build_release_strategy_board(pd.DataFrame(rows), per_artist_limit=10)
+    row = board.iloc[0]
+
+    assert row["Official release count"] == 12
+    assert row["Other content count"] == 4
+
+
 def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
     board = pd.DataFrame(
         [

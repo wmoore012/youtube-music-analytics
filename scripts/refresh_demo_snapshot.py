@@ -46,6 +46,13 @@ from web.etl_helpers import get_engine
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
+EXPECTED_ARTISTS_PATH = BASE_DIR / "config" / "expected_artists.json"
+ARTIST_ALIASES_PATH = BASE_DIR / "config" / "artist_aliases.json"
+ARTIST_ALIAS_OVERRIDES = {
+    "hicorook": "Corook",
+    "@hicorook": "Corook",
+    "cobrah": "COBRAH",
+}
 DEFAULT_DEMO_TOP_ARTISTS = 8
 DEFAULT_DEMO_TOP_VIDEOS_PER_ARTIST = 200
 
@@ -69,6 +76,45 @@ def _ensure_dirs() -> None:
     DEMO_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
+def _load_expected_artists() -> list[str]:
+    if not EXPECTED_ARTISTS_PATH.exists():
+        return []
+    try:
+        payload = json.loads(EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return []
+    names = payload.get("expected_artists") if isinstance(payload, dict) else None
+    if not isinstance(names, list):
+        return []
+    return [str(name).strip() for name in names if str(name).strip()]
+
+
+def _load_artist_aliases() -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    if ARTIST_ALIASES_PATH.exists():
+        try:
+            payload = json.loads(ARTIST_ALIASES_PATH.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            payload = {}
+        if isinstance(payload, dict):
+            for alias, canonical in payload.items():
+                alias_text = str(alias).strip()
+                canonical_text = str(canonical).strip()
+                if alias_text and canonical_text:
+                    aliases[alias_text.casefold()] = canonical_text
+    aliases.update({key.casefold(): value for key, value in ARTIST_ALIAS_OVERRIDES.items()})
+    return aliases
+
+
+def _canonicalize_artist_name(name: object, aliases: dict[str, str], expected: list[str]) -> str:
+    text = str(name or "").strip()
+    if not text:
+        return ""
+    aliased = aliases.get(text.casefold(), text)
+    expected_lookup = {artist.casefold(): artist for artist in expected}
+    return expected_lookup.get(aliased.casefold(), aliased)
+
+
 def build_curated_cohort(
     *,
     top_artists: int = DEFAULT_DEMO_TOP_ARTISTS,
@@ -84,12 +130,45 @@ def build_curated_cohort(
 
     music_videos = create_music_videos_table()
     artist_summary = create_music_summary_by_artist()
+    expected_artists = _load_expected_artists()
+    alias_map = _load_artist_aliases()
 
     if artist_summary.empty or music_videos.empty:
         raise RuntimeError(
             "Artist summary or music videos are empty. Ensure the ETL has "
             "populated the analytics tables before refreshing the demo snapshot."
         )
+
+    music_videos = music_videos.copy()
+    music_videos["artist_name"] = music_videos["artist_name"].map(
+        lambda name: _canonicalize_artist_name(name, alias_map, expected_artists)
+    )
+    music_videos = music_videos.loc[music_videos["artist_name"] != ""]
+
+    artist_summary = artist_summary.copy()
+    artist_summary["artist_name"] = artist_summary["artist_name"].map(
+        lambda name: _canonicalize_artist_name(name, alias_map, expected_artists)
+    )
+    artist_summary = artist_summary.loc[artist_summary["artist_name"] != ""]
+    if expected_artists:
+        allowed = {artist.casefold() for artist in expected_artists}
+        music_videos = music_videos.loc[music_videos["artist_name"].str.casefold().isin(allowed)]
+        artist_summary = artist_summary.loc[artist_summary["artist_name"].str.casefold().isin(allowed)]
+
+    if artist_summary.empty or music_videos.empty:
+        raise RuntimeError(
+            "No eligible artists remained after canonicalization/filtering for demo snapshot generation."
+        )
+
+    artist_summary = (
+        artist_summary.groupby("artist_name", dropna=False)
+        .agg(
+            total_views=("total_views", "sum"),
+            total_videos=("total_videos", "sum"),
+            avg_engagement_rate=("avg_engagement_rate", "mean"),
+        )
+        .reset_index()
+    )
 
     # Persist full tables used by the Streamlit app in production mode.
     _ensure_dirs()

@@ -7,7 +7,7 @@ import os
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Mapping
 
 import pandas as pd
 import plotly.express as px
@@ -66,6 +66,137 @@ except ModuleNotFoundError:  # pragma: no cover - external dependency guard
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
+EXPECTED_ARTISTS_PATH = BASE_DIR / "config" / "expected_artists.json"
+ARTIST_ALIASES_PATH = BASE_DIR / "config" / "artist_aliases.json"
+ARTIST_ALIAS_OVERRIDES = {
+    "hicorook": "Corook",
+    "@hicorook": "Corook",
+}
+
+
+@st.cache_data(show_spinner=False)
+def _load_expected_artists() -> list[str]:
+    """Load expected artist roster from config, when available."""
+
+    if not EXPECTED_ARTISTS_PATH.exists():
+        return []
+    try:
+        payload = json.loads(EXPECTED_ARTISTS_PATH.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - config fallback
+        return []
+    names = payload.get("expected_artists") if isinstance(payload, dict) else None
+    if not isinstance(names, list):
+        return []
+    return [str(name).strip() for name in names if str(name).strip()]
+
+
+@st.cache_data(show_spinner=False)
+def _load_artist_aliases() -> dict[str, str]:
+    """Load artist aliases (case-insensitive key map)."""
+
+    alias_map: dict[str, str] = {}
+    if ARTIST_ALIASES_PATH.exists():
+        try:
+            payload = json.loads(ARTIST_ALIASES_PATH.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 - config fallback
+            payload = {}
+        if isinstance(payload, dict):
+            for alias, canonical in payload.items():
+                alias_text = str(alias).strip()
+                canonical_text = str(canonical).strip()
+                if alias_text and canonical_text:
+                    alias_map[alias_text.casefold()] = canonical_text
+    for alias, canonical in ARTIST_ALIAS_OVERRIDES.items():
+        alias_map[alias.casefold()] = canonical
+    return alias_map
+
+
+def _build_artist_name_index(
+    *,
+    palette: Mapping[str, str],
+    expected_artists: list[str],
+    alias_map: Mapping[str, str],
+) -> dict[str, str]:
+    """Build case-insensitive canonical-name lookup index."""
+
+    index: dict[str, str] = {}
+    for artist_name in palette.keys():
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    for artist_name in alias_map.values():
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    for artist_name in expected_artists:
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    return index
+
+
+def _canonicalize_artist_name(
+    value: object,
+    *,
+    alias_map: Mapping[str, str],
+    name_index: Mapping[str, str],
+) -> str:
+    """Return canonical artist display name while preserving stylistic casing."""
+
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    alias_canonical = alias_map.get(raw.casefold(), raw)
+    return name_index.get(alias_canonical.casefold(), alias_canonical)
+
+
+def normalize_artist_dimension(
+    df: pd.DataFrame,
+    *,
+    palette: Mapping[str, str],
+    drop_untracked: bool = True,
+) -> tuple[pd.DataFrame, list[str]]:
+    """Canonicalize artist names and optionally hide untracked labels.
+
+    IMPORTANT / DO NOT REGRESS:
+    - Merge case-only splits (e.g., "Cobrah" + "COBRAH") into one canonical name.
+    - Keep artist stylistic casing from config.
+    - Filter obvious junk labels (e.g., accidental channel names) from dashboard
+      without deleting source data from storage.
+    """
+
+    if df.empty or "artist_name" not in df.columns:
+        return df, []
+
+    expected_artists = _load_expected_artists()
+    alias_map = _load_artist_aliases()
+    name_index = _build_artist_name_index(
+        palette=palette,
+        expected_artists=expected_artists,
+        alias_map=alias_map,
+    )
+
+    typed = df.copy()
+    typed["artist_name"] = typed["artist_name"].map(
+        lambda name: _canonicalize_artist_name(name, alias_map=alias_map, name_index=name_index)
+    )
+
+    tracked_roster = expected_artists if expected_artists else sorted(set(str(name) for name in palette.keys()))
+    tracked_keys = {name.casefold() for name in tracked_roster}
+    unknown_artists = sorted(
+        {
+            str(name)
+            for name in typed["artist_name"].dropna().astype(str).tolist()
+            if str(name).strip() and str(name).casefold() not in tracked_keys
+        }
+    )
+
+    if drop_untracked and unknown_artists:
+        filtered = typed.loc[~typed["artist_name"].isin(unknown_artists)].copy()
+        if not filtered.empty:
+            typed = filtered
+
+    return typed, unknown_artists
 
 
 def _read_int_env(name: str, default: int) -> int:
@@ -635,7 +766,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text("""
+    sql = text(
+        """
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -650,7 +782,8 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """)
+        """
+    )
 
     engine = get_engine()
     with engine.connect() as conn:
@@ -711,6 +844,8 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
             )
             published_at = _coerce_timestamp(video.get("published_at"))
             metrics_date = snapshot_ts if pd.notna(snapshot_ts) else published_at
+            if pd.notna(metrics_date):
+                metrics_date = pd.Timestamp(metrics_date).floor("D")
             views_per_day = _coerce_float(video.get("views_per_day"), 0.0)
             age_days = -1
             if pd.notna(metrics_date) and pd.notna(published_at):
@@ -814,11 +949,13 @@ def load_latest_successful_etl_run_at() -> datetime | None:
 
     from sqlalchemy import text
 
-    query = text("""
+    query = text(
+        """
         SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
-        """)
+        """
+    )
 
     try:
         engine = get_engine()
@@ -1345,16 +1482,12 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _prepare_recent_release_windows(
-    videos: pd.DataFrame,
-    *,
-    per_artist_limit: int = 10,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Return per-artist recent windows for official releases and other content."""
+def _prepare_rollout_frame(videos: pd.DataFrame) -> pd.DataFrame:
+    """Build standardized frame used by rollout charts/tables."""
 
     required = {"artist_name", "video_id", "title", "video_type", "view_count", "views_per_day", "engagement_rate"}
     if videos.empty or not required.issubset(videos.columns):
-        return pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame()
 
     typed = videos.copy()
     typed["video_type_label"] = typed["video_type"].map(_display_video_type)
@@ -1370,6 +1503,19 @@ def _prepare_recent_release_windows(
         ascending=[True, False, False],
         na_position="last",
     )
+    return typed
+
+
+def _prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return per-artist recent windows for official releases and other content."""
+
+    typed = _prepare_rollout_frame(videos)
+    if typed.empty:
+        return pd.DataFrame(), pd.DataFrame()
 
     official_recent = (
         typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
@@ -1465,11 +1611,12 @@ def build_release_strategy_board(
 ) -> pd.DataFrame:
     """Build per-artist rollout KPIs from latest official vs other content windows."""
 
+    typed = _prepare_rollout_frame(videos)
     official_recent, other_recent = _prepare_recent_release_windows(
         videos,
         per_artist_limit=per_artist_limit,
     )
-    if official_recent.empty and other_recent.empty:
+    if typed.empty or (official_recent.empty and other_recent.empty):
         return pd.DataFrame(
             columns=[
                 "Artist",
@@ -1485,14 +1632,18 @@ def build_release_strategy_board(
             ]
         )
 
+    official_pool = typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+    other_pool = typed.loc[~typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
     artists = sorted(
-        set(official_recent.get("artist_name", pd.Series(dtype=str)).tolist())
-        | set(other_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+        set(official_pool.get("artist_name", pd.Series(dtype=str)).tolist())
+        | set(other_pool.get("artist_name", pd.Series(dtype=str)).tolist())
     )
     rows: list[dict[str, float | int | str]] = []
     for artist_name in artists:
         official_rows = official_recent.loc[official_recent["artist_name"] == artist_name]
         other_rows = other_recent.loc[other_recent["artist_name"] == artist_name]
+        official_full_rows = official_pool.loc[official_pool["artist_name"] == artist_name]
+        other_full_rows = other_pool.loc[other_pool["artist_name"] == artist_name]
 
         official_avg_views_per_day = _mean_or_none(official_rows["views_per_day"])
         other_avg_views_per_day = _mean_or_none(other_rows["views_per_day"])
@@ -1504,14 +1655,14 @@ def build_release_strategy_board(
         non_mv_official_avg_views_per_day = _mean_or_none(non_mv_official_rows["views_per_day"])
         mv_lift = _safe_lift_pct(mv_avg_views_per_day, non_mv_official_avg_views_per_day)
 
-        short_video_rows = other_rows.loc[other_rows["video_type_label"] == SHORT_VIDEO_LABEL]
+        short_video_rows = other_full_rows.loc[other_full_rows["video_type_label"] == SHORT_VIDEO_LABEL]
         short_video_share_pct = None
-        if len(other_rows) > 0:
-            short_video_share_pct = float(len(short_video_rows) / len(other_rows) * 100.0)
+        if len(other_full_rows) > 0:
+            short_video_share_pct = float(len(short_video_rows) / len(other_full_rows) * 100.0)
 
-        official_count = int(official_rows["video_id"].nunique()) if not official_rows.empty else 0
-        other_count = int(other_rows["video_id"].nunique()) if not other_rows.empty else 0
-        cadence_days = _median_release_gap_days(official_rows)
+        official_count = int(official_full_rows["video_id"].nunique()) if not official_full_rows.empty else 0
+        other_count = int(other_full_rows["video_id"].nunique()) if not other_full_rows.empty else 0
+        cadence_days = _median_release_gap_days(official_full_rows)
 
         rows.append(
             {
@@ -1919,6 +2070,61 @@ def render_kpis(
         )
 
 
+def build_release_anchor_trend_frame(df: pd.DataFrame) -> pd.DataFrame:
+    """Build release-anchored cumulative view curves per artist.
+
+    This is used when only one metrics snapshot date is available, so a regular
+    time-series chart would collapse to one point per artist.
+    """
+
+    required = {"artist_name", "published_at", "view_count"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(columns=["artist_name", "day_since_first_release", "cumulative_views"])
+
+    typed = df.copy()
+    typed["published_at"] = pd.to_datetime(typed["published_at"], errors="coerce")
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed = typed.dropna(subset=["artist_name", "published_at", "view_count"])
+    if typed.empty:
+        return pd.DataFrame(columns=["artist_name", "day_since_first_release", "cumulative_views"])
+
+    if "video_id" in typed.columns and "metrics_date" in typed.columns:
+        typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+        typed = typed.sort_values("metrics_date").drop_duplicates(subset="video_id", keep="last")
+
+    releases = (
+        typed.groupby(["artist_name", "published_at"], dropna=False)
+        .agg(view_count=("view_count", "sum"))
+        .reset_index()
+        .sort_values(["artist_name", "published_at"])
+    )
+
+    rows: list[dict[str, float | int | str]] = []
+    for artist_name, artist_rows in releases.groupby("artist_name"):
+        first_release = artist_rows["published_at"].min()
+        if pd.isna(first_release):
+            continue
+        running = 0.0
+        rows.append(
+            {
+                "artist_name": str(artist_name),
+                "day_since_first_release": 0,
+                "cumulative_views": 0.0,
+            }
+        )
+        for _, release in artist_rows.iterrows():
+            running += float(release["view_count"])
+            day_offset = int((release["published_at"] - first_release).days)
+            rows.append(
+                {
+                    "artist_name": str(artist_name),
+                    "day_since_first_release": max(1, day_offset),
+                    "cumulative_views": running,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     if df.empty:
         st.info("No time-series data available for this selection.")
@@ -1926,12 +2132,43 @@ def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     if not ensure_columns(df, ["metrics_date", "artist_name", "view_count", "views_per_day"], "Trend chart"):
         return
 
+    typed = df.copy()
+    typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce").dt.floor("D")
     trend = (
-        df.groupby(["metrics_date", "artist_name"])
+        typed.groupby(["metrics_date", "artist_name"])
         .agg(view_count=("view_count", "sum"), views_per_day=("views_per_day", "mean"))
         .reset_index()
         .sort_values("metrics_date")
     )
+    if trend.empty:
+        st.info("No valid metrics dates are available for this selection.")
+        return
+
+    if trend["metrics_date"].nunique() <= 1:
+        release_anchored = build_release_anchor_trend_frame(typed)
+        if not release_anchored.empty:
+            fig = px.line(
+                release_anchored,
+                x="day_since_first_release",
+                y="cumulative_views",
+                color="artist_name",
+                color_discrete_map=color_map,
+                markers=True,
+                title="Portfolio growth since first release (day-0 anchored)",
+            )
+            fig.update_layout(
+                hovermode="x unified",
+                legend_title_text="Artist",
+                xaxis_title="Days since first release",
+                yaxis_title="Cumulative views (latest snapshot)",
+            )
+            st.plotly_chart(fig, use_container_width=True, height=380)
+            st.caption(
+                "Day 0 is the artist's first release in this filtered set. "
+                "Curve uses latest snapshot views as a release-anchored portfolio trajectory."
+            )
+            return
+
     fig = px.line(
         trend,
         x="metrics_date",
@@ -2035,14 +2272,23 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
         )
         .reset_index()
     )
+    artist_order = (
+        mix.groupby("artist_name", dropna=False)["video_count"]
+        .sum()
+        .sort_values(ascending=True)
+        .index.astype(str)
+        .tolist()
+    )
 
     fig = px.bar(
         mix,
-        x="artist_name",
-        y="video_count",
+        x="video_count",
+        y="artist_name",
         color="video_type_label",
-        title="Video content mix by artist (counts by format)",
+        orientation="h",
+        title="Video content mix by artist (horizontal count by format)",
         barmode="stack",
+        category_orders={"artist_name": artist_order},
         hover_data={
             "total_views": ":,.0f",
             "avg_views_per_day": ":,.1f",
@@ -2050,7 +2296,12 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
             "video_type_label": False,
         },
     )
-    fig.update_layout(xaxis_title="Artist", yaxis_title="Videos", legend_title_text="Format")
+    fig.update_layout(
+        xaxis_title="Videos",
+        yaxis_title="Artist",
+        legend_title_text="Format",
+        hovermode="y unified",
+    )
     st.plotly_chart(fig, use_container_width=True, height=420)
 
     action_rows = build_artist_content_action_rows(df)
@@ -2097,13 +2348,14 @@ def _prepare_release_table_for_display(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def render_executive_action_center(df: pd.DataFrame) -> None:
+def render_executive_action_center(df: pd.DataFrame, *, palette: Mapping[str, str]) -> None:
     """Render high-signal planning view for rollout meetings."""
 
     st.markdown("### Executive Action Center")
     st.caption(
         "Official releases = Official Music Video, Official Audio, Lyric Video. "
-        "Other content = short videos (<60s) + everything else."
+        "Other content = short videos (<60s) + everything else. "
+        "Counts use the full filtered window; lift averages use the latest 10 releases per artist."
     )
 
     official_recent, other_recent = _prepare_recent_release_windows(df, per_artist_limit=10)
@@ -2114,16 +2366,18 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
 
     chart_rows = board.dropna(subset=["MV vs other official lift (%)"])
     if not chart_rows.empty:
+        chart_rows = chart_rows.sort_values("MV vs other official lift (%)", ascending=True)
         lift_chart = px.bar(
             chart_rows,
-            x="Artist",
-            y="MV vs other official lift (%)",
+            x="MV vs other official lift (%)",
+            y="Artist",
+            orientation="h",
             color="MV vs other official lift (%)",
             color_continuous_scale=[(0.0, "#B91C1C"), (0.5, "#F59E0B"), (1.0, "#15803D")],
             title="Music video lift vs other official formats (views/day, latest 10 official releases)",
         )
-        lift_chart.add_hline(y=0.0, line_dash="dot", line_color="#6B7280")
-        lift_chart.update_layout(coloraxis_colorbar_title="Lift %")
+        lift_chart.add_vline(x=0.0, line_dash="dot", line_color="#6B7280")
+        lift_chart.update_layout(coloraxis_colorbar_title="Lift %", yaxis_title="Artist", xaxis_title="Lift %")
         st.plotly_chart(lift_chart, use_container_width=True, height=360)
 
     st.markdown("##### Today-first rollout KPIs")
@@ -2132,8 +2386,8 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Official release count": st.column_config.NumberColumn("Official count", format="%d"),
-            "Other content count": st.column_config.NumberColumn("Other count", format="%d"),
+            "Official release count": st.column_config.NumberColumn("Official count (window)", format="%d"),
+            "Other content count": st.column_config.NumberColumn("Other count (window)", format="%d"),
             "Official avg views/day": st.column_config.NumberColumn("Official avg views/day", format="%.1f"),
             "Other avg views/day": st.column_config.NumberColumn("Other avg views/day", format="%.1f"),
             "Official vs Other lift (%)": st.column_config.NumberColumn("Official vs Other lift %", format="%.1f"),
@@ -2149,8 +2403,24 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
     )
 
     st.markdown("##### Rollout Meeting Talking Points")
-    for row in board.to_dict(orient="records"):
-        st.markdown(f"- **{row['Artist']}:** {row['Today action']}")
+    points = board.to_dict(orient="records")
+    point_columns = st.columns(2)
+    for idx, row in enumerate(points):
+        artist_name = str(row["Artist"])
+        accent = sanitize_hex_color(palette.get(artist_name), fallback="#FF4B4B")
+        body = html.escape(str(row["Today action"]))
+        with point_columns[idx % 2]:
+            st.markdown(
+                (
+                    "<div style='margin-bottom:10px; padding:10px 12px; border-radius:12px; "
+                    f"border-left:6px solid {accent}; background:linear-gradient(135deg,#FFFFFF,#F8FAFC); "
+                    "box-shadow:0 2px 10px rgba(15,23,42,0.06);'>"
+                    f"<div style='font-weight:800; color:{accent}; letter-spacing:0.2px;'>{html.escape(artist_name)}</div>"
+                    f"<div style='margin-top:6px; color:#1F2937; font-weight:600; font-size:0.95rem;'>{body}</div>"
+                    "</div>"
+                ),
+                unsafe_allow_html=True,
+            )
 
     official_table = _prepare_release_table_for_display(official_recent)
     other_table = _prepare_release_table_for_display(other_recent)
@@ -2430,22 +2700,35 @@ def main() -> None:
         label = "Demo Mode" if mode == "demo" else "Production (MySQL)"
         st.badge(label)
 
+    palette = get_artist_color_palette()
+    normalized_videos = load_normalized_videos(mode)
+    normalized_videos, excluded_artists = normalize_artist_dimension(
+        normalized_videos,
+        palette=palette,
+        drop_untracked=True,
+    )
+    if normalized_videos.empty:
+        st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
+        st.stop()
+    artist_summary = build_artist_summary_from_metrics(normalized_videos)
+    if artist_summary.empty:
+        st.error("Artist summary is empty. Run the ETL to generate fresh aggregates.")
+        st.stop()
+
     if mode == "demo":
         st.info(
-            "📊 **Data Source: Demo Mode** — curated cohort of 5 artists with "
-            "realistic metrics. No database setup required."
+            f"📊 **Data Source: Demo Mode** — curated cohort of {len(artist_summary):d} artists "
+            "with realistic metrics. No database setup required."
         )
     else:
         st.success("🔗 **Data Source: Production (MySQL)** — live data from the YouTube analytics warehouse.")
 
-    artist_summary = load_artist_summary(mode)
-    normalized_videos = load_normalized_videos(mode)
-    if artist_summary.empty:
-        st.error("Artist summary is empty. Run the ETL to generate fresh aggregates.")
-        st.stop()
-    if normalized_videos.empty:
-        st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
-        st.stop()
+    if excluded_artists:
+        st.warning(
+            "Data check: Excluded untracked artist labels from dashboard view: "
+            + ", ".join(excluded_artists)
+            + ". Source data remains intact.",
+        )
 
     latest_metrics_at: datetime | None = None
     if "metrics_date" in normalized_videos.columns:
@@ -2486,8 +2769,6 @@ def main() -> None:
                 f"({latest_etl_run_at.date().isoformat()}). No new video metric rows "
                 f"were added after {latest_metrics_at.date().isoformat()}.",
             )
-
-    palette = get_artist_color_palette()
 
     available_artists = sorted(artist_summary["artist_name"].unique().tolist())
 
@@ -2592,7 +2873,7 @@ def main() -> None:
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
         render_artist_content_mix(latest)
-        render_executive_action_center(latest)
+        render_executive_action_center(latest, palette=palette)
 
         ui.card(
             content=(
@@ -2615,6 +2896,16 @@ def main() -> None:
                 "Choose one artist to coach. Dropdown includes assigned palette color; "
                 "peers stay on screen as grayscale benchmarks."
             ),
+        )
+        focus_artist_color = sanitize_hex_color(color_map.get(focus_artist), fallback="#FF4B4B")
+        st.markdown(
+            (
+                "<div style='margin-top:2px; margin-bottom:8px; font-weight:900; "
+                f"font-size:1.3rem; letter-spacing:0.3px; color:{focus_artist_color};'>"
+                f"{html.escape(focus_artist)}"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
         )
         render_kpis(
             artist_summary,
