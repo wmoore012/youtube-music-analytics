@@ -1,22 +1,22 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
 import html
 import json
 import math
 import os
-import re
-from datetime import date, datetime, timezone
 from pathlib import Path
+import re
 from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
+import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
