@@ -1,12 +1,12 @@
 import pandas as pd
 import pytest
-
 from streamlit_app import (
     _classify_video_type_from_duration,
     _parse_iso8601_duration_seconds,
     build_artist_summary_from_metrics,
     load_artist_summary_from_demo,
     load_normalized_videos_from_demo,
+    resolve_metrics_date_window,
 )
 
 
@@ -98,7 +98,7 @@ def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pyt
                 },
             },
             1: 123,  # malformed artist should be skipped, not crash
-        }
+        },
     }
 
     monkeypatch.setattr("streamlit_app._load_demo_cohort", lambda: payload)
@@ -145,3 +145,28 @@ def test_demo_loader_maps_music_content_to_clear_bucket(monkeypatch: pytest.Monk
     assert normalized["video_type"].tolist() == ["Shorts"]
     assert int(normalized["like_count"].iloc[0]) == 20
     assert int(normalized["comment_count"].iloc[0]) == 10
+
+
+def test_resolve_metrics_date_window_requires_column() -> None:
+    with pytest.raises(ValueError, match="metrics_date column"):
+        resolve_metrics_date_window(pd.DataFrame([{"view_count": 1}]))
+
+
+def test_resolve_metrics_date_window_rejects_all_invalid_dates() -> None:
+    df = pd.DataFrame([{"metrics_date": "bad-date"}, {"metrics_date": None}])
+    with pytest.raises(ValueError, match="missing or invalid"):
+        resolve_metrics_date_window(df)
+
+
+def test_resolve_metrics_date_window_returns_min_max() -> None:
+    df = pd.DataFrame(
+        [
+            {"metrics_date": "2026-02-07T00:00:00"},
+            {"metrics_date": "2026-02-05T00:00:00"},
+            {"metrics_date": "2026-02-06T00:00:00"},
+        ]
+    )
+
+    min_date, max_date = resolve_metrics_date_window(df)
+    assert min_date.isoformat() == "2026-02-05"
+    assert max_date.isoformat() == "2026-02-07"

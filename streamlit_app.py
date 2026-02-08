@@ -1,21 +1,21 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
 import json
 import math
 import os
-import re
-from datetime import date, datetime, timezone
 from pathlib import Path
+import re
 from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
+import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -654,7 +654,7 @@ def load_latest_successful_etl_run_at() -> datetime | None:
     from sqlalchemy import text
 
     query = text("""
-        SELECT COALESCE(MAX(finished_at), MAX(started_at)) AS latest_run_at
+        SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
         FROM youtube_etl_runs
         WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
         """)
@@ -815,6 +815,26 @@ def latest_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty or "metrics_date" not in df.columns:
         return df
     return df.sort_values("metrics_date").drop_duplicates(subset="video_id", keep="last")
+
+
+def resolve_metrics_date_window(df: pd.DataFrame) -> tuple[date, date]:
+    """Return min/max metrics dates with explicit validation."""
+
+    if "metrics_date" not in df.columns:
+        raise ValueError(
+            "Video metrics are missing the metrics_date column. Run ETL to regenerate music_videos_normalized.",
+        )
+    metrics_dates = pd.to_datetime(df["metrics_date"], errors="coerce").dt.date
+    if metrics_dates.isna().all():
+        raise ValueError(
+            "metrics_date values are missing or invalid across all rows. Run ETL to regenerate fresh metrics windows.",
+        )
+
+    min_date = metrics_dates.min()
+    max_date = metrics_dates.max()
+    if min_date is None or max_date is None:
+        raise ValueError("Could not resolve metrics date window from loaded rows.")
+    return min_date, max_date
 
 
 def filter_by_artists(df: pd.DataFrame, artists: list[str]) -> pd.DataFrame:
@@ -2465,9 +2485,11 @@ def main() -> None:
         st.warning("Select at least one artist to explore the dashboard.")
         st.stop()
 
-    metrics_dates = normalized_videos["metrics_date"].dt.date
-    min_date = metrics_dates.min()
-    max_date = metrics_dates.max()
+    try:
+        min_date, max_date = resolve_metrics_date_window(normalized_videos)
+    except ValueError as exc:
+        st.error(str(exc))
+        st.stop()
 
     # Use a slider for date range selection, defaulting to the full history
     date_selection = st.sidebar.slider(
