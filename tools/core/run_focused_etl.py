@@ -18,6 +18,8 @@ import sys
 from pathlib import Path
 from typing import TypedDict, cast
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from dotenv import load_dotenv
 from pandas import DataFrame
 from sqlalchemy import text
@@ -34,10 +36,6 @@ from web.etl_helpers import get_engine
 # should be surfaced as warnings, not hard failures, unless explicitly enabled
 # via FOCUSED_ETL_NOTEBOOKS_REQUIRED=true.
 # ============================================================================
-
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
 
 class BotDetectionResults(TypedDict, total=False):
     processed: int

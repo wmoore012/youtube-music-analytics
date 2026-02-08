@@ -479,8 +479,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 
     from sqlalchemy import text
 
-    sql = text(
-        """
+    sql = text("""
         SELECT
             m.video_id,
             COALESCE(v.channel_title, 'Unknown') AS artist_name,
@@ -495,8 +494,7 @@ def load_production_metrics_from_db() -> pd.DataFrame:
         FROM youtube_metrics AS m
         INNER JOIN youtube_videos AS v
             ON v.video_id = m.video_id
-        """
-    )
+        """)
 
     engine = get_engine()
     with engine.connect() as conn:
