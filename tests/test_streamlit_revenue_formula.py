@@ -1,71 +1,61 @@
 import pandas as pd
 
-from streamlit_app import build_revenue_formula_context
+from streamlit_app import build_artist_summary_from_metrics, build_kpi_context
 
 
-def test_revenue_formula_context_same_rpm_for_all_types() -> None:
+def test_artist_summary_excludes_estimated_revenue_fields() -> None:
+    metrics = pd.DataFrame(
+        [
+            {
+                "video_id": "vid-1",
+                "artist_name": "Artist A",
+                "metrics_date": pd.Timestamp("2026-02-08"),
+                "view_count": 1000,
+                "like_count": 50,
+                "comment_count": 10,
+                "engagement_rate": 6.0,
+            }
+        ]
+    )
+
+    summary = build_artist_summary_from_metrics(metrics)
+    assert "total_est_revenue_usd" not in summary.columns
+
+
+def test_kpi_context_excludes_estimated_revenue_keys() -> None:
     summary = pd.DataFrame(
         [
             {
-                "artist_name": "A",
-                "total_views": 100_000,
-                "total_est_revenue_usd": 250.0,
+                "artist_name": "Artist A",
+                "total_views": 1000,
+                "total_videos": 2,
+                "total_likes": 100,
+                "total_comments": 20,
+                "avg_engagement_rate": 12.0,
             }
         ]
     )
     videos = pd.DataFrame(
         [
-            {"video_type": "Short", "view_count": 40_000, "est_revenue_usd": 100.0},
-            {"video_type": "Official Music Video", "view_count": 60_000, "est_revenue_usd": 150.0},
-        ]
-    )
-
-    ctx = build_revenue_formula_context(summary, videos)
-
-    assert ctx["equation"] == "Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views)"
-    assert "Current selection: (100,000 / 1,000) x $2.50 = $250" in ctx["worked_example"]
-    assert "one RPM for all content types" in ctx["type_note"]
-    assert "Shorts vs Other Content" in ctx["type_note"]
-    assert "directional ad-revenue estimate" in ctx["scope_note"]
-    assert "rough RPM ranges around $1-$5" in ctx["public_range_note"]
-    assert "assumptions and caveats" in ctx["tooltip_hint"]
-
-
-def test_revenue_formula_context_detects_type_based_rpm() -> None:
-    summary = pd.DataFrame(
-        [
             {
-                "artist_name": "A",
-                "total_views": 20_000,
-                "total_est_revenue_usd": 50.0,
-            }
-        ]
-    )
-    videos = pd.DataFrame(
-        [
-            {"video_type": "Short", "view_count": 10_000, "est_revenue_usd": 10.0},
-            {"video_type": "Official Music Video", "view_count": 10_000, "est_revenue_usd": 40.0},
-        ]
-    )
-
-    ctx = build_revenue_formula_context(summary, videos)
-
-    assert "different RPM values by content type" in ctx["type_note"]
-    assert "Shorts: $1.00" in ctx["type_note"]
-    assert "Official Music Video: $4.00" in ctx["type_note"]
-
-
-def test_revenue_formula_context_handles_missing_video_rows() -> None:
-    summary = pd.DataFrame(
-        [
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "view_count": 600,
+                "like_count": 60,
+                "comment_count": 12,
+                "engagement_rate": 12.0,
+            },
             {
-                "artist_name": "A",
-                "total_views": 1_000,
-                "total_est_revenue_usd": 2.5,
-            }
+                "artist_name": "Artist A",
+                "video_id": "a2",
+                "view_count": 400,
+                "like_count": 40,
+                "comment_count": 8,
+                "engagement_rate": 12.0,
+            },
         ]
     )
 
-    ctx = build_revenue_formula_context(summary, pd.DataFrame())
-
-    assert "no type-level revenue rows are available for the current filters" in ctx["type_note"]
+    context = build_kpi_context(summary=summary, artists=["Artist A"], videos=videos, roster_videos=videos)
+    assert "total_revenue" not in context
+    assert "roster_revenue_per_artist" not in context

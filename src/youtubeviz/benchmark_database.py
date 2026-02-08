@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 from pathlib import Path
 import sqlite3
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BenchmarkDatabase:
@@ -18,7 +18,7 @@ class BenchmarkDatabase:
 
     _ALLOWED_MODEL_METRICS = {"accuracy", "precision_score", "recall", "f1_score", "processing_time"}
 
-    def __init__(self, db_path: str = "benchmark_results / benchmarks.db"):
+    def __init__(self, db_path: str = "benchmark_results/benchmarks.db"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
         self.init_database()
@@ -196,53 +196,73 @@ class BenchmarkDatabase:
         finally:
             conn.close()
 
-    def get_benchmark_trends(self, experiment_name: str = None, days: int = 30) -> Dict[str, Any]:
+    def get_benchmark_trends(self, experiment_name: str | None = None, days: int = 30) -> dict[str, Any]:
         """Get benchmark trends over time."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         safe_days = max(int(days), 1)
         day_interval = f"-{safe_days} days"
-        where_clause = "WHERE timestamp >= datetime('now', ?)"
-        params: list[Any] = [day_interval]
         if experiment_name:
-            where_clause += " AND experiment_name = ?"
-            params.append(experiment_name)
+            trend_query = """
+                SELECT
+                    DATE(timestamp) as date,
+                    AVG(balance_score) as avg_balance_score,
+                    COUNT(*) as run_count,
+                    AVG(total_samples) as avg_samples
+                FROM benchmark_runs
+                WHERE timestamp >= datetime('now', ?)
+                  AND experiment_name = ?
+                GROUP BY DATE(timestamp)
+                ORDER BY date
+            """
+            model_query = """
+                SELECT
+                    mr.model_name,
+                    AVG(mr.f1_score) as avg_f1,
+                    AVG(mr.accuracy) as avg_accuracy,
+                    COUNT(*) as run_count
+                FROM model_results mr
+                JOIN benchmark_runs br ON mr.benchmark_run_id = br.id
+                WHERE br.timestamp >= datetime('now', ?)
+                  AND br.experiment_name = ?
+                GROUP BY mr.model_name
+                ORDER BY avg_f1 DESC
+            """
+            params: tuple[Any, ...] = (day_interval, experiment_name)
+        else:
+            trend_query = """
+                SELECT
+                    DATE(timestamp) as date,
+                    AVG(balance_score) as avg_balance_score,
+                    COUNT(*) as run_count,
+                    AVG(total_samples) as avg_samples
+                FROM benchmark_runs
+                WHERE timestamp >= datetime('now', ?)
+                GROUP BY DATE(timestamp)
+                ORDER BY date
+            """
+            model_query = """
+                SELECT
+                    mr.model_name,
+                    AVG(mr.f1_score) as avg_f1,
+                    AVG(mr.accuracy) as avg_accuracy,
+                    COUNT(*) as run_count
+                FROM model_results mr
+                JOIN benchmark_runs br ON mr.benchmark_run_id = br.id
+                WHERE br.timestamp >= datetime('now', ?)
+                GROUP BY mr.model_name
+                ORDER BY avg_f1 DESC
+            """
+            params = (day_interval,)
 
         # Get trend data
-        cursor.execute(
-            f"""
-            SELECT
-                DATE(timestamp) as date,
-                AVG(balance_score) as avg_balance_score,
-                COUNT(*) as run_count,
-                AVG(total_samples) as avg_samples
-            FROM benchmark_runs
-            {where_clause}
-            GROUP BY DATE(timestamp)
-            ORDER BY date
-        """,
-            tuple(params),
-        )
+        cursor.execute(trend_query, params)
 
         trend_data = cursor.fetchall()
 
         # Get model performance trends
-        cursor.execute(
-            f"""
-            SELECT
-                mr.model_name,
-                AVG(mr.f1_score) as avg_f1,
-                AVG(mr.accuracy) as avg_accuracy,
-                COUNT(*) as run_count
-            FROM model_results mr
-            JOIN benchmark_runs br ON mr.benchmark_run_id = br.id
-            {where_clause.replace('timestamp', 'br.timestamp')}
-            GROUP BY mr.model_name
-            ORDER BY avg_f1 DESC
-        """,
-            tuple(params),
-        )
+        cursor.execute(model_query, params)
 
         model_trends = cursor.fetchall()
 
@@ -250,7 +270,7 @@ class BenchmarkDatabase:
 
         return {"trend_data": trend_data, "model_trends": model_trends, "period_days": days}
 
-    def get_quality_analysis(self) -> Dict[str, Any]:
+    def get_quality_analysis(self) -> dict[str, Any]:
         """Analyze dataset quality trends."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -296,7 +316,7 @@ class BenchmarkDatabase:
             "common_recommendations": common_recommendations,
         }
 
-    def get_best_models(self, metric: str = "f1_score", limit: int = 10) -> List[Dict]:
+    def get_best_models(self, metric: str = "f1_score", limit: int = 10) -> list[dict[str, Any]]:
         """Get best performing models."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -356,7 +376,7 @@ class BenchmarkDatabase:
         print(f"📊 Analysis report exported to: {output_file}")
         return report
 
-    def get_database_stats(self) -> Dict[str, int]:
+    def get_database_stats(self) -> dict[str, int]:
         """Get basic database statistics."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()

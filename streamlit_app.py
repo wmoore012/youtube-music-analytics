@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+import html
 import json
 import math
 import os
@@ -25,9 +26,9 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 # ----------------------------------------------------------------------
 # 1) In "Production (MySQL)" mode, Streamlit MUST read live MySQL data,
 #    not stale CSV snapshots.
-# 2) Revenue KPI must show explicit TOS-safe arithmetic in plain language:
-#    Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views).
-# 3) If Shorts/video length affects estimates, explain this very simply.
+# 2) Executive KPI strip must stay operationally actionable (speed + engagement),
+#    and must not surface pseudo-finance metrics.
+# 3) If short-form/format labels are shown, keep labels simple and derivation explicit.
 # 4) Never override artist stylistic casing choices automatically.
 # 5) KPI deltas shown in green/red must have matching arithmetic + actions;
 #    otherwise hide the delta.
@@ -35,20 +36,25 @@ from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_pale
 #    DB_* values alone; require explicit secrets/session intent.
 # 7) Demo cohort JSON must be loaded with json.load (not pandas read_json->to_dict),
 #    because pandas reshapes nested JSON and can crash artist/video loops.
-# 8) Zero likes/comments with non-zero videos must trigger RED FLAG warnings
+# 8) Zero likes/comments with non-zero videos must trigger visible data-check warnings
 #    and regression tests before deployment.
+# 9) Snapshot freshness in Production must follow ETL heartbeat (youtube_etl_runs):
+#    a run completed today can be "fresh" even when no brand-new videos were added.
+# 10) Executive rollout view must answer "what do we do today" with
+#     last-10 release windows + simple lift arithmetic (official vs other).
+# 11) Artist Deep Dive must feel premium: focus artist highlighted with assigned
+#     color, benchmark context de-emphasized in grayscale, subtle micro-motion.
 # ======================================================================
 
 CACHE_TTL_SECONDS = 900  # 15 minutes
 DATA_FRESHNESS_DAYS_ENV = "DATA_FRESHNESS_DAYS"
 DEFAULT_DATA_FRESHNESS_DAYS = 30
-RPM_VARIATION_TOLERANCE = 0.05
-REVENUE_RPM_DEFAULT_ENV = "REVENUE_RPM_DEFAULT"
-DEFAULT_REVENUE_RPM_USD = 2.5
-SHORTS_MAX_SECONDS = 60
-PUBLIC_RPM_LOW_USD = 1.0
-PUBLIC_RPM_HIGH_USD = 5.0
+SHORT_VIDEO_MAX_SECONDS = 60
+SHORT_VIDEO_LABEL = "Short video (<60s)"
+NEW_ENTRY_VIEWS_PER_DAY_FLOOR = 100.0
 DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
+OFFICIAL_RELEASE_TYPES = frozenset({"Official Music Video", "Official Audio", "Lyric Video"})
+HEX_COLOR_RE = re.compile(r"^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -113,6 +119,160 @@ def read_float_env(name: str, default: float) -> float:
     """Public typed wrapper for float env parsing."""
 
     return _read_float_env(name, default)
+
+
+def _sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+    """Return a safe CSS hex color or fallback."""
+
+    candidate = (color or "").strip()
+    if not HEX_COLOR_RE.fullmatch(candidate):
+        return fallback
+    if len(candidate) == 4:
+        candidate = "#" + "".join(ch * 2 for ch in candidate[1:])
+    return candidate.upper()
+
+
+def sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+    """Public wrapper for safe CSS hex colors."""
+
+    return _sanitize_hex_color(color, fallback=fallback)
+
+
+def _hex_color_to_rgb_csv(color: str) -> str:
+    """Convert '#RRGGBB' into 'R, G, B' string for CSS rgba()."""
+
+    safe_color = _sanitize_hex_color(color)
+    red = int(safe_color[1:3], 16)
+    green = int(safe_color[3:5], 16)
+    blue = int(safe_color[5:7], 16)
+    return f"{red}, {green}, {blue}"
+
+
+def hex_color_to_rgb_csv(color: str) -> str:
+    """Public wrapper for RGB CSS tuple conversion."""
+
+    return _hex_color_to_rgb_csv(color)
+
+
+def inject_dashboard_motion_styles() -> None:
+    """Inject subtle, premium motion + accent styling for Streamlit widgets."""
+
+    st.markdown(
+        """
+        <style>
+          :root {
+            --yt-red-600: #C62828;
+            --yt-red-500: #FF4B4B;
+            --yt-red-100: #FEE2E2;
+            --ink-900: #111827;
+            --ink-600: #4B5563;
+            --benchmark-gray: #C7CBD4;
+          }
+          @keyframes focusRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          [data-testid="stSelectbox"] > div[data-baseweb="select"] {
+            border: 1px solid rgba(198, 40, 40, 0.35);
+            border-radius: 14px;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+          }
+          [data-testid="stSelectbox"] > div[data-baseweb="select"]:focus-within {
+            border-color: var(--yt-red-500);
+            box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.20);
+            transform: translateY(-1px);
+          }
+          .focus-artist-hero {
+            margin: 0 0 12px 0;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(var(--focus-rgb), 0.45);
+            background: linear-gradient(120deg, rgba(var(--focus-rgb), 0.12), rgba(var(--focus-rgb), 0.04));
+            animation: focusRise .32s ease-out;
+          }
+          .focus-artist-label {
+            color: var(--ink-600);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+          .focus-artist-name {
+            margin-top: 3px;
+            color: var(--focus-color);
+            font-size: clamp(1.45rem, 2.4vw, 2rem);
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+          }
+          .focus-artist-color-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            color: var(--ink-900);
+            font-size: 0.9rem;
+            font-weight: 600;
+          }
+          .focus-artist-color-chip .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: var(--focus-color);
+            box-shadow: 0 0 0 2px rgba(var(--focus-rgb), 0.20);
+          }
+          .benchmark-context {
+            margin: 8px 0 14px 0;
+            padding: 10px 12px;
+            border-left: 4px solid var(--benchmark-gray);
+            border-radius: 10px;
+            background: linear-gradient(90deg, #F3F4F6 0%, #F9FAFB 100%);
+            color: #374151;
+            animation: focusRise .28s ease-out;
+          }
+          [data-testid="stPlotlyChart"] {
+            animation: focusRise .36s ease-out;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def build_focus_artist_header_html(focus_artist: str, focus_color: str) -> str:
+    """Return premium focus-artist header HTML with safe color rendering."""
+
+    safe_artist = html.escape(focus_artist)
+    safe_color = _sanitize_hex_color(focus_color)
+    rgb_csv = _hex_color_to_rgb_csv(safe_color)
+    return (
+        f"<div class='focus-artist-hero' style='--focus-color:{safe_color}; --focus-rgb:{rgb_csv};'>"
+        "<div class='focus-artist-label'>Focus Artist</div>"
+        f"<div class='focus-artist-name'>{safe_artist}</div>"
+        f"<div class='focus-artist-color-chip'><span class='swatch'></span>Assigned color: {safe_color}</div>"
+        "</div>"
+    )
+
+
+def render_focus_artist_header(focus_artist: str, focus_color: str) -> None:
+    """Render focus-artist display in bold, color-coded type."""
+
+    st.markdown(build_focus_artist_header_html(focus_artist, focus_color), unsafe_allow_html=True)
+
+
+def render_benchmark_context_note(focus_artist: str) -> None:
+    """Explain that peers are context, not the primary narrative."""
+
+    safe_artist = html.escape(focus_artist)
+    st.markdown(
+        (
+            "<div class='benchmark-context'>"
+            f"<strong>{safe_artist}</strong> is the story. Benchmark artists are context only "
+            "and intentionally shown in grayscale."
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 def _parse_iso8601_duration_seconds(duration: object) -> int | None:
@@ -189,16 +349,16 @@ def _get_requested_data_mode(*, allow_env: bool) -> Literal["demo", "production"
 def _classify_video_type_from_duration(duration: object) -> str:
     """Classify short-form vs other content from duration only.
 
-    This helper intentionally avoids labeling long videos as "Official Music
-    Video" without title metadata. That stronger label is applied in
-    `_classify_video_type` when text evidence exists.
+    IMPORTANT / DO NOT REGRESS:
+    We intentionally label only what duration arithmetic can prove.
+    We do not claim YouTube product-level "Shorts" distribution.
     """
 
     seconds = _parse_iso8601_duration_seconds(duration)
     if seconds is None:
         return "Other Content"
-    if seconds <= SHORTS_MAX_SECONDS:
-        return "Shorts"
+    if seconds <= SHORT_VIDEO_MAX_SECONDS:
+        return SHORT_VIDEO_LABEL
     return "Other Content"
 
 
@@ -213,7 +373,7 @@ def _display_video_type(video_type: object) -> str:
     normalized = text.lower()
 
     if normalized in {"short", "shorts", "short / reel", "reel", "reels", "youtube short"}:
-        return "Shorts"
+        return SHORT_VIDEO_LABEL
     if normalized in {"official music video", "music video", "mv"}:
         return "Official Music Video"
     if "official audio" in normalized or normalized == "audio":
@@ -228,7 +388,7 @@ def _display_video_type(video_type: object) -> str:
 
 
 def _classify_video_type(*, duration: object, title: object, raw_video_type: object = None) -> str:
-    """Classify display label as Shorts, music-video family, or Other Content."""
+    """Classify display label using explicit metadata and duration arithmetic."""
 
     explicit_label = _display_video_type(raw_video_type)
     if explicit_label != "Other Content":
@@ -241,9 +401,6 @@ def _classify_video_type(*, duration: object, title: object, raw_video_type: obj
         return "Official Audio"
     if "lyric video" in title_text:
         return "Lyric Video"
-    if "#shorts" in title_text or "youtube short" in title_text:
-        return "Shorts"
-
     return _classify_video_type_from_duration(duration)
 
 
@@ -466,7 +623,6 @@ def load_artist_summary_from_demo() -> pd.DataFrame:
                 "total_views",
                 "total_likes",
                 "total_comments",
-                "total_est_revenue_usd",
                 "avg_engagement_rate",
             ]
         )
@@ -506,16 +662,22 @@ def load_production_metrics_from_db() -> pd.DataFrame:
     df["metrics_date"] = pd.to_datetime(df["metrics_date"], errors="coerce")
     df["fetched_at"] = pd.to_datetime(df["fetched_at"], errors="coerce")
     df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce")
+    df["duration_seconds"] = (
+        df["duration"].map(_parse_iso8601_duration_seconds).fillna(-1).astype(int) if "duration" in df.columns else -1
+    )
 
     for column in ["view_count", "like_count", "comment_count"]:
         df[column] = pd.to_numeric(df[column], errors="coerce").fillna(0)
 
-    rpm_usd = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
-    df["est_revenue_usd"] = (df["view_count"] / 1000.0) * rpm_usd
-
-    age_days = (df["metrics_date"] - df["published_at"]).dt.days
-    df["days_since_publish"] = age_days.fillna(1).clip(lower=1)
-    df["views_per_day"] = df["view_count"] / df["days_since_publish"]
+    # IMPORTANT / DO NOT REGRESS:
+    # Unknown publish ages must not default to 1 day because that can create
+    # fake velocity spikes. Use -1 sentinel for unknown age and set views/day
+    # to 0.0 when age is unknown.
+    age_days = pd.to_numeric((df["metrics_date"] - df["published_at"]).dt.days, errors="coerce")
+    df["age_days"] = age_days.where(age_days >= 1, -1).fillna(-1).astype(int)
+    df["views_per_day"] = 0.0
+    known_age_mask = df["age_days"] >= 1
+    df.loc[known_age_mask, "views_per_day"] = df.loc[known_age_mask, "view_count"] / df.loc[known_age_mask, "age_days"]
 
     views_nonzero = df["view_count"].astype(float).where(df["view_count"] > 0)
     df["like_rate"] = ((df["like_count"] / views_nonzero) * 100).astype(float).fillna(0.0)
@@ -535,12 +697,12 @@ def load_production_metrics_from_db() -> pd.DataFrame:
 def load_normalized_videos_from_demo() -> pd.DataFrame:
     payload = _load_demo_cohort()
     snapshot_ts = _coerce_timestamp(payload.get("last_updated"))
-    rpm_usd = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
     records: list[dict[str, object]] = []
     for artist in _coerce_record_list(payload.get("artists")):
         name = artist.get("name")
         for video in _coerce_record_list(artist.get("videos")):
             view_count = max(int(round(_coerce_float(video.get("view_count"), 0.0))), 0)
+            duration_seconds = _parse_iso8601_duration_seconds(video.get("duration"))
             like_rate = max(_coerce_float(video.get("like_rate"), 0.0), 0.0)
             comment_rate = max(_coerce_float(video.get("comment_rate"), 0.0), 0.0)
             engagement_rate_raw = _coerce_float(video.get("engagement_rate"), float("nan"))
@@ -550,9 +712,14 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
             published_at = _coerce_timestamp(video.get("published_at"))
             metrics_date = snapshot_ts if pd.notna(snapshot_ts) else published_at
             views_per_day = _coerce_float(video.get("views_per_day"), 0.0)
-            if views_per_day <= 0 and view_count > 0 and pd.notna(metrics_date) and pd.notna(published_at):
+            age_days = -1
+            if pd.notna(metrics_date) and pd.notna(published_at):
                 age_days = max(int((metrics_date - published_at).days), 1)
-                views_per_day = view_count / age_days
+            if age_days >= 1:
+                if views_per_day <= 0 and view_count > 0:
+                    views_per_day = view_count / age_days
+            else:
+                views_per_day = 0.0
 
             video_type = _classify_video_type(
                 duration=video.get("duration"),
@@ -570,6 +737,8 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
                     "published_at": published_at,
                     "metrics_date": metrics_date,
                     "view_count": view_count,
+                    "duration_seconds": int(duration_seconds) if duration_seconds is not None else -1,
+                    "age_days": age_days,
                     "views_per_day": views_per_day,
                     "engagement_rate": engagement_rate,
                     "like_rate": like_rate,
@@ -577,7 +746,6 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
                     "like_count": like_count,
                     "comment_count": comment_count,
                     "video_type": video_type,
-                    "est_revenue_usd": (view_count / 1000.0) * rpm_usd,
                 }
             )
     return pd.DataFrame(records)
@@ -594,7 +762,6 @@ def build_artist_summary_from_metrics(df: pd.DataFrame) -> pd.DataFrame:
                 "total_views",
                 "total_likes",
                 "total_comments",
-                "total_est_revenue_usd",
                 "avg_engagement_rate",
             ]
         )
@@ -607,7 +774,6 @@ def build_artist_summary_from_metrics(df: pd.DataFrame) -> pd.DataFrame:
             total_views=("view_count", "sum"),
             total_likes=("like_count", "sum"),
             total_comments=("comment_count", "sum"),
-            total_est_revenue_usd=("est_revenue_usd", "sum"),
             avg_engagement_rate=("engagement_rate", "mean"),
         )
         .reset_index()
@@ -627,6 +793,57 @@ def _get_data_freshness_days() -> int:
     # Cloud misconfigurations fail fast and loudly in logs.
     value = _read_int_env(DATA_FRESHNESS_DAYS_ENV, DEFAULT_DATA_FRESHNESS_DAYS)
     return max(1, value)
+
+
+def _coerce_utc_datetime(value: object) -> datetime | None:
+    """Return a timezone-aware UTC datetime, or None when invalid."""
+
+    ts = pd.to_datetime(value, errors="coerce", utc=True)
+    if pd.isna(ts):
+        return None
+    return pd.Timestamp(ts).to_pydatetime()
+
+
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL_SECONDS)
+def load_latest_successful_etl_run_at() -> datetime | None:
+    """Return latest completed ETL heartbeat from youtube_etl_runs.
+
+    Uses successful/partial/completed statuses only so a failed or in-flight run
+    does not get treated as a fresh snapshot.
+    """
+
+    from sqlalchemy import text
+
+    query = text("""
+        SELECT MAX(COALESCE(finished_at, started_at)) AS latest_run_at
+        FROM youtube_etl_runs
+        WHERE LOWER(COALESCE(status, '')) IN ('success', 'partial', 'completed')
+        """)
+
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            latest_run_at = conn.execute(query).scalar_one_or_none()
+    except Exception:  # noqa: BLE001 - optional diagnostic; fall back to metrics_date
+        return None
+    return _coerce_utc_datetime(latest_run_at)
+
+
+def _resolve_freshness_anchor(
+    *,
+    mode: Literal["demo", "production"] | str | None,
+    latest_metrics_at: datetime | None,
+    latest_etl_run_at: datetime | None,
+) -> tuple[datetime | None, str]:
+    """Pick the timestamp used for freshness checks."""
+
+    if mode == "production" and latest_etl_run_at is not None:
+        return latest_etl_run_at, "ETL heartbeat"
+    if latest_metrics_at is not None:
+        return latest_metrics_at, "latest metrics row"
+    if latest_etl_run_at is not None:
+        return latest_etl_run_at, "ETL heartbeat"
+    return None, "snapshot timestamp"
 
 
 def load_artist_summary(mode: str | None = None) -> pd.DataFrame:
@@ -761,6 +978,26 @@ def latest_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values("metrics_date").drop_duplicates(subset="video_id", keep="last")
 
 
+def resolve_metrics_date_window(df: pd.DataFrame) -> tuple[date, date]:
+    """Return min/max metrics dates with explicit validation."""
+
+    if "metrics_date" not in df.columns:
+        raise ValueError(
+            "Video metrics are missing the metrics_date column. Run ETL to regenerate music_videos_normalized.",
+        )
+    metrics_dates = pd.to_datetime(df["metrics_date"], errors="coerce").dt.date
+    if metrics_dates.isna().all():
+        raise ValueError(
+            "metrics_date values are missing or invalid across all rows. Run ETL to regenerate fresh metrics windows.",
+        )
+
+    min_date = metrics_dates.min()
+    max_date = metrics_dates.max()
+    if min_date is None or max_date is None:
+        raise ValueError("Could not resolve metrics date window from loaded rows.")
+    return min_date, max_date
+
+
 def filter_by_artists(df: pd.DataFrame, artists: list[str]) -> pd.DataFrame:
     if not artists:
         return df.iloc[0:0]
@@ -806,6 +1043,23 @@ def format_delta_value(change: float | None) -> str | None:
     return f"{change:+.1f}%"
 
 
+def compute_delta_display(
+    *,
+    current: float,
+    baseline: float,
+    new_entry_floor: float | None = None,
+) -> str | None:
+    """Return user-facing delta text with optional NEW ENTRY handling.
+
+    Use NEW ENTRY when baseline is effectively near-zero and current is now
+    materially positive; this avoids misleading huge percentages.
+    """
+
+    if new_entry_floor is not None and baseline < new_entry_floor <= current and current > baseline:
+        return "NEW ENTRY"
+    return format_delta_value(compute_pct_delta(current, baseline))
+
+
 def build_delta_signal_rows(
     *,
     views_per_artist: float,
@@ -816,10 +1070,10 @@ def build_delta_signal_rows(
     roster_likes_per_artist: float,
     comments_per_artist: float,
     roster_comments_per_artist: float,
-    avg_engagement: float,
-    roster_avg_engagement: float,
-    revenue_per_artist: float,
-    roster_revenue_per_artist: float,
+    overall_engagement_rate: float,
+    roster_overall_engagement_rate: float,
+    avg_views_per_day: float,
+    roster_avg_views_per_day: float,
 ) -> pd.DataFrame:
     """Build arithmetic-backed rows for every displayed KPI delta."""
 
@@ -829,44 +1083,63 @@ def build_delta_signal_rows(
             views_per_artist,
             roster_views_per_artist,
             "Scale the format mix that is already pulling reach.",
+            None,
         ),
-        ("Videos analyzed", videos_per_artist, roster_videos_per_artist, "Tune release cadence to match capacity."),
+        (
+            "Videos analyzed",
+            videos_per_artist,
+            roster_videos_per_artist,
+            "Tune release cadence to match capacity.",
+            1.0,
+        ),
         (
             "Total likes",
             likes_per_artist,
             roster_likes_per_artist,
             "Double down on hooks/creative that drives positive reactions.",
+            None,
         ),
         (
             "Total comments",
             comments_per_artist,
             roster_comments_per_artist,
             "Prioritize call-to-action formats that trigger conversation.",
+            None,
         ),
         (
-            "Avg engagement rate",
-            avg_engagement,
-            roster_avg_engagement,
+            "Overall engagement rate",
+            overall_engagement_rate,
+            roster_overall_engagement_rate,
             "Replicate the top engagement format with tighter iteration loops.",
+            None,
         ),
         (
-            "Est. revenue (USD)",
-            revenue_per_artist,
-            roster_revenue_per_artist,
-            "Allocate budget toward the highest-yield format first.",
+            "Avg views/day",
+            avg_views_per_day,
+            roster_avg_views_per_day,
+            "Use current acceleration leaders as the rollout priority this week.",
+            NEW_ENTRY_VIEWS_PER_DAY_FLOOR,
         ),
     ]
     rows: list[dict[str, str]] = []
-    for name, current, baseline, action in specs:
-        change = compute_pct_delta(current, baseline)
-        delta_text = format_delta_value(change)
+    for name, current, baseline, action, new_entry_floor in specs:
+        delta_text = compute_delta_display(
+            current=current,
+            baseline=baseline,
+            new_entry_floor=new_entry_floor,
+        )
         if delta_text is None:
             continue
+        arithmetic = (
+            f"{current:,.2f} vs {baseline:,.2f} baseline (new entry floor: {new_entry_floor:,.1f})"
+            if delta_text == "NEW ENTRY"
+            else f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100"
+        )
         rows.append(
             {
                 "KPI": name,
                 "Delta": delta_text,
-                "Arithmetic": f"(({current:,.2f} / {baseline:,.2f}) - 1) x 100",
+                "Arithmetic": arithmetic,
                 "Action": action,
             }
         )
@@ -897,11 +1170,6 @@ def build_kpi_context(
             total_comments = (
                 int(selected_rows["comment_count"].sum()) if "comment_count" in selected_rows.columns else 0
             )
-            if "est_revenue_usd" in selected_rows.columns:
-                total_revenue = float(selected_rows["est_revenue_usd"].sum())
-            else:
-                rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
-                total_revenue = float(total_views / 1000.0 * rpm)
             avg_engagement = (
                 float(selected_rows["engagement_rate"].mean()) if "engagement_rate" in selected_rows.columns else 0.0
             )
@@ -912,7 +1180,6 @@ def build_kpi_context(
         total_videos = int(filtered_summary["total_videos"].sum())
         total_likes = int(filtered_summary["total_likes"].sum())
         total_comments = int(filtered_summary["total_comments"].sum())
-        total_revenue = float(filtered_summary["total_est_revenue_usd"].sum())
         avg_engagement = float(filtered_summary["avg_engagement_rate"].mean())
         selected_artist_count = max(len(filtered_summary), 1)
 
@@ -929,11 +1196,6 @@ def build_kpi_context(
             if "comment_count" in roster_rows.columns
             else 0.0
         )
-        if "est_revenue_usd" in roster_rows.columns:
-            roster_revenue_per_artist = float(roster_rows["est_revenue_usd"].sum()) / roster_artist_count
-        else:
-            rpm = _read_float_env(REVENUE_RPM_DEFAULT_ENV, DEFAULT_REVENUE_RPM_USD)
-            roster_revenue_per_artist = float(roster_rows["view_count"].sum()) / 1000.0 * rpm / roster_artist_count
         if "engagement_rate" in roster_rows.columns:
             per_artist_engagement = roster_rows.groupby("artist_name")["engagement_rate"].mean()
             roster_avg_engagement = float(per_artist_engagement.mean()) if not per_artist_engagement.empty else 0.0
@@ -944,7 +1206,6 @@ def build_kpi_context(
         roster_videos_per_artist = summary["total_videos"].sum() / max(len(summary), 1)
         roster_likes_per_artist = summary["total_likes"].sum() / max(len(summary), 1)
         roster_comments_per_artist = summary["total_comments"].sum() / max(len(summary), 1)
-        roster_revenue_per_artist = summary["total_est_revenue_usd"].sum() / max(len(summary), 1)
         roster_avg_engagement = float(summary["avg_engagement_rate"].mean())
 
     return {
@@ -952,14 +1213,12 @@ def build_kpi_context(
         "total_videos": total_videos,
         "total_likes": total_likes,
         "total_comments": total_comments,
-        "total_revenue": total_revenue,
         "avg_engagement": avg_engagement,
         "selected_artist_count": selected_artist_count,
         "roster_views_per_artist": roster_views_per_artist,
         "roster_videos_per_artist": roster_videos_per_artist,
         "roster_likes_per_artist": roster_likes_per_artist,
         "roster_comments_per_artist": roster_comments_per_artist,
-        "roster_revenue_per_artist": roster_revenue_per_artist,
         "roster_avg_engagement": roster_avg_engagement,
     }
 
@@ -971,11 +1230,13 @@ def build_kpi_red_flags(
     total_comments: int,
     latest_metrics_date: date | None,
     mode: Literal["demo", "production"] | str | None,
+    latest_etl_run_date: date | None = None,
     reference_date: date | None = None,
 ) -> list[str]:
     """Return user-visible RED FLAG messages for suspicious KPI conditions."""
 
     flags: list[str] = []
+    is_production_mode = mode == "production"
     if total_videos > 0 and total_likes == 0:
         flags.append(
             "Likes are zero across analyzed videos. Check whether like_count "
@@ -987,20 +1248,27 @@ def build_kpi_red_flags(
             "ingestion or demo derivation is missing.",
         )
 
-    if latest_metrics_date is not None:
-        age_days = (reference_date or date.today()) - latest_metrics_date
-        freshness_days = _get_data_freshness_days()
-        if age_days.days > freshness_days:
-            if mode == "production":
-                flags.append(
-                    f"Latest metrics are {age_days.days} days old (limit: {freshness_days}). "
-                    "Run ETL before trusting KPI cards.",
-                )
-            else:
-                flags.append(
-                    f"Demo snapshot is {age_days.days} days old (latest: {latest_metrics_date.isoformat()}). "
-                    "Use Production mode for fresh daily ETL KPIs.",
-                )
+    is_etl_heartbeat_source = is_production_mode and latest_etl_run_date is not None
+    freshness_reference_date = latest_etl_run_date if is_etl_heartbeat_source else latest_metrics_date
+    if freshness_reference_date is None:
+        return flags
+
+    age_days = (reference_date or date.today()) - freshness_reference_date
+    freshness_days = _get_data_freshness_days()
+    if age_days.days <= freshness_days:
+        return flags
+
+    if is_production_mode:
+        source_text = "successful ETL heartbeat is" if is_etl_heartbeat_source else "metrics are"
+        flags.append(
+            f"Latest {source_text} {age_days.days} days old "
+            f"(limit: {freshness_days}). Run ETL before trusting KPI cards.",
+        )
+    else:
+        flags.append(
+            f"Demo snapshot is {age_days.days} days old (latest: {freshness_reference_date.isoformat()}). "
+            "Use Production mode for fresh daily ETL KPIs.",
+        )
     return flags
 
 
@@ -1050,151 +1318,386 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _compute_rpm_by_video_type(videos: pd.DataFrame | None) -> dict[str, float]:
-    """Compute RPM (USD per 1,000 views) by video type from video rows."""
+def _prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return per-artist recent windows for official releases and other content."""
 
-    if videos is None or videos.empty:
-        return {}
-    required = {"video_type", "view_count", "est_revenue_usd"}
-    if not required.issubset(videos.columns):
-        return {}
+    required = {"artist_name", "video_id", "title", "video_type", "view_count", "views_per_day", "engagement_rate"}
+    if videos.empty or not required.issubset(videos.columns):
+        return pd.DataFrame(), pd.DataFrame()
 
-    typed = videos[list(required)].copy()
-    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
-    typed["est_revenue_usd"] = pd.to_numeric(typed["est_revenue_usd"], errors="coerce")
+    typed = videos.copy()
     typed["video_type_label"] = typed["video_type"].map(_display_video_type)
-    typed = typed[(typed["view_count"] > 0) & typed["est_revenue_usd"].notna()]
-    if typed.empty:
-        return {}
-
-    grouped = typed.groupby("video_type_label", dropna=False).agg(
-        total_views=("view_count", "sum"),
-        total_revenue=("est_revenue_usd", "sum"),
+    typed["published_at"] = pd.to_datetime(typed.get("published_at"), errors="coerce")
+    typed["metrics_date"] = pd.to_datetime(typed.get("metrics_date"), errors="coerce")
+    typed["activity_date"] = typed["published_at"].fillna(typed["metrics_date"])
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed["engagement_rate"] = pd.to_numeric(typed["engagement_rate"], errors="coerce")
+    typed = typed[typed["artist_name"].notna() & typed["video_id"].notna()]
+    typed = typed.sort_values(
+        ["artist_name", "activity_date", "view_count"],
+        ascending=[True, False, False],
+        na_position="last",
     )
-    grouped = grouped[grouped["total_views"] > 0]
-    if grouped.empty:
-        return {}
 
-    grouped["rpm"] = (grouped["total_revenue"] / grouped["total_views"]) * 1000.0
-    rpm_by_type: dict[str, float] = {}
-    for idx, row in grouped.iterrows():
-        label = str(idx)
-        rpm_by_type[label] = float(row["rpm"])
-    return rpm_by_type
+    official_recent = (
+        typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+        .groupby("artist_name", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    other_recent = (
+        typed.loc[~typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+        .groupby("artist_name", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    return official_recent, other_recent
 
 
-def build_revenue_formula_context(
-    summary_filtered: pd.DataFrame,
-    videos_filtered: pd.DataFrame | None = None,
+def prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Public wrapper for recent official/other release windows."""
+
+    return _prepare_recent_release_windows(videos, per_artist_limit=per_artist_limit)
+
+
+def _mean_or_none(series: pd.Series) -> float | None:
+    values = pd.to_numeric(series, errors="coerce").dropna()
+    if values.empty:
+        return None
+    return float(values.mean())
+
+
+def _median_release_gap_days(official_rows: pd.DataFrame) -> float | None:
+    if "activity_date" not in official_rows.columns:
+        return None
+    dates = pd.to_datetime(official_rows["activity_date"], errors="coerce").dropna().drop_duplicates()
+    if len(dates) < 2:
+        return None
+    sorted_dates = dates.sort_values(ascending=False).to_list()
+    day_gaps = [
+        float((sorted_dates[idx] - sorted_dates[idx + 1]).days)
+        for idx in range(len(sorted_dates) - 1)
+        if (sorted_dates[idx] - sorted_dates[idx + 1]).days > 0
+    ]
+    if not day_gaps:
+        return None
+    return float(pd.Series(day_gaps).median())
+
+
+def _safe_lift_pct(current: float | None, baseline: float | None) -> float | None:
+    if current is None or baseline is None:
+        return None
+    if not (math.isfinite(current) and math.isfinite(baseline)):
+        return None
+    if baseline <= 0:
+        return None
+    return (current / baseline - 1.0) * 100.0
+
+
+def _build_today_action(
+    *,
+    official_count: int,
+    other_count: int,
+    official_vs_other_lift_pct: float | None,
+    mv_vs_other_official_lift_pct: float | None,
+    short_video_share_pct: float | None,
+) -> str:
+    """Return a plain-language rollout action for today's planning."""
+
+    if official_count == 0:
+        return (
+            "No recent official releases in window. Schedule one official release with "
+            "short-video (<60s) support this week."
+        )
+    if mv_vs_other_official_lift_pct is not None and mv_vs_other_official_lift_pct >= 20.0:
+        return "Official music videos are leading. Prioritize next budget for an Official Music Video rollout."
+    if official_vs_other_lift_pct is not None and official_vs_other_lift_pct < 0:
+        return "Other content is outperforming official releases. Rework official rollout hooks and thumbnails."
+    if short_video_share_pct is not None and short_video_share_pct < 40.0:
+        return (
+            "Increase short-video (<60s) support around each official release to improve discovery and follow-through."
+        )
+    if other_count == 0:
+        return "Add short-form support posts around each official release to create follow-on audience lift."
+    return "Mix looks healthy. Keep cadence steady and run one controlled title/thumbnail experiment this week."
+
+
+def build_release_strategy_board(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> pd.DataFrame:
+    """Build per-artist rollout KPIs from latest official vs other content windows."""
+
+    official_recent, other_recent = _prepare_recent_release_windows(
+        videos,
+        per_artist_limit=per_artist_limit,
+    )
+    if official_recent.empty and other_recent.empty:
+        return pd.DataFrame(
+            columns=[
+                "Artist",
+                "Official release count",
+                "Other content count",
+                "Official avg views/day",
+                "Other avg views/day",
+                "Official vs Other lift (%)",
+                "MV vs other official lift (%)",
+                "Short video (<60s) share in other content (%)",
+                "Official cadence (days)",
+                "Today action",
+            ]
+        )
+
+    artists = sorted(
+        set(official_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+        | set(other_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+    )
+    rows: list[dict[str, float | int | str]] = []
+    for artist_name in artists:
+        official_rows = official_recent.loc[official_recent["artist_name"] == artist_name]
+        other_rows = other_recent.loc[other_recent["artist_name"] == artist_name]
+
+        official_avg_views_per_day = _mean_or_none(official_rows["views_per_day"])
+        other_avg_views_per_day = _mean_or_none(other_rows["views_per_day"])
+        official_vs_other_lift = _safe_lift_pct(official_avg_views_per_day, other_avg_views_per_day)
+
+        mv_rows = official_rows.loc[official_rows["video_type_label"] == "Official Music Video"]
+        non_mv_official_rows = official_rows.loc[official_rows["video_type_label"] != "Official Music Video"]
+        mv_avg_views_per_day = _mean_or_none(mv_rows["views_per_day"])
+        non_mv_official_avg_views_per_day = _mean_or_none(non_mv_official_rows["views_per_day"])
+        mv_lift = _safe_lift_pct(mv_avg_views_per_day, non_mv_official_avg_views_per_day)
+
+        short_video_rows = other_rows.loc[other_rows["video_type_label"] == SHORT_VIDEO_LABEL]
+        short_video_share_pct = None
+        if len(other_rows) > 0:
+            short_video_share_pct = float(len(short_video_rows) / len(other_rows) * 100.0)
+
+        official_count = int(official_rows["video_id"].nunique()) if not official_rows.empty else 0
+        other_count = int(other_rows["video_id"].nunique()) if not other_rows.empty else 0
+        cadence_days = _median_release_gap_days(official_rows)
+
+        rows.append(
+            {
+                "Artist": str(artist_name),
+                "Official release count": official_count,
+                "Other content count": other_count,
+                "Official avg views/day": official_avg_views_per_day or 0.0,
+                "Other avg views/day": other_avg_views_per_day or 0.0,
+                "Official vs Other lift (%)": official_vs_other_lift,
+                "MV vs other official lift (%)": mv_lift,
+                "Short video (<60s) share in other content (%)": short_video_share_pct,
+                "Official cadence (days)": cadence_days,
+                "Today action": _build_today_action(
+                    official_count=official_count,
+                    other_count=other_count,
+                    official_vs_other_lift_pct=official_vs_other_lift,
+                    mv_vs_other_official_lift_pct=mv_lift,
+                    short_video_share_pct=short_video_share_pct,
+                ),
+            }
+        )
+
+    result = pd.DataFrame(rows)
+    return result.sort_values("MV vs other official lift (%)", ascending=False, na_position="last").reset_index(
+        drop=True
+    )
+
+
+def _build_focus_artist_color_map(
+    artists: list[str],
+    *,
+    focus_artist: str,
+    base_color_map: dict[str, str],
 ) -> dict[str, str]:
-    """Build explicit formula text for the estimated revenue KPI."""
+    """Highlight one artist and mute all benchmark artists to grayscale."""
 
-    total_views = float(summary_filtered["total_views"].sum()) if "total_views" in summary_filtered.columns else 0.0
-    total_revenue = (
-        float(summary_filtered["total_est_revenue_usd"].sum())
-        if "total_est_revenue_usd" in summary_filtered.columns
-        else 0.0
-    )
-    blended_rpm = (total_revenue / total_views) * 1000.0 if total_views > 0 else 0.0
-
-    equation = "Estimated revenue (USD) = (Total views / 1,000) x RPM (USD per 1,000 views)"
-    worked_example = (
-        f"Current selection: ({format_number(total_views)} / 1,000) x "
-        f"${blended_rpm:.2f} = {format_currency(total_revenue)}"
-    )
-    plain_language = (
-        "Plain-English math: divide views by 1,000, then multiply by RPM. "
-        "RPM is dollars per 1,000 views. No hidden score is used."
-    )
-    scope_note = (
-        "What this is: a directional ad-revenue estimate from public metrics. "
-        "What this is not: an official YouTube payout, label settlement, "
-        "or publishing/songwriter royalty statement."
-    )
-    public_range_note = (
-        f"Public creator discussions often cite rough RPM ranges around "
-        f"${PUBLIC_RPM_LOW_USD:.0f}-${PUBLIC_RPM_HIGH_USD:.0f} per 1,000 views. "
-        "Actual RPM can be lower or higher based on audience country mix, "
-        "watch time, ad demand, seasonality, and rights splits."
-    )
-    tooltip_hint = "See the full arithmetic panel below for assumptions and caveats."
-
-    has_video_rows = videos_filtered is not None and not videos_filtered.empty
-    rpm_by_type = _compute_rpm_by_video_type(videos_filtered)
-    if not has_video_rows or not rpm_by_type:
-        type_note = (
-            "Shorts vs Other Content: no type-level revenue rows are available for "
-            "the current filters. Length/type is not changing the arithmetic here."
-        )
-    elif len(rpm_by_type) < 2:
-        type_note = (
-            "Shorts vs Other Content: this view uses one RPM for all content types. "
-            "Length/type is not changing the arithmetic here."
-        )
-    else:
-        rpm_values = list(rpm_by_type.values())
-        spread = max(rpm_values) - min(rpm_values)
-        if spread <= RPM_VARIATION_TOLERANCE:
-            type_note = "Shorts vs Other Content: this view is effectively using one RPM " "for all content types."
+    color_map: dict[str, str] = {}
+    for artist in artists:
+        if artist == focus_artist:
+            color_map[artist] = base_color_map.get(artist, "#0EA5E9")
         else:
-            top_types = sorted(rpm_by_type.items(), key=lambda item: item[1], reverse=True)
-            sample = "; ".join(f"{name}: ${rpm:.2f}" for name, rpm in top_types[:4])
-            type_note = (
-                "Shorts vs Other Content: this view uses different RPM values by content type. "
-                "Per-video arithmetic is still: (video views / 1,000) x type RPM. "
-                f"Current type RPMs (USD per 1,000 views): {sample}."
-            )
-
-    return {
-        "equation": equation,
-        "worked_example": worked_example,
-        "plain_language": plain_language,
-        "scope_note": scope_note,
-        "public_range_note": public_range_note,
-        "tooltip_hint": tooltip_hint,
-        "type_note": type_note,
-    }
+            color_map[artist] = "#C7CBD4"
+    return color_map
 
 
-def render_revenue_formula_panel(formula_context: dict[str, str]) -> None:
-    """Render a high-signal, plain-language revenue explanation panel."""
+def build_focus_artist_scorecard(board: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Build one-artist KPI comparisons against benchmark artist averages."""
 
-    st.markdown("##### Estimated revenue arithmetic (TOS-safe explicit formula)")
-    st.markdown(
+    columns = ["Metric", "Focus value", "Benchmark avg", "Lift vs benchmark (%)", "Interpretation"]
+    if board.empty or "Artist" not in board.columns:
+        return pd.DataFrame(columns=columns)
+
+    focus_rows = board.loc[board["Artist"] == focus_artist]
+    if focus_rows.empty:
+        return pd.DataFrame(columns=columns)
+
+    focus = focus_rows.iloc[0]
+    peers = board.loc[board["Artist"] != focus_artist]
+
+    def _peer_mean(column: str) -> float | None:
+        if peers.empty or column not in peers.columns:
+            return None
+        values = pd.to_numeric(peers[column], errors="coerce").dropna()
+        if values.empty:
+            return None
+        return float(values.mean())
+
+    specs = [
+        ("Official avg views/day", "Official avg views/day", "Higher means official drops are compounding faster."),
         (
-            "<div style='padding:14px 16px; border-radius:12px; "
-            "border:1px solid #BFDBFE; background:linear-gradient(135deg,#EFF6FF,#DBEAFE);'>"
-            f"<div style='font-size:1.05rem; font-weight:700; color:#1E3A8A;'>{formula_context['equation']}</div>"
-            f"<div style='margin-top:8px; font-weight:700; color:#065F46;'>{formula_context['worked_example']}</div>"
-            "</div>"
+            "Other avg views/day",
+            "Other avg views/day",
+            "Tracks discovery speed from short-video (<60s) and other support content.",
         ),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
         (
-            "<div style='margin-top:10px; padding:10px 12px; border-left:5px solid #0EA5E9; "
-            "background:#F0F9FF; color:#0C4A6E;'>"
-            f"{formula_context['plain_language']}</div>"
+            "Official vs Other lift (%)",
+            "Official vs Other lift (%)",
+            "Positive means official releases beat other content.",
         ),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
         (
-            "<div style='margin-top:8px; padding:10px 12px; border-left:5px solid #F59E0B; "
-            "background:#FFFBEB; color:#78350F;'>"
-            f"{formula_context['public_range_note']}</div>"
+            "MV vs other official lift (%)",
+            "MV vs other official lift (%)",
+            "Positive means music videos beat other official formats.",
         ),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
         (
-            "<div style='margin-top:8px; padding:10px 12px; border-left:5px solid #DC2626; "
-            "background:#FEF2F2; color:#7F1D1D;'>"
-            f"{formula_context['scope_note']}</div>"
+            "Short video (<60s) share in other content (%)",
+            "Short video (<60s) share in other content (%)",
+            "Shows how much support content is short-form by duration (<60s).",
         ),
-        unsafe_allow_html=True,
+        ("Official cadence (days)", "Official cadence (days)", "Lower means more frequent official release cadence."),
+    ]
+
+    rows: list[dict[str, float | str | None]] = []
+    for label, column, interpretation in specs:
+        focus_value = pd.to_numeric(pd.Series([focus.get(column)]), errors="coerce").iloc[0]
+        focus_float = float(focus_value) if pd.notna(focus_value) else None
+        benchmark_avg = _peer_mean(column)
+        lift_pct = _safe_lift_pct(focus_float, benchmark_avg)
+        rows.append(
+            {
+                "Metric": label,
+                "Focus value": focus_float,
+                "Benchmark avg": benchmark_avg,
+                "Lift vs benchmark (%)": lift_pct,
+                "Interpretation": interpretation,
+            }
+        )
+    return pd.DataFrame(rows, columns=columns)
+
+
+def build_focus_trend_frame(df: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Return focus-vs-benchmark trend frame (views/day) for charting."""
+
+    required = {"artist_name", "metrics_date", "views_per_day"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+
+    typed = df.copy()
+    typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed = typed.dropna(subset=["metrics_date", "views_per_day"])
+    if typed.empty:
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+
+    artist_day = (
+        typed.groupby(["metrics_date", "artist_name"], dropna=False)
+        .agg(views_per_day=("views_per_day", "mean"))
+        .reset_index()
     )
-    st.caption(formula_context["type_note"])
+    focus = artist_day.loc[artist_day["artist_name"] == focus_artist, ["metrics_date", "views_per_day"]].copy()
+    if focus.empty:
+        return pd.DataFrame(columns=["metrics_date", "Series", "views_per_day"])
+    focus["Series"] = "Focus artist"
+
+    peers = artist_day.loc[artist_day["artist_name"] != focus_artist]
+    if peers.empty:
+        return focus.loc[:, ["metrics_date", "Series", "views_per_day"]]
+
+    benchmark = peers.groupby("metrics_date", dropna=False).agg(views_per_day=("views_per_day", "mean")).reset_index()
+    benchmark["Series"] = "Benchmark average"
+    return pd.concat(
+        [
+            focus.loc[:, ["metrics_date", "Series", "views_per_day"]],
+            benchmark.loc[:, ["metrics_date", "Series", "views_per_day"]],
+        ],
+        ignore_index=True,
+    ).sort_values(["metrics_date", "Series"])
+
+
+def build_focus_format_lift_table(df: pd.DataFrame, focus_artist: str) -> pd.DataFrame:
+    """Compare focus artist format performance against benchmark averages."""
+
+    required = {"artist_name", "video_type", "video_id", "views_per_day"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    typed = df.copy()
+    typed["video_type_label"] = typed["video_type"].map(_display_video_type)
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed = typed.dropna(subset=["views_per_day"])
+    if typed.empty:
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    focus_mix = (
+        typed.loc[typed["artist_name"] == focus_artist]
+        .groupby("video_type_label", dropna=False)
+        .agg(focus_views_per_day=("views_per_day", "mean"))
+    )
+    if focus_mix.empty:
+        return pd.DataFrame(
+            columns=[
+                "Format",
+                "Focus avg views/day",
+                "Benchmark avg views/day",
+                "Lift vs benchmark (%)",
+            ]
+        )
+
+    benchmark_mix = (
+        typed.loc[typed["artist_name"] != focus_artist]
+        .groupby("video_type_label", dropna=False)
+        .agg(benchmark_views_per_day=("views_per_day", "mean"))
+    )
+    merged = focus_mix.join(benchmark_mix, how="left").reset_index()
+    merged["Lift vs benchmark (%)"] = merged.apply(
+        lambda row: _safe_lift_pct(
+            float(row["focus_views_per_day"]) if pd.notna(row["focus_views_per_day"]) else None,
+            float(row["benchmark_views_per_day"]) if pd.notna(row["benchmark_views_per_day"]) else None,
+        ),
+        axis=1,
+    )
+    merged = merged.rename(
+        columns={
+            "video_type_label": "Format",
+            "focus_views_per_day": "Focus avg views/day",
+            "benchmark_views_per_day": "Benchmark avg views/day",
+        }
+    )
+    return merged.sort_values("Focus avg views/day", ascending=False).reset_index(drop=True)
 
 
 def render_kpis(
@@ -1203,6 +1706,7 @@ def render_kpis(
     videos: pd.DataFrame | None = None,
     roster_videos: pd.DataFrame | None = None,
     mode: Literal["demo", "production"] | str | None = None,
+    latest_etl_run_date: date | None = None,
 ) -> None:
     """Render KPI cards with directional deltas vs roster averages.
 
@@ -1225,8 +1729,6 @@ def render_kpis(
     total_videos = int(context["total_videos"])
     total_likes = int(context["total_likes"])
     total_comments = int(context["total_comments"])
-    total_revenue = float(context["total_revenue"])
-    avg_engagement = float(context["avg_engagement"])
     selected_artist_count = int(context["selected_artist_count"])
 
     # Roster-wide baselines for directional context
@@ -1234,22 +1736,48 @@ def render_kpis(
     roster_videos_per_artist = float(context["roster_videos_per_artist"])
     roster_likes_per_artist = float(context["roster_likes_per_artist"])
     roster_comments_per_artist = float(context["roster_comments_per_artist"])
-    roster_revenue_per_artist = float(context["roster_revenue_per_artist"])
-    roster_avg_engagement = float(context["roster_avg_engagement"])
     views_per_artist = total_views / selected_artist_count
     videos_per_artist = total_videos / selected_artist_count
     likes_per_artist = total_likes / selected_artist_count
     comments_per_artist = total_comments / selected_artist_count
-    revenue_per_artist = total_revenue / selected_artist_count
 
-    views_delta = format_delta_value(compute_pct_delta(views_per_artist, roster_views_per_artist))
-    videos_delta = format_delta_value(compute_pct_delta(videos_per_artist, roster_videos_per_artist))
-    likes_delta = format_delta_value(compute_pct_delta(likes_per_artist, roster_likes_per_artist))
-    comments_delta = format_delta_value(compute_pct_delta(comments_per_artist, roster_comments_per_artist))
-    revenue_delta = format_delta_value(compute_pct_delta(revenue_per_artist, roster_revenue_per_artist))
-    engagement_delta = format_delta_value(compute_pct_delta(avg_engagement, roster_avg_engagement))
-    formula_summary = pd.DataFrame([{"total_views": total_views, "total_est_revenue_usd": total_revenue}])
-    formula_context = build_revenue_formula_context(formula_summary, videos)
+    overall_engagement_rate = ((total_likes + total_comments) / total_views * 100.0) if total_views > 0 else 0.0
+    roster_overall_engagement_rate = (
+        ((roster_likes_per_artist + roster_comments_per_artist) / roster_views_per_artist * 100.0)
+        if roster_views_per_artist > 0
+        else 0.0
+    )
+
+    selected_avg_views_per_day = (
+        _mean_or_none(filter_by_artists(videos, artists)["views_per_day"])
+        if videos is not None and not videos.empty and "views_per_day" in videos.columns
+        else None
+    )
+    roster_avg_views_per_day = (
+        _mean_or_none(roster_videos["views_per_day"])
+        if roster_videos is not None and not roster_videos.empty and "views_per_day" in roster_videos.columns
+        else None
+    )
+    avg_views_per_day = selected_avg_views_per_day or 0.0
+    baseline_views_per_day = roster_avg_views_per_day or 0.0
+
+    views_delta = compute_delta_display(current=views_per_artist, baseline=roster_views_per_artist)
+    videos_delta = compute_delta_display(
+        current=videos_per_artist,
+        baseline=roster_videos_per_artist,
+        new_entry_floor=1.0,
+    )
+    likes_delta = compute_delta_display(current=likes_per_artist, baseline=roster_likes_per_artist)
+    comments_delta = compute_delta_display(current=comments_per_artist, baseline=roster_comments_per_artist)
+    engagement_delta = compute_delta_display(
+        current=overall_engagement_rate,
+        baseline=roster_overall_engagement_rate,
+    )
+    views_per_day_delta = compute_delta_display(
+        current=avg_views_per_day,
+        baseline=baseline_views_per_day,
+        new_entry_floor=NEW_ENTRY_VIEWS_PER_DAY_FLOOR,
+    )
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric(
@@ -1285,20 +1813,20 @@ def render_kpis(
         help="Per-artist comments vs roster-wide average",
     )
     c5.metric(
-        "Avg engagement rate",
-        format_percent(avg_engagement),
+        "Overall engagement rate",
+        format_percent(overall_engagement_rate),
         delta=engagement_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help="Engagement rate vs roster-wide average",
+        help="((Likes + Comments) / Views) x 100, compared to roster average",
     )
     c6.metric(
-        "Est. revenue (USD)",
-        format_currency(total_revenue),
-        delta=revenue_delta,
+        "Avg views/day",
+        f"{avg_views_per_day:,.1f}",
+        delta=views_per_day_delta,
         delta_color="normal",
         delta_arrow="auto",
-        help=formula_context["tooltip_hint"] + " Scroll down to 'Estimated revenue arithmetic'.",
+        help="Average daily velocity vs roster baseline",
     )
 
     # Apply modern, card-like styling to the KPI strip
@@ -1329,12 +1857,11 @@ def render_kpis(
         total_likes=total_likes,
         total_comments=total_comments,
         latest_metrics_date=latest_metrics_date,
+        latest_etl_run_date=latest_etl_run_date,
         mode=mode,
     )
     for flag in red_flags:
-        st.warning(f"RED FLAG: {flag}")
-
-    render_revenue_formula_panel(formula_context)
+        st.warning(f"Data check: {flag}")
 
     delta_rows = build_delta_signal_rows(
         views_per_artist=views_per_artist,
@@ -1345,10 +1872,10 @@ def render_kpis(
         roster_likes_per_artist=roster_likes_per_artist,
         comments_per_artist=comments_per_artist,
         roster_comments_per_artist=roster_comments_per_artist,
-        avg_engagement=avg_engagement,
-        roster_avg_engagement=roster_avg_engagement,
-        revenue_per_artist=revenue_per_artist,
-        roster_revenue_per_artist=roster_revenue_per_artist,
+        overall_engagement_rate=overall_engagement_rate,
+        roster_overall_engagement_rate=roster_overall_engagement_rate,
+        avg_views_per_day=avg_views_per_day,
+        roster_avg_views_per_day=baseline_views_per_day,
     )
     if not delta_rows.empty:
         st.markdown("##### KPI delta arithmetic (shown percentages only)")
@@ -1515,6 +2042,268 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
         )
 
 
+def _prepare_release_table_for_display(df: pd.DataFrame) -> pd.DataFrame:
+    columns = [
+        "artist_name",
+        "title",
+        "video_type_label",
+        "activity_date",
+        "view_count",
+        "views_per_day",
+        "engagement_rate",
+    ]
+    if df.empty:
+        return pd.DataFrame(columns=columns)
+
+    table = df.copy()
+    table["activity_date"] = pd.to_datetime(table["activity_date"], errors="coerce").dt.date
+    return table.loc[:, columns].rename(
+        columns={
+            "artist_name": "Artist",
+            "title": "Title",
+            "video_type_label": "Format",
+            "activity_date": "Release date",
+            "view_count": "Views",
+            "views_per_day": "Views/day",
+            "engagement_rate": "Engagement %",
+        }
+    )
+
+
+def render_executive_action_center(df: pd.DataFrame) -> None:
+    """Render high-signal planning view for rollout meetings."""
+
+    st.markdown("### Executive Action Center")
+    st.caption(
+        "Official releases = Official Music Video, Official Audio, Lyric Video. "
+        "Other content = short videos (<60s) + everything else."
+    )
+
+    official_recent, other_recent = _prepare_recent_release_windows(df, per_artist_limit=10)
+    board = build_release_strategy_board(df, per_artist_limit=10)
+    if board.empty:
+        st.info("Not enough data to build executive rollout actions yet.")
+        return
+
+    chart_rows = board.dropna(subset=["MV vs other official lift (%)"])
+    if not chart_rows.empty:
+        lift_chart = px.bar(
+            chart_rows,
+            x="Artist",
+            y="MV vs other official lift (%)",
+            color="MV vs other official lift (%)",
+            color_continuous_scale=[(0.0, "#B91C1C"), (0.5, "#F59E0B"), (1.0, "#15803D")],
+            title="Music video lift vs other official formats (views/day, latest 10 official releases)",
+        )
+        lift_chart.add_hline(y=0.0, line_dash="dot", line_color="#6B7280")
+        lift_chart.update_layout(coloraxis_colorbar_title="Lift %")
+        st.plotly_chart(lift_chart, use_container_width=True, height=360)
+
+    st.markdown("##### Today-first rollout KPIs")
+    st.dataframe(
+        board,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Official release count": st.column_config.NumberColumn("Official count", format="%d"),
+            "Other content count": st.column_config.NumberColumn("Other count", format="%d"),
+            "Official avg views/day": st.column_config.NumberColumn("Official avg views/day", format="%.1f"),
+            "Other avg views/day": st.column_config.NumberColumn("Other avg views/day", format="%.1f"),
+            "Official vs Other lift (%)": st.column_config.NumberColumn("Official vs Other lift %", format="%.1f"),
+            "MV vs other official lift (%)": st.column_config.NumberColumn(
+                "MV vs other official lift %", format="%.1f"
+            ),
+            "Short video (<60s) share in other content (%)": st.column_config.NumberColumn(
+                "Short-video share %", format="%.1f"
+            ),
+            "Official cadence (days)": st.column_config.NumberColumn("Official cadence (days)", format="%.0f"),
+            "Today action": st.column_config.TextColumn("Today's move", width="large"),
+        },
+    )
+
+    st.markdown("##### Rollout Meeting Talking Points")
+    for row in board.to_dict(orient="records"):
+        st.markdown(f"- **{row['Artist']}:** {row['Today action']}")
+
+    official_table = _prepare_release_table_for_display(official_recent)
+    other_table = _prepare_release_table_for_display(other_recent)
+
+    left, right = st.columns(2)
+    with left:
+        st.markdown("##### Last 10 official releases per artist")
+        st.dataframe(
+            official_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+    with right:
+        st.markdown("##### Last 10 other content posts per artist")
+        st.dataframe(
+            other_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+
+
+def render_artist_focus_dashboard(
+    *,
+    latest: pd.DataFrame,
+    normalized_filtered: pd.DataFrame,
+    selected_artists: list[str],
+    focus_artist: str,
+    base_color_map: dict[str, str],
+) -> None:
+    """Render one-artist coaching dashboard with grayscale benchmarks."""
+
+    focus_color_map = _build_focus_artist_color_map(
+        selected_artists,
+        focus_artist=focus_artist,
+        base_color_map=base_color_map,
+    )
+    focus_color = focus_color_map.get(focus_artist, "#FF4B4B")
+
+    st.markdown("### Artist Coaching View")
+    render_focus_artist_header(focus_artist, focus_color)
+    render_benchmark_context_note(focus_artist)
+
+    board = build_release_strategy_board(latest, per_artist_limit=10)
+    scorecard = build_focus_artist_scorecard(board, focus_artist)
+
+    focus_row = board.loc[board["Artist"] == focus_artist]
+    if not focus_row.empty:
+        today_action = str(focus_row.iloc[0]["Today action"])
+        st.markdown(
+            (
+                "<div style='padding:14px 16px; border-radius:14px; "
+                f"border:1px solid {focus_color}; background:linear-gradient(120deg,#FFFFFF,#FDECEC); "
+                "animation: focusRise .28s ease-out;'>"
+                "<div style='font-size:1.02rem; font-weight:700; color:#991B1B;'>Rollout Priority Today</div>"
+                f"<div style='margin-top:8px; color:#1F2937; font-weight:600;'>{html.escape(today_action)}</div>"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
+        )
+
+    if not scorecard.empty:
+        st.markdown("##### Focus KPI snapshot (vs benchmark artists)")
+        st.dataframe(
+            scorecard,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Focus value": st.column_config.NumberColumn("Focus value", format="%.2f"),
+                "Benchmark avg": st.column_config.NumberColumn("Benchmark avg", format="%.2f"),
+                "Lift vs benchmark (%)": st.column_config.NumberColumn("Lift %", format="%.1f"),
+                "Interpretation": st.column_config.TextColumn("Interpretation", width="large"),
+            },
+        )
+
+    trend_df = build_focus_trend_frame(normalized_filtered, focus_artist)
+    format_lift_df = build_focus_format_lift_table(latest, focus_artist)
+
+    left, right = st.columns(2)
+    with left:
+        if trend_df.empty:
+            st.info("Not enough trend points to compare focus artist vs benchmarks.")
+        else:
+            trend_fig = px.line(
+                trend_df,
+                x="metrics_date",
+                y="views_per_day",
+                color="Series",
+                markers=True,
+                color_discrete_map={"Focus artist": focus_color, "Benchmark average": "#B4B9C3"},
+                title="Daily velocity trend: focus artist vs benchmark average",
+            )
+            trend_fig.update_layout(hovermode="x unified", legend_title_text="")
+            st.plotly_chart(trend_fig, use_container_width=True, height=360)
+    with right:
+        scatter_df = latest.copy()
+        if scatter_df.empty:
+            st.info("No recent videos available for benchmark comparison.")
+        else:
+            scatter_df["Role"] = scatter_df["artist_name"].apply(
+                lambda name: "Focus artist" if str(name) == focus_artist else "Benchmark artists"
+            )
+            scatter_fig = px.scatter(
+                scatter_df,
+                x="views_per_day",
+                y="engagement_rate",
+                color="Role",
+                size="view_count",
+                hover_name="title",
+                hover_data={
+                    "artist_name": True,
+                    "view_count": ":,.0f",
+                    "views_per_day": ":,.1f",
+                    "engagement_rate": ":.2f",
+                },
+                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": "#C7CBD4"},
+                title="Latest videos: focus highlight with benchmark context",
+            )
+            for trace in scatter_fig.data:
+                if trace.name == "Benchmark artists":
+                    trace.marker.opacity = 0.35
+                else:
+                    trace.marker.opacity = 0.95
+                    trace.marker.line = {"width": 1.5, "color": "#0F172A"}
+            st.plotly_chart(scatter_fig, use_container_width=True, height=360)
+
+    if not format_lift_df.empty:
+        st.markdown("##### Format lift board (focus artist)")
+        st.dataframe(
+            format_lift_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Focus avg views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Benchmark avg views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Lift vs benchmark (%)": st.column_config.NumberColumn(format="%.1f"),
+            },
+        )
+
+    official_recent, other_recent = _prepare_recent_release_windows(latest, per_artist_limit=10)
+    official_focus = _prepare_release_table_for_display(
+        official_recent.loc[official_recent["artist_name"] == focus_artist]
+    )
+    other_focus = _prepare_release_table_for_display(other_recent.loc[other_recent["artist_name"] == focus_artist])
+    col_official, col_other = st.columns(2)
+    with col_official:
+        st.markdown(f"##### {focus_artist}: last 10 official releases")
+        st.dataframe(
+            official_focus,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+    with col_other:
+        st.markdown(f"##### {focus_artist}: last 10 other-content posts")
+        st.dataframe(
+            other_focus,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Views": st.column_config.NumberColumn(format="%d"),
+                "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            },
+        )
+
+
 def render_top_videos(df: pd.DataFrame, limit: int) -> None:
     if df.empty:
         st.info("No videos match the current filters.")
@@ -1603,6 +2392,7 @@ def main() -> None:
     """
 
     st.set_page_config(page_title="TrackStats YT™", layout="wide")
+    inject_dashboard_motion_styles()
 
     col_title, col_mode = st.columns([4, 1])
     with col_title:
@@ -1630,22 +2420,45 @@ def main() -> None:
         st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
         st.stop()
 
-    # In production mode, enforce a freshness window against normalized_videos.
-    if mode == "production" and "metrics_date" in normalized_videos.columns:
+    latest_metrics_at: datetime | None = None
+    if "metrics_date" in normalized_videos.columns:
+        latest_metrics_at = _coerce_utc_datetime(normalized_videos["metrics_date"].max())
+    latest_etl_run_at = load_latest_successful_etl_run_at() if mode == "production" else None
+    latest_etl_run_date = latest_etl_run_at.date() if latest_etl_run_at is not None else None
+
+    # In production mode, freshness is based on ETL heartbeat when available.
+    if mode == "production":
         freshness_days = _get_data_freshness_days()
-        latest_metrics_value = normalized_videos["metrics_date"].max()
-        if not pd.isna(latest_metrics_value):
-            latest_dt = pd.to_datetime(latest_metrics_value).to_pydatetime()
-            if latest_dt.tzinfo is None:
-                latest_dt = latest_dt.replace(tzinfo=timezone.utc)
-            age_days = (datetime.now(timezone.utc) - latest_dt).days
-            if age_days > freshness_days:
-                st.error(
-                    "Production (MySQL) data is older than the configured "
-                    f"freshness window ({freshness_days} days). Run the ETL "
-                    "pipeline before demoing this dashboard.",
-                )
-                st.stop()
+        freshness_anchor_at, freshness_source = _resolve_freshness_anchor(
+            mode=mode,
+            latest_metrics_at=latest_metrics_at,
+            latest_etl_run_at=latest_etl_run_at,
+        )
+        if freshness_anchor_at is None:
+            st.error(
+                "Production (MySQL) mode has no freshness timestamp "
+                "(no metrics_date and no completed ETL run). Run ETL before demoing.",
+            )
+            st.stop()
+
+        age_days = (datetime.now(timezone.utc) - freshness_anchor_at).days
+        if age_days > freshness_days:
+            st.error(
+                f"Production (MySQL) data freshness is stale: {freshness_source} "
+                f"is {age_days} days old (limit: {freshness_days}). Run ETL before demoing.",
+            )
+            st.stop()
+
+        if (
+            latest_etl_run_at is not None
+            and latest_metrics_at is not None
+            and latest_etl_run_at.date() > latest_metrics_at.date()
+        ):
+            st.info(
+                "Fresh snapshot confirmed by ETL heartbeat "
+                f"({latest_etl_run_at.date().isoformat()}). No new video metric rows "
+                f"were added after {latest_metrics_at.date().isoformat()}.",
+            )
 
     palette = get_artist_color_palette()
 
@@ -1684,9 +2497,11 @@ def main() -> None:
         st.warning("Select at least one artist to explore the dashboard.")
         st.stop()
 
-    metrics_dates = normalized_videos["metrics_date"].dt.date
-    min_date = metrics_dates.min()
-    max_date = metrics_dates.max()
+    try:
+        min_date, max_date = resolve_metrics_date_window(normalized_videos)
+    except ValueError as exc:
+        st.error(str(exc))
+        st.stop()
 
     # Use a slider for date range selection, defaulting to the full history
     date_selection = st.sidebar.slider(
@@ -1698,6 +2513,8 @@ def main() -> None:
 
     top_n = st.sidebar.slider("Show top videos", min_value=5, max_value=25, value=10, step=1)
     st.sidebar.metric("Latest metrics date", max_date.isoformat())
+    if mode == "production" and latest_etl_run_date is not None:
+        st.sidebar.metric("Latest ETL heartbeat", latest_etl_run_date.isoformat())
     st.sidebar.metric("Rows loaded", f"{len(normalized_videos):,}")
 
     window_filtered_all = filter_by_date_window(normalized_videos, (start_date, end_date))
@@ -1717,7 +2534,14 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
+        render_kpis(
+            artist_summary,
+            selected_artists,
+            latest,
+            latest_roster,
+            mode=mode,
+            latest_etl_run_date=latest_etl_run_date,
+        )
 
         col1, col2 = st.columns(2)
         with col1:
@@ -1728,6 +2552,7 @@ def main() -> None:
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
         render_artist_content_mix(latest)
+        render_executive_action_center(latest)
 
         ui.card(
             content=(
@@ -1741,10 +2566,31 @@ def main() -> None:
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
-        render_kpis(artist_summary, selected_artists, latest, latest_roster, mode=mode)
-        st.markdown("Dive into per-artist performance and content mix to understand why certain videos overperform.")
-        render_content_mix(latest)
-        render_artist_content_mix(latest)
+        focus_artist = st.selectbox(
+            "Focus artist",
+            selected_artists,
+            index=0,
+            format_func=lambda artist_name: f"{artist_name} • {sanitize_hex_color(color_map.get(artist_name))}",
+            help=(
+                "Choose one artist to coach. Dropdown includes assigned palette color; "
+                "peers stay on screen as grayscale benchmarks."
+            ),
+        )
+        render_kpis(
+            artist_summary,
+            [focus_artist],
+            latest,
+            latest,
+            mode=mode,
+            latest_etl_run_date=latest_etl_run_date,
+        )
+        render_artist_focus_dashboard(
+            latest=latest,
+            normalized_filtered=normalized_filtered,
+            selected_artists=selected_artists,
+            focus_artist=focus_artist,
+            base_color_map=color_map,
+        )
 
     else:  # "Velocity Analysis"
         st.markdown("### Velocity & momentum")
