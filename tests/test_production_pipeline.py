@@ -20,6 +20,21 @@ def test_run_stage_uses_configured_timeout(monkeypatch) -> None:
     assert captured["timeout"] == 123
 
 
+def test_run_stage_records_stdout_tail_when_stderr_empty(monkeypatch) -> None:
+    pipeline = EnterpriseETLPipeline(config={})
+
+    def fake_run(command, capture_output, text, timeout, cwd, env):  # noqa: ANN001
+        return SimpleNamespace(returncode=1, stdout="line1\nline2", stderr="")
+
+    monkeypatch.setattr("tools.core.run_production_pipeline.subprocess.run", fake_run)
+
+    success = pipeline.run_stage("failing_stage", ["python", "-c", "print('x')"], critical=True)
+
+    assert success is False
+    assert pipeline.results["status"] == "FAILED"
+    assert "line1\nline2" in pipeline.results["errors"][-1]
+
+
 def test_invalid_stage_timeout_env_falls_back_to_default(monkeypatch) -> None:
     monkeypatch.setenv("ETL_STAGE_TIMEOUT_SECONDS", "600s")
     pipeline = EnterpriseETLPipeline(config={"stage_timeout_seconds": 321})

@@ -3300,14 +3300,14 @@
     {
       "channel_id": null,
       "metrics": {
-        "engagement_rate": 4.08,
+        "engagement_rate": 5.575,
         "momentum_score": null,
-        "total_videos": 77,
-        "total_views": 30174423,
+        "total_videos": 79,
+        "total_views": 30208899,
         "views_30d": null,
         "views_7d": null
       },
-      "name": "Cobrah",
+      "name": "COBRAH",
       "primary_color": null,
       "videos": [
         {
@@ -3652,6 +3652,17 @@
           "views_per_day": 25.051933701657457
         },
         {
+          "comment_rate": 0.2918110523436075,
+          "engagement_rate": 7.4457413824548615,
+          "like_rate": 7.153930330111254,
+          "published_at": "2023-03-22T16:01:38",
+          "title": "https://m.twitch.tv/iamcobrah",
+          "video_id": "LlkeT3X87-s",
+          "video_type": "Music Content",
+          "view_count": 21932,
+          "views_per_day": 23.431623931623932
+        },
+        {
           "comment_rate": 0.09171787581399614,
           "engagement_rate": 2.164541869210309,
           "like_rate": 2.072823993396313,
@@ -3881,6 +3892,17 @@
           "video_type": "Music Content",
           "view_count": 12638,
           "views_per_day": 287.22727272727275
+        },
+        {
+          "comment_rate": 0.24713010204081634,
+          "engagement_rate": 6.696428571428572,
+          "like_rate": 6.449298469387756,
+          "published_at": "2023-02-19T13:29:08",
+          "title": "lol \ud83d\udda4",
+          "video_id": "nvC6_Uufbbs",
+          "video_type": "Music Content",
+          "view_count": 12544,
+          "views_per_day": 12.544
         },
         {
           "comment_rate": 0.3149867374005305,
@@ -4169,7 +4191,7 @@
         "views_30d": null,
         "views_7d": null
       },
-      "name": "hicorook",
+      "name": "Corook",
       "primary_color": null,
       "videos": [
         {
@@ -6380,7 +6402,7 @@
         "engagement_rate": 4.02,
         "momentum_score": null,
         "total_videos": 110,
-        "total_views": 7754383,
+        "total_views": 7754831,
         "views_30d": null,
         "views_7d": null
       },
@@ -6553,15 +6575,15 @@
           "views_per_day": 58.65255102040816
         },
         {
-          "comment_rate": 0.05231904151515944,
-          "engagement_rate": 0.8972715619849844,
-          "like_rate": 0.8449525204698249,
+          "comment_rate": 0.052295329155517586,
+          "engagement_rate": 0.8968648950171267,
+          "like_rate": 0.8445695658616091,
           "published_at": "2024-11-13T05:00:16",
           "title": "Raiche - You Made Me [Official Live Performance]",
           "video_id": "RwGxj-3VvBE",
           "video_type": "Live Performance",
-          "view_count": 114681,
-          "views_per_day": 254.84666666666666
+          "view_count": 114733,
+          "views_per_day": 254.3968957871397
         },
         {
           "comment_rate": 0.02544819537193854,
@@ -6597,15 +6619,15 @@
           "views_per_day": 53.45424836601307
         },
         {
-          "comment_rate": 0.032897234101778985,
-          "engagement_rate": 0.5023154591694714,
-          "like_rate": 0.4694182250676924,
+          "comment_rate": 0.032889743460001016,
+          "engagement_rate": 0.502201082831554,
+          "like_rate": 0.46931133937155295,
           "published_at": "2025-05-09T04:00:07",
           "title": "Raiche -  OMG (feat. Social House) [Official Visualizer]",
           "video_id": "3o2BY_Ezatw",
           "video_type": "Visualizer",
-          "view_count": 79034,
-          "views_per_day": 289.5018315018315
+          "view_count": 79052,
+          "views_per_day": 288.5109489051095
         },
         {
           "comment_rate": 0.0824453605040056,
@@ -6619,15 +6641,15 @@
           "views_per_day": 25.3689818468824
         },
         {
-          "comment_rate": 0.1813906617400067,
-          "engagement_rate": 2.7141417534430636,
-          "like_rate": 2.532751091703057,
+          "comment_rate": 0.18125671321160042,
+          "engagement_rate": 2.712137486573577,
+          "like_rate": 2.5308807733619765,
           "published_at": "2023-09-01T16:00:09",
           "title": "Raiche - Big Daddy [Official Music Video]",
           "video_id": "xnd9jw_Nhoo",
           "video_type": "Official Music Video",
-          "view_count": 59540,
-          "views_per_day": 66.97412823397076
+          "view_count": 59584,
+          "views_per_day": 66.94831460674158
         },
         {
           "comment_rate": 0.08002977852224083,
@@ -6707,37 +6729,37 @@
           "views_per_day": 10.489344909234411
         },
         {
-          "comment_rate": 0.12486405929028879,
-          "engagement_rate": 0.894187779433681,
-          "like_rate": 0.7693237201433922,
+          "comment_rate": 0.12484897301651228,
+          "engagement_rate": 0.8940797422472816,
+          "like_rate": 0.7692307692307693,
           "published_at": "2025-04-25T04:00:52",
           "title": "Raiche -  Hello Darlin [Official Visualizer]",
           "video_id": "hvu7_-ZuEWk",
           "video_type": "Visualizer",
-          "view_count": 24827,
-          "views_per_day": 86.50522648083624
+          "view_count": 24830,
+          "views_per_day": 86.21527777777777
         },
         {
-          "comment_rate": 0.2268812234780051,
-          "engagement_rate": 3.6258980715096008,
-          "like_rate": 3.3990168480315957,
+          "comment_rate": 0.22676689203376307,
+          "engagement_rate": 3.6240708856506947,
+          "like_rate": 3.397303993616932,
           "published_at": "2023-10-27T04:00:08",
           "title": "Raiche - Half & Half [Official Video]",
           "video_id": "9UniH7H81xs",
           "video_type": "Official Music Video",
-          "view_count": 23801,
-          "views_per_day": 28.57262905162065
+          "view_count": 23813,
+          "views_per_day": 28.55275779376499
         },
         {
-          "comment_rate": 0.07762635846127308,
-          "engagement_rate": 0.6511988959806796,
-          "like_rate": 0.5735725375194065,
+          "comment_rate": 0.0775995861355406,
+          "engagement_rate": 0.650974305914813,
+          "like_rate": 0.5733747197792723,
           "published_at": "2025-05-30T14:00:59",
           "title": "Raiche -  OMG (Live In Studio)",
           "video_id": "d6Ph9ZBwYwA",
           "video_type": "Live Performance",
-          "view_count": 23188,
-          "views_per_day": 92.01587301587301
+          "view_count": 23196,
+          "views_per_day": 91.68379446640316
         },
         {
           "comment_rate": 0.27310924369747897,
@@ -6751,70 +6773,70 @@
           "views_per_day": 7.854785478547854
         },
         {
-          "comment_rate": 0.08228646661912338,
-          "engagement_rate": 3.1707718470568875,
-          "like_rate": 3.0884853804377643,
+          "comment_rate": 0.08205689277899343,
+          "engagement_rate": 3.1673960612691467,
+          "like_rate": 3.085339168490153,
           "published_at": "2024-06-13T19:00:18",
           "title": "I\u2019ve been wanting to get my Monroe pierced for a solid year & I finally did it\ud83d\ude0d also new music otw!",
           "video_id": "YQcFMtmZN0g",
           "video_type": "Music Content",
-          "view_count": 18229,
-          "views_per_day": 30.23051409618574
+          "view_count": 18280,
+          "views_per_day": 30.264900662251655
         },
         {
-          "comment_rate": 0.11582117211026176,
-          "engagement_rate": 0.8397034977993978,
-          "like_rate": 0.723882325689136,
+          "comment_rate": 0.1157943492357573,
+          "engagement_rate": 0.8395090319592403,
+          "like_rate": 0.723714682723483,
           "published_at": "2025-05-19T14:51:17",
           "title": "Raiche - Hello Darlin (Live In Studio)",
           "video_id": "VaLpKd9_U3o",
           "video_type": "Live Performance",
-          "view_count": 17268,
-          "views_per_day": 65.65779467680608
+          "view_count": 17272,
+          "views_per_day": 65.42424242424242
         },
         {
-          "comment_rate": 0.2497278606646603,
-          "engagement_rate": 2.7662163027470066,
-          "like_rate": 2.516488442082346,
+          "comment_rate": 0.24953611875359907,
+          "engagement_rate": 2.764092392347559,
+          "like_rate": 2.51455627359396,
           "published_at": "2023-12-01T05:00:32",
           "title": "Raiche - Loveland [Official Audio]",
           "video_id": "Zp-QlJ5Lezg",
           "video_type": "Official Audio",
-          "view_count": 15617,
-          "views_per_day": 19.57017543859649
+          "view_count": 15629,
+          "views_per_day": 19.56070087609512
         },
         {
-          "comment_rate": 0.10385564065948333,
-          "engagement_rate": 0.9087368557704789,
-          "like_rate": 0.8048812151109956,
+          "comment_rate": 0.10382868267358858,
+          "engagement_rate": 0.9085009733939001,
+          "like_rate": 0.8046722907203115,
           "published_at": "2025-06-06T14:01:11",
           "title": "Raiche - Standards (Live In Studio)",
           "video_id": "jKoXb8Av5cY",
           "video_type": "Live Performance",
-          "view_count": 15406,
-          "views_per_day": 62.881632653061224
+          "view_count": 15410,
+          "views_per_day": 62.642276422764226
         },
         {
-          "comment_rate": 0.18217394237905674,
-          "engagement_rate": 2.5774239255110993,
-          "like_rate": 2.3952499831320426,
+          "comment_rate": 0.18213707501349163,
+          "engagement_rate": 2.576902320561252,
+          "like_rate": 2.3947652455477604,
           "published_at": "2023-09-01T04:00:03",
           "title": "Raiche - Big Daddy [Official Audio]",
           "video_id": "28J4Ye4y3n0",
           "video_type": "Official Audio",
-          "view_count": 14821,
-          "views_per_day": 16.67154105736783
+          "view_count": 14824,
+          "views_per_day": 16.656179775280897
         },
         {
-          "comment_rate": 0.14726507713884993,
-          "engagement_rate": 4.929873772791024,
-          "like_rate": 4.782608695652174,
+          "comment_rate": 0.14722378014582166,
+          "engagement_rate": 4.928491306786316,
+          "like_rate": 4.781267526640494,
           "published_at": "2023-09-25T19:00:11",
           "title": "Raiche - Big Daddy [Official Music Video]",
           "video_id": "Qe0sGagiGNI",
           "video_type": "Official Music Video",
-          "view_count": 14260,
-          "views_per_day": 16.485549132947977
+          "view_count": 14264,
+          "views_per_day": 16.471131639722863
         },
         {
           "comment_rate": 0.24182910743074892,
@@ -6828,26 +6850,26 @@
           "views_per_day": 10.83015873015873
         },
         {
-          "comment_rate": 0.2293069013980324,
-          "engagement_rate": 3.7872623714771803,
-          "like_rate": 3.557955470079148,
+          "comment_rate": 0.22915434654050856,
+          "engagement_rate": 3.784742755765819,
+          "like_rate": 3.5555884092253103,
           "published_at": "2024-07-26T04:00:06",
           "title": "Raiche - Making Room [Official Audio]",
           "video_id": "5puH_P63UO0",
           "video_type": "Official Audio",
-          "view_count": 13519,
-          "views_per_day": 24.14107142857143
+          "view_count": 13528,
+          "views_per_day": 24.114081996434937
         },
         {
-          "comment_rate": 0.2517459801851551,
-          "engagement_rate": 5.424719831086567,
-          "like_rate": 5.172973850901412,
+          "comment_rate": 0.2594664720668126,
+          "engagement_rate": 5.424470931646802,
+          "like_rate": 5.165004459579989,
           "published_at": "2022-10-13T08:00:08",
           "title": "#feelings man feelings",
           "video_id": "GotQGCUQ4kY",
           "video_type": "Music Content",
-          "view_count": 12314,
-          "views_per_day": 10.16006600660066
+          "view_count": 12333,
+          "views_per_day": 10.167353668590271
         },
         {
           "comment_rate": 0.14480408858603067,
@@ -6861,26 +6883,26 @@
           "views_per_day": 9.01689708141321
         },
         {
-          "comment_rate": 0.22212729602733874,
-          "engagement_rate": 1.8282785134557882,
-          "like_rate": 1.6061512174284494,
+          "comment_rate": 0.22148394241417496,
+          "engagement_rate": 1.8315018315018317,
+          "like_rate": 1.6100178890876566,
           "published_at": "2025-06-20T14:01:07",
           "title": "Raiche -  Be Careful (Live In Studio)",
           "video_id": "deBu2utOqvs",
           "video_type": "Live Performance",
-          "view_count": 11705,
-          "views_per_day": 50.67099567099567
+          "view_count": 11739,
+          "views_per_day": 50.599137931034484
         },
         {
-          "comment_rate": 0.16601135867190914,
-          "engagement_rate": 4.01048492791612,
-          "like_rate": 3.844473569244211,
+          "comment_rate": 0.16593886462882096,
+          "engagement_rate": 4.017467248908297,
+          "like_rate": 3.8515283842794763,
           "published_at": "2023-12-01T05:00:27",
           "title": "Raiche - Simple [Official Audio]",
           "video_id": "Mk-VAeXVI_M",
           "video_type": "Official Audio",
-          "view_count": 11445,
-          "views_per_day": 14.342105263157896
+          "view_count": 11450,
+          "views_per_day": 14.330413016270338
         },
         {
           "comment_rate": 0.40808923551283216,
@@ -6894,26 +6916,26 @@
           "views_per_day": 8.594699922057677
         },
         {
-          "comment_rate": 0.3491224759388564,
-          "engagement_rate": 4.397056048311002,
-          "like_rate": 4.047933572372146,
+          "comment_rate": 0.34892493398717467,
+          "engagement_rate": 4.394568087514146,
+          "like_rate": 4.045643153526971,
           "published_at": "2023-10-10T19:00:24",
           "title": "Raiche - Late Show [Official Music Video]",
           "video_id": "XmXG4sa4oMk",
           "video_type": "Official Music Video",
-          "view_count": 10598,
-          "views_per_day": 12.468235294117648
+          "view_count": 10604,
+          "views_per_day": 12.46063454759107
         },
         {
-          "comment_rate": 0.3366679492112351,
-          "engagement_rate": 4.184301654482494,
-          "like_rate": 3.8476337052712584,
+          "comment_rate": 0.3361828834886178,
+          "engagement_rate": 4.197483430986457,
+          "like_rate": 3.861300547497839,
           "published_at": "2025-03-14T04:00:00",
           "title": "Raiche - Girls A Gun [Official Visualizer]",
           "video_id": "-XVuwmu0usI",
           "video_type": "Visualizer",
-          "view_count": 10396,
-          "views_per_day": 31.598784194528875
+          "view_count": 10411,
+          "views_per_day": 31.548484848484847
         },
         {
           "comment_rate": 0.3042198233562316,
@@ -6938,6 +6960,17 @@
           "views_per_day": 7.024154589371981
         },
         {
+          "comment_rate": 0.31196538190600787,
+          "engagement_rate": 3.653013988125189,
+          "like_rate": 3.341048606219181,
+          "published_at": "2024-08-23T04:00:31",
+          "title": "Raiche - Thinking Of You [Official Audio]",
+          "video_id": "ZbyqmBClDlE",
+          "video_type": "Official Audio",
+          "view_count": 9937,
+          "views_per_day": 18.643527204502814
+        },
+        {
           "comment_rate": 0.3325272067714631,
           "engagement_rate": 3.7384119306731156,
           "like_rate": 3.4058847239016523,
@@ -6947,17 +6980,6 @@
           "video_type": "Music Content",
           "view_count": 9924,
           "views_per_day": 6.969101123595506
-        },
-        {
-          "comment_rate": 0.31259453463749115,
-          "engagement_rate": 3.6603811636583643,
-          "like_rate": 3.3477866290208733,
-          "published_at": "2024-08-23T04:00:31",
-          "title": "Raiche - Thinking Of You [Official Audio]",
-          "video_id": "ZbyqmBClDlE",
-          "video_type": "Official Audio",
-          "view_count": 9917,
-          "views_per_day": 18.64097744360902
         },
         {
           "comment_rate": 0.2534714569098523,
@@ -6971,26 +6993,26 @@
           "views_per_day": 4.316841103710751
         },
         {
-          "comment_rate": 0.4414261460101867,
-          "engagement_rate": 5.398981324278438,
-          "like_rate": 4.957555178268251,
+          "comment_rate": 0.441376188320507,
+          "engagement_rate": 5.398370303304662,
+          "like_rate": 4.956994114984155,
           "published_at": "2022-12-23T20:00:08",
           "title": "Raiche - New York, New York [Official Video]",
           "video_id": "WiRwy9sn1q0",
           "video_type": "Official Music Video",
-          "view_count": 8835,
-          "views_per_day": 7.7432077125328655
+          "view_count": 8836,
+          "views_per_day": 7.7373029772329245
         },
         {
-          "comment_rate": 0.2993667242371906,
-          "engagement_rate": 3.822682786413356,
-          "like_rate": 3.5233160621761654,
+          "comment_rate": 0.2993322588072761,
+          "engagement_rate": 3.8222426893852175,
+          "like_rate": 3.5229104305779413,
           "published_at": "2022-12-25T20:00:01",
           "title": "Raiche - I Hate Christmas [Official Video]",
           "video_id": "2YfeJ2GijNU",
           "video_type": "Official Music Video",
-          "view_count": 8685,
-          "views_per_day": 7.625109745390693
+          "view_count": 8686,
+          "views_per_day": 7.6192982456140355
         },
         {
           "comment_rate": 0.2810018326206475,
@@ -7004,15 +7026,15 @@
           "views_per_day": 3.4652836579170194
         },
         {
-          "comment_rate": 0.19907925842976237,
-          "engagement_rate": 3.4092323006096805,
-          "like_rate": 3.2101530421799183,
+          "comment_rate": 0.19890601690701143,
+          "engagement_rate": 3.406265539532571,
+          "like_rate": 3.2073595226255596,
           "published_at": "2023-12-01T05:00:47",
           "title": "Raiche - Homemade [Official Audio]",
           "video_id": "w0jlcm3Qu8Y",
           "video_type": "Official Audio",
-          "view_count": 8037,
-          "views_per_day": 10.071428571428571
+          "view_count": 8044,
+          "views_per_day": 10.06758448060075
         },
         {
           "comment_rate": 0.38456438138177956,
@@ -7045,51 +7067,62 @@
           "video_id": "PT3Ldj0P3Pc",
           "video_type": "Live Performance",
           "view_count": 7371,
-          "views_per_day": 30.970588235294116
+          "views_per_day": 30.84100418410042
         },
         {
-          "comment_rate": 0.36940757969626487,
-          "engagement_rate": 4.282391572034478,
-          "like_rate": 3.9129839923382135,
+          "comment_rate": 0.36885245901639346,
+          "engagement_rate": 4.275956284153005,
+          "like_rate": 3.9071038251366117,
           "published_at": "2024-09-20T04:00:45",
           "title": "Raiche - Hearts At War [Official Audio]",
           "video_id": "sVQhAu3Ksrk",
           "video_type": "Official Audio",
-          "view_count": 7309,
-          "views_per_day": 14.501984126984127
+          "view_count": 7320,
+          "views_per_day": 14.495049504950495
         },
         {
-          "comment_rate": 0.5386740331491713,
-          "engagement_rate": 7.002762430939226,
-          "like_rate": 6.4640883977900545,
+          "comment_rate": 0.5377085343995588,
+          "engagement_rate": 6.990210947194265,
+          "like_rate": 6.452502412794706,
           "published_at": "2024-07-24T19:00:31",
           "title": "\u2764\ufe0f",
           "video_id": "hk4em_kx7Fs",
           "video_type": "Music Content",
-          "view_count": 7240,
-          "views_per_day": 12.882562277580071
+          "view_count": 7253,
+          "views_per_day": 12.882770870337477
         },
         {
-          "comment_rate": 0.2526847757422615,
-          "engagement_rate": 3.6481364497789004,
-          "like_rate": 3.395451674036639,
+          "comment_rate": 0.25260498894853173,
+          "engagement_rate": 3.646984527944427,
+          "like_rate": 3.3943795389958953,
           "published_at": "2023-12-01T05:00:05",
           "title": "Raiche - Lucky [Official Audio]",
           "video_id": "7lM7KdFuFE4",
           "video_type": "Official Audio",
-          "view_count": 6332,
-          "views_per_day": 7.934837092731829
+          "view_count": 6334,
+          "views_per_day": 7.927409261576972
         },
         {
-          "comment_rate": 0.43355010838752706,
-          "engagement_rate": 4.869101217275304,
-          "like_rate": 4.435551108887777,
+          "comment_rate": 0.4328283669052772,
+          "engagement_rate": 4.860995505243882,
+          "like_rate": 4.428167138338605,
           "published_at": "2025-03-28T04:00:22",
           "title": "Raiche - Be Careful [Official Audio]",
           "video_id": "NF2sNZwSTgk",
           "video_type": "Official Audio",
-          "view_count": 5997,
-          "views_per_day": 19.038095238095238
+          "view_count": 6007,
+          "views_per_day": 19.009493670886076
+        },
+        {
+          "comment_rate": 0.4751847940865892,
+          "engagement_rate": 4.15346708905315,
+          "like_rate": 3.678282294966561,
+          "published_at": "2025-06-05T19:21:24",
+          "title": "How did I do? @teddyswims #KAYPartner",
+          "video_id": "qGv_inwhUvY",
+          "video_type": "Music Content",
+          "view_count": 5682,
+          "views_per_day": 23.004048582995953
         },
         {
           "comment_rate": 0.47686329918756626,
@@ -7103,26 +7136,15 @@
           "views_per_day": 2.9582027168234064
         },
         {
-          "comment_rate": 0.4771160982505743,
-          "engagement_rate": 4.170348118042057,
-          "like_rate": 3.6932320197914827,
-          "published_at": "2025-06-05T19:21:24",
-          "title": "How did I do? @teddyswims #KAYPartner",
-          "video_id": "qGv_inwhUvY",
-          "video_type": "Music Content",
-          "view_count": 5659,
-          "views_per_day": 23.004065040650406
-        },
-        {
-          "comment_rate": 0.4158380039775809,
-          "engagement_rate": 5.297414572410052,
-          "like_rate": 4.881576568432471,
+          "comment_rate": 0.4150875293268363,
+          "engagement_rate": 5.28785417794622,
+          "like_rate": 4.8727666486193835,
           "published_at": "2025-02-28T05:55:12",
           "title": "Raiche - Standards [Official Audio]",
           "video_id": "Monlv4qWqJI",
           "video_type": "Official Audio",
-          "view_count": 5531,
-          "views_per_day": 16.12536443148688
+          "view_count": 5541,
+          "views_per_day": 16.107558139534884
         },
         {
           "comment_rate": 0.3389830508474576,
@@ -7147,26 +7169,26 @@
           "views_per_day": 3.525875190258752
         },
         {
-          "comment_rate": 0.512249443207127,
-          "engagement_rate": 5.634743875278396,
-          "like_rate": 5.122494432071269,
+          "comment_rate": 0.5121353818748609,
+          "engagement_rate": 5.633489200623469,
+          "like_rate": 5.1213538187486085,
           "published_at": "2023-10-04T21:00:11",
           "title": "Raiche - Big Daddy (Acoustic) [In-Studio Performance]",
           "video_id": "S_Y5a7CNRI0",
           "video_type": "Live Performance",
-          "view_count": 4490,
-          "views_per_day": 5.2453271028037385
+          "view_count": 4491,
+          "views_per_day": 5.2403733955659275
         },
         {
-          "comment_rate": 0.6133575647432985,
-          "engagement_rate": 10.086324398000908,
-          "like_rate": 9.47296683325761,
+          "comment_rate": 0.6126616746085772,
+          "engagement_rate": 10.07488087134105,
+          "like_rate": 9.462219196732471,
           "published_at": "2024-09-18T21:52:06",
           "title": "hearts at war \ud83e\ude76 this friday",
           "video_id": "ls0rmxBUvLU",
           "video_type": "Music Content",
-          "view_count": 4402,
-          "views_per_day": 8.699604743083004
+          "view_count": 4407,
+          "views_per_day": 8.692307692307692
         },
         {
           "comment_rate": 0.29734675205855443,
@@ -7210,29 +7232,29 @@
           "video_id": "2TWNimPbMyM",
           "video_type": "Music Content",
           "view_count": 3879,
-          "views_per_day": 3.1925925925925926
+          "views_per_day": 3.189967105263158
         },
         {
-          "comment_rate": 0.42815092320042814,
-          "engagement_rate": 9.178485416109178,
-          "like_rate": 8.750334492908749,
+          "comment_rate": 0.42780748663101603,
+          "engagement_rate": 9.171122994652407,
+          "like_rate": 8.743315508021391,
           "published_at": "2022-10-08T12:00:34",
           "title": "Love is a burning thing \u2764\ufe0f\ud83d\udd25",
           "video_id": "lnlsJHhiGRQ",
           "video_type": "Music Content",
-          "view_count": 3737,
-          "views_per_day": 3.0706655710764172
+          "view_count": 3740,
+          "views_per_day": 3.070607553366174
         },
         {
-          "comment_rate": 0.4837409298575652,
-          "engagement_rate": 8.438591776404191,
-          "like_rate": 7.954850846546627,
+          "comment_rate": 0.4833512352309345,
+          "engagement_rate": 8.431793770139635,
+          "like_rate": 7.9484425349087005,
           "published_at": "2024-08-21T01:20:55",
           "title": "I\u2019m not thinking of you \ud83d\udcad",
           "video_id": "iOL6tebfJjQ",
           "video_type": "Music Content",
-          "view_count": 3721,
-          "views_per_day": 6.968164794007491
+          "view_count": 3724,
+          "views_per_day": 6.960747663551402
         },
         {
           "comment_rate": 0.2733734281027884,
@@ -7268,48 +7290,48 @@
           "views_per_day": 2.6860198624904505
         },
         {
-          "comment_rate": 0.32993401319736054,
-          "engagement_rate": 5.188962207558488,
-          "like_rate": 4.8590281943611275,
+          "comment_rate": 0.3296373988612526,
+          "engagement_rate": 5.1842972729997,
+          "like_rate": 4.854659874138448,
           "published_at": "2024-06-12T19:00:14",
           "title": "Save a kiss a for later \ud83d\udc8b\ud83e\udee7",
           "video_id": "Ia5AXLzhPmQ",
           "video_type": "Music Content",
-          "view_count": 3334,
-          "views_per_day": 5.5198675496688745
+          "view_count": 3337,
+          "views_per_day": 5.515702479338843
         },
         {
-          "comment_rate": 0.43997485857950974,
-          "engagement_rate": 4.462602137020742,
-          "like_rate": 4.022627278441232,
+          "comment_rate": 0.43983663210807417,
+          "engagement_rate": 4.461200125667609,
+          "like_rate": 4.021363493559535,
           "published_at": "2023-10-06T04:00:35",
           "title": "Raiche - Late Show [Official Audio]",
           "video_id": "vU_O14jddGk",
           "video_type": "Official Audio",
-          "view_count": 3182,
-          "views_per_day": 3.7259953161592505
+          "view_count": 3183,
+          "views_per_day": 3.7228070175438597
         },
         {
-          "comment_rate": 0.3688799463447351,
-          "engagement_rate": 7.344064386317908,
-          "like_rate": 6.975184439973173,
+          "comment_rate": 0.3683858004018754,
+          "engagement_rate": 7.334226389819157,
+          "like_rate": 6.965840589417281,
           "published_at": "2024-08-22T21:08:36",
           "title": "It\u2019s a classic in my books \ud83d\udcda",
           "video_id": "hrvXsNJuIXQ",
           "video_type": "Music Content",
-          "view_count": 2982,
-          "views_per_day": 5.594746716697936
+          "view_count": 2986,
+          "views_per_day": 5.591760299625468
         },
         {
-          "comment_rate": 0.4796163069544364,
-          "engagement_rate": 3.4258307639602603,
-          "like_rate": 2.9462144570058237,
+          "comment_rate": 0.47928791509756935,
+          "engagement_rate": 3.423485107839781,
+          "like_rate": 2.9441971927422115,
           "published_at": "2025-05-12T16:01:44",
           "title": "Raiche - Floating [Official Audio]",
           "video_id": "69Zsxsq6tSE",
           "video_type": "Official Audio",
-          "view_count": 2919,
-          "views_per_day": 10.811111111111112
+          "view_count": 2921,
+          "views_per_day": 10.77859778597786
         },
         {
           "comment_rate": 0.4261363636363636,
@@ -7323,26 +7345,26 @@
           "views_per_day": 0.9269256089532587
         },
         {
-          "comment_rate": 0.7494646680942184,
-          "engagement_rate": 6.816559600285511,
-          "like_rate": 6.067094932191292,
+          "comment_rate": 0.7486631016042781,
+          "engagement_rate": 6.809269162210339,
+          "like_rate": 6.0606060606060606,
           "published_at": "2025-06-27T14:00:34",
           "title": "Raiche -  Suga (Live In Studio)",
           "video_id": "JzkFtoG5qxU",
           "video_type": "Live Performance",
-          "view_count": 2802,
-          "views_per_day": 12.508928571428571
+          "view_count": 2805,
+          "views_per_day": 12.466666666666667
         },
         {
-          "comment_rate": 0.37160906726124115,
-          "engagement_rate": 7.506503158677072,
-          "like_rate": 7.1348940914158305,
+          "comment_rate": 0.3714710252600297,
+          "engagement_rate": 7.503714710252599,
+          "like_rate": 7.13224368499257,
           "published_at": "2024-07-01T19:08:06",
           "title": "\u201cmaking room\u201d coming soon \ud83d\udc8b",
           "video_id": "Et65N0boNWQ",
           "video_type": "Music Content",
-          "view_count": 2691,
-          "views_per_day": 4.6
+          "view_count": 2692,
+          "views_per_day": 4.593856655290103
         },
         {
           "comment_rate": 0.8925251022685012,
@@ -7367,15 +7389,15 @@
           "views_per_day": 0.7974413646055437
         },
         {
-          "comment_rate": 0.27689873417721517,
-          "engagement_rate": 6.131329113924051,
-          "like_rate": 5.8544303797468356,
+          "comment_rate": 0.2765705254839984,
+          "engagement_rate": 6.124061635717108,
+          "like_rate": 5.8474911102331095,
           "published_at": "2024-06-19T19:00:23",
           "title": "never let anyone dim your light & always make room for whats good & perfectly right for you \ud83c\udf31\u2763\ufe0f",
           "video_id": "mNANdFFarCQ",
           "video_type": "Music Content",
-          "view_count": 2528,
-          "views_per_day": 4.234505862646566
+          "view_count": 2531,
+          "views_per_day": 4.2324414715719065
         },
         {
           "comment_rate": 1.0933557611438183,
@@ -7400,37 +7422,37 @@
           "views_per_day": 0.5957965275662503
         },
         {
-          "comment_rate": 0.4923413566739606,
-          "engagement_rate": 5.853391684901531,
-          "like_rate": 5.361050328227571,
+          "comment_rate": 0.4920721705850191,
+          "engagement_rate": 5.8501913613996726,
+          "like_rate": 5.358119190814653,
           "published_at": "2025-05-12T16:01:40",
           "title": "Raiche -  Suga [Official Audio]",
           "video_id": "Zv8TOw1i-qs",
           "video_type": "Official Audio",
-          "view_count": 1828,
-          "views_per_day": 6.770370370370371
+          "view_count": 1829,
+          "views_per_day": 6.749077490774908
         },
         {
-          "comment_rate": 0.2787068004459309,
-          "engagement_rate": 7.4693422519509465,
-          "like_rate": 7.190635451505016,
+          "comment_rate": 0.27839643652561247,
+          "engagement_rate": 7.461024498886415,
+          "like_rate": 7.182628062360802,
           "published_at": "2024-07-08T19:00:17",
           "title": "making room \u2764\ufe0f",
           "video_id": "eqnNwShPGWk",
           "video_type": "Music Content",
-          "view_count": 1794,
-          "views_per_day": 3.1038062283737022
+          "view_count": 1796,
+          "views_per_day": 3.1018998272884284
         },
         {
-          "comment_rate": 0.24227740763173833,
-          "engagement_rate": 4.603270745003029,
-          "like_rate": 4.360993337371291,
+          "comment_rate": 0.24213075060532688,
+          "engagement_rate": 4.60048426150121,
+          "like_rate": 4.358353510895883,
           "published_at": "2024-06-17T19:00:18",
           "title": "Get rid of that man!! I have a single coming out soon called making room !",
           "video_id": "XaUs2rf18PM",
           "video_type": "Music Content",
-          "view_count": 1651,
-          "views_per_day": 2.7562604340567614
+          "view_count": 1652,
+          "views_per_day": 2.7533333333333334
         },
         {
           "comment_rate": 0.43076923076923074,
@@ -7444,15 +7466,15 @@
           "views_per_day": 1.2433052792654935
         },
         {
-          "comment_rate": 0.6870705808869456,
-          "engagement_rate": 5.621486570893192,
-          "like_rate": 4.934415990006246,
+          "comment_rate": 0.6853582554517134,
+          "engagement_rate": 5.607476635514018,
+          "like_rate": 4.922118380062305,
           "published_at": "2024-06-14T19:00:36",
           "title": "NEW music loading. Ya ready?! Cause I freakin\u2019 am\ud83c\udf3b\ud83e\udd0d\u2728",
           "video_id": "wYf1iZS--Vc",
           "video_type": "Music Content",
-          "view_count": 1601,
-          "views_per_day": 2.659468438538206
+          "view_count": 1605,
+          "views_per_day": 2.6616915422885574
         },
         {
           "comment_rate": 0.7518796992481203,
@@ -7466,15 +7488,15 @@
           "views_per_day": 1.3092698933552092
         },
         {
-          "comment_rate": 0.2546148949713558,
-          "engagement_rate": 4.392106938255888,
-          "like_rate": 4.137492043284532,
+          "comment_rate": 0.25396825396825395,
+          "engagement_rate": 4.3809523809523805,
+          "like_rate": 4.1269841269841265,
           "published_at": "2024-06-20T20:00:57",
           "title": "MAKING ROOM IS COMING OUT SOOONN! So I\u2019ll be flooding you with these short videos till it drops xox",
           "video_id": "y-G0aI9e7vI",
           "video_type": "Music Content",
-          "view_count": 1571,
-          "views_per_day": 2.6359060402684564
+          "view_count": 1575,
+          "views_per_day": 2.6381909547738696
         },
         {
           "comment_rate": 0.2210759027266028,
@@ -7488,37 +7510,37 @@
           "views_per_day": 0.41334145598537925
         },
         {
-          "comment_rate": 0.44280442804428044,
-          "engagement_rate": 6.568265682656827,
-          "like_rate": 6.125461254612547,
+          "comment_rate": 0.4421518054532056,
+          "engagement_rate": 6.5585851142225495,
+          "like_rate": 6.116433308769344,
           "published_at": "2024-06-27T19:00:06",
           "title": "Raiche - Big Girls Don't Cry (Cover)",
           "video_id": "UOARLm2Ctlw",
           "video_type": "Music Content",
-          "view_count": 1355,
-          "views_per_day": 2.300509337860781
+          "view_count": 1357,
+          "views_per_day": 2.3
         },
         {
-          "comment_rate": 1.0432190760059614,
-          "engagement_rate": 7.74962742175857,
-          "like_rate": 6.7064083457526085,
+          "comment_rate": 1.0416666666666665,
+          "engagement_rate": 7.738095238095237,
+          "like_rate": 6.696428571428571,
           "published_at": "2023-09-22T04:00:02",
           "title": "Raiche - Big Daddy (Acoustic) [Official Audio]",
           "video_id": "4VxTQm_lVjM",
           "video_type": "Official Audio",
-          "view_count": 1342,
-          "views_per_day": 1.5460829493087558
+          "view_count": 1344,
+          "views_per_day": 1.5466052934407364
         },
         {
-          "comment_rate": 0.07763975155279502,
-          "engagement_rate": 4.891304347826087,
-          "like_rate": 4.813664596273292,
+          "comment_rate": 0.07751937984496124,
+          "engagement_rate": 4.883720930232558,
+          "like_rate": 4.8062015503875966,
           "published_at": "2024-06-15T19:00:07",
           "title": "\ud83c\udfaf",
           "video_id": "Ihas654loC4",
           "video_type": "Music Content",
-          "view_count": 1288,
-          "views_per_day": 2.1430948419301163
+          "view_count": 1290,
+          "views_per_day": 2.142857142857143
         },
         {
           "comment_rate": 0.2471169686985173,
@@ -7551,7 +7573,7 @@
           "video_id": "ZiwyARtPZYQ",
           "video_type": "Music Content",
           "view_count": 1138,
-          "views_per_day": 1.8809917355371901
+          "views_per_day": 1.8778877887788779
         },
         {
           "comment_rate": 0.28653295128939826,
@@ -8031,213 +8053,7 @@
           "views_per_day": 0.0
         }
       ]
-    },
-    {
-      "channel_id": null,
-      "metrics": {
-        "engagement_rate": 7.07,
-        "momentum_score": null,
-        "total_videos": 2,
-        "total_views": 34476,
-        "views_30d": null,
-        "views_7d": null
-      },
-      "name": "COBRAH",
-      "primary_color": null,
-      "videos": [
-        {
-          "comment_rate": 0.2918110523436075,
-          "engagement_rate": 7.4457413824548615,
-          "like_rate": 7.153930330111254,
-          "published_at": "2023-03-22T16:01:38",
-          "title": "https://m.twitch.tv/iamcobrah",
-          "video_id": "LlkeT3X87-s",
-          "video_type": "Music Content",
-          "view_count": 21932,
-          "views_per_day": 23.431623931623932
-        },
-        {
-          "comment_rate": 0.24713010204081634,
-          "engagement_rate": 6.696428571428572,
-          "like_rate": 6.449298469387756,
-          "published_at": "2023-02-19T13:29:08",
-          "title": "lol \ud83d\udda4",
-          "video_id": "nvC6_Uufbbs",
-          "video_type": "Music Content",
-          "view_count": 12544,
-          "views_per_day": 12.544
-        }
-      ]
-    },
-    {
-      "channel_id": null,
-      "metrics": {
-        "engagement_rate": 5.44,
-        "momentum_score": null,
-        "total_videos": 14,
-        "total_views": 1215,
-        "views_30d": null,
-        "views_7d": null
-      },
-      "name": "No loses",
-      "primary_color": null,
-      "videos": [
-        {
-          "comment_rate": 0.44150110375275936,
-          "engagement_rate": 3.3112582781456954,
-          "like_rate": 2.869757174392936,
-          "published_at": "2023-07-08T22:15:41",
-          "title": "Kevin gates Flo @ogboobieblack5189 @kevingatesTV",
-          "video_id": "Us8uTS4su10",
-          "video_type": "Music Content",
-          "view_count": 453,
-          "views_per_day": 0.4798728813559322
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 3.2407407407407405,
-          "like_rate": 3.2407407407407405,
-          "published_at": "2023-03-10T06:00:01",
-          "title": "what that gotta do wit me #charlestonwhite #ddg #future #kevingates #kodakblack #lilbaby  #funnymike",
-          "video_id": "hWJcRxHH_e0",
-          "video_type": "Music Content",
-          "view_count": 216,
-          "views_per_day": 0.20300751879699247
-        },
-        {
-          "comment_rate": 0.5263157894736842,
-          "engagement_rate": 4.7368421052631575,
-          "like_rate": 4.2105263157894735,
-          "published_at": "2023-03-10T06:02:24",
-          "title": "I stole #charlestonwhite #kevingates #keyglock #jackboy #drumdummie #ddg",
-          "video_id": "q0RVZooPMnU",
-          "video_type": "Music Content",
-          "view_count": 190,
-          "views_per_day": 0.17857142857142858
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 3.592814371257485,
-          "like_rate": 3.592814371257485,
-          "published_at": "2023-07-08T22:20:21",
-          "title": "Gucci Flo @guccimane @BigWalkDog @BiCFizzle @Gli5ock",
-          "video_id": "c6lYAMRkW7o",
-          "video_type": "Music Content",
-          "view_count": 167,
-          "views_per_day": 0.17690677966101695
-        },
-        {
-          "comment_rate": 1.9801980198019802,
-          "engagement_rate": 4.9504950495049505,
-          "like_rate": 2.9702970297029703,
-          "published_at": "2023-07-08T22:14:32",
-          "title": "plies Flo @plies @tytedakid @kodakblack1924",
-          "video_id": "JOFOKo6aRdM",
-          "video_type": "Music Content",
-          "view_count": 101,
-          "views_per_day": 0.10699152542372882
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 5.0,
-          "like_rate": 5.0,
-          "published_at": "2023-07-08T22:24:04",
-          "title": "big walk dog Flo @BigWalkDog @guccimane @TrapNation @thenewcars2025",
-          "video_id": "ul-yWhH5Tco",
-          "video_type": "Music Content",
-          "view_count": 40,
-          "views_per_day": 0.0423728813559322
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 0.0,
-          "like_rate": 0.0,
-          "published_at": "2023-07-08T22:17:49",
-          "title": "Kevin gates Flo @kevingatesTV @bwaronlive",
-          "video_id": "dkd6_HHOwlA",
-          "video_type": "Music Content",
-          "view_count": 19,
-          "views_per_day": 0.020127118644067795
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 22.22222222222222,
-          "like_rate": 22.22222222222222,
-          "published_at": "2023-02-24T19:15:40",
-          "title": "NO LOSES-JAY N TEZ prod jaydeeay vol 2",
-          "video_id": "aEpiIV_3c6Y",
-          "video_type": "Music Content",
-          "view_count": 9,
-          "views_per_day": 0.008348794063079777
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 12.5,
-          "like_rate": 12.5,
-          "published_at": "2023-07-08T22:23:01",
-          "title": "yo gotti Flo @YoGottiTV @MoneyBaggYoOfficial @MMGScottyy @bighomieg",
-          "video_id": "cwujud33Uzg",
-          "video_type": "Music Content",
-          "view_count": 8,
-          "views_per_day": 0.00847457627118644
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 16.666666666666664,
-          "like_rate": 16.666666666666664,
-          "published_at": "2023-02-27T04:53:15",
-          "title": "MORE THAN GOD DO",
-          "video_id": "b4knCHyoec8",
-          "video_type": "Music Content",
-          "view_count": 6,
-          "views_per_day": 0.005581395348837209
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 0.0,
-          "like_rate": 0.0,
-          "published_at": "2023-07-08T22:42:21",
-          "title": "yo gotta Flo @YoGottiTV @MoneyBaggYoOfficial @CMGTHELABEL @BlacYoungsta @Gorillaz",
-          "video_id": "_nPaZwElqiQ",
-          "video_type": "Music Content",
-          "view_count": 3,
-          "views_per_day": 0.0031779661016949155
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 0.0,
-          "like_rate": 0.0,
-          "published_at": "2023-07-08T22:42:02",
-          "title": "plies Flo @TrickDaddy305 @plies @kodakblack1924",
-          "video_id": "DUS7PPwiVPQ",
-          "video_type": "Music Content",
-          "view_count": 2,
-          "views_per_day": 0.00211864406779661
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 0.0,
-          "like_rate": 0.0,
-          "published_at": "2023-07-08T22:37:59",
-          "title": "Gucci Flo @guccimane @poohshiesty6963 @BigWalkDog @BiCFizzle @BigCootie",
-          "video_id": "-azMG0Qr-D0",
-          "video_type": "Music Content",
-          "view_count": 1,
-          "views_per_day": 0.001059322033898305
-        },
-        {
-          "comment_rate": 0.0,
-          "engagement_rate": 0.0,
-          "like_rate": 0.0,
-          "published_at": "2023-07-08T22:23:12",
-          "title": "big walk Dogg Flo @BigWalkDog @omb_peezy",
-          "video_id": "ICgx62NYn5k",
-          "video_type": "Music Content",
-          "view_count": 0,
-          "views_per_day": 0.0
-        }
-      ]
     }
   ],
-  "last_updated": "2026-02-08T06:08:39.338404+00:00"
+  "last_updated": "2026-02-08T20:46:52.813940+00:00"
 }

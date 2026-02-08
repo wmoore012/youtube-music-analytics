@@ -3,14 +3,18 @@ import pytest
 
 from streamlit_app import (
     build_artist_content_action_rows,
+    build_artist_today_signal_frame,
+    build_comment_watchlist,
     build_delta_signal_rows,
     build_focus_artist_header_html,
     build_focus_artist_scorecard,
     build_focus_format_lift_table,
     build_focus_trend_frame,
+    build_hero_signal_snapshots,
     build_kpi_context,
     build_kpi_red_flags,
     build_release_strategy_board,
+    build_today_meeting_table,
     compute_delta_display,
     compute_pct_delta,
     format_delta_value,
@@ -37,14 +41,14 @@ def test_format_delta_value() -> None:
 def test_sanitize_hex_color_is_safe_and_normalized() -> None:
     assert sanitize_hex_color("#abc") == "#AABBCC"
     assert sanitize_hex_color("#12af09") == "#12AF09"
-    assert sanitize_hex_color("invalid") == "#FF4B4B"
+    assert sanitize_hex_color("invalid") == "#A3262A"
     assert sanitize_hex_color(None, fallback="#0099FF") == "#0099FF"
 
 
 def test_hex_color_to_rgb_csv_converts_color() -> None:
     assert hex_color_to_rgb_csv("#FF4B4B") == "255, 75, 75"
     # Invalid colors fall back to default accent red before conversion.
-    assert hex_color_to_rgb_csv("bad-color") == "255, 75, 75"
+    assert hex_color_to_rgb_csv("bad-color") == "163, 38, 42"
 
 
 def test_build_focus_artist_header_html_escapes_artist_name() -> None:
@@ -162,6 +166,90 @@ def test_build_artist_content_action_rows_returns_actionable_rows() -> None:
     assert len(rows) == 2
     assert set(rows.columns) == {"Artist", "Best Reach Format", "Best Engagement Format", "Action Plan"}
     assert rows["Action Plan"].str.len().min() > 20
+
+
+def test_build_comment_watchlist_returns_two_videos_per_artist_with_links() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "title": "A1",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 30,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a2",
+                "title": "A2",
+                "view_count": 1000,
+                "like_count": 30,
+                "comment_count": 25,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a3",
+                "title": "A3",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 5,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a4",
+                "title": "A4",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 4,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "title": "B1",
+                "view_count": 1000,
+                "like_count": 20,
+                "comment_count": 20,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b2",
+                "title": "B2",
+                "view_count": 1000,
+                "like_count": 25,
+                "comment_count": 18,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b3",
+                "title": "B3",
+                "view_count": 1000,
+                "like_count": 80,
+                "comment_count": 5,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b4",
+                "title": "B4",
+                "view_count": 1000,
+                "like_count": 80,
+                "comment_count": 4,
+            },
+        ]
+    )
+
+    watchlist = build_comment_watchlist(df, per_artist_limit=2)
+    assert not watchlist.empty
+    assert watchlist["Artist"].value_counts().to_dict() == {"Artist A": 2, "Artist B": 2}
+    assert watchlist["Watch"].str.startswith("https://www.youtube.com/watch?v=").all()
+    assert watchlist["Thumbnail"].str.startswith("https://i.ytimg.com/vi/").all()
+    assert watchlist["Quick arithmetic"].str.contains("artist median").all()
+    assert watchlist["Signal"].str.contains("unusually", case=False).all()
+
+
+def test_build_comment_watchlist_returns_empty_without_required_columns() -> None:
+    watchlist = build_comment_watchlist(pd.DataFrame([{"artist_name": "Artist A", "title": "Missing IDs"}]))
+    assert watchlist.empty
 
 
 def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
@@ -444,6 +532,44 @@ def test_build_release_strategy_board_computes_music_video_lift() -> None:
     assert len(row["Today action"]) > 20
 
 
+def test_build_release_strategy_board_counts_use_full_window_not_sample_cap() -> None:
+    rows = []
+    for idx in range(12):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"official-{idx}",
+                "title": f"Official {idx}",
+                "video_type": "Official Music Video",
+                "view_count": 1_000 + idx,
+                "views_per_day": 100.0 + idx,
+                "engagement_rate": 2.0,
+                "published_at": pd.Timestamp("2026-02-07") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-08"),
+            }
+        )
+    for idx in range(4):
+        rows.append(
+            {
+                "artist_name": "Artist A",
+                "video_id": f"other-{idx}",
+                "title": f"Other {idx}",
+                "video_type": "Short",
+                "view_count": 500 + idx,
+                "views_per_day": 80.0 + idx,
+                "engagement_rate": 3.0,
+                "published_at": pd.Timestamp("2026-01-20") - pd.Timedelta(days=idx),
+                "metrics_date": pd.Timestamp("2026-02-08"),
+            }
+        )
+
+    board = build_release_strategy_board(pd.DataFrame(rows), per_artist_limit=10)
+    row = board.iloc[0]
+
+    assert row["Official release count"] == 12
+    assert row["Other content count"] == 4
+
+
 def test_build_focus_artist_scorecard_uses_peer_average_baseline() -> None:
     board = pd.DataFrame(
         [
@@ -518,3 +644,208 @@ def test_build_focus_format_lift_table_compares_focus_vs_benchmark() -> None:
     assert short_video["Focus avg views/day"] == pytest.approx(300.0)
     assert short_video["Benchmark avg views/day"] == pytest.approx(150.0)
     assert short_video["Lift vs benchmark (%)"] == pytest.approx(100.0)
+
+
+def test_build_artist_today_signal_frame_uses_views_gained_math() -> None:
+    metrics = pd.DataFrame(
+        [
+            # Artist A (accelerating)
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-02",
+                "view_count": 110,
+                "comment_count": 10,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-05",
+                "view_count": 160,
+                "comment_count": 16,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-06",
+                "view_count": 200,
+                "comment_count": 22,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "metrics_date": "2026-02-08",
+                "view_count": 260,
+                "comment_count": 38,
+            },
+            # Artist B (slowing)
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-02",
+                "view_count": 100,
+                "comment_count": 8,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-05",
+                "view_count": 190,
+                "comment_count": 16,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-06",
+                "view_count": 210,
+                "comment_count": 17,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "metrics_date": "2026-02-08",
+                "view_count": 220,
+                "comment_count": 18,
+            },
+        ]
+    )
+    latest = pd.DataFrame(
+        [
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "video_type": "Official Music Video",
+                "published_at": "2026-02-01",
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a0",
+                "video_type": "Official Audio",
+                "published_at": "2026-01-10",
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "video_type": "Official Music Video",
+                "published_at": "2025-11-01",
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b0",
+                "video_type": "Official Audio",
+                "published_at": "2025-09-01",
+            },
+        ]
+    )
+
+    frame = build_artist_today_signal_frame(
+        metrics_window=metrics,
+        latest_snapshot=latest,
+        selected_artists=["Artist A", "Artist B"],
+        anchor_day=pd.Timestamp("2026-02-08").date(),
+    )
+
+    artist_a = frame.loc[frame["Artist"] == "Artist A"].iloc[0]
+    # 7d gain = 260 - 110 = 150; daily_7 = 21.428...
+    assert float(artist_a["daily_7_views"]) == pytest.approx(150.0 / 7.0, rel=1e-3)
+    # 90d gain with available points is the same for this fixture -> daily_90 = 150 / 90
+    assert float(artist_a["daily_90_views"]) == pytest.approx(150.0 / 90.0, rel=1e-3)
+    assert float(artist_a["heat_ratio"]) == pytest.approx((150.0 / 7.0) / (150.0 / 90.0), rel=1e-3)
+    assert str(artist_a["direction_key"]) == "accelerating"
+    assert str(artist_a["direction"]).startswith("↗")
+    assert "Consider" in str(artist_a["Today move"]) or "Keep" in str(artist_a["Today move"])
+
+    artist_b = frame.loc[frame["Artist"] == "Artist B"].iloc[0]
+    assert str(artist_b["direction_key"]) == "slowing"
+    assert str(artist_b["direction"]).startswith("↘")
+
+
+def test_build_today_meeting_table_formats_cells_and_orders_by_heat() -> None:
+    signal_frame = pd.DataFrame(
+        [
+            {
+                "Artist": "Artist B",
+                "heat_ratio": 1.2,
+                "daily_7_views": 120.0,
+                "daily_90_views": 80.0,
+                "direction": "→ steady",
+                "direction_key": "steady",
+                "last_3_daily_views": 15.0,
+                "prior_4_daily_views": 15.0,
+                "fans_talking_per_1k": 8.0,
+                "label_avg_fans_talking_per_1k": 9.0,
+                "cadence_days": 20.0,
+                "typical_gap_days": 18.0,
+                "cadence_note": "on pace",
+                "Today move": "Consider one controlled format test this week.",
+            },
+            {
+                "Artist": "Artist A",
+                "heat_ratio": 2.4,
+                "daily_7_views": 300.0,
+                "daily_90_views": 100.0,
+                "direction": "↗ accelerating",
+                "direction_key": "accelerating",
+                "last_3_daily_views": 30.0,
+                "prior_4_daily_views": 20.0,
+                "fans_talking_per_1k": 12.0,
+                "label_avg_fans_talking_per_1k": 9.0,
+                "cadence_days": 38.0,
+                "typical_gap_days": 21.0,
+                "cadence_note": "been quiet",
+                "Today move": "Consider scheduling the next official moment.",
+            },
+        ]
+    )
+
+    meeting = build_today_meeting_table(signal_frame)
+    assert meeting["Artist"].tolist() == ["Artist A", "Artist B"]
+    assert meeting.loc[0, "Heat"] == "2.4x"
+    assert "avg 9.0 / 1K" in meeting.loc[0, "Fans talking"]
+    assert "typical 21" in meeting.loc[0, "Cadence"]
+
+
+def test_build_hero_signal_snapshots_produces_three_cards() -> None:
+    signal_frame = pd.DataFrame(
+        [
+            {
+                "Artist": "Artist A",
+                "heat_ratio": 2.0,
+                "daily_7_views": 210.0,
+                "daily_90_views": 90.0,
+                "direction": "↗ accelerating",
+                "direction_key": "accelerating",
+                "last_3_daily_views": 35.0,
+                "prior_4_daily_views": 20.0,
+                "fans_talking_per_1k": 11.0,
+                "label_avg_fans_talking_per_1k": 8.0,
+                "cadence_days": 28.0,
+                "typical_gap_days": 18.0,
+                "cadence_note": "been quiet",
+                "Today move": "Consider scheduling the next official moment.",
+            },
+            {
+                "Artist": "Artist B",
+                "heat_ratio": 1.0,
+                "daily_7_views": 70.0,
+                "daily_90_views": 70.0,
+                "direction": "→ steady",
+                "direction_key": "steady",
+                "last_3_daily_views": 10.0,
+                "prior_4_daily_views": 10.0,
+                "fans_talking_per_1k": 7.0,
+                "label_avg_fans_talking_per_1k": 8.0,
+                "cadence_days": 17.0,
+                "typical_gap_days": 18.0,
+                "cadence_note": "on pace",
+                "Today move": "Keep the same lane - momentum is building.",
+            },
+        ]
+    )
+
+    heat_card, fans_card, cadence_card = build_hero_signal_snapshots(signal_frame)
+    assert heat_card.title == "Heat vs normal"
+    assert fans_card.title == "Fans talking"
+    assert cadence_card.title == "Cadence gap"
+    assert heat_card.value.endswith("x")
+    assert "comments_gained_last_7" in fans_card.arithmetic

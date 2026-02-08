@@ -29,13 +29,13 @@ License: Enterprise
 #    reflects a true daily heartbeat, not stale checked-in JSON.
 # ======================================================================
 
+from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add project root to path
@@ -102,6 +102,15 @@ class EnterpriseETLPipeline:
             logger.warning("ETL_STAGE_TIMEOUT_SECONDS=%s must be > 0; using default timeout (%s).", value, default)
             return default
         return value
+
+    @staticmethod
+    def _tail_text(value: str, max_lines: int = 12) -> str:
+        """Return the last non-empty lines from captured process output."""
+
+        lines = [line for line in value.splitlines() if line.strip()]
+        if not lines:
+            return ""
+        return "\n".join(lines[-max_lines:])
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
@@ -179,11 +188,19 @@ class EnterpriseETLPipeline:
                 return True
             else:
                 logger.error(f"❌ {stage_name}: FAILED (exit code: {result.returncode})")
-                logger.error(f"STDERR: {result.stderr}")
+                stderr_tail = self._tail_text(result.stderr)
+                stdout_tail = self._tail_text(result.stdout)
+                if stderr_tail:
+                    logger.error("STDERR tail:\n%s", stderr_tail)
+                if stdout_tail:
+                    logger.error("STDOUT tail:\n%s", stdout_tail)
+                if not stderr_tail and not stdout_tail:
+                    logger.error("Stage returned non-zero exit code with empty stdout/stderr capture.")
 
                 if critical:
                     self.results["status"] = "FAILED"
-                    self.results["errors"].append(f"{stage_name} failed: {result.stderr}")
+                    error_summary = stderr_tail or stdout_tail or "no output captured"
+                    self.results["errors"].append(f"{stage_name} failed: {error_summary}")
                     return False
                 else:
                     logger.warning(f"⚠️  {stage_name}: Non-critical failure, continuing...")

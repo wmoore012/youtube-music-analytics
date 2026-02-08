@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
-from pathlib import Path
 from typing import List, Sequence
 
 from dotenv import load_dotenv
@@ -75,6 +75,12 @@ def _refresh_demo_snapshot(timeout_seconds: int) -> bool:
     """Regenerate demo cohort snapshot from latest warehouse rows."""
 
     print(f"\n▶ Refreshing demo snapshot (timeout: {timeout_seconds}s)")
+    stage_env = os.environ.copy()
+    root = str(PROJECT_ROOT)
+    existing = stage_env.get("PYTHONPATH", "")
+    existing_parts = [part for part in existing.split(os.pathsep) if part]
+    if root not in existing_parts:
+        stage_env["PYTHONPATH"] = os.pathsep.join([root, *existing_parts]) if existing_parts else root
     try:
         result = subprocess.run(
             [sys.executable, "scripts/refresh_demo_snapshot.py"],
@@ -82,6 +88,7 @@ def _refresh_demo_snapshot(timeout_seconds: int) -> bool:
             text=True,
             cwd=str(PROJECT_ROOT),
             timeout=timeout_seconds,
+            env=stage_env,
         )
     except subprocess.TimeoutExpired:
         print(f"  ✗ Demo snapshot refresh timed out after {timeout_seconds}s")
@@ -92,6 +99,10 @@ def _refresh_demo_snapshot(timeout_seconds: int) -> bool:
 
     if result.returncode != 0:
         print("  ✗ Demo snapshot refresh failed")
+        if result.stdout.strip():
+            print("  stdout:")
+            for line in result.stdout.strip().splitlines()[-8:]:
+                print(f"    {line}")
         if result.stderr.strip():
             print("  stderr:")
             for line in result.stderr.strip().splitlines()[-8:]:
@@ -132,16 +143,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print(f"Found {len(pairs)} channel URLs in env:\n  " + "\n  ".join(f"{k}={v}" for k, v in pairs))
     failures = 0
+    ingestion_metric_upserts = 0
     for k, url in pairs:
         print(f"\n▶ Running ETL for {k}: {url}")
         try:
             summary = run_channel_etl(url)
+            ingestion_metric_upserts += int(summary.metrics_upserts)
             errs = ", ".join(summary.errors) if summary.errors else "none"
             print(
                 f"  ✓ channel_id={summary.channel_id or '?'} uploads={summary.uploads_playlist_id or '?'} "
                 f"videos={summary.videos_seen} raw_upserts={summary.raw_upserts} "
                 f"metrics_upserts={summary.metrics_upserts} errors=[{errs}]"
             )
+            if summary.errors:
+                print("  ! Channel returned non-fatal ETL errors; review logs if this persists.")
         except Exception as e:
             failures += 1
             print(f"  ✗ Failed: {e}")
@@ -155,7 +170,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             DEFAULT_SNAPSHOT_TIMEOUT_SECONDS,
         )
         if not _refresh_demo_snapshot(timeout_seconds):
-            failures += 1
+            # IMPORTANT / DO NOT REGRESS:
+            # Snapshot refresh should block successful ingestion runs, but should
+            # not fail CI when no fresh metrics were ingested (e.g., API quota).
+            if ingestion_metric_upserts > 0:
+                failures += 1
+            else:
+                print(
+                    "  ! Snapshot refresh failed, but no new metrics were ingested in this run; "
+                    "continuing without failing the pipeline."
+                )
 
     return 1 if failures else 0
 

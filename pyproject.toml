@@ -317,28 +317,32 @@ precision = 2
 directory = "htmlcov"
 
 [tool.ruff]
-# Start with basic checks, expand gradually
-select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-]
-
-# Ignore current violations (baseline approach)
-ignore = [
-    "E501",  # Line too long (handled by black)
-]
-
-# Safe automatic fixes only
-fixable = ["F401", "I", "W291", "W292", "W293", "E302", "E303", "E305"]
-unfixable = ["F841"]  # Don't auto-remove unused variables
-
 line-length = 120
 target-version = "py38"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "W",  # pycodestyle warnings
+    "I",  # isort
+]
+ignore = [
+    "E501",  # Line too long (handled by black)
+]
+fixable = ["F401", "I", "W291", "W292", "W293", "E302", "E303", "E305"]
+unfixable = ["F841"]  # Don't auto-remove unused variables
+
+[tool.ruff.lint.per-file-ignores]
 # Tests can be more flexible
 "tests/**/*.py" = ["F401", "F841"]
 # Scripts can use print statements
 "scripts/**/*.py" = ["T201"]
+
+[tool.ruff.lint.isort]
+# Keep Ruff import ordering aligned with CI isort profile.
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

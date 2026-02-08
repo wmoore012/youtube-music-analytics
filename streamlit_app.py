@@ -1,22 +1,24 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
 import html
 import json
+import logging
 import math
 import os
-import re
-from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Iterable, Literal
+import re
+from typing import Iterable, Literal, Mapping
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
+import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -55,6 +57,71 @@ NEW_ENTRY_VIEWS_PER_DAY_FLOOR = 100.0
 DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
 OFFICIAL_RELEASE_TYPES = frozenset({"Official Music Video", "Official Audio", "Lyric Video"})
 HEX_COLOR_RE = re.compile(r"^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
+COMMENT_WATCHLIST_MIN_VIEWS = 500
+COMMENT_WATCHLIST_MIN_COMMENTS = 3
+COMMENT_WATCHLIST_MIN_LIKES = 3
+COMMENT_WATCHLIST_MIN_LIFT = 1.35
+HEAT_ACCELERATION_THRESHOLD = 1.10
+HEAT_SLOWING_THRESHOLD = 0.90
+CADENCE_TOLERANCE_DAYS = 7
+LOGGER = logging.getLogger(__name__)
+APP_RED_700 = "#7A1F2B"
+APP_RED_600 = "#8B2635"
+APP_RED_500 = "#A3262A"
+APP_RED_100 = "#FBE9E8"
+APP_RED_050 = "#FFF5F4"
+APP_BENCHMARK_GRAY = "#C7CBD4"
+APP_BENCHMARK_GRAY_DARK = "#B4B9C3"
+# IMPORTANT / DO NOT REGRESS:
+# Keep one global artist palette source for the full app so styling remains
+# consistent across Overview, Deep Dive, Velocity, and callout components.
+GLOBAL_ARTIST_PALETTE = get_artist_color_palette()
+
+
+@dataclass(frozen=True)
+class CommentSignalSpec:
+    """Arithmetic-backed rule used to flag unusual comment behavior."""
+
+    metric_key: str
+    reason_key: str
+    reason_label: str
+    arithmetic_label: str
+    min_like_count: int = 0
+
+
+@dataclass(frozen=True)
+class HeroSignalSnapshot:
+    """Container for one hero card value + plain-language explanation."""
+
+    title: str
+    value: str
+    direction: str
+    sentence: str
+    context: str
+    arithmetic: str
+
+
+COMMENT_SIGNAL_SPECS: tuple[CommentSignalSpec, ...] = (
+    CommentSignalSpec(
+        metric_key="comments_per_1k_views",
+        reason_key="comments per 1k views spike",
+        reason_label="Comments are unusually high for the view level.",
+        arithmetic_label="(comments / views) x 1,000",
+    ),
+    CommentSignalSpec(
+        metric_key="comments_per_like",
+        reason_key="comments per like spike",
+        reason_label="Comments are unusually high compared with likes.",
+        arithmetic_label="comments / likes",
+        min_like_count=COMMENT_WATCHLIST_MIN_LIKES,
+    ),
+    CommentSignalSpec(
+        metric_key="views_per_comment",
+        reason_key="views per comment spike",
+        reason_label="Views are unusually high per comment (investigate passive viewing).",
+        arithmetic_label="views / comments",
+    ),
+)
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -66,6 +133,201 @@ except ModuleNotFoundError:  # pragma: no cover - external dependency guard
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
 DEMO_DATA_PATH = BASE_DIR / "demo_data" / "curated_cohort.json"
+EXPECTED_ARTISTS_PATH = BASE_DIR / "config" / "expected_artists.json"
+ARTIST_ALIASES_PATH = BASE_DIR / "config" / "artist_aliases.json"
+ARTIST_ALIAS_OVERRIDES = {
+    "hicorook": "Corook",
+    "@hicorook": "Corook",
+    "cobrah": "COBRAH",
+}
+
+
+def _cache_key_for_path(path: Path) -> tuple[str, int]:
+    """Return a stable cache key that changes when file mtime changes."""
+
+    try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        mtime_ns = -1
+    return str(path), mtime_ns
+
+
+def _normalize_optional_text(value: object) -> str:
+    """Convert scalar-ish values to text while dropping common missing sentinels."""
+
+    if value is None:
+        return ""
+    try:
+        if bool(pd.isna(value)):  # scalar NaN/NA/NaT
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.casefold() in {"", "nan", "<na>", "none", "null"}:
+        return ""
+    return text
+
+
+@st.cache_data(show_spinner=False)
+def _load_expected_artists_cached(path_text: str, _mtime_ns: int) -> list[str]:
+    path = Path(path_text)
+    try:
+        raw_text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return []
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read expected artists config '%s': %s", path.name, exc)
+        return []
+    except OSError as exc:
+        LOGGER.warning("OS error reading expected artists config '%s': %s", path.name, exc)
+        return []
+
+    try:
+        payload = json.loads(raw_text)
+    except json.JSONDecodeError as exc:
+        LOGGER.warning("Could not parse expected artists config '%s': %s", path.name, exc)
+        return []
+
+    names = payload.get("expected_artists") if isinstance(payload, dict) else None
+    if not isinstance(names, list):
+        return []
+    return [str(name).strip() for name in names if str(name).strip()]
+
+
+@st.cache_data(show_spinner=False)
+def _load_expected_artists() -> list[str]:
+    """Load expected artist roster from config, when available."""
+
+    return _load_expected_artists_cached(*_cache_key_for_path(EXPECTED_ARTISTS_PATH))
+
+
+@st.cache_data(show_spinner=False)
+def _load_artist_aliases_cached(path_text: str, _mtime_ns: int) -> dict[str, str]:
+    alias_map: dict[str, str] = {}
+    path = Path(path_text)
+
+    payload: object = {}
+    try:
+        raw_text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raw_text = ""
+    except PermissionError as exc:
+        LOGGER.warning("Cannot read artist aliases config '%s': %s", path.name, exc)
+        raw_text = ""
+    except OSError as exc:
+        LOGGER.warning("OS error reading artist aliases config '%s': %s", path.name, exc)
+        raw_text = ""
+
+    if raw_text:
+        try:
+            payload = json.loads(raw_text)
+        except json.JSONDecodeError as exc:
+            LOGGER.warning("Could not parse artist aliases config '%s': %s", path.name, exc)
+            payload = {}
+
+    if isinstance(payload, dict):
+        for alias, canonical in payload.items():
+            alias_text = str(alias).strip()
+            canonical_text = str(canonical).strip()
+            if alias_text and canonical_text:
+                alias_map[alias_text.casefold()] = canonical_text
+    for alias, canonical in ARTIST_ALIAS_OVERRIDES.items():
+        alias_map[alias.casefold()] = canonical
+    return alias_map
+
+
+@st.cache_data(show_spinner=False)
+def _load_artist_aliases() -> dict[str, str]:
+    """Load artist aliases (case-insensitive key map)."""
+
+    return _load_artist_aliases_cached(*_cache_key_for_path(ARTIST_ALIASES_PATH))
+
+
+def _build_artist_name_index(
+    *,
+    palette: Mapping[str, str],
+    expected_artists: list[str],
+    alias_map: Mapping[str, str],
+) -> dict[str, str]:
+    """Build case-insensitive canonical-name lookup index."""
+
+    index: dict[str, str] = {}
+    for artist_name in palette.keys():
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    for artist_name in alias_map.values():
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    for artist_name in expected_artists:
+        text = str(artist_name).strip()
+        if text:
+            index[text.casefold()] = text
+    return index
+
+
+def _canonicalize_artist_name(
+    value: object,
+    *,
+    alias_map: Mapping[str, str],
+    name_index: Mapping[str, str],
+) -> str:
+    """Return canonical artist display name while preserving stylistic casing."""
+
+    raw = _normalize_optional_text(value)
+    if not raw:
+        return ""
+    alias_canonical = alias_map.get(raw.casefold(), raw)
+    return name_index.get(alias_canonical.casefold(), alias_canonical)
+
+
+def normalize_artist_dimension(
+    df: pd.DataFrame,
+    *,
+    palette: Mapping[str, str],
+    drop_untracked: bool = True,
+) -> tuple[pd.DataFrame, list[str]]:
+    """Canonicalize artist names and optionally hide untracked labels.
+
+    IMPORTANT / DO NOT REGRESS:
+    - Merge case-only splits (e.g., "Cobrah" + "COBRAH") into one canonical name.
+    - Keep artist stylistic casing from config.
+    - Filter obvious junk labels (e.g., accidental channel names) from dashboard
+      without deleting source data from storage.
+    """
+
+    if df.empty or "artist_name" not in df.columns:
+        return df, []
+
+    expected_artists = _load_expected_artists()
+    alias_map = _load_artist_aliases()
+    name_index = _build_artist_name_index(
+        palette=palette,
+        expected_artists=expected_artists,
+        alias_map=alias_map,
+    )
+
+    typed = df.copy()
+    typed["artist_name"] = typed["artist_name"].map(
+        lambda name: _canonicalize_artist_name(name, alias_map=alias_map, name_index=name_index)
+    )
+    typed = typed.loc[typed["artist_name"] != ""].copy()
+
+    tracked_roster = expected_artists if expected_artists else sorted(set(str(name) for name in palette.keys()))
+    tracked_keys = {name.casefold() for name in tracked_roster}
+    unknown_artists = sorted(
+        {
+            str(name)
+            for name in typed["artist_name"].dropna().astype(str).tolist()
+            if str(name).strip() and str(name).casefold() not in tracked_keys
+        }
+    )
+
+    if drop_untracked and unknown_artists:
+        typed = typed.loc[~typed["artist_name"].isin(unknown_artists)].copy()
+
+    return typed, unknown_artists
 
 
 def _read_int_env(name: str, default: int) -> int:
@@ -121,7 +383,7 @@ def read_float_env(name: str, default: float) -> float:
     return _read_float_env(name, default)
 
 
-def _sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+def _sanitize_hex_color(color: str | None, fallback: str = APP_RED_500) -> str:
     """Return a safe CSS hex color or fallback."""
 
     candidate = (color or "").strip()
@@ -132,7 +394,7 @@ def _sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
     return candidate.upper()
 
 
-def sanitize_hex_color(color: str | None, fallback: str = "#FF4B4B") -> str:
+def sanitize_hex_color(color: str | None, fallback: str = APP_RED_500) -> str:
     """Public wrapper for safe CSS hex colors."""
 
     return _sanitize_hex_color(color, fallback=fallback)
@@ -157,29 +419,33 @@ def hex_color_to_rgb_csv(color: str) -> str:
 def inject_dashboard_motion_styles() -> None:
     """Inject subtle, premium motion + accent styling for Streamlit widgets."""
 
-    st.markdown(
-        """
+    accent_rgb = _hex_color_to_rgb_csv(APP_RED_500)
+    accent_rgb_700 = _hex_color_to_rgb_csv(APP_RED_700)
+    css = """
         <style>
           :root {
-            --yt-red-600: #C62828;
-            --yt-red-500: #FF4B4B;
-            --yt-red-100: #FEE2E2;
+            --yt-red-700: __APP_RED_700__;
+            --yt-red-600: __APP_RED_600__;
+            --yt-red-500: __APP_RED_500__;
+            --yt-red-100: __APP_RED_100__;
+            --yt-red-050: __APP_RED_050__;
             --ink-900: #111827;
             --ink-600: #4B5563;
-            --benchmark-gray: #C7CBD4;
+            --benchmark-gray: __APP_BENCHMARK_GRAY__;
           }
           @keyframes focusRise {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
           }
           [data-testid="stSelectbox"] > div[data-baseweb="select"] {
-            border: 1px solid rgba(198, 40, 40, 0.35);
+            border: 1px solid rgba(__ACCENT_RGB_700__, 0.40);
             border-radius: 14px;
             transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+            background: linear-gradient(180deg, var(--yt-red-050) 0%, #FFFFFF 100%);
           }
           [data-testid="stSelectbox"] > div[data-baseweb="select"]:focus-within {
             border-color: var(--yt-red-500);
-            box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.20);
+            box-shadow: 0 0 0 3px rgba(__ACCENT_RGB__, 0.18);
             transform: translateY(-1px);
           }
           .focus-artist-hero {
@@ -233,8 +499,62 @@ def inject_dashboard_motion_styles() -> None:
           [data-testid="stPlotlyChart"] {
             animation: focusRise .36s ease-out;
           }
+          .today-hero-card {
+            margin: 6px 0 2px 0;
+            padding: 14px 14px 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(__ACCENT_RGB_700__, 0.28);
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--yt-red-050) 100%);
+            box-shadow: 0 8px 22px rgba(__ACCENT_RGB__, 0.08);
+            animation: focusRise .30s ease-out;
+            min-height: 178px;
+          }
+          .today-hero-title {
+            color: var(--ink-600);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.74rem;
+            font-weight: 700;
+          }
+          .today-hero-value {
+            margin-top: 4px;
+            color: var(--yt-red-700);
+            font-size: clamp(2rem, 3.7vw, 2.9rem);
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+          }
+          .today-hero-direction {
+            margin-top: 4px;
+            color: #1F2937;
+            font-size: 0.92rem;
+            font-weight: 700;
+          }
+          .today-hero-sentence {
+            margin-top: 10px;
+            color: #111827;
+            font-size: 0.95rem;
+            font-weight: 600;
+          }
+          .today-hero-context {
+            margin-top: 8px;
+            color: var(--ink-600);
+            font-size: 0.78rem;
+          }
         </style>
-        """,
+    """
+    css = (
+        css.replace("__APP_RED_700__", APP_RED_700)
+        .replace("__APP_RED_600__", APP_RED_600)
+        .replace("__APP_RED_500__", APP_RED_500)
+        .replace("__APP_RED_100__", APP_RED_100)
+        .replace("__APP_RED_050__", APP_RED_050)
+        .replace("__APP_BENCHMARK_GRAY__", APP_BENCHMARK_GRAY)
+        .replace("__ACCENT_RGB__", accent_rgb)
+        .replace("__ACCENT_RGB_700__", accent_rgb_700)
+    )
+    st.markdown(
+        css,
         unsafe_allow_html=True,
     )
 
@@ -414,6 +734,37 @@ def _coerce_float(value: object, default: float = 0.0) -> float:
     if not math.isfinite(candidate):
         return default
     return candidate
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float | None:
+    """Return ratio when denominator is positive and finite; otherwise None."""
+
+    if not (math.isfinite(numerator) and math.isfinite(denominator)):
+        return None
+    if denominator <= 0:
+        return None
+    value = numerator / denominator
+    if not math.isfinite(value):
+        return None
+    return value
+
+
+def _youtube_watch_url(video_id: object) -> str:
+    """Return canonical YouTube watch URL for a video id, or empty string."""
+
+    video_text = _normalize_optional_text(video_id)
+    if not video_text:
+        return ""
+    return f"https://www.youtube.com/watch?v={video_text}"
+
+
+def _youtube_thumbnail_url(video_id: object) -> str:
+    """Return YouTube HQ thumbnail URL for a video id, or empty string."""
+
+    video_text = _normalize_optional_text(video_id)
+    if not video_text:
+        return ""
+    return f"https://i.ytimg.com/vi/{video_text}/hqdefault.jpg"
 
 
 def _coerce_timestamp(value: object) -> pd.Timestamp:
@@ -711,6 +1062,8 @@ def load_normalized_videos_from_demo() -> pd.DataFrame:
             )
             published_at = _coerce_timestamp(video.get("published_at"))
             metrics_date = snapshot_ts if pd.notna(snapshot_ts) else published_at
+            if pd.notna(metrics_date):
+                metrics_date = pd.Timestamp(metrics_date).floor("D")
             views_per_day = _coerce_float(video.get("views_per_day"), 0.0)
             age_days = -1
             if pd.notna(metrics_date) and pd.notna(published_at):
@@ -1345,16 +1698,12 @@ def build_artist_content_action_rows(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _prepare_recent_release_windows(
-    videos: pd.DataFrame,
-    *,
-    per_artist_limit: int = 10,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Return per-artist recent windows for official releases and other content."""
+def _prepare_rollout_frame(videos: pd.DataFrame) -> pd.DataFrame:
+    """Build standardized frame used by rollout charts/tables."""
 
     required = {"artist_name", "video_id", "title", "video_type", "view_count", "views_per_day", "engagement_rate"}
     if videos.empty or not required.issubset(videos.columns):
-        return pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame()
 
     typed = videos.copy()
     typed["video_type_label"] = typed["video_type"].map(_display_video_type)
@@ -1370,6 +1719,19 @@ def _prepare_recent_release_windows(
         ascending=[True, False, False],
         na_position="last",
     )
+    return typed
+
+
+def _prepare_recent_release_windows(
+    videos: pd.DataFrame,
+    *,
+    per_artist_limit: int = 10,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return per-artist recent windows for official releases and other content."""
+
+    typed = _prepare_rollout_frame(videos)
+    if typed.empty:
+        return pd.DataFrame(), pd.DataFrame()
 
     official_recent = (
         typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
@@ -1430,6 +1792,540 @@ def _safe_lift_pct(current: float | None, baseline: float | None) -> float | Non
     return (current / baseline - 1.0) * 100.0
 
 
+def _window_start(anchor_day: date, days: int) -> date:
+    """Return inclusive window start date for a trailing N-day window."""
+
+    safe_days = max(1, int(days))
+    return anchor_day - timedelta(days=safe_days - 1)
+
+
+def _metric_gains_by_artist(
+    metrics_df: pd.DataFrame,
+    *,
+    metric_col: str,
+    start_day: date,
+    end_day: date,
+) -> pd.Series:
+    """Return per-artist gains for cumulative metric windows.
+
+    Arithmetic:
+    - per video gain = max(metric in window) - min(metric in window)
+    - artist gain = sum(per video gain)
+    """
+
+    required = {"artist_name", "video_id", "metrics_date", metric_col}
+    if metrics_df.empty or not required.issubset(metrics_df.columns):
+        return pd.Series(dtype=float)
+
+    typed = metrics_df.loc[:, ["artist_name", "video_id", "metrics_date", metric_col]].copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed["video_id"] = typed["video_id"].map(_normalize_optional_text)
+    typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce").dt.date
+    typed[metric_col] = pd.to_numeric(typed[metric_col], errors="coerce").fillna(0.0).clip(lower=0.0)
+    typed = typed.loc[typed["artist_name"].ne("") & typed["video_id"].ne("")]
+    typed = typed.loc[typed["metrics_date"].between(start_day, end_day)]
+    if typed.empty:
+        return pd.Series(dtype=float)
+
+    grouped = (
+        typed.groupby(["artist_name", "video_id"], dropna=False)[metric_col]
+        .agg(window_min="min", window_max="max")
+        .reset_index()
+    )
+    grouped["metric_gain"] = (grouped["window_max"] - grouped["window_min"]).clip(lower=0.0)
+    return grouped.groupby("artist_name", dropna=False)["metric_gain"].sum().astype(float)
+
+
+def _safe_daily(gained_value: float | None, days: int) -> float:
+    if gained_value is None:
+        return 0.0
+    return max(0.0, float(gained_value)) / max(1, int(days))
+
+
+def _direction_from_daily_windows(last_3_daily: float, prior_4_daily: float) -> tuple[str, str]:
+    """Return (direction_tag, direction_key) using explicit arithmetic comparisons."""
+
+    if prior_4_daily <= 0:
+        if last_3_daily > 0:
+            return "↗ accelerating", "accelerating"
+        return "→ steady", "steady"
+
+    ratio = last_3_daily / prior_4_daily
+    if ratio > HEAT_ACCELERATION_THRESHOLD:
+        return "↗ accelerating", "accelerating"
+    if ratio < HEAT_SLOWING_THRESHOLD:
+        return "↘ slowing", "slowing"
+    return "→ steady", "steady"
+
+
+def _cadence_interpretation(*, cadence_days: float | None, typical_gap_days: float | None) -> str:
+    """Return plain-language cadence interpretation (3am-friendly)."""
+
+    if cadence_days is None or typical_gap_days is None:
+        return "not enough history"
+    if cadence_days >= typical_gap_days + CADENCE_TOLERANCE_DAYS:
+        return "been quiet"
+    if cadence_days <= max(0.0, typical_gap_days - CADENCE_TOLERANCE_DAYS):
+        return "moving quick"
+    return "on pace"
+
+
+def _today_move_nudge(
+    *,
+    heat_ratio: float | None,
+    direction_key: str,
+    fans_talking_per_1k: float | None,
+    label_avg_fans_talking_per_1k: float | None,
+    cadence_note: str,
+) -> str:
+    """Return short, non-command nudge for meeting-ready action."""
+
+    if heat_ratio is None:
+        return "Not enough recent data yet."
+
+    label_avg = label_avg_fans_talking_per_1k or 0.0
+    fans_talking = fans_talking_per_1k or 0.0
+    if cadence_note == "been quiet":
+        return "Consider scheduling the next official moment."
+    if direction_key == "accelerating" and heat_ratio >= 1.20:
+        return "Keep the same lane - momentum is building."
+    if label_avg > 0 and fans_talking >= label_avg * 1.10:
+        return "Check comments: strong reaction, lean into that angle."
+    if direction_key == "slowing":
+        return "Worth a thumbnail/title refresh on the lead post."
+    if heat_ratio < 0.90:
+        return "Worth testing more support posts around the next official."
+    return "Consider one controlled format test this week."
+
+
+def _build_cadence_lookup(
+    latest_snapshot: pd.DataFrame,
+    *,
+    anchor_day: date,
+) -> dict[str, dict[str, float | int | str | None]]:
+    """Build per-artist cadence summary from latest official-release rows."""
+
+    required = {"artist_name", "video_type", "published_at", "video_id"}
+    if latest_snapshot.empty or not required.issubset(latest_snapshot.columns):
+        return {}
+
+    typed = latest_snapshot.loc[:, ["artist_name", "video_type", "published_at", "video_id"]].copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed["video_type"] = typed["video_type"].map(_display_video_type)
+    typed["published_at"] = pd.to_datetime(typed["published_at"], errors="coerce").dt.date
+    typed = typed.loc[
+        typed["artist_name"].ne("") & typed["published_at"].notna() & typed["video_type"].isin(OFFICIAL_RELEASE_TYPES)
+    ].copy()
+
+    lookup: dict[str, dict[str, float | int | str | None]] = {}
+    if typed.empty:
+        return lookup
+
+    for artist_name, artist_rows in typed.groupby("artist_name", dropna=False):
+        unique_dates = sorted(set(artist_rows["published_at"].tolist()), reverse=True)
+        if not unique_dates:
+            lookup[str(artist_name)] = {
+                "official_release_count": 0,
+                "cadence_days": None,
+                "typical_gap_days": None,
+                "cadence_note": "not enough history",
+            }
+            continue
+
+        latest_release_day = unique_dates[0]
+        cadence_days = max(0, int((anchor_day - latest_release_day).days))
+        day_gaps = [
+            float((unique_dates[idx] - unique_dates[idx + 1]).days)
+            for idx in range(len(unique_dates) - 1)
+            if (unique_dates[idx] - unique_dates[idx + 1]).days > 0
+        ]
+        typical_gap_days = float(pd.Series(day_gaps).median()) if day_gaps else None
+        cadence_note = _cadence_interpretation(cadence_days=float(cadence_days), typical_gap_days=typical_gap_days)
+        lookup[str(artist_name)] = {
+            "official_release_count": int(artist_rows["video_id"].nunique()),
+            "cadence_days": float(cadence_days),
+            "typical_gap_days": typical_gap_days,
+            "cadence_note": cadence_note,
+        }
+    return lookup
+
+
+def build_artist_today_signal_frame(
+    *,
+    metrics_window: pd.DataFrame,
+    latest_snapshot: pd.DataFrame,
+    selected_artists: list[str],
+    anchor_day: date,
+) -> pd.DataFrame:
+    """Build one-row-per-artist today-first arithmetic signals."""
+
+    columns = [
+        "Artist",
+        "heat_ratio",
+        "daily_7_views",
+        "daily_90_views",
+        "direction",
+        "direction_key",
+        "last_3_daily_views",
+        "prior_4_daily_views",
+        "fans_talking_per_1k",
+        "label_avg_fans_talking_per_1k",
+        "cadence_days",
+        "typical_gap_days",
+        "cadence_note",
+        "Today move",
+    ]
+    if not selected_artists:
+        return pd.DataFrame(columns=columns)
+
+    views_7 = _metric_gains_by_artist(
+        metrics_window,
+        metric_col="view_count",
+        start_day=_window_start(anchor_day, 7),
+        end_day=anchor_day,
+    )
+    views_90 = _metric_gains_by_artist(
+        metrics_window,
+        metric_col="view_count",
+        start_day=_window_start(anchor_day, 90),
+        end_day=anchor_day,
+    )
+    views_3 = _metric_gains_by_artist(
+        metrics_window,
+        metric_col="view_count",
+        start_day=_window_start(anchor_day, 3),
+        end_day=anchor_day,
+    )
+    prior_4_end = anchor_day - timedelta(days=3)
+    prior_4_start = anchor_day - timedelta(days=6)
+    views_prior_4 = _metric_gains_by_artist(
+        metrics_window,
+        metric_col="view_count",
+        start_day=prior_4_start,
+        end_day=prior_4_end,
+    )
+    comments_7 = _metric_gains_by_artist(
+        metrics_window,
+        metric_col="comment_count",
+        start_day=_window_start(anchor_day, 7),
+        end_day=anchor_day,
+    )
+
+    cadence_lookup = _build_cadence_lookup(latest_snapshot, anchor_day=anchor_day)
+
+    raw_rows: list[dict[str, float | str | None]] = []
+    for artist_name in selected_artists:
+        views_gained_7 = float(views_7.get(artist_name, 0.0))
+        views_gained_90 = float(views_90.get(artist_name, 0.0))
+        comments_gained_7 = float(comments_7.get(artist_name, 0.0))
+        last_3_daily = _safe_daily(float(views_3.get(artist_name, 0.0)), 3)
+        prior_4_daily = _safe_daily(float(views_prior_4.get(artist_name, 0.0)), 4)
+        daily_7 = _safe_daily(views_gained_7, 7)
+        daily_90 = _safe_daily(views_gained_90, 90)
+        heat_ratio = _safe_ratio(daily_7, daily_90)
+        direction, direction_key = _direction_from_daily_windows(last_3_daily, prior_4_daily)
+
+        fans_talking_per_1k = None
+        if views_gained_7 > 0:
+            fans_talking_per_1k = (comments_gained_7 / views_gained_7) * 1000.0
+
+        cadence = cadence_lookup.get(artist_name, {})
+        raw_rows.append(
+            {
+                "Artist": artist_name,
+                "heat_ratio": heat_ratio,
+                "daily_7_views": daily_7,
+                "daily_90_views": daily_90,
+                "direction": direction,
+                "direction_key": direction_key,
+                "last_3_daily_views": last_3_daily,
+                "prior_4_daily_views": prior_4_daily,
+                "fans_talking_per_1k": fans_talking_per_1k,
+                "cadence_days": cadence.get("cadence_days"),
+                "typical_gap_days": cadence.get("typical_gap_days"),
+                "cadence_note": str(cadence.get("cadence_note") or "not enough history"),
+            }
+        )
+
+    if not raw_rows:
+        return pd.DataFrame(columns=columns)
+
+    result = pd.DataFrame(raw_rows)
+    label_avg = _mean_or_none(result["fans_talking_per_1k"])
+    result["label_avg_fans_talking_per_1k"] = label_avg
+    result["Today move"] = result.apply(
+        lambda row: _today_move_nudge(
+            heat_ratio=float(row["heat_ratio"]) if pd.notna(row["heat_ratio"]) else None,
+            direction_key=str(row["direction_key"]),
+            fans_talking_per_1k=float(row["fans_talking_per_1k"]) if pd.notna(row["fans_talking_per_1k"]) else None,
+            label_avg_fans_talking_per_1k=label_avg,
+            cadence_note=str(row["cadence_note"]),
+        ),
+        axis=1,
+    )
+    return result.loc[:, columns]
+
+
+def _format_heat_value(value: float | None) -> str:
+    if value is None or not math.isfinite(value):
+        return "—"
+    return f"{value:.1f}x"
+
+
+def _format_fans_talking(value: float | None, label_avg: float | None) -> str:
+    if value is None or not math.isfinite(value):
+        return "—"
+    if label_avg is None or not math.isfinite(label_avg):
+        return f"{value:.1f} / 1K"
+    return f"{value:.1f} / 1K (avg {label_avg:.1f} / 1K)"
+
+
+def _format_cadence(value: float | None, typical: float | None, note: str) -> str:
+    if value is None or not math.isfinite(value):
+        return "—"
+    if typical is None or not math.isfinite(typical):
+        return f"{value:.0f} days ({note})"
+    return f"{value:.0f} days (typical {typical:.0f} · {note})"
+
+
+def _direction_sort_rank(direction_key: str) -> int:
+    if direction_key == "accelerating":
+        return 0
+    if direction_key == "steady":
+        return 1
+    if direction_key == "slowing":
+        return 2
+    return 3
+
+
+def build_today_meeting_table(signal_frame: pd.DataFrame) -> pd.DataFrame:
+    """Return meeting-ready table with short, plain-language fields."""
+
+    if signal_frame.empty:
+        return pd.DataFrame(columns=["Artist", "Heat", "Direction", "Fans talking", "Cadence", "Today move"])
+
+    typed = signal_frame.copy()
+    typed["Heat"] = typed["heat_ratio"].map(lambda value: _format_heat_value(float(value) if pd.notna(value) else None))
+    typed["Fans talking"] = typed.apply(
+        lambda row: _format_fans_talking(
+            float(row["fans_talking_per_1k"]) if pd.notna(row["fans_talking_per_1k"]) else None,
+            (float(row["label_avg_fans_talking_per_1k"]) if pd.notna(row["label_avg_fans_talking_per_1k"]) else None),
+        ),
+        axis=1,
+    )
+    typed["Cadence"] = typed.apply(
+        lambda row: _format_cadence(
+            float(row["cadence_days"]) if pd.notna(row["cadence_days"]) else None,
+            float(row["typical_gap_days"]) if pd.notna(row["typical_gap_days"]) else None,
+            str(row["cadence_note"]),
+        ),
+        axis=1,
+    )
+    typed["Direction"] = typed["direction"]
+    typed["Today move"] = typed["Today move"]
+    typed["__heat_sort"] = pd.to_numeric(typed["heat_ratio"], errors="coerce").fillna(-1.0)
+    typed["__direction_sort"] = typed["direction_key"].map(_direction_sort_rank)
+
+    ordered = typed.sort_values(["__heat_sort", "__direction_sort"], ascending=[False, True], na_position="last")
+    return ordered.loc[:, ["Artist", "Heat", "Direction", "Fans talking", "Cadence", "Today move"]].reset_index(
+        drop=True
+    )
+
+
+def build_hero_signal_snapshots(
+    signal_frame: pd.DataFrame,
+) -> tuple[HeroSignalSnapshot, HeroSignalSnapshot, HeroSignalSnapshot]:
+    """Build top-row hero card payloads from per-artist signals."""
+
+    if signal_frame.empty:
+        return (
+            HeroSignalSnapshot(
+                title="Heat vs normal",
+                value="—",
+                direction="→ steady",
+                sentence="Not enough recent data to compute this yet.",
+                context="Need at least one recent metrics window.",
+                arithmetic="heat = (views_gained_last_7 / 7) / (views_gained_last_90 / 90)",
+            ),
+            HeroSignalSnapshot(
+                title="Fans talking",
+                value="—",
+                direction="→ about normal",
+                sentence="Not enough recent data to compute this yet.",
+                context="Need comments + views in the same recent window.",
+                arithmetic="fans talking = (comments_gained_last_7 / views_gained_last_7) x 1,000",
+            ),
+            HeroSignalSnapshot(
+                title="Cadence gap",
+                value="—",
+                direction="→ on the usual schedule",
+                sentence="Not enough recent data to compute this yet.",
+                context="Need at least one official release date in the selected roster.",
+                arithmetic="cadence gap = days since latest official release",
+            ),
+        )
+
+    total_daily_7 = float(pd.to_numeric(signal_frame["daily_7_views"], errors="coerce").fillna(0.0).sum())
+    total_daily_90 = float(pd.to_numeric(signal_frame["daily_90_views"], errors="coerce").fillna(0.0).sum())
+    total_last_3 = float(pd.to_numeric(signal_frame["last_3_daily_views"], errors="coerce").fillna(0.0).sum())
+    total_prior_4 = float(pd.to_numeric(signal_frame["prior_4_daily_views"], errors="coerce").fillna(0.0).sum())
+    heat_ratio = _safe_ratio(total_daily_7, total_daily_90)
+    heat_direction, _ = _direction_from_daily_windows(total_last_3, total_prior_4)
+
+    fans_series = pd.to_numeric(signal_frame["fans_talking_per_1k"], errors="coerce").dropna()
+    selected_fans_talking = float(fans_series.mean()) if not fans_series.empty else None
+    label_avg = _mean_or_none(signal_frame["label_avg_fans_talking_per_1k"])
+    fan_direction = "→ about normal"
+    if selected_fans_talking is not None and label_avg is not None and label_avg > 0:
+        fan_ratio = selected_fans_talking / label_avg
+        if fan_ratio > HEAT_ACCELERATION_THRESHOLD:
+            fan_direction = "↗ more talk than usual"
+        elif fan_ratio < HEAT_SLOWING_THRESHOLD:
+            fan_direction = "↘ less talk than usual"
+
+    cadence_series = pd.to_numeric(signal_frame["cadence_days"], errors="coerce").dropna()
+    typical_series = pd.to_numeric(signal_frame["typical_gap_days"], errors="coerce").dropna()
+    cadence_days = float(cadence_series.median()) if not cadence_series.empty else None
+    typical_gap = float(typical_series.median()) if not typical_series.empty else None
+    cadence_note = _cadence_interpretation(cadence_days=cadence_days, typical_gap_days=typical_gap)
+    cadence_direction = "→ on the usual schedule"
+    if cadence_note == "been quiet":
+        cadence_direction = "↘ slower than usual"
+    elif cadence_note == "moving quick":
+        cadence_direction = "↗ faster than usual"
+
+    heat_sentence = "This is moving at the usual pace this week."
+    if heat_ratio is not None:
+        if heat_ratio > 1.10:
+            heat_sentence = "This is moving faster than usual this week."
+        elif heat_ratio < 0.90:
+            heat_sentence = "This is moving slower than usual this week."
+
+    fans_sentence = "Comment activity is in the normal range."
+    if selected_fans_talking is not None and label_avg is not None and label_avg > 0:
+        if selected_fans_talking > label_avg * 1.10:
+            fans_sentence = "People are jumping into the comments."
+        elif selected_fans_talking < label_avg * 0.90:
+            fans_sentence = "People are watching, but talking less than usual."
+
+    cadence_sentence = "We are on the usual schedule."
+    if cadence_note == "been quiet":
+        cadence_sentence = "It has been a while since the last official release."
+    elif cadence_note == "moving quick":
+        cadence_sentence = "We have been moving quickly on official drops."
+
+    return (
+        HeroSignalSnapshot(
+            title="Heat vs normal",
+            value=_format_heat_value(heat_ratio),
+            direction=heat_direction,
+            sentence=heat_sentence,
+            context=f"7d avg: {total_daily_7:,.0f}/day · 90d avg: {total_daily_90:,.0f}/day (views gained)",
+            arithmetic="heat = (views_gained_last_7 / 7) / (views_gained_last_90 / 90)",
+        ),
+        HeroSignalSnapshot(
+            title="Fans talking",
+            value="—" if selected_fans_talking is None else f"{selected_fans_talking:.1f} / 1K",
+            direction=fan_direction,
+            sentence=fans_sentence,
+            context=(
+                "Label avg: —" if label_avg is None else f"Label avg: {label_avg:.1f} / 1K (same window + same roster)"
+            ),
+            arithmetic="fans talking = (comments_gained_last_7 / views_gained_last_7) x 1,000",
+        ),
+        HeroSignalSnapshot(
+            title="Cadence gap",
+            value="—" if cadence_days is None else f"{cadence_days:.0f} days",
+            direction=cadence_direction,
+            sentence=cadence_sentence,
+            context=("Typical gap: —" if typical_gap is None else f"Typical gap: {typical_gap:.0f} days"),
+            arithmetic="cadence gap = days since latest official release",
+        ),
+    )
+
+
+def render_hero_signal_cards(cards: tuple[HeroSignalSnapshot, HeroSignalSnapshot, HeroSignalSnapshot]) -> None:
+    """Render three infographic-style hero cards in one row."""
+
+    col_left, col_mid, col_right = st.columns(3)
+    for col, icon, card in zip((col_left, col_mid, col_right), ("🔥", "🗣️", "⏱️"), cards):
+        with col:
+            st.markdown(
+                (
+                    "<div class='today-hero-card'>"
+                    f"<div class='today-hero-title'>{html.escape(card.title)}</div>"
+                    f"<div class='today-hero-value'>{html.escape(card.value)}</div>"
+                    f"<div class='today-hero-direction'>{html.escape(card.direction)}</div>"
+                    f"<div class='today-hero-sentence'>{icon} {html.escape(card.sentence)}</div>"
+                    f"<div class='today-hero-context' title='{html.escape(card.arithmetic)}'>{html.escape(card.context)}</div>"
+                    "</div>"
+                ),
+                unsafe_allow_html=True,
+            )
+
+
+def render_today_first_briefing(
+    *,
+    metrics_window: pd.DataFrame,
+    latest_snapshot: pd.DataFrame,
+    selected_artists: list[str],
+    mode: Literal["demo", "production"] | str | None,
+    latest_etl_run_date: date | None,
+    anchor_day: date,
+) -> None:
+    """Render the top-of-page today-first KPI story."""
+
+    signal_frame = build_artist_today_signal_frame(
+        metrics_window=metrics_window,
+        latest_snapshot=latest_snapshot,
+        selected_artists=selected_artists,
+        anchor_day=anchor_day,
+    )
+
+    st.markdown("### Today-first rollout briefing")
+    render_hero_signal_cards(build_hero_signal_snapshots(signal_frame))
+
+    if not signal_frame.empty:
+        st.markdown("##### Who needs a push and what to do")
+        meeting_table = build_today_meeting_table(signal_frame)
+        st.dataframe(
+            meeting_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Artist": st.column_config.TextColumn("Artist"),
+                "Heat": st.column_config.TextColumn("Heat"),
+                "Direction": st.column_config.TextColumn("Direction"),
+                "Fans talking": st.column_config.TextColumn("Fans talking"),
+                "Cadence": st.column_config.TextColumn("Cadence"),
+                "Today move": st.column_config.TextColumn("Today move", width="large"),
+            },
+        )
+    else:
+        st.info("Not enough recent metric history to build artist meeting rows yet.")
+
+    latest_metrics_date: date | None = None
+    if "metrics_date" in metrics_window.columns:
+        latest_value = pd.to_datetime(metrics_window["metrics_date"], errors="coerce").max()
+        if not pd.isna(latest_value):
+            latest_metrics_date = pd.Timestamp(latest_value).date()
+
+    summary_rows = latest_snapshot.loc[latest_snapshot["artist_name"].isin(selected_artists)].copy()
+    total_videos = int(summary_rows["video_id"].nunique()) if "video_id" in summary_rows.columns else 0
+    total_likes = int(pd.to_numeric(summary_rows.get("like_count"), errors="coerce").fillna(0).sum())
+    total_comments = int(pd.to_numeric(summary_rows.get("comment_count"), errors="coerce").fillna(0).sum())
+    red_flags = build_kpi_red_flags(
+        total_videos=total_videos,
+        total_likes=total_likes,
+        total_comments=total_comments,
+        latest_metrics_date=latest_metrics_date,
+        mode=mode,
+        latest_etl_run_date=latest_etl_run_date,
+    )
+    for flag in red_flags:
+        st.warning(f"Data check: {flag}")
+
+
 def _build_today_action(
     *,
     official_count: int,
@@ -1465,11 +2361,12 @@ def build_release_strategy_board(
 ) -> pd.DataFrame:
     """Build per-artist rollout KPIs from latest official vs other content windows."""
 
+    typed = _prepare_rollout_frame(videos)
     official_recent, other_recent = _prepare_recent_release_windows(
         videos,
         per_artist_limit=per_artist_limit,
     )
-    if official_recent.empty and other_recent.empty:
+    if typed.empty or (official_recent.empty and other_recent.empty):
         return pd.DataFrame(
             columns=[
                 "Artist",
@@ -1485,14 +2382,18 @@ def build_release_strategy_board(
             ]
         )
 
+    official_pool = typed.loc[typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
+    other_pool = typed.loc[~typed["video_type_label"].isin(OFFICIAL_RELEASE_TYPES)]
     artists = sorted(
-        set(official_recent.get("artist_name", pd.Series(dtype=str)).tolist())
-        | set(other_recent.get("artist_name", pd.Series(dtype=str)).tolist())
+        set(official_pool.get("artist_name", pd.Series(dtype=str)).tolist())
+        | set(other_pool.get("artist_name", pd.Series(dtype=str)).tolist())
     )
     rows: list[dict[str, float | int | str]] = []
     for artist_name in artists:
         official_rows = official_recent.loc[official_recent["artist_name"] == artist_name]
         other_rows = other_recent.loc[other_recent["artist_name"] == artist_name]
+        official_full_rows = official_pool.loc[official_pool["artist_name"] == artist_name]
+        other_full_rows = other_pool.loc[other_pool["artist_name"] == artist_name]
 
         official_avg_views_per_day = _mean_or_none(official_rows["views_per_day"])
         other_avg_views_per_day = _mean_or_none(other_rows["views_per_day"])
@@ -1504,14 +2405,14 @@ def build_release_strategy_board(
         non_mv_official_avg_views_per_day = _mean_or_none(non_mv_official_rows["views_per_day"])
         mv_lift = _safe_lift_pct(mv_avg_views_per_day, non_mv_official_avg_views_per_day)
 
-        short_video_rows = other_rows.loc[other_rows["video_type_label"] == SHORT_VIDEO_LABEL]
+        short_video_rows = other_full_rows.loc[other_full_rows["video_type_label"] == SHORT_VIDEO_LABEL]
         short_video_share_pct = None
-        if len(other_rows) > 0:
-            short_video_share_pct = float(len(short_video_rows) / len(other_rows) * 100.0)
+        if len(other_full_rows) > 0:
+            short_video_share_pct = float(len(short_video_rows) / len(other_full_rows) * 100.0)
 
-        official_count = int(official_rows["video_id"].nunique()) if not official_rows.empty else 0
-        other_count = int(other_rows["video_id"].nunique()) if not other_rows.empty else 0
-        cadence_days = _median_release_gap_days(official_rows)
+        official_count = int(official_full_rows["video_id"].nunique()) if not official_full_rows.empty else 0
+        other_count = int(other_full_rows["video_id"].nunique()) if not other_full_rows.empty else 0
+        cadence_days = _median_release_gap_days(official_full_rows)
 
         rows.append(
             {
@@ -1551,9 +2452,9 @@ def _build_focus_artist_color_map(
     color_map: dict[str, str] = {}
     for artist in artists:
         if artist == focus_artist:
-            color_map[artist] = base_color_map.get(artist, "#0EA5E9")
+            color_map[artist] = base_color_map.get(artist, APP_RED_500)
         else:
-            color_map[artist] = "#C7CBD4"
+            color_map[artist] = APP_BENCHMARK_GRAY
     return color_map
 
 
@@ -1859,7 +2760,7 @@ def render_kpis(
     # Apply modern, card-like styling to the KPI strip
     style_metric_cards(
         background_color="#F0F2F6",
-        border_left_color="#FF4B4B",
+        border_left_color=APP_RED_500,
         border_radius_px=8,
         box_shadow=True,
     )
@@ -1919,6 +2820,61 @@ def render_kpis(
         )
 
 
+def build_release_anchor_trend_frame(df: pd.DataFrame) -> pd.DataFrame:
+    """Build release-anchored cumulative view curves per artist.
+
+    This is used when only one metrics snapshot date is available, so a regular
+    time-series chart would collapse to one point per artist.
+    """
+
+    required = {"artist_name", "published_at", "view_count"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame(columns=["artist_name", "day_since_first_release", "cumulative_views"])
+
+    typed = df.copy()
+    typed["published_at"] = pd.to_datetime(typed["published_at"], errors="coerce")
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed = typed.dropna(subset=["artist_name", "published_at", "view_count"])
+    if typed.empty:
+        return pd.DataFrame(columns=["artist_name", "day_since_first_release", "cumulative_views"])
+
+    if "video_id" in typed.columns and "metrics_date" in typed.columns:
+        typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+        typed = typed.sort_values("metrics_date").drop_duplicates(subset="video_id", keep="last")
+
+    releases = (
+        typed.groupby(["artist_name", "published_at"], dropna=False)
+        .agg(view_count=("view_count", "sum"))
+        .reset_index()
+        .sort_values(["artist_name", "published_at"])
+    )
+
+    rows: list[dict[str, float | int | str]] = []
+    for artist_name, artist_rows in releases.groupby("artist_name"):
+        first_release = artist_rows["published_at"].min()
+        if pd.isna(first_release):
+            continue
+        running = 0.0
+        rows.append(
+            {
+                "artist_name": str(artist_name),
+                "day_since_first_release": 0,
+                "cumulative_views": 0.0,
+            }
+        )
+        for _, release in artist_rows.iterrows():
+            running += float(release["view_count"])
+            day_offset = int((release["published_at"] - first_release).days)
+            rows.append(
+                {
+                    "artist_name": str(artist_name),
+                    "day_since_first_release": max(0, day_offset),
+                    "cumulative_views": running,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     if df.empty:
         st.info("No time-series data available for this selection.")
@@ -1926,12 +2882,43 @@ def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     if not ensure_columns(df, ["metrics_date", "artist_name", "view_count", "views_per_day"], "Trend chart"):
         return
 
+    typed = df.copy()
+    typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce").dt.floor("D")
     trend = (
-        df.groupby(["metrics_date", "artist_name"])
+        typed.groupby(["metrics_date", "artist_name"])
         .agg(view_count=("view_count", "sum"), views_per_day=("views_per_day", "mean"))
         .reset_index()
         .sort_values("metrics_date")
     )
+    if trend.empty:
+        st.info("No valid metrics dates are available for this selection.")
+        return
+
+    if trend["metrics_date"].nunique() <= 1:
+        release_anchored = build_release_anchor_trend_frame(typed)
+        if not release_anchored.empty:
+            fig = px.line(
+                release_anchored,
+                x="day_since_first_release",
+                y="cumulative_views",
+                color="artist_name",
+                color_discrete_map=color_map,
+                markers=True,
+                title="Portfolio growth since first release (day-0 anchored)",
+            )
+            fig.update_layout(
+                hovermode="x unified",
+                legend_title_text="Artist",
+                xaxis_title="Days since first release",
+                yaxis_title="Cumulative views (latest snapshot)",
+            )
+            st.plotly_chart(fig, use_container_width=True, height=380)
+            st.caption(
+                "Day 0 is the artist's first release in this filtered set. "
+                "Curve uses latest snapshot views as a release-anchored portfolio trajectory."
+            )
+            return
+
     fig = px.line(
         trend,
         x="metrics_date",
@@ -1945,6 +2932,39 @@ def render_trend_chart(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     st.plotly_chart(fig, use_container_width=True, height=380)
 
 
+def _velocity_zone_label(
+    *, views_per_day: float, engagement_rate: float, views_threshold: float, engagement_threshold: float
+) -> str:
+    """Classify videos into 3am-readable velocity zones."""
+
+    if views_per_day >= views_threshold and engagement_rate >= engagement_threshold:
+        return "Big & loved"
+    if views_per_day < views_threshold and engagement_rate >= engagement_threshold:
+        return "Small but loved"
+    if views_per_day >= views_threshold and engagement_rate < engagement_threshold:
+        return "Big but low reaction"
+    return "Quiet"
+
+
+def _build_velocity_zone_table(zone_rows: pd.DataFrame, *, max_rows: int = 8) -> pd.DataFrame:
+    if zone_rows.empty:
+        return pd.DataFrame(columns=["Video", "Artist", "Plays/day (7d)", "Fans responding %"])
+    table = (
+        zone_rows.sort_values(["views_per_day", "engagement_rate"], ascending=False)
+        .head(max_rows)
+        .loc[:, ["title", "artist_name", "views_per_day", "engagement_rate"]]
+        .rename(
+            columns={
+                "title": "Video",
+                "artist_name": "Artist",
+                "views_per_day": "Plays/day (7d)",
+                "engagement_rate": "Fans responding %",
+            }
+        )
+    )
+    return table
+
+
 def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None:
     if df.empty:
         st.info("No videos available to plot engagement velocity.")
@@ -1956,8 +2976,34 @@ def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None
     ):
         return
 
+    typed = df.copy()
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed["engagement_rate"] = pd.to_numeric(typed["engagement_rate"], errors="coerce")
+    typed["view_count"] = pd.to_numeric(typed["view_count"], errors="coerce")
+    typed = typed.dropna(subset=["views_per_day", "engagement_rate", "view_count"])
+    if typed.empty:
+        st.info("No valid rows are available for velocity analysis.")
+        return
+
+    views_threshold = max(float(typed["views_per_day"].median()), 1.0)
+    engagement_threshold = max(float(typed["engagement_rate"].median()), 0.1)
+    typed["zone"] = typed.apply(
+        lambda row: _velocity_zone_label(
+            views_per_day=float(row["views_per_day"]),
+            engagement_rate=float(row["engagement_rate"]),
+            views_threshold=views_threshold,
+            engagement_threshold=engagement_threshold,
+        ),
+        axis=1,
+    )
+
+    x_axis_cap = float(typed["views_per_day"].quantile(0.95))
+    clipped_count = 0
+    if math.isfinite(x_axis_cap) and x_axis_cap > 0:
+        clipped_count = int((typed["views_per_day"] > x_axis_cap).sum())
+
     fig = px.scatter(
-        df,
+        typed,
         x="views_per_day",
         y="engagement_rate",
         color="artist_name",
@@ -1968,12 +3014,52 @@ def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None
             "view_count": ":,.0f",
             "views_per_day": ":,.1f",
             "engagement_rate": ":.2f",
+            "zone": True,
         },
         color_discrete_map=color_map,
-        title="Engagement vs. daily velocity (latest metrics)",
+        title="How big each video is vs how hard fans react",
     )
-    fig.update_layout(legend_title_text="Artist")
-    st.plotly_chart(fig, use_container_width=True, height=380)
+    fig.update_layout(
+        legend_title_text="Artist", xaxis_title="Plays per day (last 7 days)", yaxis_title="Fans responding %"
+    )
+    fig.add_vline(x=views_threshold, line_dash="dot", line_color="#9CA3AF")
+    fig.add_hline(y=engagement_threshold, line_dash="dot", line_color="#9CA3AF")
+    fig.add_annotation(x=views_threshold, y=engagement_threshold, text="Zone split", showarrow=False, yshift=12)
+    fig.add_annotation(x=views_threshold * 1.05, y=engagement_threshold * 1.15, text="Big & loved", showarrow=False)
+    fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 1.15, text="Small but loved", showarrow=False)
+    fig.add_annotation(
+        x=views_threshold * 1.05, y=engagement_threshold * 0.55, text="Big but low reaction", showarrow=False
+    )
+    fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 0.55, text="Quiet", showarrow=False)
+    if clipped_count > 0 and x_axis_cap > 0:
+        fig.update_xaxes(range=[0, x_axis_cap])
+    st.plotly_chart(fig, use_container_width=True, height=420)
+    st.caption(
+        "Plays/day = views gained in the last 7 days / 7. " "Fans responding % = (likes + comments) / views x 100."
+    )
+    if clipped_count > 0:
+        st.caption(
+            f"{clipped_count} very large videos are outside the x-axis range so mid-tier patterns stay readable."
+        )
+
+    st.markdown("##### Big & loved right now")
+    st.dataframe(
+        _build_velocity_zone_table(typed.loc[typed["zone"] == "Big & loved"]),
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.markdown("##### Small but loved — worth a push")
+    st.dataframe(
+        _build_velocity_zone_table(typed.loc[typed["zone"] == "Small but loved"]),
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.markdown("##### Big but low reaction")
+    st.dataframe(
+        _build_velocity_zone_table(typed.loc[typed["zone"] == "Big but low reaction"]),
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def render_content_mix(df: pd.DataFrame) -> None:
@@ -2006,7 +3092,7 @@ def render_content_mix(df: pd.DataFrame) -> None:
                 "name": "Total views",
                 "type": "bar",
                 "data": mix["total_views"].tolist(),
-                "itemStyle": {"color": "#FF4B4B"},
+                "itemStyle": {"color": APP_RED_500},
             }
         ],
     }
@@ -2035,14 +3121,23 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
         )
         .reset_index()
     )
+    artist_order = (
+        mix.groupby("artist_name", dropna=False)["video_count"]
+        .sum()
+        .sort_values(ascending=True)
+        .index.astype(str)
+        .tolist()
+    )
 
     fig = px.bar(
         mix,
-        x="artist_name",
-        y="video_count",
+        x="video_count",
+        y="artist_name",
         color="video_type_label",
-        title="Video content mix by artist (counts by format)",
+        orientation="h",
+        title="Video content mix by artist (horizontal count by format)",
         barmode="stack",
+        category_orders={"artist_name": artist_order},
         hover_data={
             "total_views": ":,.0f",
             "avg_views_per_day": ":,.1f",
@@ -2050,7 +3145,12 @@ def render_artist_content_mix(df: pd.DataFrame) -> None:
             "video_type_label": False,
         },
     )
-    fig.update_layout(xaxis_title="Artist", yaxis_title="Videos", legend_title_text="Format")
+    fig.update_layout(
+        xaxis_title="Videos",
+        yaxis_title="Artist",
+        legend_title_text="Format",
+        hovermode="y unified",
+    )
     st.plotly_chart(fig, use_container_width=True, height=420)
 
     action_rows = build_artist_content_action_rows(df)
@@ -2097,13 +3197,14 @@ def _prepare_release_table_for_display(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def render_executive_action_center(df: pd.DataFrame) -> None:
+def render_executive_action_center(df: pd.DataFrame, *, palette: Mapping[str, str]) -> None:
     """Render high-signal planning view for rollout meetings."""
 
     st.markdown("### Executive Action Center")
     st.caption(
         "Official releases = Official Music Video, Official Audio, Lyric Video. "
-        "Other content = short videos (<60s) + everything else."
+        "Other content = short videos (<60s) + everything else. "
+        "Counts use the full filtered window; lift averages use the latest 10 releases per artist."
     )
 
     official_recent, other_recent = _prepare_recent_release_windows(df, per_artist_limit=10)
@@ -2114,16 +3215,18 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
 
     chart_rows = board.dropna(subset=["MV vs other official lift (%)"])
     if not chart_rows.empty:
+        chart_rows = chart_rows.sort_values("MV vs other official lift (%)", ascending=True)
         lift_chart = px.bar(
             chart_rows,
-            x="Artist",
-            y="MV vs other official lift (%)",
+            x="MV vs other official lift (%)",
+            y="Artist",
+            orientation="h",
             color="MV vs other official lift (%)",
             color_continuous_scale=[(0.0, "#B91C1C"), (0.5, "#F59E0B"), (1.0, "#15803D")],
             title="Music video lift vs other official formats (views/day, latest 10 official releases)",
         )
-        lift_chart.add_hline(y=0.0, line_dash="dot", line_color="#6B7280")
-        lift_chart.update_layout(coloraxis_colorbar_title="Lift %")
+        lift_chart.add_vline(x=0.0, line_dash="dot", line_color="#6B7280")
+        lift_chart.update_layout(coloraxis_colorbar_title="Lift %", yaxis_title="Artist", xaxis_title="Lift %")
         st.plotly_chart(lift_chart, use_container_width=True, height=360)
 
     st.markdown("##### Today-first rollout KPIs")
@@ -2132,8 +3235,8 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Official release count": st.column_config.NumberColumn("Official count", format="%d"),
-            "Other content count": st.column_config.NumberColumn("Other count", format="%d"),
+            "Official release count": st.column_config.NumberColumn("Official count (window)", format="%d"),
+            "Other content count": st.column_config.NumberColumn("Other count (window)", format="%d"),
             "Official avg views/day": st.column_config.NumberColumn("Official avg views/day", format="%.1f"),
             "Other avg views/day": st.column_config.NumberColumn("Other avg views/day", format="%.1f"),
             "Official vs Other lift (%)": st.column_config.NumberColumn("Official vs Other lift %", format="%.1f"),
@@ -2149,37 +3252,221 @@ def render_executive_action_center(df: pd.DataFrame) -> None:
     )
 
     st.markdown("##### Rollout Meeting Talking Points")
-    for row in board.to_dict(orient="records"):
-        st.markdown(f"- **{row['Artist']}:** {row['Today action']}")
+    points = board.to_dict(orient="records")
+    point_columns = st.columns(2)
+    for idx, row in enumerate(points):
+        artist_name = str(row["Artist"])
+        accent = sanitize_hex_color(palette.get(artist_name), fallback=APP_RED_500)
+        body = html.escape(str(row["Today action"]))
+        with point_columns[idx % 2]:
+            st.markdown(
+                (
+                    "<div style='margin-bottom:10px; padding:10px 12px; border-radius:12px; "
+                    f"border-left:6px solid {accent}; background:linear-gradient(135deg,#FFFFFF,#F8FAFC); "
+                    "box-shadow:0 2px 10px rgba(15,23,42,0.06);'>"
+                    f"<div style='font-weight:800; color:{accent}; letter-spacing:0.2px;'>{html.escape(artist_name)}</div>"
+                    f"<div style='margin-top:6px; color:#1F2937; font-weight:600; font-size:0.95rem;'>{body}</div>"
+                    "</div>"
+                ),
+                unsafe_allow_html=True,
+            )
 
     official_table = _prepare_release_table_for_display(official_recent)
     other_table = _prepare_release_table_for_display(other_recent)
+    with st.expander("Details (optional): last 10 official + other posts per artist", expanded=False):
+        left, right = st.columns(2)
+        with left:
+            st.markdown("##### Last 10 official releases per artist")
+            st.dataframe(
+                official_table,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Views": st.column_config.NumberColumn(format="%d"),
+                    "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                    "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+                },
+            )
+        with right:
+            st.markdown("##### Last 10 other content posts per artist")
+            st.dataframe(
+                other_table,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Views": st.column_config.NumberColumn(format="%d"),
+                    "Views/day": st.column_config.NumberColumn(format="%.1f"),
+                    "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+                },
+            )
 
-    left, right = st.columns(2)
-    with left:
-        st.markdown("##### Last 10 official releases per artist")
-        st.dataframe(
-            official_table,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Views": st.column_config.NumberColumn(format="%d"),
-                "Views/day": st.column_config.NumberColumn(format="%.1f"),
-                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
-            },
+
+def build_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2) -> pd.DataFrame:
+    """Return up to N videos per artist with unusual comment arithmetic."""
+
+    columns = [
+        "Artist",
+        "Thumbnail",
+        "Video",
+        "Signal",
+        "Quick arithmetic",
+        "Comments",
+        "Likes",
+        "Views",
+        "Watch",
+    ]
+    required = {"artist_name", "video_id", "title", "view_count", "like_count", "comment_count"}
+    if per_artist_limit < 1 or videos.empty or not required.issubset(videos.columns):
+        return pd.DataFrame(columns=columns)
+
+    typed = videos.copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed["video_id"] = typed["video_id"].map(_normalize_optional_text)
+    typed["title"] = typed["title"].map(_normalize_optional_text).replace("", "(untitled video)")
+    for metric in ("view_count", "like_count", "comment_count"):
+        typed[metric] = pd.to_numeric(typed[metric], errors="coerce").fillna(0.0).clip(lower=0.0)
+    if "metrics_date" in typed.columns:
+        typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+        typed = typed.sort_values("metrics_date", ascending=False, na_position="last")
+    typed = typed[typed["artist_name"].ne("") & typed["video_id"].ne("")].copy()
+    typed = typed.drop_duplicates(subset=["artist_name", "video_id"], keep="first")
+    typed = typed.loc[
+        (typed["view_count"] >= COMMENT_WATCHLIST_MIN_VIEWS)
+        & (typed["comment_count"] >= COMMENT_WATCHLIST_MIN_COMMENTS)
+    ].copy()
+    if typed.empty:
+        return pd.DataFrame(columns=columns)
+
+    typed["comments_per_1k_views"] = (
+        typed["comment_count"] / typed["view_count"].where(typed["view_count"] > 0) * 1000.0
+    ).astype(float)
+    typed["comments_per_like"] = (typed["comment_count"] / typed["like_count"].where(typed["like_count"] > 0)).astype(
+        float
+    )
+    typed["views_per_comment"] = (
+        typed["view_count"] / typed["comment_count"].where(typed["comment_count"] > 0)
+    ).astype(float)
+
+    rows: list[dict[str, object]] = []
+    for artist_name, artist_rows in typed.groupby("artist_name", dropna=False):
+        comments_per_1k_median = float(artist_rows["comments_per_1k_views"].dropna().median())
+        comments_per_like_median_series = artist_rows.loc[
+            artist_rows["like_count"] >= COMMENT_WATCHLIST_MIN_LIKES,
+            "comments_per_like",
+        ].dropna()
+        comments_per_like_median = (
+            float(comments_per_like_median_series.median()) if not comments_per_like_median_series.empty else None
         )
-    with right:
-        st.markdown("##### Last 10 other content posts per artist")
-        st.dataframe(
-            other_table,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Views": st.column_config.NumberColumn(format="%d"),
-                "Views/day": st.column_config.NumberColumn(format="%.1f"),
-                "Engagement %": st.column_config.NumberColumn(format="%.2f"),
-            },
-        )
+        views_per_comment_median = float(artist_rows["views_per_comment"].dropna().median())
+        metric_medians: dict[str, float | None] = {
+            "comments_per_1k_views": comments_per_1k_median if comments_per_1k_median > 0 else None,
+            "comments_per_like": (
+                comments_per_like_median if comments_per_like_median and comments_per_like_median > 0 else None
+            ),
+            "views_per_comment": views_per_comment_median if views_per_comment_median > 0 else None,
+        }
+
+        for row in artist_rows.to_dict(orient="records"):
+            best_reason: dict[str, object] | None = None
+            likes = int(round(_coerce_float(row.get("like_count"), 0.0)))
+            for spec in COMMENT_SIGNAL_SPECS:
+                if likes < spec.min_like_count:
+                    continue
+                median_value = metric_medians.get(spec.metric_key)
+                metric_value = _coerce_float(row.get(spec.metric_key), float("nan"))
+                if median_value is None or not math.isfinite(metric_value) or metric_value <= 0:
+                    continue
+                lift = _safe_ratio(metric_value, median_value)
+                if lift is None or lift < COMMENT_WATCHLIST_MIN_LIFT:
+                    continue
+                if best_reason is None or lift > float(best_reason["signal_lift"]):
+                    best_reason = {
+                        "reason_key": spec.reason_key,
+                        "reason_label": spec.reason_label,
+                        "math": (
+                            f"{spec.arithmetic_label}: {metric_value:,.2f} vs artist median "
+                            f"{median_value:,.2f} ({lift:.1f}x)"
+                        ),
+                        "signal_lift": lift,
+                    }
+
+            if best_reason is None:
+                continue
+
+            video_id = row.get("video_id")
+            rows.append(
+                {
+                    "Artist": str(artist_name),
+                    "Thumbnail": _youtube_thumbnail_url(video_id),
+                    "Video": str(row.get("title") or "(untitled video)"),
+                    "Signal": str(best_reason["reason_label"]),
+                    "Quick arithmetic": str(best_reason["math"]),
+                    "Comments": int(round(_coerce_float(row.get("comment_count"), 0.0))),
+                    "Likes": likes,
+                    "Views": int(round(_coerce_float(row.get("view_count"), 0.0))),
+                    "Watch": _youtube_watch_url(video_id),
+                    "signal_lift": float(best_reason["signal_lift"]),
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame(columns=columns)
+
+    watchlist = (
+        pd.DataFrame(rows)
+        .sort_values(["Artist", "signal_lift", "Views"], ascending=[True, False, False], na_position="last")
+        .groupby("Artist", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    return watchlist.loc[:, columns]
+
+
+def render_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2, title: str) -> None:
+    """Render manager-ready links for unusual comment behavior investigation."""
+
+    st.markdown(f"### {title}")
+    st.caption(
+        "Two videos per artist that show unusual comment arithmetic. Use the YouTube link "
+        "to quickly inspect what people are saying."
+    )
+    watchlist = build_comment_watchlist(videos, per_artist_limit=per_artist_limit)
+    if watchlist.empty:
+        st.info("No videos met the minimum thresholds for comment outlier review in this filter window.")
+        return
+
+    st.dataframe(
+        watchlist,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Thumbnail": st.column_config.ImageColumn(
+                "Thumbnail",
+                help="YouTube preview image for quick context before opening the video.",
+                width="small",
+            ),
+            "Video": st.column_config.TextColumn("Video", width="large"),
+            "Signal": st.column_config.TextColumn(
+                "Signal",
+                width="medium",
+                help="Plain-language reason this video stands out for comment behavior.",
+            ),
+            "Quick arithmetic": st.column_config.TextColumn("Quick arithmetic", width="large"),
+            "Comments": st.column_config.NumberColumn("Comments", format="%,d"),
+            "Likes": st.column_config.NumberColumn("Likes", format="%,d"),
+            "Views": st.column_config.NumberColumn("Views", format="%,d"),
+            "Watch": st.column_config.LinkColumn(
+                "Watch on YouTube",
+                help="Open the video to investigate comment threads and audience context.",
+                validate=r"^https://www\.youtube\.com/watch\?v=.+$",
+                display_text="Open video",
+            ),
+        },
+    )
+    st.caption(
+        "Arithmetic used: comments per 1K views = (comments / views) x 1,000; "
+        "comments per like = comments / likes; views per comment = views / comments."
+    )
 
 
 def render_artist_focus_dashboard(
@@ -2197,7 +3484,7 @@ def render_artist_focus_dashboard(
         focus_artist=focus_artist,
         base_color_map=base_color_map,
     )
-    focus_color = focus_color_map.get(focus_artist, "#FF4B4B")
+    focus_color = focus_color_map.get(focus_artist, APP_RED_500)
 
     st.markdown("### Artist Coaching View")
     render_focus_artist_header(focus_artist, focus_color)
@@ -2212,9 +3499,9 @@ def render_artist_focus_dashboard(
         st.markdown(
             (
                 "<div style='padding:14px 16px; border-radius:14px; "
-                f"border:1px solid {focus_color}; background:linear-gradient(120deg,#FFFFFF,#FDECEC); "
+                f"border:1px solid {focus_color}; background:linear-gradient(120deg,#FFFFFF,{APP_RED_050}); "
                 "animation: focusRise .28s ease-out;'>"
-                "<div style='font-size:1.02rem; font-weight:700; color:#991B1B;'>Rollout Priority Today</div>"
+                f"<div style='font-size:1.02rem; font-weight:700; color:{APP_RED_700};'>Rollout Priority Today</div>"
                 f"<div style='margin-top:8px; color:#1F2937; font-weight:600;'>{html.escape(today_action)}</div>"
                 "</div>"
             ),
@@ -2249,7 +3536,7 @@ def render_artist_focus_dashboard(
                 y="views_per_day",
                 color="Series",
                 markers=True,
-                color_discrete_map={"Focus artist": focus_color, "Benchmark average": "#B4B9C3"},
+                color_discrete_map={"Focus artist": focus_color, "Benchmark average": APP_BENCHMARK_GRAY_DARK},
                 title="Daily velocity trend: focus artist vs benchmark average",
             )
             trend_fig.update_layout(hovermode="x unified", legend_title_text="")
@@ -2275,7 +3562,7 @@ def render_artist_focus_dashboard(
                     "views_per_day": ":,.1f",
                     "engagement_rate": ":.2f",
                 },
-                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": "#C7CBD4"},
+                color_discrete_map={"Focus artist": focus_color, "Benchmark artists": APP_BENCHMARK_GRAY},
                 title="Latest videos: focus highlight with benchmark context",
             )
             for trace in scatter_fig.data:
@@ -2298,6 +3585,13 @@ def render_artist_focus_dashboard(
                 "Lift vs benchmark (%)": st.column_config.NumberColumn(format="%.1f"),
             },
         )
+
+    focus_watchlist_source = latest.loc[latest["artist_name"] == focus_artist].copy()
+    render_comment_watchlist(
+        focus_watchlist_source,
+        per_artist_limit=2,
+        title=f"{focus_artist}: comment thread investigation",
+    )
 
     official_recent, other_recent = _prepare_recent_release_windows(latest, per_artist_limit=10)
     official_focus = _prepare_release_table_for_display(
@@ -2348,7 +3642,7 @@ def render_top_videos(df: pd.DataFrame, limit: int) -> None:
         return
 
     top_videos = (
-        df.sort_values("view_count", ascending=False)
+        df.sort_values(["views_per_day", "view_count"], ascending=False)
         .head(limit)
         .loc[
             :,
@@ -2369,8 +3663,8 @@ def render_top_videos(df: pd.DataFrame, limit: int) -> None:
             "artist_name": "Artist",
             "title": "Video",
             "view_count": "Views",
-            "views_per_day": "Views/Day",
-            "engagement_rate": "Engagement %",
+            "views_per_day": "Plays/day (7d)",
+            "engagement_rate": "Fans responding %",
             "like_rate": "Like %",
             "comment_rate": "Comment %",
         }
@@ -2380,8 +3674,8 @@ def render_top_videos(df: pd.DataFrame, limit: int) -> None:
         renamed,
         column_config={
             "Views": st.column_config.NumberColumn(format="%,.0f"),
-            "Views/Day": st.column_config.NumberColumn(format="%,.1f"),
-            "Engagement %": st.column_config.NumberColumn(format="%.2f"),
+            "Plays/day (7d)": st.column_config.NumberColumn(format="%,.1f"),
+            "Fans responding %": st.column_config.NumberColumn(format="%.2f"),
             "Like %": st.column_config.NumberColumn(format="%.2f"),
             "Comment %": st.column_config.NumberColumn(format="%.2f"),
         },
@@ -2430,22 +3724,35 @@ def main() -> None:
         label = "Demo Mode" if mode == "demo" else "Production (MySQL)"
         st.badge(label)
 
+    palette = GLOBAL_ARTIST_PALETTE.copy()
+    normalized_videos = load_normalized_videos(mode)
+    normalized_videos, excluded_artists = normalize_artist_dimension(
+        normalized_videos,
+        palette=palette,
+        drop_untracked=True,
+    )
+    if normalized_videos.empty:
+        st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
+        st.stop()
+    artist_summary = build_artist_summary_from_metrics(normalized_videos)
+    if artist_summary.empty:
+        st.error("Artist summary is empty. Run the ETL to generate fresh aggregates.")
+        st.stop()
+
     if mode == "demo":
         st.info(
-            "📊 **Data Source: Demo Mode** — curated cohort of 5 artists with "
-            "realistic metrics. No database setup required."
+            f"📊 **Data Source: Demo Mode** — curated cohort of {len(artist_summary):d} artists "
+            "with realistic metrics. No database setup required."
         )
     else:
         st.success("🔗 **Data Source: Production (MySQL)** — live data from the YouTube analytics warehouse.")
 
-    artist_summary = load_artist_summary(mode)
-    normalized_videos = load_normalized_videos(mode)
-    if artist_summary.empty:
-        st.error("Artist summary is empty. Run the ETL to generate fresh aggregates.")
-        st.stop()
-    if normalized_videos.empty:
-        st.error("Normalized video metrics are empty. Run the ETL to refresh inputs.")
-        st.stop()
+    if excluded_artists:
+        st.warning(
+            "Data check: Excluded untracked artist labels from dashboard view: "
+            + ", ".join(excluded_artists)
+            + ". Source data remains intact.",
+        )
 
     latest_metrics_at: datetime | None = None
     if "metrics_date" in normalized_videos.columns:
@@ -2486,8 +3793,6 @@ def main() -> None:
                 f"({latest_etl_run_at.date().isoformat()}). No new video metric rows "
                 f"were added after {latest_metrics_at.date().isoformat()}.",
             )
-
-    palette = get_artist_color_palette()
 
     available_artists = sorted(artist_summary["artist_name"].unique().tolist())
 
@@ -2562,6 +3867,16 @@ def main() -> None:
     latest_roster = latest_snapshot(window_filtered_all)
     latest = filter_by_artists(latest_roster, selected_artists)
     color_map = build_color_discrete_map(selected_artists, palette)
+    configured_palette_names = {name.casefold() for name in palette}
+    unconfigured_palette_artists = sorted(
+        {artist_name for artist_name in selected_artists if str(artist_name).casefold() not in configured_palette_names}
+    )
+    if unconfigured_palette_artists:
+        st.info(
+            "Palette check: using deterministic fallback colors for new artists: "
+            + ", ".join(unconfigured_palette_artists)
+            + ". Add them to config/artist_colors.json to lock brand colors.",
+        )
 
     # Top-level navigation for different storytelling modes
     selected_view = option_menu(
@@ -2574,13 +3889,13 @@ def main() -> None:
     # Layout and content depend slightly on the selected high-level view,
     # but always keep the story action-oriented and insight-first.
     if selected_view == "Overview":
-        render_kpis(
-            artist_summary,
-            selected_artists,
-            latest,
-            latest_roster,
+        render_today_first_briefing(
+            metrics_window=normalized_filtered,
+            latest_snapshot=latest,
+            selected_artists=selected_artists,
             mode=mode,
             latest_etl_run_date=latest_etl_run_date,
+            anchor_day=end_date,
         )
 
         col1, col2 = st.columns(2)
@@ -2592,7 +3907,8 @@ def main() -> None:
         st.markdown("### Content strategy signals")
         render_content_mix(latest)
         render_artist_content_mix(latest)
-        render_executive_action_center(latest)
+        render_executive_action_center(latest, palette=palette)
+        render_comment_watchlist(latest, per_artist_limit=2, title="What to look at next (2 videos per artist)")
 
         ui.card(
             content=(
@@ -2602,7 +3918,7 @@ def main() -> None:
             ),
         )
 
-        st.markdown(f"### Top {top_n} performing videos (latest metrics)")
+        st.markdown(f"### Videos making noise right now (top {top_n})")
         render_top_videos(latest, limit=top_n)
 
     elif selected_view == "Artist Deep Dive":
@@ -2615,6 +3931,16 @@ def main() -> None:
                 "Choose one artist to coach. Dropdown includes assigned palette color; "
                 "peers stay on screen as grayscale benchmarks."
             ),
+        )
+        focus_artist_color = sanitize_hex_color(color_map.get(focus_artist), fallback=APP_RED_500)
+        st.markdown(
+            (
+                "<div style='margin-top:2px; margin-bottom:8px; font-weight:900; "
+                f"font-size:1.3rem; letter-spacing:0.3px; color:{focus_artist_color};'>"
+                f"{html.escape(focus_artist)}"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
         )
         render_kpis(
             artist_summary,
@@ -2633,13 +3959,13 @@ def main() -> None:
         )
 
     else:  # "Velocity Analysis"
-        st.markdown("### Velocity & momentum")
+        st.markdown("### Who's running right now")
         render_velocity_scatter(latest, color_map)
         ui.card(
             content=(
-                "**So what?** High views/day with strong engagement tells you "
-                "where fan energy is peaking *right now* so you can time your "
-                "next release, sync, or tour push."
+                "**So what?** This view separates videos that are both big and loved "
+                "from videos that are big but low reaction, so rollout energy goes to "
+                "the right posts first."
             ),
         )
 

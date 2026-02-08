@@ -5,31 +5,61 @@ Provides centralized color palette and theme configuration for all charts
 in the MusicScope™ dashboard to ensure visual consistency.
 """
 
+import hashlib
 import json
 import logging
 from pathlib import Path
 from typing import Dict, Optional
 
-import plotly.express as px
-
 logger = logging.getLogger(__name__)
 
 # Default color palette (fallback if config file not found)
 DEFAULT_ARTIST_COLORS = {
-    "BiC Fizzle": "#8dd3c7",
-    "COBRAH": "#fb8072",
-    "Flyana Boss": "#bebada",
-    "hicorook": "#fdb462",
-    "Raiche": "#80b1d3",
-    "re6ce": "#fccde5",
+    "BiC Fizzle": "#A3262A",
+    "COBRAH": "#7A1F2B",
+    "Flyana Boss": "#C0465A",
+    "Corook": "#8A3A2D",
+    "hicorook": "#8A3A2D",
+    "Raiche": "#6B2C38",
+    "re6ce": "#B05A48",
 }
 
 # Special color constants for specific chart types
-BREAKOUT_COLOR = "#FF6B6B"  # Bright red for breakout periods (Chart 19a)
+BREAKOUT_COLOR = "#C9515F"  # Warm red for breakout periods (Chart 19a)
 NORMAL_COLOR = "#CCCCCC"  # Grey for normal periods (Chart 19a)
 GOOD_COLOR = "#2E7D32"  # Green for positive/increase (Charts 20, 21, 23)
-BAD_COLOR = "#C62828"  # Red for negative/decrease (Charts 20, 21, 23)
+BAD_COLOR = "#A3262A"  # Deep red for negative/decrease (Charts 20, 21, 23)
 NEUTRAL_COLOR = "#5f6b7a"  # Neutral grey
+
+# IMPORTANT / DO NOT REGRESS:
+# New artists should never render as generic gray. We keep a deterministic
+# modern red-family fallback so unknown artists get a stable identity color
+# across charts and sessions.
+MODERN_RED_FALLBACK_SCALE = [
+    "#7A1F2B",
+    "#8B2635",
+    "#9C2E3F",
+    "#AD354A",
+    "#BE3D55",
+    "#C9515F",
+    "#D4666B",
+    "#A33A2D",
+    "#B14A33",
+    "#C85A3C",
+    "#8A3A2D",
+    "#6B2C38",
+]
+
+
+def _fallback_artist_color(artist_name: str) -> str:
+    """Return deterministic fallback artist color for unknown artists."""
+
+    key = (artist_name or "").strip().casefold()
+    if not key:
+        return MODERN_RED_FALLBACK_SCALE[0]
+    digest = hashlib.blake2b(key.encode("utf-8"), digest_size=4).hexdigest()
+    index = int(digest, 16) % len(MODERN_RED_FALLBACK_SCALE)
+    return MODERN_RED_FALLBACK_SCALE[index]
 
 
 def get_artist_color_palette(config_path: Optional[str] = None) -> Dict[str, str]:
@@ -57,19 +87,28 @@ def get_artist_color_palette(config_path: Optional[str] = None) -> Dict[str, str
         config_path = Path(config_path)
 
     try:
-        with open(config_path, "r") as f:
-            artist_colors = json.load(f)
-        logger.info(f"Loaded artist color palette with {len(artist_colors)} artists from {config_path}")
-        return artist_colors
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         logger.warning(f"Artist color config not found at {config_path}, using default palette")
         return DEFAULT_ARTIST_COLORS.copy()
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in artist color config: {e}, using default palette")
+    except json.JSONDecodeError as exc:
+        logger.error(f"Invalid JSON in artist color config: {exc}, using default palette")
         return DEFAULT_ARTIST_COLORS.copy()
-    except Exception as e:
-        logger.error(f"Error loading artist color config: {e}, using default palette")
+    except OSError as exc:
+        logger.error(f"Error loading artist color config: {exc}, using default palette")
         return DEFAULT_ARTIST_COLORS.copy()
+
+    if not isinstance(payload, dict):
+        logger.error("Artist color config is not a JSON object, using default palette")
+        return DEFAULT_ARTIST_COLORS.copy()
+
+    artist_colors = {
+        str(artist_name): str(color_code)
+        for artist_name, color_code in payload.items()
+        if str(artist_name).strip() and str(color_code).strip()
+    }
+    logger.info(f"Loaded artist color palette with {len(artist_colors)} artists from {config_path}")
+    return artist_colors
 
 
 def get_artist_color(artist_name: str, palette: Optional[Dict[str, str]] = None) -> str:
@@ -86,7 +125,7 @@ def get_artist_color(artist_name: str, palette: Optional[Dict[str, str]] = None)
     if palette is None:
         palette = get_artist_color_palette()
 
-    return palette.get(artist_name, "#999999")  # Default grey if artist not found
+    return palette.get(artist_name, _fallback_artist_color(artist_name))
 
 
 def build_color_discrete_map(artists: list, palette: Optional[Dict[str, str]] = None) -> Dict[str, str]:
@@ -111,7 +150,7 @@ def build_color_discrete_map(artists: list, palette: Optional[Dict[str, str]] = 
     if palette is None:
         palette = get_artist_color_palette()
 
-    return {artist: palette.get(artist, "#999999") for artist in artists}
+    return {artist: get_artist_color(artist, palette=palette) for artist in artists}
 
 
 def get_color_sequence(artists: list, palette: Optional[Dict[str, str]] = None) -> list:
@@ -136,7 +175,7 @@ def get_color_sequence(artists: list, palette: Optional[Dict[str, str]] = None) 
     if palette is None:
         palette = get_artist_color_palette()
 
-    return [palette.get(artist, "#999999") for artist in artists]
+    return [get_artist_color(artist, palette=palette) for artist in artists]
 
 
 def should_use_global_palette(chart_name: str) -> bool:
