@@ -104,6 +104,25 @@ Result: fewer regressions, faster review cycles, cleaner handoff between agents.
 
 ---
 
+## TOOLING DECISIONS (NOW VS LATER)
+
+What we adopted immediately:
+- `pre-commit` with `ruff --fix` and `ruff-format` as the default quality gate.
+- Ruff/Black formatting in CI to keep diffs compact and reviewable.
+- Low-risk exception-hardening in config load paths for better debug signals.
+
+What we intentionally deferred (to avoid risky mid-feature refactors):
+- Full settings-system migration (`pydantic-settings`) for a dedicated follow-up PR.
+- Full dataframe schema layer (`pandera`) until KPI contracts settle.
+- Logging stack rewrites (`structlog`/`loguru`) while product flow is still changing.
+
+Color system decision:
+- Keep one global artist palette source at app startup.
+- For newly added artists not yet in config, use deterministic fallback color and show a gentle UI notice.
+- Lock the new color in `config/artist_colors.json` in the next config commit.
+
+---
+
 ## THE NON-NEGOTIABLE QUESTION
 
 Every section must answer at least one of these:

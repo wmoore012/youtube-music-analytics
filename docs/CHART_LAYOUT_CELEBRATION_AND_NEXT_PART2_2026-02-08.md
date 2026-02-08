@@ -151,6 +151,20 @@ To keep shipping speed high without risky refactors:
    - `FileNotFoundError`, `PermissionError`, `OSError`, `JSONDecodeError`
    - no silent broad catch in these paths
 
+### Tooling scope (explicit)
+- Ship now:
+  - `pre-commit` + `ruff --fix` + `ruff-format`
+  - targeted regression tests around snapshot freshness, artist canonicalization, and hero arithmetic
+- Defer to a separate hardening milestone:
+  - settings system migration (`pydantic-settings`)
+  - broad dataframe schema enforcement (`pandera`)
+  - logging framework swap (`structlog`/`loguru`)
+
+### Global color policy (explicit)
+- App-level artist palette is loaded once and reused across all tabs.
+- Unknown/new artist names get deterministic fallback color + in-app notice.
+- Next config commit should pin that artist in `config/artist_colors.json` to preserve visual consistency.
+
 ## HARD GUARDS
 1. No `Estimated revenue` anywhere in exec flow.
 2. No `Shorts` product claims; use `Short video (<60s)` from duration only.
