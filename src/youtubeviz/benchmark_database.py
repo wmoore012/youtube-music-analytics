@@ -29,8 +29,7 @@ class BenchmarkDatabase:
         cursor = conn.cursor()
 
         # Benchmark runs table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS benchmark_runs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 experiment_id TEXT UNIQUE NOT NULL,
@@ -60,12 +59,10 @@ class BenchmarkDatabase:
                 json_file_path TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        """
-        )
+        """)
 
         # Model results table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS model_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 benchmark_run_id INTEGER,
@@ -84,12 +81,10 @@ class BenchmarkDatabase:
 
                 FOREIGN KEY (benchmark_run_id) REFERENCES benchmark_runs (id)
             )
-        """
-        )
+        """)
 
         # Quality recommendations table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS quality_recommendations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 benchmark_run_id INTEGER,
@@ -98,8 +93,7 @@ class BenchmarkDatabase:
 
                 FOREIGN KEY (benchmark_run_id) REFERENCES benchmark_runs (id)
             )
-        """
-        )
+        """)
 
         # Create indexes for better query performance
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_experiment_name ON benchmark_runs(experiment_name)")
@@ -282,19 +276,16 @@ class BenchmarkDatabase:
         cursor = conn.cursor()
 
         # Quality level distribution
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT quality_level, COUNT(*) as count
             FROM benchmark_runs
             GROUP BY quality_level
             ORDER BY count DESC
-        """
-        )
+        """)
         quality_distribution = dict(cursor.fetchall())
 
         # Balance score trends
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT
                 DATE(timestamp) as date,
                 AVG(balance_score) as avg_balance,
@@ -304,20 +295,17 @@ class BenchmarkDatabase:
             WHERE timestamp >= datetime('now', '-30 days')
             GROUP BY DATE(timestamp)
             ORDER BY date
-        """
-        )
+        """)
         balance_trends = cursor.fetchall()
 
         # Most common recommendations
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT recommendation, COUNT(*) as frequency
             FROM quality_recommendations
             GROUP BY recommendation
             ORDER BY frequency DESC
             LIMIT 10
-        """
-        )
+        """)
         common_recommendations = cursor.fetchall()
 
         conn.close()
