@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import html
 import json
 import math
 import os
-from pathlib import Path
 import re
+from dataclasses import dataclass
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal, Mapping
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -55,6 +56,44 @@ NEW_ENTRY_VIEWS_PER_DAY_FLOOR = 100.0
 DATA_MODE_SETTING_KEYS = ("MUSICSCOPE_DATA_MODE", "TRACKSTATS_DATA_MODE")
 OFFICIAL_RELEASE_TYPES = frozenset({"Official Music Video", "Official Audio", "Lyric Video"})
 HEX_COLOR_RE = re.compile(r"^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
+COMMENT_WATCHLIST_MIN_VIEWS = 500
+COMMENT_WATCHLIST_MIN_COMMENTS = 3
+COMMENT_WATCHLIST_MIN_LIKES = 3
+COMMENT_WATCHLIST_MIN_LIFT = 1.35
+
+
+@dataclass(frozen=True)
+class CommentSignalSpec:
+    """Arithmetic-backed rule used to flag unusual comment behavior."""
+
+    metric_key: str
+    reason_key: str
+    reason_label: str
+    arithmetic_label: str
+    min_like_count: int = 0
+
+
+COMMENT_SIGNAL_SPECS: tuple[CommentSignalSpec, ...] = (
+    CommentSignalSpec(
+        metric_key="comments_per_1k_views",
+        reason_key="comments per 1k views spike",
+        reason_label="Comments are unusually high for the view level.",
+        arithmetic_label="(comments / views) x 1,000",
+    ),
+    CommentSignalSpec(
+        metric_key="comments_per_like",
+        reason_key="comments per like spike",
+        reason_label="Comments are unusually high compared with likes.",
+        arithmetic_label="comments / likes",
+        min_like_count=COMMENT_WATCHLIST_MIN_LIKES,
+    ),
+    CommentSignalSpec(
+        metric_key="views_per_comment",
+        reason_key="views per comment spike",
+        reason_label="Views are unusually high per comment (investigate passive viewing).",
+        arithmetic_label="views / comments",
+    ),
+)
 
 try:
     # Disable on_hover_tabs due to local loading issues (assets not found)
@@ -582,6 +621,37 @@ def _coerce_float(value: object, default: float = 0.0) -> float:
     if not math.isfinite(candidate):
         return default
     return candidate
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float | None:
+    """Return ratio when denominator is positive and finite; otherwise None."""
+
+    if not (math.isfinite(numerator) and math.isfinite(denominator)):
+        return None
+    if denominator <= 0:
+        return None
+    value = numerator / denominator
+    if not math.isfinite(value):
+        return None
+    return value
+
+
+def _youtube_watch_url(video_id: object) -> str:
+    """Return canonical YouTube watch URL for a video id, or empty string."""
+
+    video_text = _normalize_optional_text(video_id)
+    if not video_text:
+        return ""
+    return f"https://www.youtube.com/watch?v={video_text}"
+
+
+def _youtube_thumbnail_url(video_id: object) -> str:
+    """Return YouTube HQ thumbnail URL for a video id, or empty string."""
+
+    video_text = _normalize_optional_text(video_id)
+    if not video_text:
+        return ""
+    return f"https://i.ytimg.com/vi/{video_text}/hqdefault.jpg"
 
 
 def _coerce_timestamp(value: object) -> pd.Timestamp:
@@ -2485,6 +2555,173 @@ def render_executive_action_center(df: pd.DataFrame, *, palette: Mapping[str, st
         )
 
 
+def build_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2) -> pd.DataFrame:
+    """Return up to N videos per artist with unusual comment arithmetic."""
+
+    columns = [
+        "Artist",
+        "Thumbnail",
+        "Video",
+        "Why this is flagged",
+        "Reason key",
+        "Quick arithmetic",
+        "Comments",
+        "Likes",
+        "Views",
+        "Watch",
+    ]
+    required = {"artist_name", "video_id", "title", "view_count", "like_count", "comment_count"}
+    if per_artist_limit < 1 or videos.empty or not required.issubset(videos.columns):
+        return pd.DataFrame(columns=columns)
+
+    typed = videos.copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed["video_id"] = typed["video_id"].map(_normalize_optional_text)
+    typed["title"] = typed["title"].map(_normalize_optional_text).replace("", "(untitled video)")
+    for metric in ("view_count", "like_count", "comment_count"):
+        typed[metric] = pd.to_numeric(typed[metric], errors="coerce").fillna(0.0).clip(lower=0.0)
+    if "metrics_date" in typed.columns:
+        typed["metrics_date"] = pd.to_datetime(typed["metrics_date"], errors="coerce")
+        typed = typed.sort_values("metrics_date", ascending=False, na_position="last")
+    typed = typed[typed["artist_name"].ne("") & typed["video_id"].ne("")].copy()
+    typed = typed.drop_duplicates(subset=["artist_name", "video_id"], keep="first")
+    typed = typed.loc[
+        (typed["view_count"] >= COMMENT_WATCHLIST_MIN_VIEWS)
+        & (typed["comment_count"] >= COMMENT_WATCHLIST_MIN_COMMENTS)
+    ].copy()
+    if typed.empty:
+        return pd.DataFrame(columns=columns)
+
+    typed["comments_per_1k_views"] = (
+        typed["comment_count"] / typed["view_count"].where(typed["view_count"] > 0) * 1000.0
+    ).astype(float)
+    typed["comments_per_like"] = (typed["comment_count"] / typed["like_count"].where(typed["like_count"] > 0)).astype(
+        float
+    )
+    typed["views_per_comment"] = (
+        typed["view_count"] / typed["comment_count"].where(typed["comment_count"] > 0)
+    ).astype(float)
+
+    rows: list[dict[str, object]] = []
+    for artist_name, artist_rows in typed.groupby("artist_name", dropna=False):
+        comments_per_1k_median = float(artist_rows["comments_per_1k_views"].dropna().median())
+        comments_per_like_median_series = artist_rows.loc[
+            artist_rows["like_count"] >= COMMENT_WATCHLIST_MIN_LIKES,
+            "comments_per_like",
+        ].dropna()
+        comments_per_like_median = (
+            float(comments_per_like_median_series.median()) if not comments_per_like_median_series.empty else None
+        )
+        views_per_comment_median = float(artist_rows["views_per_comment"].dropna().median())
+        metric_medians: dict[str, float | None] = {
+            "comments_per_1k_views": comments_per_1k_median if comments_per_1k_median > 0 else None,
+            "comments_per_like": (
+                comments_per_like_median if comments_per_like_median and comments_per_like_median > 0 else None
+            ),
+            "views_per_comment": views_per_comment_median if views_per_comment_median > 0 else None,
+        }
+
+        for row in artist_rows.to_dict(orient="records"):
+            best_reason: dict[str, object] | None = None
+            likes = int(round(_coerce_float(row.get("like_count"), 0.0)))
+            for spec in COMMENT_SIGNAL_SPECS:
+                if likes < spec.min_like_count:
+                    continue
+                median_value = metric_medians.get(spec.metric_key)
+                metric_value = _coerce_float(row.get(spec.metric_key), float("nan"))
+                if median_value is None or not math.isfinite(metric_value) or metric_value <= 0:
+                    continue
+                lift = _safe_ratio(metric_value, median_value)
+                if lift is None or lift < COMMENT_WATCHLIST_MIN_LIFT:
+                    continue
+                if best_reason is None or lift > float(best_reason["signal_lift"]):
+                    best_reason = {
+                        "reason_key": spec.reason_key,
+                        "reason_label": spec.reason_label,
+                        "math": (
+                            f"{spec.arithmetic_label}: {metric_value:,.2f} vs artist median "
+                            f"{median_value:,.2f} ({lift:.1f}x)"
+                        ),
+                        "signal_lift": lift,
+                    }
+
+            if best_reason is None:
+                continue
+
+            video_id = row.get("video_id")
+            rows.append(
+                {
+                    "Artist": str(artist_name),
+                    "Thumbnail": _youtube_thumbnail_url(video_id),
+                    "Video": str(row.get("title") or "(untitled video)"),
+                    "Why this is flagged": str(best_reason["reason_label"]),
+                    "Reason key": str(best_reason["reason_key"]),
+                    "Quick arithmetic": str(best_reason["math"]),
+                    "Comments": int(round(_coerce_float(row.get("comment_count"), 0.0))),
+                    "Likes": likes,
+                    "Views": int(round(_coerce_float(row.get("view_count"), 0.0))),
+                    "Watch": _youtube_watch_url(video_id),
+                    "signal_lift": float(best_reason["signal_lift"]),
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame(columns=columns)
+
+    watchlist = (
+        pd.DataFrame(rows)
+        .sort_values(["Artist", "signal_lift", "Views"], ascending=[True, False, False], na_position="last")
+        .groupby("Artist", group_keys=False)
+        .head(per_artist_limit)
+        .reset_index(drop=True)
+    )
+    return watchlist.loc[:, columns]
+
+
+def render_comment_watchlist(videos: pd.DataFrame, *, per_artist_limit: int = 2, title: str) -> None:
+    """Render manager-ready links for unusual comment behavior investigation."""
+
+    st.markdown(f"### {title}")
+    st.caption(
+        "Two videos per artist that show unusual comment arithmetic. Use the YouTube link "
+        "to quickly inspect what people are saying."
+    )
+    watchlist = build_comment_watchlist(videos, per_artist_limit=per_artist_limit)
+    if watchlist.empty:
+        st.info("No videos met the minimum thresholds for comment outlier review in this filter window.")
+        return
+
+    st.dataframe(
+        watchlist,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Thumbnail": st.column_config.ImageColumn(
+                "Thumbnail",
+                help="YouTube preview image for quick context before opening the video.",
+                width="small",
+            ),
+            "Video": st.column_config.TextColumn("Video", width="large"),
+            "Why this is flagged": st.column_config.TextColumn("Why this is flagged", width="medium"),
+            "Reason key": st.column_config.TextColumn("Reason key", width="medium"),
+            "Quick arithmetic": st.column_config.TextColumn("Quick arithmetic", width="large"),
+            "Comments": st.column_config.NumberColumn("Comments", format="%,d"),
+            "Likes": st.column_config.NumberColumn("Likes", format="%,d"),
+            "Views": st.column_config.NumberColumn("Views", format="%,d"),
+            "Watch": st.column_config.LinkColumn(
+                "Watch on YouTube",
+                help="Open the video to investigate comment threads and audience context.",
+                validate=r"^https://www\.youtube\.com/watch\?v=.+$",
+                display_text="Open video",
+            ),
+        },
+    )
+    st.caption(
+        "Arithmetic used: comments per 1K views = (comments / views) x 1,000; "
+        "comments per like = comments / likes; views per comment = views / comments."
+    )
+
+
 def render_artist_focus_dashboard(
     *,
     latest: pd.DataFrame,
@@ -2601,6 +2838,13 @@ def render_artist_focus_dashboard(
                 "Lift vs benchmark (%)": st.column_config.NumberColumn(format="%.1f"),
             },
         )
+
+    focus_watchlist_source = latest.loc[latest["artist_name"] == focus_artist].copy()
+    render_comment_watchlist(
+        focus_watchlist_source,
+        per_artist_limit=2,
+        title=f"{focus_artist}: comment thread investigation",
+    )
 
     official_recent, other_recent = _prepare_recent_release_windows(latest, per_artist_limit=10)
     official_focus = _prepare_release_table_for_display(
@@ -2907,6 +3151,7 @@ def main() -> None:
         render_content_mix(latest)
         render_artist_content_mix(latest)
         render_executive_action_center(latest, palette=palette)
+        render_comment_watchlist(latest, per_artist_limit=2, title="Comment thread investigation")
 
         ui.card(
             content=(

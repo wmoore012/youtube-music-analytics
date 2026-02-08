@@ -3,6 +3,7 @@ import pytest
 
 from streamlit_app import (
     build_artist_content_action_rows,
+    build_comment_watchlist,
     build_delta_signal_rows,
     build_focus_artist_header_html,
     build_focus_artist_scorecard,
@@ -162,6 +163,92 @@ def test_build_artist_content_action_rows_returns_actionable_rows() -> None:
     assert len(rows) == 2
     assert set(rows.columns) == {"Artist", "Best Reach Format", "Best Engagement Format", "Action Plan"}
     assert rows["Action Plan"].str.len().min() > 20
+
+
+def test_build_comment_watchlist_returns_two_videos_per_artist_with_links() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "artist_name": "Artist A",
+                "video_id": "a1",
+                "title": "A1",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 30,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a2",
+                "title": "A2",
+                "view_count": 1000,
+                "like_count": 30,
+                "comment_count": 25,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a3",
+                "title": "A3",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 5,
+            },
+            {
+                "artist_name": "Artist A",
+                "video_id": "a4",
+                "title": "A4",
+                "view_count": 1000,
+                "like_count": 60,
+                "comment_count": 4,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b1",
+                "title": "B1",
+                "view_count": 1000,
+                "like_count": 20,
+                "comment_count": 20,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b2",
+                "title": "B2",
+                "view_count": 1000,
+                "like_count": 25,
+                "comment_count": 18,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b3",
+                "title": "B3",
+                "view_count": 1000,
+                "like_count": 80,
+                "comment_count": 5,
+            },
+            {
+                "artist_name": "Artist B",
+                "video_id": "b4",
+                "title": "B4",
+                "view_count": 1000,
+                "like_count": 80,
+                "comment_count": 4,
+            },
+        ]
+    )
+
+    watchlist = build_comment_watchlist(df, per_artist_limit=2)
+    assert not watchlist.empty
+    assert watchlist["Artist"].value_counts().to_dict() == {"Artist A": 2, "Artist B": 2}
+    assert watchlist["Watch"].str.startswith("https://www.youtube.com/watch?v=").all()
+    assert watchlist["Thumbnail"].str.startswith("https://i.ytimg.com/vi/").all()
+    assert watchlist["Quick arithmetic"].str.contains("artist median").all()
+    assert set(watchlist["Reason key"]).issubset(
+        {"comments per 1k views spike", "comments per like spike", "views per comment spike"}
+    )
+
+
+def test_build_comment_watchlist_returns_empty_without_required_columns() -> None:
+    watchlist = build_comment_watchlist(pd.DataFrame([{"artist_name": "Artist A", "title": "Missing IDs"}]))
+    assert watchlist.empty
 
 
 def test_build_kpi_context_uses_window_scoped_video_rows() -> None:
