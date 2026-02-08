@@ -290,6 +290,36 @@ def test_build_kpi_red_flags_reports_stale_etl_heartbeat() -> None:
     assert any("ETL heartbeat" in flag for flag in flags)
 
 
+def test_build_kpi_red_flags_reports_single_stale_metrics_message_without_heartbeat() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=20,
+        total_likes=1200,
+        total_comments=250,
+        latest_metrics_date=pd.Timestamp("2025-12-01").date(),
+        latest_etl_run_date=None,
+        mode="production",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+
+    stale_flags = [flag for flag in flags if "Latest metrics are" in flag]
+    assert len(stale_flags) == 1
+    assert "ETL heartbeat" not in stale_flags[0]
+
+
+def test_build_kpi_red_flags_demo_snapshot_message_is_not_duplicated() -> None:
+    flags = build_kpi_red_flags(
+        total_videos=5,
+        total_likes=10,
+        total_comments=2,
+        latest_metrics_date=pd.Timestamp("2025-06-27").date(),
+        mode="demo",
+        reference_date=pd.Timestamp("2026-02-07").date(),
+    )
+
+    assert len(flags) == 1
+    assert flags[0].count("Demo snapshot is") == 1
+
+
 def test_build_kpi_red_flags_empty_when_metrics_are_healthy() -> None:
     flags = build_kpi_red_flags(
         total_videos=20,
