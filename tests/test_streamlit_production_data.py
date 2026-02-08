@@ -19,10 +19,10 @@ def test_parse_iso8601_duration_seconds() -> None:
 
 
 def test_classify_video_type_from_duration() -> None:
-    assert _classify_video_type_from_duration("PT59S") == "Short"
-    assert _classify_video_type_from_duration("PT1M") == "Short"
-    assert _classify_video_type_from_duration("PT1M1S") == "Official Music Video"
-    assert _classify_video_type_from_duration(None) == "Video"
+    assert _classify_video_type_from_duration("PT59S") == "Shorts"
+    assert _classify_video_type_from_duration("PT1M") == "Shorts"
+    assert _classify_video_type_from_duration("PT1M1S") == "Other Content"
+    assert _classify_video_type_from_duration(None) == "Other Content"
 
 
 def test_build_artist_summary_uses_latest_snapshot() -> None:
@@ -73,6 +73,7 @@ def test_build_artist_summary_uses_latest_snapshot() -> None:
 
 def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = {
+        "last_updated": "2026-02-07T12:34:56+00:00",
         "artists": {
             0: {
                 "name": "BiC Fizzle",
@@ -107,8 +108,40 @@ def test_demo_loaders_handle_malformed_and_dict_indexed_records(monkeypatch: pyt
 
     assert artist_summary["artist_name"].tolist() == ["BiC Fizzle"]
     assert int(artist_summary.loc[0, "total_views"]) == 1_500
-    assert int(artist_summary.loc[0, "total_videos"]) == 2
+    assert int(artist_summary.loc[0, "total_videos"]) == 1
+    assert int(artist_summary.loc[0, "total_likes"]) == 18
+    assert int(artist_summary.loc[0, "total_comments"]) == 4
 
     assert normalized_videos["artist_name"].tolist() == ["BiC Fizzle"]
     assert normalized_videos["video_id"].tolist() == ["vid_1"]
     assert normalized_videos["title"].tolist() == ["Test Video"]
+    assert normalized_videos["metrics_date"].dt.date.iloc[0].isoformat() == "2026-02-07"
+
+
+def test_demo_loader_maps_music_content_to_clear_bucket(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = {
+        "last_updated": "2026-02-07T00:00:00+00:00",
+        "artists": [
+            {
+                "name": "Flyana Boss",
+                "videos": [
+                    {
+                        "video_id": "f1",
+                        "title": "quick run clip #shorts",
+                        "published_at": "2025-01-01T00:00:00",
+                        "view_count": 1000,
+                        "like_rate": 2.0,
+                        "comment_rate": 1.0,
+                        "video_type": "Music Content",
+                    }
+                ],
+            }
+        ],
+    }
+
+    monkeypatch.setattr("streamlit_app._load_demo_cohort", lambda: payload)
+
+    normalized = load_normalized_videos_from_demo()
+    assert normalized["video_type"].tolist() == ["Shorts"]
+    assert int(normalized["like_count"].iloc[0]) == 20
+    assert int(normalized["comment_count"].iloc[0]) == 10
