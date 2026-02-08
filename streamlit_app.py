@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 import html
 import json
 import math
 import os
-from pathlib import Path
 import re
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable, Literal
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_shadcn_ui as ui
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
-import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
 from youtubeviz.viz_theme import build_color_discrete_map, get_artist_color_palette
@@ -996,6 +996,33 @@ def resolve_metrics_date_window(df: pd.DataFrame) -> tuple[date, date]:
     if min_date is None or max_date is None:
         raise ValueError("Could not resolve metrics date window from loaded rows.")
     return min_date, max_date
+
+
+def select_metrics_window(
+    *,
+    min_date: date,
+    max_date: date,
+    selected_window: tuple[date, date] | None = None,
+) -> tuple[date, date]:
+    """Normalize and validate a date window used for metrics filtering.
+
+    LOUD GUARDRAIL: single-day snapshots (`min_date == max_date`) must
+    short-circuit here and in `main()` so Streamlit never receives an invalid
+    range slider with identical bounds.
+    """
+
+    if min_date > max_date:
+        raise ValueError("min_date cannot be after max_date.")
+    if min_date == max_date or selected_window is None:
+        return min_date, max_date
+
+    start_date, end_date = selected_window
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    normalized_start = max(min_date, min(start_date, max_date))
+    normalized_end = max(min_date, min(end_date, max_date))
+    return normalized_start, normalized_end
 
 
 def filter_by_artists(df: pd.DataFrame, artists: list[str]) -> pd.DataFrame:
@@ -2503,13 +2530,26 @@ def main() -> None:
         st.error(str(exc))
         st.stop()
 
-    # Use a slider for date range selection, defaulting to the full history
-    date_selection = st.sidebar.slider(
-        "Metrics window", min_value=min_date, max_value=max_date, value=(min_date, max_date), format="YYYY-MM-DD"
-    )
-
-    # st.slider with a tuple value always returns a tuple of 2
-    start_date, end_date = date_selection
+    # LOUD GUARDRAIL: Streamlit range slider crashes if min == max.
+    # Keep single-day snapshots usable by bypassing slider rendering.
+    if min_date == max_date:
+        st.sidebar.info(f"Single metrics snapshot date: {min_date.isoformat()}")
+        start_date, end_date = select_metrics_window(min_date=min_date, max_date=max_date)
+    else:
+        # Use a slider for date range selection, defaulting to the full history.
+        date_selection = st.sidebar.slider(
+            "Metrics window",
+            min_value=min_date,
+            max_value=max_date,
+            value=(min_date, max_date),
+            format="YYYY-MM-DD",
+        )
+        # st.slider with a tuple value always returns a tuple of 2.
+        start_date, end_date = select_metrics_window(
+            min_date=min_date,
+            max_date=max_date,
+            selected_window=date_selection,
+        )
 
     top_n = st.sidebar.slider("Show top videos", min_value=5, max_value=25, value=10, step=1)
     st.sidebar.metric("Latest metrics date", max_date.isoformat())
