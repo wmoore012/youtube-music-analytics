@@ -250,8 +250,6 @@ def test_select_metrics_window_rejects_inverted_bounds() -> None:
             min_date=date(2026, 2, 9),
             max_date=date(2026, 2, 8),
         )
-
-
 def test_normalize_artist_dimension_merges_case_and_filters_untracked(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("streamlit_app._load_expected_artists", lambda: ["COBRAH", "Corook", "BiC Fizzle"])
     monkeypatch.setattr(
