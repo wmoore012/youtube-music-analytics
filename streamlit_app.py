@@ -13,11 +13,11 @@ from typing import Iterable, Literal, Mapping
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from streamlit_echarts import st_echarts
 from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_extras.metric_cards import style_metric_cards
-from streamlit_option_menu import option_menu
 import streamlit_shadcn_ui as ui
 
 from web.etl_helpers import get_engine
@@ -65,13 +65,17 @@ HEAT_ACCELERATION_THRESHOLD = 1.10
 HEAT_SLOWING_THRESHOLD = 0.90
 CADENCE_TOLERANCE_DAYS = 7
 LOGGER = logging.getLogger(__name__)
-APP_RED_700 = "#7A1F2B"
-APP_RED_600 = "#8B2635"
-APP_RED_500 = "#A3262A"
-APP_RED_100 = "#FBE9E8"
-APP_RED_050 = "#FFF5F4"
+APP_RED_700 = "#C62828"
+APP_RED_600 = "#E53935"
+APP_RED_500 = "#FF4D5A"
+APP_RED_100 = "#FFE3E6"
+APP_RED_050 = "#FFF5F6"
 APP_BENCHMARK_GRAY = "#C7CBD4"
 APP_BENCHMARK_GRAY_DARK = "#B4B9C3"
+ZONE_BG_TOP_RIGHT = "#E7F8EE"
+ZONE_BG_TOP_LEFT = "#EBF3FF"
+ZONE_BG_BOTTOM_RIGHT = "#FFF3E8"
+ZONE_BG_BOTTOM_LEFT = "#F4F4F5"
 # IMPORTANT / DO NOT REGRESS:
 # Keep one global artist palette source for the full app so styling remains
 # consistent across Overview, Deep Dive, Velocity, and callout components.
@@ -129,6 +133,53 @@ try:
     on_hover_tabs = None
 except ModuleNotFoundError:  # pragma: no cover - external dependency guard
     on_hover_tabs = None
+
+
+def _segmented_choice(
+    *,
+    label: str,
+    options: list[str],
+    default_index: int,
+    key: str,
+) -> str:
+    """Render robust built-in navigation without third-party component assets.
+
+    IMPORTANT / DO NOT REGRESS:
+    The app previously depended on streamlit_option_menu frontend assets, which
+    intermittently fail to load on Streamlit Cloud. We intentionally use
+    Streamlit-native controls here so navigation always renders.
+    """
+
+    if not options:
+        return ""
+    safe_index = min(max(default_index, 0), len(options) - 1)
+    default_value = options[safe_index]
+
+    segmented_control = getattr(st, "segmented_control", None)
+    if callable(segmented_control):
+        value = segmented_control(
+            label,
+            options=options,
+            default=default_value,
+            key=key,
+            label_visibility="collapsed",
+        )
+        if isinstance(value, str) and value in options:
+            return value
+        return default_value
+
+    value = st.radio(
+        label,
+        options=options,
+        index=safe_index,
+        horizontal=True,
+        key=key,
+        label_visibility="collapsed",
+    )
+    if isinstance(value, str) and value in options:
+        return value
+    return default_value
+
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "music_analysis_tables"
@@ -1619,8 +1670,7 @@ def build_kpi_red_flags(
     is_production_mode = mode == "production"
     if total_videos > 0 and total_likes == 0:
         flags.append(
-            "Likes are zero across analyzed videos. Check whether like_count "
-            "ingestion or demo derivation is missing.",
+            "Likes are zero across analyzed videos. Check whether like_count ingestion or demo derivation is missing.",
         )
     if total_videos > 0 and total_comments == 0:
         flags.append(
@@ -1836,6 +1886,72 @@ def _metric_gains_by_artist(
     return grouped.groupby("artist_name", dropna=False)["metric_gain"].sum().astype(float)
 
 
+def _metrics_window_has_history(metrics_df: pd.DataFrame) -> bool:
+    """Return whether the current metrics window has multi-day history rows."""
+
+    if metrics_df.empty or "metrics_date" not in metrics_df.columns:
+        return False
+    dates = pd.to_datetime(metrics_df["metrics_date"], errors="coerce").dropna().dt.date.drop_duplicates()
+    return len(dates) >= 2
+
+
+def _estimate_metric_gains_from_snapshot(
+    latest_snapshot: pd.DataFrame,
+    *,
+    metric_col: str,
+    start_day: date,
+    end_day: date,
+) -> pd.Series:
+    """Estimate window gains from a single snapshot when time-series rows are missing.
+
+    Arithmetic proxy:
+    - per-video average daily metric = cumulative_metric / age_days
+    - window gain proxy = average_daily_metric * min(age_days, window_days)
+    - artist gain proxy = sum(window gain proxy by artist)
+    """
+
+    required = {"artist_name", metric_col}
+    if latest_snapshot.empty or not required.issubset(latest_snapshot.columns):
+        return pd.Series(dtype=float)
+
+    window_days = max(1, int((end_day - start_day).days) + 1)
+    typed = latest_snapshot.loc[
+        :,
+        [
+            column
+            for column in ["artist_name", metric_col, "age_days", "published_at"]
+            if column in latest_snapshot.columns
+        ],
+    ].copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed[metric_col] = pd.to_numeric(typed[metric_col], errors="coerce").fillna(0.0).clip(lower=0.0)
+
+    if "age_days" in typed.columns:
+        age_days = pd.to_numeric(typed["age_days"], errors="coerce")
+    else:
+        age_days = pd.Series([pd.NA] * len(typed), index=typed.index, dtype="Float64")
+
+    if "published_at" in typed.columns:
+        published_day = pd.to_datetime(typed["published_at"], errors="coerce").dt.date
+        derived_age = pd.Series(
+            [
+                float((end_day - day_value).days) if isinstance(day_value, date) else float("nan")
+                for day_value in published_day
+            ],
+            index=typed.index,
+        )
+        age_days = age_days.where(age_days.notna(), derived_age)
+
+    valid_age = age_days.where(age_days >= 1)
+    daily_rate = (typed[metric_col] / valid_age).replace([float("inf"), float("-inf")], pd.NA)
+    days_covered = valid_age.clip(upper=window_days)
+    typed["metric_gain_proxy"] = (daily_rate * days_covered).fillna(0.0).clip(lower=0.0)
+    typed = typed.loc[typed["artist_name"].ne("")]
+    if typed.empty:
+        return pd.Series(dtype=float)
+    return typed.groupby("artist_name", dropna=False)["metric_gain_proxy"].sum().astype(float)
+
+
 def _safe_daily(gained_value: float | None, days: int) -> float:
     if gained_value is None:
         return 0.0
@@ -1973,43 +2089,84 @@ def build_artist_today_signal_frame(
         "cadence_days",
         "typical_gap_days",
         "cadence_note",
+        "signal_source",
         "Today move",
     ]
     if not selected_artists:
         return pd.DataFrame(columns=columns)
 
-    views_7 = _metric_gains_by_artist(
-        metrics_window,
-        metric_col="view_count",
-        start_day=_window_start(anchor_day, 7),
-        end_day=anchor_day,
-    )
-    views_90 = _metric_gains_by_artist(
-        metrics_window,
-        metric_col="view_count",
-        start_day=_window_start(anchor_day, 90),
-        end_day=anchor_day,
-    )
-    views_3 = _metric_gains_by_artist(
-        metrics_window,
-        metric_col="view_count",
-        start_day=_window_start(anchor_day, 3),
-        end_day=anchor_day,
-    )
     prior_4_end = anchor_day - timedelta(days=3)
     prior_4_start = anchor_day - timedelta(days=6)
-    views_prior_4 = _metric_gains_by_artist(
-        metrics_window,
-        metric_col="view_count",
-        start_day=prior_4_start,
-        end_day=prior_4_end,
-    )
-    comments_7 = _metric_gains_by_artist(
-        metrics_window,
-        metric_col="comment_count",
-        start_day=_window_start(anchor_day, 7),
-        end_day=anchor_day,
-    )
+    has_metrics_history = _metrics_window_has_history(metrics_window)
+    if has_metrics_history:
+        views_7 = _metric_gains_by_artist(
+            metrics_window,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 7),
+            end_day=anchor_day,
+        )
+        views_90 = _metric_gains_by_artist(
+            metrics_window,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 90),
+            end_day=anchor_day,
+        )
+        views_3 = _metric_gains_by_artist(
+            metrics_window,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 3),
+            end_day=anchor_day,
+        )
+        views_prior_4 = _metric_gains_by_artist(
+            metrics_window,
+            metric_col="view_count",
+            start_day=prior_4_start,
+            end_day=prior_4_end,
+        )
+        comments_7 = _metric_gains_by_artist(
+            metrics_window,
+            metric_col="comment_count",
+            start_day=_window_start(anchor_day, 7),
+            end_day=anchor_day,
+        )
+        signal_source = "time-series gains"
+    else:
+        # LOUD GUARDRAIL:
+        # If only one metrics snapshot is available (common when API quota
+        # blocked same-day refresh), do not emit null hero cards. Use a simple
+        # snapshot proxy from cumulative values + age_days so the briefing keeps
+        # actionable, arithmetic-based signals.
+        views_7 = _estimate_metric_gains_from_snapshot(
+            latest_snapshot,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 7),
+            end_day=anchor_day,
+        )
+        views_90 = _estimate_metric_gains_from_snapshot(
+            latest_snapshot,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 90),
+            end_day=anchor_day,
+        )
+        views_3 = _estimate_metric_gains_from_snapshot(
+            latest_snapshot,
+            metric_col="view_count",
+            start_day=_window_start(anchor_day, 3),
+            end_day=anchor_day,
+        )
+        views_prior_4 = _estimate_metric_gains_from_snapshot(
+            latest_snapshot,
+            metric_col="view_count",
+            start_day=prior_4_start,
+            end_day=prior_4_end,
+        )
+        comments_7 = _estimate_metric_gains_from_snapshot(
+            latest_snapshot,
+            metric_col="comment_count",
+            start_day=_window_start(anchor_day, 7),
+            end_day=anchor_day,
+        )
+        signal_source = "snapshot proxy"
 
     cadence_lookup = _build_cadence_lookup(latest_snapshot, anchor_day=anchor_day)
 
@@ -2044,6 +2201,7 @@ def build_artist_today_signal_frame(
                 "cadence_days": cadence.get("cadence_days"),
                 "typical_gap_days": cadence.get("typical_gap_days"),
                 "cadence_note": str(cadence.get("cadence_note") or "not enough history"),
+                "signal_source": signal_source,
             }
         )
 
@@ -2214,13 +2372,25 @@ def build_hero_signal_snapshots(
     elif cadence_note == "moving quick":
         cadence_sentence = "We have been moving quickly on official drops."
 
+    source_values = (
+        signal_frame["signal_source"].dropna().astype(str).str.strip().tolist()
+        if "signal_source" in signal_frame.columns
+        else []
+    )
+    source_context = "Signal source: time-series gains."
+    if source_values and all(value == "snapshot proxy" for value in source_values):
+        source_context = "Signal source: snapshot proxy (limited multi-day metrics history)."
+
     return (
         HeroSignalSnapshot(
             title="Heat vs normal",
             value=_format_heat_value(heat_ratio),
             direction=heat_direction,
             sentence=heat_sentence,
-            context=f"7d avg: {total_daily_7:,.0f}/day · 90d avg: {total_daily_90:,.0f}/day (views gained)",
+            context=(
+                f"7d avg: {total_daily_7:,.0f}/day · 90d avg: {total_daily_90:,.0f}/day (views gained). "
+                f"{source_context}"
+            ),
             arithmetic="heat = (views_gained_last_7 / 7) / (views_gained_last_90 / 90)",
         ),
         HeroSignalSnapshot(
@@ -2229,7 +2399,9 @@ def build_hero_signal_snapshots(
             direction=fan_direction,
             sentence=fans_sentence,
             context=(
-                "Label avg: —" if label_avg is None else f"Label avg: {label_avg:.1f} / 1K (same window + same roster)"
+                "Label avg: —"
+                if label_avg is None
+                else f"Label avg: {label_avg:.1f} / 1K (same window + same roster). {source_context}"
             ),
             arithmetic="fans talking = (comments_gained_last_7 / views_gained_last_7) x 1,000",
         ),
@@ -2946,11 +3118,20 @@ def _velocity_zone_label(
     return "Quiet"
 
 
-def _build_velocity_zone_table(zone_rows: pd.DataFrame, *, max_rows: int = 8) -> pd.DataFrame:
+def _build_velocity_zone_table(
+    zone_rows: pd.DataFrame,
+    *,
+    max_rows: int = 8,
+    sort_by: Literal["views", "engagement"] = "views",
+) -> pd.DataFrame:
     if zone_rows.empty:
         return pd.DataFrame(columns=["Video", "Artist", "Plays/day (7d)", "Fans responding %"])
+    if sort_by == "engagement":
+        sort_columns = ["engagement_rate", "views_per_day"]
+    else:
+        sort_columns = ["views_per_day", "engagement_rate"]
     table = (
-        zone_rows.sort_values(["views_per_day", "engagement_rate"], ascending=False)
+        zone_rows.sort_values(sort_columns, ascending=False)
         .head(max_rows)
         .loc[:, ["title", "artist_name", "views_per_day", "engagement_rate"]]
         .rename(
@@ -2963,6 +3144,205 @@ def _build_velocity_zone_table(zone_rows: pd.DataFrame, *, max_rows: int = 8) ->
         )
     )
     return table
+
+
+def _fans_responding_cell_style(value: object) -> str:
+    """Return tiered color styling for Fans responding % cells."""
+
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return ""
+    if not math.isfinite(numeric):
+        return ""
+    if numeric >= 7.0:
+        return "background-color: #DCFCE7; color: #166534; font-weight: 700;"
+    if numeric >= 4.0:
+        return "background-color: #E5E7EB; color: #374151; font-weight: 600;"
+    return "background-color: #FEE2E2; color: #991B1B; font-weight: 700;"
+
+
+def _render_velocity_artist_spotlight(row: Mapping[str, object]) -> None:
+    """Render one selected velocity point as a compact investigation block."""
+
+    artist_name = _normalize_optional_text(row.get("artist_name"))
+    title = _normalize_optional_text(row.get("title")) or "(untitled video)"
+    video_id = _normalize_optional_text(row.get("video_id"))
+    plays_per_day = _coerce_float(row.get("views_per_day"), 0.0)
+    fans_responding = _coerce_float(row.get("engagement_rate"), 0.0)
+    views = int(round(_coerce_float(row.get("view_count"), 0.0)))
+    likes = int(round(_coerce_float(row.get("like_count"), 0.0)))
+    comments = int(round(_coerce_float(row.get("comment_count"), 0.0)))
+
+    with st.container(border=True):
+        st.markdown("##### Selected video (inspect now)")
+        left, right = st.columns([1, 3])
+        with left:
+            thumbnail_url = _youtube_thumbnail_url(video_id)
+            if thumbnail_url:
+                st.image(thumbnail_url, use_container_width=True)
+        with right:
+            st.markdown(f"**{html.escape(title)}**")
+            st.caption(f"Artist: {artist_name}")
+            st.caption(
+                f"Plays/day (7d): {plays_per_day:,.1f} · Fans responding %: {fans_responding:,.2f} · "
+                f"Views: {views:,} · Likes: {likes:,} · Comments: {comments:,}"
+            )
+            watch_url = _youtube_watch_url(video_id)
+            if watch_url:
+                st.link_button("Open video on YouTube", watch_url)
+
+
+def render_velocity_quadrant_overview(df: pd.DataFrame, color_map: Mapping[str, str]) -> None:
+    """Render one-dot-per-artist quadrant overview for quick rollup scanning."""
+
+    required = {"artist_name", "views_per_day", "engagement_rate", "video_id"}
+    if df.empty or not required.issubset(df.columns):
+        st.info("Not enough rows to render the artist velocity overview.")
+        return
+
+    typed = df.copy()
+    typed["artist_name"] = typed["artist_name"].map(_normalize_optional_text)
+    typed["views_per_day"] = pd.to_numeric(typed["views_per_day"], errors="coerce")
+    typed["engagement_rate"] = pd.to_numeric(typed["engagement_rate"], errors="coerce")
+    typed = typed.dropna(subset=["artist_name", "views_per_day", "engagement_rate"])
+    typed = typed.loc[typed["artist_name"].ne("")]
+    if typed.empty:
+        st.info("Not enough rows to render the artist velocity overview.")
+        return
+
+    artist_rollup = (
+        typed.groupby("artist_name", dropna=False)
+        .agg(
+            plays_per_day=("views_per_day", "mean"),
+            fans_responding_pct=("engagement_rate", "mean"),
+            videos=("video_id", "nunique"),
+        )
+        .reset_index()
+        .sort_values("plays_per_day", ascending=False)
+    )
+    if artist_rollup.empty:
+        st.info("Not enough rows to render the artist velocity overview.")
+        return
+
+    views_threshold = max(float(artist_rollup["plays_per_day"].median()), 1.0)
+    engagement_threshold = max(float(artist_rollup["fans_responding_pct"].median()), 0.1)
+    x_max = max(float(artist_rollup["plays_per_day"].max()) * 1.1, views_threshold * 1.6)
+    y_max = max(float(artist_rollup["fans_responding_pct"].max()) * 1.15, engagement_threshold * 1.6, 3.0)
+
+    fig = go.Figure()
+    fig.add_shape(
+        type="rect",
+        x0=0,
+        y0=engagement_threshold,
+        x1=views_threshold,
+        y1=y_max,
+        fillcolor=ZONE_BG_TOP_LEFT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=views_threshold,
+        y0=engagement_threshold,
+        x1=x_max,
+        y1=y_max,
+        fillcolor=ZONE_BG_TOP_RIGHT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=0,
+        y0=0,
+        x1=views_threshold,
+        y1=engagement_threshold,
+        fillcolor=ZONE_BG_BOTTOM_LEFT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=views_threshold,
+        y0=0,
+        x1=x_max,
+        y1=engagement_threshold,
+        fillcolor=ZONE_BG_BOTTOM_RIGHT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="line", x0=views_threshold, y0=0, x1=views_threshold, y1=y_max, line={"dash": "dot", "color": "#64748B"}
+    )
+    fig.add_shape(
+        type="line",
+        x0=0,
+        y0=engagement_threshold,
+        x1=x_max,
+        y1=engagement_threshold,
+        line={"dash": "dot", "color": "#64748B"},
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=artist_rollup["plays_per_day"],
+            y=artist_rollup["fans_responding_pct"],
+            mode="markers+text",
+            text=artist_rollup["artist_name"],
+            textposition="top center",
+            marker={
+                "size": [12 + min(int(videos), 15) * 1.8 for videos in artist_rollup["videos"]],
+                "color": [
+                    sanitize_hex_color(color_map.get(str(name)), fallback=APP_RED_500)
+                    for name in artist_rollup["artist_name"]
+                ],
+                "line": {"width": 1, "color": "#FFFFFF"},
+                "opacity": 0.92,
+            },
+            hovertemplate=(
+                "<b>%{text}</b><br>"
+                "Avg plays/day: %{x:,.1f}<br>"
+                "Avg fans responding %: %{y:.2f}<br>"
+                "Videos in filter: %{customdata}<extra></extra>"
+            ),
+            customdata=artist_rollup["videos"],
+            showlegend=False,
+        )
+    )
+    fig.add_annotation(
+        x=views_threshold * 0.45,
+        y=min(y_max * 0.93, engagement_threshold * 1.28),
+        text="Low reach, high response",
+        showarrow=False,
+    )
+    fig.add_annotation(
+        x=min(x_max * 0.76, views_threshold * 1.3),
+        y=min(y_max * 0.93, engagement_threshold * 1.28),
+        text="High reach, high response",
+        showarrow=False,
+    )
+    fig.add_annotation(
+        x=views_threshold * 0.45,
+        y=max(engagement_threshold * 0.40, 0.25),
+        text="Low reach, low response",
+        showarrow=False,
+    )
+    fig.add_annotation(
+        x=min(x_max * 0.76, views_threshold * 1.3),
+        y=max(engagement_threshold * 0.40, 0.25),
+        text="High reach, low response",
+        showarrow=False,
+    )
+    fig.update_layout(
+        title="Artist momentum quadrant (rollup overview)",
+        xaxis_title="Avg plays/day (latest snapshot)",
+        yaxis_title="Avg fans responding %",
+        margin={"l": 20, "r": 20, "t": 55, "b": 20},
+    )
+    st.plotly_chart(fig, use_container_width=True, key="overview_artist_quadrant")
+    st.caption(
+        "Each point is one artist rollup. Zones use simple labels so roster-level tradeoffs are readable at a glance."
+    )
 
 
 def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None:
@@ -3002,64 +3382,181 @@ def render_velocity_scatter(df: pd.DataFrame, color_map: dict[str, str]) -> None
     if math.isfinite(x_axis_cap) and x_axis_cap > 0:
         clipped_count = int((typed["views_per_day"] > x_axis_cap).sum())
 
-    fig = px.scatter(
-        typed,
-        x="views_per_day",
-        y="engagement_rate",
-        color="artist_name",
-        size="view_count",
-        hover_name="title",
-        hover_data={
-            "artist_name": True,
-            "view_count": ":,.0f",
-            "views_per_day": ":,.1f",
-            "engagement_rate": ":.2f",
-            "zone": True,
-        },
-        color_discrete_map=color_map,
-        title="How big each video is vs how hard fans react",
+    highlight_options = ["All artists"] + sorted(typed["artist_name"].astype(str).unique().tolist())
+    highlight_artist = st.selectbox(
+        "Highlight artist in scatter",
+        options=highlight_options,
+        index=0,
+        key="velocity_scatter_highlight",
+        help="Choose one artist to spotlight. Others fade so the pattern is easier to read.",
     )
+
+    typed = typed.reset_index(drop=True)
+    typed["point_id"] = typed.index
+    fig = go.Figure()
+    for artist_name in sorted(typed["artist_name"].astype(str).unique().tolist()):
+        artist_rows = typed.loc[typed["artist_name"] == artist_name]
+        is_focus = highlight_artist == "All artists" or artist_name == highlight_artist
+        fig.add_trace(
+            go.Scatter(
+                x=artist_rows["views_per_day"],
+                y=artist_rows["engagement_rate"],
+                mode="markers",
+                name=artist_name,
+                marker={
+                    "size": [8 + min(float(value) / 10000.0, 22.0) for value in artist_rows["view_count"]],
+                    "color": sanitize_hex_color(color_map.get(artist_name), fallback=APP_RED_500),
+                    "opacity": 0.92 if is_focus else 0.18,
+                    "line": {"width": 0.6, "color": "#FFFFFF"},
+                },
+                customdata=artist_rows[
+                    [
+                        "point_id",
+                        "title",
+                        "artist_name",
+                        "view_count",
+                        "comment_count",
+                        "like_count",
+                        "video_id",
+                        "zone",
+                    ]
+                ].to_numpy(),
+                hovertemplate=(
+                    "<b>%{customdata[1]}</b><br>"
+                    "Artist: %{customdata[2]}<br>"
+                    "Plays/day (7d): %{x:,.1f}<br>"
+                    "Fans responding %: %{y:.2f}<br>"
+                    "Views: %{customdata[3]:,.0f}<br>"
+                    "Zone: %{customdata[7]}<extra></extra>"
+                ),
+            )
+        )
     fig.update_layout(
-        legend_title_text="Artist", xaxis_title="Plays per day (last 7 days)", yaxis_title="Fans responding %"
+        title="How big each video is vs how hard fans react",
+        legend_title_text="Artist",
+        xaxis_title="Plays per day (last 7 days)",
+        yaxis_title="Fans responding %",
+        hovermode="closest",
+    )
+    fig.update_traces(
+        selected={"marker": {"line": {"width": 2.2, "color": "#111827"}}}, unselected={"marker": {"opacity": 0.25}}
     )
     fig.add_vline(x=views_threshold, line_dash="dot", line_color="#9CA3AF")
     fig.add_hline(y=engagement_threshold, line_dash="dot", line_color="#9CA3AF")
-    fig.add_annotation(x=views_threshold, y=engagement_threshold, text="Zone split", showarrow=False, yshift=12)
-    fig.add_annotation(x=views_threshold * 1.05, y=engagement_threshold * 1.15, text="Big & loved", showarrow=False)
-    fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 1.15, text="Small but loved", showarrow=False)
+    fig.add_shape(
+        type="rect",
+        x0=0,
+        y0=engagement_threshold,
+        x1=views_threshold,
+        y1=max(float(typed["engagement_rate"].max()) * 1.2, engagement_threshold * 1.5),
+        fillcolor=ZONE_BG_TOP_LEFT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=views_threshold,
+        y0=engagement_threshold,
+        x1=max(float(typed["views_per_day"].max()) * 1.1, views_threshold * 1.5),
+        y1=max(float(typed["engagement_rate"].max()) * 1.2, engagement_threshold * 1.5),
+        fillcolor=ZONE_BG_TOP_RIGHT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=0,
+        y0=0,
+        x1=views_threshold,
+        y1=engagement_threshold,
+        fillcolor=ZONE_BG_BOTTOM_LEFT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_shape(
+        type="rect",
+        x0=views_threshold,
+        y0=0,
+        x1=max(float(typed["views_per_day"].max()) * 1.1, views_threshold * 1.5),
+        y1=engagement_threshold,
+        fillcolor=ZONE_BG_BOTTOM_RIGHT,
+        line_width=0,
+        layer="below",
+    )
+    fig.add_annotation(x=views_threshold, y=engagement_threshold, text="Zone split", showarrow=False, yshift=14)
+    fig.add_annotation(x=views_threshold * 1.05, y=engagement_threshold * 1.18, text="Big & loved", showarrow=False)
+    fig.add_annotation(x=views_threshold * 0.58, y=engagement_threshold * 1.18, text="Small but loved", showarrow=False)
     fig.add_annotation(
         x=views_threshold * 1.05, y=engagement_threshold * 0.55, text="Big but low reaction", showarrow=False
     )
     fig.add_annotation(x=views_threshold * 0.60, y=engagement_threshold * 0.55, text="Quiet", showarrow=False)
     if clipped_count > 0 and x_axis_cap > 0:
         fig.update_xaxes(range=[0, x_axis_cap])
-    st.plotly_chart(fig, use_container_width=True, height=420)
-    st.caption(
-        "Plays/day = views gained in the last 7 days / 7. " "Fans responding % = (likes + comments) / views x 100."
-    )
+    selected_payload: object = None
+    try:
+        selected_payload = st.plotly_chart(
+            fig,
+            use_container_width=True,
+            height=420,
+            key="velocity_scatter_plot",
+            on_select="rerun",
+            selection_mode=("points",),
+        )
+    except TypeError:
+        st.plotly_chart(fig, use_container_width=True, height=420, key="velocity_scatter_plot")
+    st.caption("Plays/day = views gained in the last 7 days / 7. Fans responding % = (likes + comments) / views x 100.")
     if clipped_count > 0:
         st.caption(
             f"{clipped_count} very large videos are outside the x-axis range so mid-tier patterns stay readable."
         )
 
+    selected_points: list[dict[str, object]] = []
+    if isinstance(selected_payload, dict):
+        selected_points = list(selected_payload.get("selection", {}).get("points", []))
+    elif hasattr(selected_payload, "selection"):
+        selection_obj = getattr(selected_payload, "selection")
+        if isinstance(selection_obj, Mapping):
+            selected_points = list(selection_obj.get("points", []))
+        elif hasattr(selection_obj, "get"):
+            points_obj = selection_obj.get("points", [])
+            if isinstance(points_obj, list):
+                selected_points = points_obj
+
+    if selected_points:
+        first_point = selected_points[0]
+        customdata = first_point.get("customdata") if isinstance(first_point, Mapping) else None
+        if isinstance(customdata, list) and len(customdata) >= 7:
+            point_id = int(customdata[0])
+            match_rows = typed.loc[typed["point_id"] == point_id]
+            if not match_rows.empty:
+                _render_velocity_artist_spotlight(match_rows.iloc[0].to_dict())
+
     st.markdown("##### Big & loved right now")
-    st.dataframe(
-        _build_velocity_zone_table(typed.loc[typed["zone"] == "Big & loved"]),
-        use_container_width=True,
-        hide_index=True,
-    )
+    big_loved = _build_velocity_zone_table(typed.loc[typed["zone"] == "Big & loved"], sort_by="views")
+    if not big_loved.empty:
+        styled = big_loved.style.format({"Plays/day (7d)": "{:,.1f}", "Fans responding %": "{:,.2f}"})
+        styled = styled.map(_fans_responding_cell_style, subset=["Fans responding %"])
+        st.dataframe(styled, use_container_width=True, hide_index=True)
+    else:
+        st.dataframe(big_loved, use_container_width=True, hide_index=True)
+
     st.markdown("##### Small but loved — worth a push")
-    st.dataframe(
-        _build_velocity_zone_table(typed.loc[typed["zone"] == "Small but loved"]),
-        use_container_width=True,
-        hide_index=True,
-    )
+    small_loved = _build_velocity_zone_table(typed.loc[typed["zone"] == "Small but loved"], sort_by="engagement")
+    if not small_loved.empty:
+        styled = small_loved.style.format({"Plays/day (7d)": "{:,.1f}", "Fans responding %": "{:,.2f}"})
+        styled = styled.map(_fans_responding_cell_style, subset=["Fans responding %"])
+        st.dataframe(styled, use_container_width=True, hide_index=True)
+    else:
+        st.dataframe(small_loved, use_container_width=True, hide_index=True)
+
     st.markdown("##### Big but low reaction")
-    st.dataframe(
-        _build_velocity_zone_table(typed.loc[typed["zone"] == "Big but low reaction"]),
-        use_container_width=True,
-        hide_index=True,
-    )
+    big_low = _build_velocity_zone_table(typed.loc[typed["zone"] == "Big but low reaction"], sort_by="views")
+    if not big_low.empty:
+        styled = big_low.style.format({"Plays/day (7d)": "{:,.1f}", "Fans responding %": "{:,.2f}"})
+        styled = styled.map(_fans_responding_cell_style, subset=["Fans responding %"])
+        st.dataframe(styled, use_container_width=True, hide_index=True)
+    else:
+        st.dataframe(big_low, use_container_width=True, hide_index=True)
 
 
 def render_content_mix(df: pd.DataFrame) -> None:
@@ -3798,31 +4295,21 @@ def main() -> None:
 
     # Hover-based sidebar navigation with filters to keep the main canvas clean
     with st.sidebar:
-        if on_hover_tabs is None:
-            # st.warning("⚠️ Hover tabs unavailable; using fallback navigation.")
-            tabs = option_menu(
-                menu_title=None,
-                options=["Filters", "About"],
-                icons=["filter", "info-circle"],
-                default_index=0,
-                orientation="horizontal",
-            )
-        else:
-            tabs = on_hover_tabs(
-                tabName=["Filters", "About"],
-                iconName=["filter", "info-circle"],
-                default_choice=0,
-            )
+        # --- Main Navigation (Replaces Sidebar option_menu) ---
+        selected_view = _segmented_choice(
+            label="Navigation",
+            options=["Overview", "Artist Deep Dive", "Velocity Analysis"],
+            default_index=0,
+            key="main_nav",
+        )
 
-        if tabs == "Filters":
-            st.header("Filters")
-        else:
-            st.header("About this demo")
-            st.markdown(
-                "This hover sidebar keeps the main canvas focused on storytelling "
-                "while still giving you quick control over artist and date filters."
-            )
-            add_vertical_space(2)
+        # The original "Filters" / "About" tabs are removed, and filters are always shown.
+        st.header("Filters")
+        st.markdown(
+            "This hover sidebar keeps the main canvas focused on storytelling "
+            "while still giving you quick control over artist and date filters."
+        )
+        add_vertical_space(2)
 
         selected_artists = st.multiselect("Artists", available_artists, default=available_artists)
     if not selected_artists:
@@ -3851,8 +4338,8 @@ def main() -> None:
         )
         # st.slider with a tuple value always returns a tuple of 2.
         start_date, end_date = select_metrics_window(
-            min_date=min_date,
-            max_date=max_date,
+            min_value=min_date,
+            max_value=max_date,
             selected_window=date_selection,
         )
 
@@ -3878,16 +4365,7 @@ def main() -> None:
             + ". Add them to config/artist_colors.json to lock brand colors.",
         )
 
-    # Top-level navigation for different storytelling modes
-    selected_view = option_menu(
-        menu_title=None,
-        options=["Overview", "Artist Deep Dive", "Velocity Analysis"],
-        icons=["bar-chart-fill", "person-lines-fill", "lightning-fill"],
-        orientation="horizontal",
-    )
-
-    # Layout and content depend slightly on the selected high-level view,
-    # but always keep the story action-oriented and insight-first.
+    # --- Content Routing ---
     if selected_view == "Overview":
         render_today_first_briefing(
             metrics_window=normalized_filtered,
@@ -3917,7 +4395,6 @@ def main() -> None:
                 "right are your next breakout campaigns waiting to happen."
             ),
         )
-
         st.markdown(f"### Videos making noise right now (top {top_n})")
         render_top_videos(latest, limit=top_n)
 
